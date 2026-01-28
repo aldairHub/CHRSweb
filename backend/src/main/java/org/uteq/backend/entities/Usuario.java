@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "usuario")
-public class Usuario { // Cambié el nombre a PascalCase
+public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id_usuario;
