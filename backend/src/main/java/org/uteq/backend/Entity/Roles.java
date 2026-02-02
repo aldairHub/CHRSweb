@@ -1,4 +1,4 @@
-package org.uteq.backend.entities;
+package org.uteq.backend.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,8 +11,9 @@ import lombok.*;
 public class Roles {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_rol;
+    @Column(name = "id_rol")
+    private Long idRol;
 
-    @Column(name = "nombre")
-    private String nombre;
+    @Column(name = "nombre_rol", nullable = false)
+    private String nombreRol;
 }
