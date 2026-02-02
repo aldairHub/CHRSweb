@@ -1,0 +1,77 @@
+<div class="main-container">
+  <div class="content-wrapper" style="max-width: 900px;">
+
+    <header class="page-header">
+      <div>
+        <h2>Nuevo Evaluador</h2>
+        <p style="color: #536b50; font-size: 0.9rem;">Registre los datos de la Autoridad Académica</p>
+      </div>
+      <button class="btn btn-outline btn-sm" (click)="cancelar()">
+        Cancelar
+      </button>
+    </header>
+
+    <div class="card form-card">
+
+      <form (ngSubmit)="guardar()">
+
+        <h4 class="section-title">Información Personal</h4>
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label>Nombres *</label>
+            <input type="text" class="form-input" [(ngModel)]="evaluador.nombres" name="nombres" placeholder="Ej: Roberto Andrés" required>
+          </div>
+
+          <div class="form-group">
+            <label>Apellidos *</label>
+            <input type="text" class="form-input" [(ngModel)]="evaluador.apellidos" name="apellidos" placeholder="Ej: Gómez Loor" required>
+          </div>
+
+          <div class="form-group">
+            <label>Fecha de Nacimiento *</label>
+            <input type="date" class="form-input" [(ngModel)]="evaluador.fechaNacimiento" name="fechaNacimiento" required>
+          </div>
+
+          <div class="form-group">
+            <label>Institución de Origen *</label>
+            <select class="form-input" [(ngModel)]="evaluador.idInstitucion" name="institucion" required>
+              <option [ngValue]="null" disabled selected>Seleccione...</option>
+              <option *ngFor="let inst of instituciones" [value]="inst.id">{{ inst.nombre }}</option>
+            </select>
+          </div>
+
+        </div>
+
+        <h4 class="section-title" style="margin-top: 20px;">Credenciales de Acceso</h4>
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label>Correo Electrónico (Usuario) *</label>
+            <input type="email" class="form-input" [(ngModel)]="evaluador.correo" (input)="generarUsuario()" name="correo" placeholder="usuario@institucion.edu.ec" required>
+          </div>
+
+          <div class="form-group">
+            <label>Contraseña Temporal *</label>
+            <input type="password" class="form-input" [(ngModel)]="evaluador.password" name="password" placeholder="••••••••" required>
+          </div>
+
+          <div class="form-group full-width" style="background: #f0fdf4; padding: 10px; border-radius: 8px; border: 1px dashed #00A63E;">
+            <label style="color: #00A63E;">Usuario generado:</label>
+            <strong style="font-size: 1.1rem; color: #1a1a1a;">{{ evaluador.usuario || '...' }}</strong>
+            <p style="font-size: 0.8rem; color: #536b50; margin-top: 4px;">Este usuario tendrá rol <strong>EVALUADOR</strong> automáticamente.</p>
+          </div>
+
+        </div>
+
+        <div class="form-actions-footer">
+          <button type="button" class="btn btn-outline" (click)="cancelar()">Descartar</button>
+          <button type="submit" class="btn btn-primary">
+            {{ isLoading ? 'Guardando...' : 'Crear Usuario Evaluador' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

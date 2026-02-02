@@ -1,0 +1,82 @@
+<app-navbar></app-navbar>
+
+<div class="main-container">
+
+  <div class="content-wrapper">
+
+    <header class="dashboard-header">
+      <h1>Sistema de Selección Docente</h1>
+    </header>
+
+    <section class="cards-grid">
+
+      <article class="card" (click)="navegarA('postulantes')">
+        <div class="card-icon">
+          <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21.3334 28V25.3333C21.3334 23.9188 20.7715 22.5623 19.7713 21.5621C18.7711 20.5619 17.4146 20 16.0001 20H8.00008C6.58559 20 5.22904 20.5619 4.22885 21.5621C3.22865 22.5623 2.66675 23.9188 2.66675 25.3333V28" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12.0001 14.6667C14.9456 14.6667 17.3334 12.2789 17.3334 9.33333C17.3334 6.38781 14.9456 4 12.0001 4C9.05456 4 6.66675 6.38781 6.66675 9.33333C6.66675 12.2789 9.05456 14.6667 12.0001 14.6667Z" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M29.3333 28V25.3333C29.3324 24.1516 28.9391 23.0037 28.2151 22.0698C27.4911 21.1358 26.4774 20.4688 25.3333 20.1733" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21.3333 4.17334C22.4805 4.46707 23.4973 5.13427 24.2234 6.06975C24.9496 7.00523 25.3437 8.15578 25.3437 9.34001C25.3437 10.5242 24.9496 11.6748 24.2234 12.6103C23.4973 13.5457 22.4805 14.2129 21.3333 14.5067" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>Postulantes</h3>
+        <span>Registro y seguimiento</span>
+      </article>
+
+      <article class="card" (click)="navegarA('documentos')">
+        <div class="card-icon">
+          <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19.9999 2.66666H7.99992C7.29267 2.66666 6.6144 2.94761 6.1143 3.4477C5.6142 3.9478 5.33325 4.62608 5.33325 5.33332V26.6667C5.33325 27.3739 5.6142 28.0522 6.1143 28.5523C6.6144 29.0524 7.29267 29.3333 7.99992 29.3333H23.9999C24.7072 29.3333 25.3854 29.0524 25.8855 28.5523C26.3856 28.0522 26.6666 27.3739 26.6666 26.6667V9.33332L19.9999 2.66666Z" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18.6667 2.66666V7.99999C18.6667 8.70723 18.9477 9.38551 19.4478 9.88561C19.9479 10.3857 20.6262 10.6667 21.3334 10.6667H26.6667" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.3334 12H10.6667" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21.3334 17.3333H10.6667" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21.3334 22.6667H10.6667" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>Documentos</h3>
+        <span>Gestión de archivos</span>
+      </article>
+
+      <article class="card" (click)="navegarA('evaluacion')">
+        <div class="card-icon">
+          <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 4V25.3333C4 26.0406 4.28095 26.7189 4.78105 27.219C5.28115 27.719 5.95942 28 6.66667 28H28" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M24 22.6667V12" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M17.3333 22.6667V6.66666" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10.6667 22.6667V18.6667" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>Evaluación</h3>
+        <span>Matriz de méritos</span>
+      </article>
+
+      <article class="card" (click)="navegarA('reportes')">
+        <div class="card-icon">
+          <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M28.56 14.5627C28.7987 14.4574 29.0012 14.2844 29.1426 14.0651C29.2839 13.8458 29.3578 13.5899 29.3551 13.329C29.3524 13.0681 29.2732 12.8138 29.1274 12.5975C28.9815 12.3811 28.7755 12.2123 28.5346 12.112L17.1066 6.90667C16.7592 6.74821 16.3818 6.6662 16 6.6662C15.6181 6.6662 15.2407 6.74821 14.8933 6.90667L3.46664 12.1067C3.22927 12.2106 3.02733 12.3815 2.88553 12.5984C2.74373 12.8153 2.66821 13.0689 2.66821 13.328C2.66821 13.5872 2.74373 13.8407 2.88553 14.0576C3.02733 14.2745 3.22927 14.4454 3.46664 14.5493L14.8933 19.76C15.2407 19.9185 15.6181 20.0005 16 20.0005C16.3818 20.0005 16.7592 19.9185 17.1066 19.76L28.56 14.5627Z" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M29.3333 13.3333V21.3333" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8 16.6667V21.3333C8 22.3942 8.84286 23.4116 10.3431 24.1618C11.8434 24.9119 13.8783 25.3333 16 25.3333C18.1217 25.3333 20.1566 24.9119 21.6569 24.1618C23.1571 23.4116 24 22.3942 24 21.3333V16.6667" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>Reportes</h3>
+        <span>Informes en PDF</span>
+      </article>
+
+      <article class="card" (click)="navegarA('entrevistas')">
+        <div class="card-icon">
+          <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 4V25.3333C4 26.0406 4.28095 26.7189 4.78105 27.219C5.28115 27.719 5.95942 28 6.66667 28H28" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M24 22.6667V12" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M17.3333 22.6667V6.66666" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10.6667 22.6667V18.6667" stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>Entrevistas</h3>
+        <span>Agendar entrevistas</span>
+      </article>
+
+    </section>
+  </div>
+
+  <app-footer></app-footer>
+</div>

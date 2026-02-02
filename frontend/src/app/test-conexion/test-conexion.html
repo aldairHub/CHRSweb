@@ -1,0 +1,20 @@
+<div style="padding: 20px;">
+  <h1>Prueba de conexión Spring Boot + Angular</h1>
+
+  <button (click)="probarConexion()">Probar Conexión GET</button>
+
+  <hr>
+
+  <input [(ngModel)]="nombre" placeholder="Tu nombre">
+  <button (click)="saludar()">Saludar</button>
+
+  <hr>
+
+  <input [(ngModel)]="mensaje" placeholder="Escribe un mensaje">
+  <button (click)="enviarMensaje()">Enviar POST</button>
+
+  <hr>
+
+  <h3>Respuesta del servidor:</h3>
+  <p>{{ respuesta }}</p>
+</div>

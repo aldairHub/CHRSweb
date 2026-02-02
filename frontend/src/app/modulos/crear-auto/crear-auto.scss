@@ -1,0 +1,51 @@
+// Hereda casi todo del styles.scss global
+
+.form-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  cursor: default; // Quitamos el cursor pointer de las cards normales
+  max-width: 100%;
+
+  // Sobrescribimos el hover del styles.scss global para que no brinque
+  &:hover {
+    transform: none;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  }
+}
+
+.section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #00A63E; // Verde UTEQ
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 8px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; // Dos columnas
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr; // Una columna en celular
+  }
+}
+
+.full-width {
+  grid-column: 1 / -1; // Ocupa todo el ancho
+}
+
+.form-actions-footer {
+  margin-top: 30px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 20px;
+}
