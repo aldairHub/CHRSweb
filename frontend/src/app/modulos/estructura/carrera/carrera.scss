@@ -1,0 +1,332 @@
+// ===============================
+// VARIABLES (igual que facultad)
+// ===============================
+$primary: #00A63E;
+$primary-dark: #007a2e;
+$dark-green: #006935;
+$text-dark: #1e293b;
+$text-gray: #64748b;
+$border: #e2e8f0;
+$white: #ffffff;
+$shadow: 0 10px 25px -5px rgba(0,0,0,.1);
+
+// ===============================
+// CONTENEDOR GENERAL
+// ===============================
+.container {
+  padding: 24px;
+  background: linear-gradient(135deg,#F0FDF4,#DCFCE7);
+  min-height: 100vh;
+}
+
+// ===============================
+// TÍTULO
+// ===============================
+.page-title {
+  color: $dark-green;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+// ===============================
+// STATS
+// ===============================
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.stat-card {
+  background: $white;
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: $shadow;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: $dark-green;
+}
+
+// ===============================
+// TARJETA PRINCIPAL
+// ===============================
+.content-card {
+  background: $white;
+  border-radius: 16px;
+  box-shadow: $shadow;
+}
+
+.card-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid $border;
+  font-weight: 700;
+}
+
+// ===============================
+// BUSCADOR
+// ===============================
+.search-actions {
+  padding: 18px 22px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  flex: 1;
+  min-width: 250px;
+  position: relative;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 10px 14px 10px 36px;
+  border-radius: 10px;
+  border: 1px solid $border;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: .6;
+}
+
+.filter-select {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid $border;
+  min-width: 200px;
+}
+
+.search-box input:focus,
+.filter-select:focus {
+  outline: none;
+  border-color: $primary;
+  box-shadow: 0 0 0 4px rgba(0,166,62,.1);
+}
+
+// ===============================
+// BOTONES
+// ===============================
+.btn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary {
+  background: $primary;
+  color: $white;
+}
+
+.btn-primary:hover {
+  background: $primary-dark;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid $border;
+}
+
+// ===============================
+// TABLA
+// ===============================
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 14px 18px;
+  border-bottom: 1px solid $border;
+}
+
+tbody tr:hover {
+  background: #f0fdf4;
+}
+
+// ===============================
+// BADGES
+// ===============================
+.badge {
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-size: .8rem;
+  font-weight: 600;
+}
+
+.badge.presencial {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.badge.virtual {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.badge.hibrido {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+// ===============================
+// ESTADO
+// ===============================
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: .8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-badge.active {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.status-badge.inactive {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+// ===============================
+// SWITCH
+// ===============================
+.toggle-switch {
+  position: relative;
+  width: 48px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: #cbd5e1;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.toggle-slider:before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: .2s;
+}
+
+input:checked + .toggle-slider {
+  background: $primary;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(24px);
+}
+
+// ===============================
+// MODAL
+// ===============================
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-content {
+  background: $white;
+  border-radius: 14px;
+  width: 520px;
+  box-shadow: $shadow;
+}
+
+.modal-header,
+.modal-footer {
+  padding: 16px 20px;
+  border-bottom: 1px solid $border;
+}
+
+.modal-footer {
+  border-top: 1px solid $border;
+  border-bottom: none;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid $border;
+}
+
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  border-color: $primary;
+  box-shadow: 0 0 0 3px rgba(0,166,62,.1);
+}
+
+// ===============================
+// ACCIONES
+// ===============================
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.btn-icon:hover {
+  background: #dcfce7;
+}

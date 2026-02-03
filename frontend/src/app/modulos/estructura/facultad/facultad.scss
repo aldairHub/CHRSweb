@@ -1,0 +1,116 @@
+// ==========================================
+// ESTADÍSTICAS
+// ==========================================
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.2rem 1.4rem;
+  border: 1px solid #B9F8CF;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 6px 12px rgba(0, 166, 62, 0.08);
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 20px rgba(0, 166, 62, 0.15);
+  }
+
+  h3 {
+    font-size: 0.85rem;
+    color: #536b50;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+
+  .stat-value {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: #016630;
+  }
+
+  span {
+    font-size: 1.8rem;
+  }
+}
+
+// ==========================================
+// TABLA CONTENEDOR
+// ==========================================
+
+.table-container {
+  padding: 1.5rem;
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #B9F8CF;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+// ==========================================
+// BUSCADOR
+// ==========================================
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+// ==========================================
+// MODAL
+// ==========================================
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-content {
+  background: #ffffff;
+  border-radius: 14px;
+  width: 420px;
+  max-width: 95%;
+  box-shadow: 0 20px 40px rgba(0,0,0,.2);
+  animation: fadeIn .25s ease;
+}
+
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #016630;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}

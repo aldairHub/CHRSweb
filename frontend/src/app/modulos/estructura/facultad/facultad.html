@@ -1,0 +1,151 @@
+<app-navbar></app-navbar>
+
+<div class="main-container">
+
+  <div class="content-wrapper">
+
+    <!-- Header -->
+    <header class="dashboard-header">
+      <h1>Gestión de Facultades</h1>
+      <p>Estructura académica de la Universidad Técnica Estatal de Quevedo</p>
+    </header>
+
+    <!-- Estadísticas -->
+    <div class="stats-grid">
+
+      <div class="stat-card">
+        <div>
+          <h3>Total</h3>
+          <div class="stat-value">{{ facultades.length }}</div>
+        </div>
+        <span>🏛️</span>
+      </div>
+
+      <div class="stat-card">
+        <div>
+          <h3>Activas</h3>
+          <div class="stat-value">{{ facultadesActivas }}</div>
+        </div>
+        <span>✅</span>
+      </div>
+
+      <div class="stat-card">
+        <div>
+          <h3>Inactivas</h3>
+          <div class="stat-value">{{ facultadesInactivas }}</div>
+        </div>
+        <span>⏸️</span>
+      </div>
+
+    </div>
+
+    <!-- Tarjeta principal -->
+    <div class="table-container">
+
+      <div class="page-header">
+        <h2>Listado de Facultades</h2>
+
+        <button class="btn-primary" (click)="openCreate()">
+          ➕ Nueva Facultad
+        </button>
+      </div>
+
+      <!-- Buscador -->
+      <div class="form-group">
+        <input
+          class="form-input"
+          placeholder="Buscar facultad..."
+          [(ngModel)]="search">
+      </div>
+
+      <!-- Tabla -->
+      <table class="table">
+
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        <tr *ngFor="let f of facultadesFiltradas()">
+
+          <td>#{{ f.id }}</td>
+          <td>{{ f.nombre }}</td>
+
+          <td>
+            <span class="badge"
+                  [ngClass]="f.estado ? 'success' : 'danger'">
+              {{ f.estado ? 'Activa' : 'Inactiva' }}
+            </span>
+          </td>
+
+          <td style="display:flex; gap:10px; align-items:center;">
+
+            <input
+              type="checkbox"
+              [checked]="f.estado"
+              (change)="toggleEstado(f)">
+
+            <button
+              class="btn-outline btn-sm"
+              (click)="edit(f)">
+              ✏️ Editar
+            </button>
+
+          </td>
+
+        </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+  <app-footer></app-footer>
+
+</div>
+
+<!-- Modal -->
+<div class="modal" [class.active]="modalAbierto">
+
+  <div class="modal-content">
+
+    <div class="modal-header">
+      <h3>{{ editando ? 'Editar Facultad' : 'Nueva Facultad' }}</h3>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label>Nombre *</label>
+        <input
+          class="form-input"
+          [(ngModel)]="form.nombre"
+          placeholder="Nombre de facultad">
+      </div>
+
+      <div class="form-group">
+        <label>
+          <input type="checkbox" [(ngModel)]="form.estado">
+          Facultad activa
+        </label>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-outline" (click)="closeModal()">Cancelar</button>
+      <button class="btn-primary" (click)="guardar()">💾 Guardar</button>
+    </div>
+
+  </div>
+
+</div>

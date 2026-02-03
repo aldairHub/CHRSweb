@@ -1,0 +1,189 @@
+<app-navbar></app-navbar>
+
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+      <a>Dashboard</a>
+      <span>/</span>
+      <a>Estructura Académica</a>
+      <span>/</span>
+      <span>Carreras</span>
+    </nav>
+
+    <div class="page-header">
+      <h2>Gestión de Carreras</h2>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+
+      <div class="stat-card">
+        <div>
+          <h3>Total Carreras</h3>
+          <div class="stat-value">{{ carreras.length }}</div>
+        </div>
+        <div class="stat-icon">📚</div>
+      </div>
+
+      <div class="stat-card">
+        <div>
+          <h3>Activas</h3>
+          <div class="stat-value">{{ carrerasActivas }}</div>
+        </div>
+        <div class="stat-icon">✅</div>
+      </div>
+
+      <div class="stat-card">
+        <div>
+          <h3>Modalidades</h3>
+          <div class="stat-value">{{ totalModalidades }}</div>
+        </div>
+        <div class="stat-icon">🎯</div>
+      </div>
+
+    </div>
+
+    <!-- Tabla -->
+    <div class="content-card">
+
+      <div class="card-header">
+        <h3>Listado de Carreras</h3>
+      </div>
+
+      <div class="search-actions">
+
+        <div class="search-box">
+          <span>🔍</span>
+          <input
+            type="text"
+            placeholder="Buscar carrera..."
+            [(ngModel)]="search"
+          >
+        </div>
+
+        <select [(ngModel)]="filtroFacultad">
+          <option value="">Todas las Facultades</option>
+          <option *ngFor="let f of facultades" [value]="f">
+            {{ f }}
+          </option>
+        </select>
+
+        <button class="btn btn-primary" (click)="openCreate()">
+          ➕ Nueva Carrera
+        </button>
+
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Facultad</th>
+            <th>Nombre</th>
+            <th>Modalidad</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+          </thead>
+
+          <tbody>
+          <tr *ngFor="let c of carrerasFiltradas()">
+            <td>#{{ c.id }}</td>
+            <td>{{ c.facultad }}</td>
+            <td>{{ c.nombre }}</td>
+
+            <td>
+                <span class="badge {{ c.modalidad }}">
+                  {{ c.modalidad | titlecase }}
+                </span>
+            </td>
+
+            <td>
+                <span class="status-badge"
+                      [ngClass]="c.estado ? 'active' : 'inactive'">
+                  <span class="status-dot"></span>
+                  {{ c.estado ? 'Activa' : 'Inactiva' }}
+                </span>
+            </td>
+
+            <td>
+              <div class="action-buttons">
+
+                <label class="toggle-switch">
+                  <input
+                    type="checkbox"
+                    [checked]="c.estado"
+                    (change)="toggleEstado(c)"
+                  >
+                  <span class="toggle-slider"></span>
+                </label>
+
+                <button class="btn-icon" (click)="edit(c)">
+                  ✏️
+                </button>
+
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+
+  <app-footer></app-footer>
+</div>
+
+<!-- Modal -->
+<div class="modal" [class.active]="modalAbierto">
+
+  <div class="modal-content">
+
+    <div class="modal-header">
+      <h3>{{ editando ? 'Editar Carrera' : 'Nueva Carrera' }}</h3>
+      <button class="close-btn" (click)="closeModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label>Facultad *</label>
+        <select [(ngModel)]="form.facultad">
+          <option *ngFor="let f of facultades">{{ f }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Nombre *</label>
+        <input [(ngModel)]="form.nombre">
+      </div>
+
+      <div class="form-group">
+        <label>Modalidad *</label>
+        <select [(ngModel)]="form.modalidad">
+          <option value="presencial">Presencial</option>
+          <option value="virtual">Virtual</option>
+          <option value="hibrido">Híbrido</option>
+        </select>
+      </div>
+
+      <label class="toggle-switch">
+        <input type="checkbox" [(ngModel)]="form.estado">
+        <span class="toggle-slider"></span>
+        Activa
+      </label>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" (click)="guardar()">💾 Guardar</button>
+    </div>
+
+  </div>
+</div>

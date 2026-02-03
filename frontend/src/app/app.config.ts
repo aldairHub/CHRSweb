@@ -1,11 +1,14 @@
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http'; // <--- Importante
+import { provideHttpClient } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
+
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
-    provideHttpClient() // <--- Esto habilita que el login pueda hablar con el backend
+    provideHttpClient(),
+    importProvidersFrom(FormsModule) // 👈 ESTA ES LA LÍNEA CORRECTA
   ]
 };
