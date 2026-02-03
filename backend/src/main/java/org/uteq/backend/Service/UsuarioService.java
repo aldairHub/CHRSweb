@@ -23,12 +23,32 @@ public class UsuarioService {
     private PasswordEncoder passwordEncoder;
 
     public UsuarioDTO crear(UsuarioCreateDTO dto) {
+        if (dto.getRol() == null) {
+            throw new RuntimeException("Debe especificar un rol");
+        }
+
         if (dto.getRol() == Role.USER) {
             throw new RuntimeException("No se permite crear usuarios con rol USER manualmente");
         }
 
-        if (dto.getRol() == null) {
-            throw new RuntimeException("Debe especificar un rol (ADMIN o EVALUATOR)");
+        if (dto.getUsuarioApp() == null || dto.getUsuarioApp().isBlank()) {
+            throw new RuntimeException("usuarioApp es obligatorio");
+        }
+
+        if (dto.getClaveApp() == null || dto.getClaveApp().isBlank()) {
+            throw new RuntimeException("claveApp es obligatoria");
+        }
+
+        if (dto.getUsuarioBd() == null || dto.getUsuarioBd().isBlank()) {
+            throw new RuntimeException("usuarioBd es obligatorio");
+        }
+
+        if (dto.getClaveBd() == null || dto.getClaveBd().isBlank()) {
+            throw new RuntimeException("claveBdBase64 es obligatoria");
+        }
+
+        if (dto.getCorreo() == null || dto.getCorreo().isBlank()) {
+            throw new RuntimeException("correo es obligatorio");
         }
 
         if (usuarioRepository.findByUsuarioApp(dto.getUsuarioApp()).isPresent()) {
@@ -37,9 +57,12 @@ public class UsuarioService {
 
         Usuario usuario = new Usuario();
         usuario.setUsuarioBd(dto.getUsuarioBd());
+
         usuario.setClaveBd(dto.getClaveBd());
+
         usuario.setUsuarioApp(dto.getUsuarioApp());
-        usuario.setClaveApp(passwordEncoder.encode(dto.getClaveApp()));
+        usuario.setClaveApp(passwordEncoder.encode(dto.getClaveApp())); // BCrypt
+        usuario.setCorreo(dto.getCorreo());
         usuario.setActivo(true);
         usuario.setRol(dto.getRol());
 

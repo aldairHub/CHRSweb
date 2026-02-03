@@ -26,6 +26,9 @@ public class Usuario {
     @Column(name = "clave_app", nullable = false)
     private String claveApp;
 
+    @Column(name = "correo", nullable = false, unique = true)
+    private String correo;
+
     @Column(name = "activo", nullable = false)
     private Boolean activo = true;
 
