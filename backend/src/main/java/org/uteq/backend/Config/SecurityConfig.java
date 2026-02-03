@@ -25,6 +25,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/usuarios", "/api/auth/login").permitAll()
                         .anyRequest().authenticated()
+                        //hjfgffyuuy
                 );
 
         return http.build();
