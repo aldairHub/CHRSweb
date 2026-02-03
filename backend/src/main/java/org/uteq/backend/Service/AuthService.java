@@ -1,8 +1,10 @@
 package org.uteq.backend.Service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.uteq.backend.dto.AuditLoginMotivo;
 import org.uteq.backend.dto.LoginRequest;
 import org.uteq.backend.dto.LoginResponse;
 import org.uteq.backend.Entity.Usuario;
@@ -22,21 +24,53 @@ public class AuthService {
     @Autowired
     private JwtService jwtService;
 
-    public LoginResponse login(LoginRequest request) {
-        Usuario usuario = usuarioRepository.findByUsuarioApp(request.getUsuarioApp())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    @Autowired
+    private ILoginAuditService loginAuditService; //   módulo de auditoría
 
-        if (!passwordEncoder.matches(request.getClaveApp(), usuario.getClaveApp())) {
-            throw new RuntimeException("Contraseña incorrecta");
+    public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
+
+        String usuarioApp = request.getUsuarioApp();
+
+        // 1) Buscar usuario
+        Usuario usuario = usuarioRepository.findByUsuarioApp(usuarioApp).orElse(null);
+
+        if (usuario == null) {
+            // FAIL: usuario no existe
+            safeAuditFail(usuarioApp, null, AuditLoginMotivo.USER_NOT_FOUND, httpRequest);
+            throw new RuntimeException("Usuario no encontrado");
         }
 
-        if (!usuario.getActivo()) {
+        // 2) Inactivo
+        if (Boolean.FALSE.equals(usuario.getActivo())) {
+            safeAuditFail(usuarioApp, usuario.getUsuarioBd(), AuditLoginMotivo.USER_DISABLED, httpRequest);
             throw new RuntimeException("Usuario inactivo");
         }
 
+        // 3) Password incorrecta
+        if (!passwordEncoder.matches(request.getClaveApp(), usuario.getClaveApp())) {
+            safeAuditFail(usuarioApp, usuario.getUsuarioBd(), AuditLoginMotivo.BAD_CREDENTIALS, httpRequest);
+            throw new RuntimeException("Contraseña incorrecta");
+        }
+
+        // SUCCESS
         String token = jwtService.generateToken(usuario);
+
+        safeAuditSuccess(usuarioApp, usuario.getUsuarioBd(), httpRequest);
 
         return new LoginResponse(token, usuario.getUsuarioApp(),
                 Collections.singleton(usuario.getRol().name()));
+    }
+
+    // Para que auditoría NUNCA rompa el login
+    private void safeAuditSuccess(String usuarioApp, String usuarioBd, HttpServletRequest httpRequest) {
+        try {
+            loginAuditService.logSuccess(usuarioApp, usuarioBd, httpRequest);
+        } catch (Exception ignored) {}
+    }
+
+    private void safeAuditFail(String usuarioApp, String usuarioBdOrNull, AuditLoginMotivo motivo, HttpServletRequest httpRequest) {
+        try {
+            loginAuditService.logFail(usuarioApp, usuarioBdOrNull, motivo, httpRequest);
+        } catch (Exception ignored) {}
     }
 }
