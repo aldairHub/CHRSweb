@@ -21,9 +21,6 @@ public class EmailService {
     @Value("${app.name}")
     private String appName;
 
-    // ===============================
-    // ENVÍO DE CÓDIGO DE VERIFICACIÓN
-    // ===============================
     @Async
     public void enviarCodigoVerificacion(String destinatario, String codigo) {
         try {
@@ -43,9 +40,6 @@ public class EmailService {
         }
     }
 
-    // ===============================
-    // ENVÍO DE CREDENCIALES (FINAL)
-    // ===============================
     @Async
     public void enviarCredenciales(
             String destinatario,
@@ -73,9 +67,6 @@ public class EmailService {
         }
     }
 
-    // ===============================
-    // HTML CÓDIGO
-    // ===============================
     private String construirEmailCodigo(String codigo) {
         return """
             <!DOCTYPE html>
@@ -101,9 +92,6 @@ public class EmailService {
             """.formatted(codigo);
     }
 
-    // ===============================
-    // HTML CREDENCIALES
-    // ===============================
     private String construirEmailCredenciales(String usuario, String clave) {
         return """
             <!DOCTYPE html>
