@@ -9,8 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.uteq.backend.Entity.Facultad;
 import org.uteq.backend.Repository.FacultadRepository;
 import org.uteq.backend.Service.FacultadService;
-import org.uteq.backend.dto.facultad.FacultadRequestDTO;
-import org.uteq.backend.dto.facultad.FacultadResponseDTO;
+import org.uteq.backend.dto.FacultadRequestDTO;
+import org.uteq.backend.dto.FacultadResponseDTO;
 
 @Service
 @Transactional

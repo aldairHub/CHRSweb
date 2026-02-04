@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import org.uteq.backend.Service.FacultadService;
-import org.uteq.backend.dto.facultad.FacultadRequestDTO;
-import org.uteq.backend.dto.facultad.FacultadResponseDTO;
+import org.uteq.backend.dto.FacultadRequestDTO;
+import org.uteq.backend.dto.FacultadResponseDTO;
 
 @RestController
 @RequestMapping("/api/facultades")

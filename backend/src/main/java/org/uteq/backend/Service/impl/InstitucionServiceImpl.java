@@ -9,8 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.uteq.backend.Entity.Institucion;
 import org.uteq.backend.Repository.InstitucionRepository;
 import org.uteq.backend.Service.InstitucionService;
-import org.uteq.backend.dto.institucion.InstitucionRequestDTO;
-import org.uteq.backend.dto.institucion.InstitucionResponseDTO;
+import org.uteq.backend.dto.InstitucionRequestDTO;
+import org.uteq.backend.dto.InstitucionResponseDTO;
 
 @Service
 @Transactional

@@ -11,8 +11,8 @@ import org.uteq.backend.Entity.Facultad;
 import org.uteq.backend.Repository.CarreraRepository;
 import org.uteq.backend.Repository.FacultadRepository;
 import org.uteq.backend.Service.CarreraService;
-import org.uteq.backend.dto.carrera.CarreraRequestDTO;
-import org.uteq.backend.dto.carrera.CarreraResponseDTO;
+import org.uteq.backend.dto.CarreraRequestDTO;
+import org.uteq.backend.dto.CarreraResponseDTO;
 
 @Service
 @Transactional
