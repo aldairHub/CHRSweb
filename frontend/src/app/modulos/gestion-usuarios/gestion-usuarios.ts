@@ -50,6 +50,7 @@ interface RolUsuario {
   descripcion: string;
   automatico: boolean;
   activo: boolean;
+
 }
 
 interface RolAutoridad {
