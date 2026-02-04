@@ -12,9 +12,9 @@ public class DataSourceConfig {
 
         // CAMBIAR conexión inicial base (admin backend)
         HikariDataSource base = new HikariDataSource();
-        base.setJdbcUrl("jdbc:postgresql://localhost:5432/ssdcTest");
+        base.setJdbcUrl("jdbc:postgresql://localhost:5432/ssdc_practice");
         base.setUsername("postgres");
-        base.setPassword("postgresqlAdmin19");
+        base.setPassword("12072000");
 
         return new MutableDataSource(base);
     }

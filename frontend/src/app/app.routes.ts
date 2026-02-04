@@ -68,6 +68,15 @@ export const routes: Routes = [
   },
 
   {
+    path: 'gestion-usuarios',
+    loadComponent: () =>
+      import('./modulos/gestion-usuarios/gestion-usuarios')
+        .then(m => m.GestionUsuariosComponent),
+    canActivate: [AuthGuard],
+    data: { rol: 'admin' }
+  },
+
+  {
     path: '**',
     redirectTo: 'login'
   }

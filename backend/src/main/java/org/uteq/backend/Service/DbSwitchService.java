@@ -17,7 +17,7 @@ public class DbSwitchService {
 
         HikariDataSource ds = new HikariDataSource();
         //CAMBIAR
-        ds.setJdbcUrl("jdbc:postgresql://localhost:5432/ssdcTest");
+        ds.setJdbcUrl("jdbc:postgresql://localhost:5432/ssdc_practice");
         ds.setUsername(usuarioBd);
         ds.setPassword(claveBd);
 

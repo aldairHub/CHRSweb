@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
+import { NavbarComponent } from './navbar';   // 👈 IMPORTAR
+import { FooterComponent } from './footer';   // 👈 IMPORTAR
 
 @Component({
   selector: 'app-root',
@@ -9,7 +11,9 @@ import { RouterOutlet } from '@angular/router';
   imports: [
     CommonModule,
     FormsModule,
-    RouterOutlet
+    RouterOutlet,
+    NavbarComponent,   // 👈 AGREGAR
+    FooterComponent
   ],
   templateUrl: './app.component.html'
 })
