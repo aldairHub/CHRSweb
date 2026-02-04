@@ -80,7 +80,6 @@ public class UsuarioService {
 //                .filter(u -> u.getRol() == Role.ADMIN || u.getRol() == Role.EVALUATOR)
 //                .map(this::convertirADTO)
 //                .collect(Collectors.toList());
-
 //    }
 
     public UsuarioDTO obtenerPorId(Long id) {
