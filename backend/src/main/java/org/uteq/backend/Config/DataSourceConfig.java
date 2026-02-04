@@ -14,7 +14,7 @@ public class DataSourceConfig {
         HikariDataSource base = new HikariDataSource();
         base.setJdbcUrl("jdbc:postgresql://localhost:5432/ssdcTest");
         base.setUsername("postgres");
-        base.setPassword("1234");
+        base.setPassword("postgresqlAdmin19");
 
         return new MutableDataSource(base);
     }

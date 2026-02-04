@@ -21,20 +21,13 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.disable()) // ✅ Postman no necesita CORS
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/usuarios/**",
-                                "/api/facultades/**",
-                                "/api/carreras/**",
-                                "/api/materias/**",
-                                "/api/auth/**"
-                        ).permitAll()
+                        .requestMatchers("/api/usuarios", "/api/auth/login").permitAll()
                                 .requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers("/api/demo/**").permitAll()
-                                .requestMatchers("/api/facultades/**").permitAll()
-                                .requestMatchers("/api/carreras/**").permitAll()
-                                .requestMatchers("/api/materias/**").permitAll()
                         .anyRequest().authenticated()
+                        //hjfgffyuuy
                 );
 
         return http.build();
