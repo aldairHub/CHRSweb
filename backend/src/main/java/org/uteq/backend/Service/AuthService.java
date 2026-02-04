@@ -31,6 +31,22 @@ public class AuthService {
     @Autowired
     private ILoginAuditService loginAuditService; //   módulo de auditoría
 
+    @Autowired
+    private final DbSwitchService dbSwitchService;
+
+    public AuthService(UsuarioRepository usuarioRepository,
+                       IUsuarioRolRepository usuarioRolRepository,
+                       JwtService jwtService,
+                       PasswordEncoder passwordEncoder,
+                       DbSwitchService dbSwitchService) {
+
+        this.usuarioRepository = usuarioRepository;
+        this.usuarioRolRepository = usuarioRolRepository;
+        this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
+        this.dbSwitchService = dbSwitchService;
+    }
+
     public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
 
         String usuarioApp = request.getUsuarioApp();
@@ -56,6 +72,9 @@ public class AuthService {
             throw new RuntimeException("Contraseña incorrecta");
         }
 
+
+        // ✅ CAMBIO REAL DE CONEXIÓN BD (DEMO)
+        dbSwitchService.switchToUser(usuario.getUsuarioBd(), usuario.getClaveBd());
         // SUCCESS
         List<String> roles = usuarioRolRepository.findRoleNamesByUserId(usuario.getIdUsuario());
         safeAuditSuccess(usuarioApp, usuario.getUsuarioBd(), httpRequest);

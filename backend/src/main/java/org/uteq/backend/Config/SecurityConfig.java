@@ -24,6 +24,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.disable()) // ✅ Postman no necesita CORS
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/usuarios", "/api/auth/login").permitAll()
+                                .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers("/api/demo/**").permitAll()
                         .anyRequest().authenticated()
                         //hjfgffyuuy
                 );
