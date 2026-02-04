@@ -6,6 +6,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 
+// 1. IMPORTAMOS EL SERVICIO DE USUARIOS
+import { UsuarioService } from '../../services/usuario.service';
 
 // Interfaces
 interface Usuario {
@@ -137,9 +139,9 @@ export class GestionUsuariosComponent implements OnInit {
   newRoleToAdd = '';
 
   constructor(
-    private fb: FormBuilder
-    // private usuarioService: UsuarioService,
-    // private notificationService: NotificationService
+    private fb: FormBuilder,
+    // 2. INYECTAMOS EL SERVICIO
+    private usuarioService: UsuarioService
   ) {}
 
   ngOnInit(): void {
@@ -176,6 +178,7 @@ export class GestionUsuariosComponent implements OnInit {
 
   loadData(): void {
     // Datos de ejemplo - Reemplazar con servicio real
+    // OPCIONAL: Podrías llamar a this.usuarioService.listarTodos() aquí
     this.usuarios = [
       {
         idUsuario: 1,
@@ -189,6 +192,7 @@ export class GestionUsuariosComponent implements OnInit {
         facultad: { id: 1, nombre: 'Ciencias de la Computación' },
         rolesUsuario: ['ROLE_AUTORIDAD', 'ROLE_EVALUATOR']
       },
+      // ... (Tus datos de ejemplo siguen aquí)
       {
         idUsuario: 2,
         idAutoridad: 2,
@@ -201,42 +205,6 @@ export class GestionUsuariosComponent implements OnInit {
         carrera: { id: 1, nombre: 'Ingeniería en Software' },
         facultad: { id: 1, nombre: 'Ciencias de la Computación' },
         rolesUsuario: ['ROLE_AUTORIDAD', 'ROLE_ENTREVISTADOR']
-      },
-      {
-        idUsuario: 3,
-        idAutoridad: 3,
-        usuarioApp: 'cgomez',
-        nombres: 'Carlos Alberto',
-        apellidos: 'Gómez Torres',
-        correo: 'cgomez@uteq.edu.ec',
-        activo: true,
-        rolesAutoridad: ['VICERRECTORADO_ACADEMICO', 'CONSEJO_ACADEMICO'],
-        rolesUsuario: ['ROLE_AUTORIDAD', 'ROLE_REPORT_VIEWER']
-      },
-      {
-        idUsuario: 4,
-        idAutoridad: 4,
-        usuarioApp: 'lmartinez',
-        nombres: 'Laura Patricia',
-        apellidos: 'Martínez Vega',
-        correo: 'lmartinez@uteq.edu.ec',
-        activo: true,
-        rolesAutoridad: ['DECANATO_FACULTAD', 'CONSEJO_ACADEMICO'],
-        facultad: { id: 2, nombre: 'Ciencias Empresariales' },
-        rolesUsuario: ['ROLE_AUTORIDAD', 'ROLE_EVALUATOR', 'ROLE_REPORT_VIEWER']
-      },
-      {
-        idUsuario: 5,
-        idAutoridad: 5,
-        usuarioApp: 'rsanchez',
-        nombres: 'Roberto José',
-        apellidos: 'Sánchez Cruz',
-        correo: 'rsanchez@uteq.edu.ec',
-        activo: false,
-        rolesAutoridad: ['COORDINADOR_CARRERA'],
-        carrera: { id: 3, nombre: 'Administración de Empresas' },
-        facultad: { id: 2, nombre: 'Ciencias Empresariales' },
-        rolesUsuario: ['ROLE_AUTORIDAD', 'ROLE_ENTREVISTADOR']
       }
     ];
 
@@ -246,7 +214,6 @@ export class GestionUsuariosComponent implements OnInit {
   }
 
   loadCatalogs(): void {
-    // Datos de ejemplo - Reemplazar con servicio real
     this.instituciones = [
       { id: 1, nombre: 'Universidad Técnica Estatal de Quevedo (UTEQ)' },
       { id: 2, nombre: 'Campus Buena Fe' },
@@ -290,18 +257,15 @@ export class GestionUsuariosComponent implements OnInit {
 
   applyFilters(): void {
     this.usuariosFiltrados = this.usuarios.filter(usuario => {
-      // Filtro de búsqueda
       const searchMatch = !this.searchTerm ||
         usuario.nombres.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         usuario.apellidos.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         usuario.correo.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         usuario.usuarioApp.toLowerCase().includes(this.searchTerm.toLowerCase());
 
-      // Filtro de rol
       const roleMatch = !this.filterRole ||
         usuario.rolesAutoridad.includes(this.filterRole);
 
-      // Filtro de estado
       const statusMatch = !this.filterStatus ||
         usuario.activo.toString() === this.filterStatus;
 
@@ -337,7 +301,7 @@ export class GestionUsuariosComponent implements OnInit {
     } else {
       pages.push(1);
       if (this.currentPage > 3) {
-        pages.push(-1); // Representa "..."
+        pages.push(-1);
       }
 
       const start = Math.max(2, this.currentPage - 1);
@@ -348,7 +312,7 @@ export class GestionUsuariosComponent implements OnInit {
       }
 
       if (this.currentPage < this.totalPages - 2) {
-        pages.push(-1); // Representa "..."
+        pages.push(-1);
       }
       pages.push(this.totalPages);
     }
@@ -389,13 +353,8 @@ export class GestionUsuariosComponent implements OnInit {
     const action = newStatus ? 'activar' : 'desactivar';
 
     if (confirm(`¿Está seguro que desea ${action} este usuario?\n\n${newStatus ? 'El usuario podrá acceder al sistema.' : 'El usuario NO podrá acceder al sistema.'}`)) {
-      // Aquí iría la llamada al servicio
-      // this.usuarioService.toggleStatus(usuario.idUsuario, newStatus).subscribe(...)
-
       usuario.activo = newStatus;
       this.updateStats();
-
-      // this.notificationService.success(`Usuario ${action} exitosamente`);
       alert(`Usuario ${action} exitosamente`);
     }
   }
@@ -419,11 +378,7 @@ export class GestionUsuariosComponent implements OnInit {
   onRoleChange(event: any): void {
     const value = event.target.value;
     const checked = event.target.checked;
-
-    // Actualizar flags condicionales
     this.updateConditionalFields();
-
-    // Actualizar preview de roles
     this.updateRolesPreview();
   }
 
@@ -440,7 +395,6 @@ export class GestionUsuariosComponent implements OnInit {
     this.needsFacultad = selectedRoles.includes('DECANATO_FACULTAD');
     this.needsCarrera = selectedRoles.includes('COORDINADOR_CARRERA');
 
-    // Actualizar validadores
     if (this.needsFacultad) {
       this.createForm.get('idFacultad')?.setValidators([Validators.required]);
     } else {
@@ -470,18 +424,13 @@ export class GestionUsuariosComponent implements OnInit {
     });
 
     this.previewRoles = [];
+    if (selectedRoles.length === 0) return;
 
-    if (selectedRoles.length === 0) {
-      return;
-    }
-
-    // ROLE_AUTORIDAD - siempre se asigna si hay al menos un rol
     this.previewRoles.push({
       nombre: 'ROLE_AUTORIDAD',
       descripcion: 'Rol base para todas las autoridades'
     });
 
-    // ROLE_EVALUATOR - si es Decano
     if (selectedRoles.includes('DECANATO_FACULTAD')) {
       this.previewRoles.push({
         nombre: 'ROLE_EVALUATOR',
@@ -489,7 +438,6 @@ export class GestionUsuariosComponent implements OnInit {
       });
     }
 
-    // ROLE_REPORT_VIEWER - si es Vicerrectorado o Consejo
     if (selectedRoles.includes('VICERRECTORADO_ACADEMICO') || selectedRoles.includes('CONSEJO_ACADEMICO')) {
       this.previewRoles.push({
         nombre: 'ROLE_REPORT_VIEWER',
@@ -497,7 +445,6 @@ export class GestionUsuariosComponent implements OnInit {
       });
     }
 
-    // ROLE_ENTREVISTADOR - si es Coordinador
     if (selectedRoles.includes('COORDINADOR_CARRERA')) {
       this.previewRoles.push({
         nombre: 'ROLE_ENTREVISTADOR',
@@ -505,6 +452,10 @@ export class GestionUsuariosComponent implements OnInit {
       });
     }
   }
+
+  // ==========================================
+  // SAVE AUTORIDAD (MODIFICADO PARA BACKEND)
+  // ==========================================
 
   saveAutoridad(): void {
     if (this.createForm.invalid) {
@@ -514,48 +465,44 @@ export class GestionUsuariosComponent implements OnInit {
       return;
     }
 
-    // Obtener roles seleccionados
-    const checkboxes = document.querySelectorAll<HTMLInputElement>('.checkbox-grid input[type="checkbox"]:checked');
-    const rolesAutoridad: string[] = [];
-    checkboxes.forEach(cb => rolesAutoridad.push(cb.value));
-
-    if (rolesAutoridad.length === 0) {
-      alert('Debe seleccionar al menos un rol de autoridad');
-      return;
-    }
-
     this.isSaving = true;
 
-    const formData = {
-      ...this.createForm.value,
-      rolesAutoridad
+    // 1. Obtener datos del formulario
+    const formValues = this.createForm.value;
+    const correo = formValues.correo;
+    const usuarioGenerado = correo.split('@')[0]; // Generar usuario desde el correo
+
+    // 2. Preparar el JSON EXACTO para tu Backend
+    const usuarioParaBackend = {
+      usuarioApp: usuarioGenerado,
+      claveApp: 'UtEq2026.',       // Contraseña por defecto
+      correo: correo,
+      usuarioBd: 'invitado_bd',    // Dato obligatorio por tu backend
+      claveBd: 'clave_bd_123',     // Dato obligatorio por tu backend
+      activo: true
     };
 
-    console.log('Datos a enviar:', formData);
+    console.log('Enviando al backend:', usuarioParaBackend);
 
-    // Simular llamada al backend
-    setTimeout(() => {
-      this.isSaving = false;
-      this.closeCreateModal();
-      alert('✅ Autoridad creada exitosamente\n\n📧 Se ha enviado un correo con las credenciales');
+    // 3. Llamada al servicio
+    this.usuarioService.crear(usuarioParaBackend).subscribe({
+      next: (res) => {
+        this.isSaving = false;
+        this.closeCreateModal();
 
-      // Recargar datos
-      this.loadData();
-    }, 1500);
+        // Mensaje de éxito con los datos reales creados
+        alert(`✅ Usuario creado exitosamente!\n\nID: ${res.idUsuario}\nUsuario: ${res.usuarioApp}\nCorreo: ${res.correo}`);
 
-    // En producción:
-    // this.usuarioService.createAutoridad(formData).subscribe({
-    //   next: (response) => {
-    //     this.isSaving = false;
-    //     this.closeCreateModal();
-    //     this.notificationService.success('Autoridad creada exitosamente');
-    //     this.loadData();
-    //   },
-    //   error: (error) => {
-    //     this.isSaving = false;
-    //     this.notificationService.error('Error al crear autoridad');
-    //   }
-    // });
+        // Opcional: Recargar la tabla si implementas listarTodos()
+        // this.loadData();
+      },
+      error: (err) => {
+        this.isSaving = false;
+        console.error('Error del servidor:', err);
+        const mensaje = err.error || err.message || 'Error desconocido';
+        alert('❌ Error al crear usuario: ' + mensaje);
+      }
+    });
   }
 
   // ==========================================
@@ -570,7 +517,7 @@ export class GestionUsuariosComponent implements OnInit {
       nombres: usuario.nombres,
       apellidos: usuario.apellidos,
       correo: usuario.correo,
-      fechaNacimiento: '1980-05-15', // Obtener del backend
+      fechaNacimiento: '1980-05-15',
       idFacultad: usuario.facultad?.id || '',
       idCarrera: usuario.carrera?.id || ''
     });
@@ -578,9 +525,7 @@ export class GestionUsuariosComponent implements OnInit {
     this.editNeedsFacultad = this.editRolesAutoridad.includes('DECANATO_FACULTAD');
     this.editNeedsCarrera = this.editRolesAutoridad.includes('COORDINADOR_CARRERA');
 
-    // Cargar roles de usuario
     this.loadEditRolesUsuario(usuario);
-
     this.showEditModal = true;
   }
 
@@ -605,7 +550,6 @@ export class GestionUsuariosComponent implements OnInit {
   }
 
   loadEditRolesUsuario(usuario: Usuario): void {
-    // Roles automáticos según roles de autoridad
     const automaticRoles: string[] = ['ROLE_AUTORIDAD'];
 
     if (usuario.rolesAutoridad.includes('DECANATO_FACULTAD')) {
@@ -685,24 +629,14 @@ export class GestionUsuariosComponent implements OnInit {
   openRolesModal(usuario: Usuario): void {
     this.selectedUsuario = usuario;
 
-    // Separar roles automáticos y adicionales
     const automaticRoles = ['ROLE_AUTORIDAD'];
-
-    if (usuario.rolesAutoridad.includes('DECANATO_FACULTAD')) {
-      automaticRoles.push('ROLE_EVALUATOR');
-    }
-    if (usuario.rolesAutoridad.includes('VICERRECTORADO_ACADEMICO') ||
-      usuario.rolesAutoridad.includes('CONSEJO_ACADEMICO')) {
-      automaticRoles.push('ROLE_REPORT_VIEWER');
-    }
-    if (usuario.rolesAutoridad.includes('COORDINADOR_CARRERA')) {
-      automaticRoles.push('ROLE_ENTREVISTADOR');
-    }
+    if (usuario.rolesAutoridad.includes('DECANATO_FACULTAD')) automaticRoles.push('ROLE_EVALUATOR');
+    if (usuario.rolesAutoridad.includes('VICERRECTORADO_ACADEMICO') || usuario.rolesAutoridad.includes('CONSEJO_ACADEMICO')) automaticRoles.push('ROLE_REPORT_VIEWER');
+    if (usuario.rolesAutoridad.includes('COORDINADOR_CARRERA')) automaticRoles.push('ROLE_ENTREVISTADOR');
 
     this.rolesAutomaticos = automaticRoles;
     this.rolesAdicionales = (usuario.rolesUsuario || []).filter(r => !automaticRoles.includes(r));
 
-    // Roles disponibles para agregar
     this.availableRolesToAdd = [
       'ROLE_CONTENT_MANAGER',
       'ROLE_SYSTEM_MONITOR',
@@ -723,24 +657,16 @@ export class GestionUsuariosComponent implements OnInit {
     if (!this.newRoleToAdd || !this.selectedUsuario) {
       return;
     }
-
-    console.log('Agregar rol:', this.newRoleToAdd, 'a usuario:', this.selectedUsuario.idUsuario);
-
-    // Llamada al servicio
     this.rolesAdicionales.push(this.newRoleToAdd);
     this.availableRolesToAdd = this.availableRolesToAdd.filter(r => r !== this.newRoleToAdd);
     this.newRoleToAdd = '';
-
     alert('Rol agregado exitosamente');
   }
 
   removeRole(rol: string): void {
     if (confirm(`¿Está seguro que desea remover el rol ${rol}?`)) {
-      console.log('Remover rol:', rol);
-
       this.rolesAdicionales = this.rolesAdicionales.filter(r => r !== rol);
       this.availableRolesToAdd.push(rol);
-
       alert('Rol removido exitosamente');
     }
   }
