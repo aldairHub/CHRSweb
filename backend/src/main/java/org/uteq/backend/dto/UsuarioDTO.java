@@ -1,7 +1,6 @@
 package org.uteq.backend.dto;
 
 import lombok.Data;
-import org.uteq.backend.Entity.Role;
 
 @Data
 public class UsuarioDTO {
@@ -9,5 +8,5 @@ public class UsuarioDTO {
     private String usuarioBd;
     private String usuarioApp;
     private Boolean activo;
-    private Role rol;
+    //private Role rol;
 }

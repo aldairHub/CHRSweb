@@ -1,19 +1,15 @@
 package org.uteq.backend.Entity;
 
 import jakarta.persistence.*;
-import lombok.*;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@Table(name = "roles")
-public class Roles {
+@Table(name = "rol_usuario")
+public class RolUsuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_rol")
     private Long idRol;
 
-    @Column(name = "nombre_rol", nullable = false)
-    private String nombreRol;
+    @Column(name = "nombre", nullable = false, unique = true)
+    private String nombre;
 }

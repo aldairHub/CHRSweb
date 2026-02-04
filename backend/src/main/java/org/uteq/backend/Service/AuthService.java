@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.uteq.backend.Repository.IUsuarioRolRepository;
 import org.uteq.backend.dto.AuditLoginMotivo;
 import org.uteq.backend.dto.LoginRequest;
 import org.uteq.backend.dto.LoginResponse;
@@ -11,13 +12,16 @@ import org.uteq.backend.Entity.Usuario;
 import org.uteq.backend.Repository.UsuarioRepository;
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 
 @Service
 public class AuthService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
-
+    @Autowired
+    private IUsuarioRolRepository usuarioRolRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -53,12 +57,17 @@ public class AuthService {
         }
 
         // SUCCESS
-        String token = jwtService.generateToken(usuario);
-
+        List<String> roles = usuarioRolRepository.findRoleNamesByUserId(usuario.getIdUsuario());
         safeAuditSuccess(usuarioApp, usuario.getUsuarioBd(), httpRequest);
 
-        return new LoginResponse(token, usuario.getUsuarioApp(),
-                Collections.singleton(usuario.getRol().name()));
+        String token = jwtService.generateToken(usuario.getUsuarioApp(), roles);
+
+        return new LoginResponse(token, usuario.getUsuarioApp(), new HashSet<>(roles));
+
+
+
+//        return new LoginResponse(token, usuario.getUsuarioApp(),
+//                Collections.singleton(usuario.getRol().name()));
     }
 
     // Para que auditoría NUNCA rompa el login

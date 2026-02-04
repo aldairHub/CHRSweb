@@ -32,7 +32,7 @@ public class Usuario {
     @Column(name = "activo", nullable = false)
     private Boolean activo = true;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "rol", nullable = false)
-    private Role rol;
+//    @Enumerated(EnumType.STRING)
+//    @Column(name = "rol", nullable = false)
+//    private Role rol;
 }
