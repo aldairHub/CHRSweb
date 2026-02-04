@@ -12,31 +12,61 @@ export class AuthService {
   constructor(private http: HttpClient, private router: Router) { }
 
   login(usuarioApp: string, claveApp: string): Observable<any> {
-    // Enviamos el objeto al backend de Spring Boot
-    console.log('📡 [AuthService] Enviando petición de login al backend:', usuarioApp);
     return this.http.post(`${this.apiUrl}/login`, { usuarioApp, claveApp });
   }
 
   guardarSesion(datos: any): void {
-    // 1. Guardamos el token para futuras peticiones
-    localStorage.setItem('token', datos.token);
-    localStorage.setItem('usuario', datos.usuarioApp);
+    // 1) Token y usuario
+    if (datos?.token) localStorage.setItem('token', datos.token);
+    if (datos?.usuarioApp) localStorage.setItem('usuario', datos.usuarioApp);
 
-    // 2. Procesamos los roles que vienen del backend (LoginResponse.java)
-    if (datos.roles && datos.roles.length > 0) {
-      // Tomamos el primer rol y lo convertimos a minúsculas
-      // Ejemplo: de "ADMIN" a "admin" para que coincida con app.routes.ts
-      const rolBackend = datos.roles[0].toLowerCase();
-      localStorage.setItem('rol', rolBackend);
+    // 2) Guardar roles completos (recomendado)
+    const roles: string[] = Array.isArray(datos?.roles) ? datos.roles : [];
+    localStorage.setItem('roles', JSON.stringify(roles));
+
+    // 3) Guardar rol principal "simple" para tu routing actual (admin/evaluador/postulante)
+    const rolPrincipal = this.calcularRolPrincipal(roles);
+    if (rolPrincipal) {
+      localStorage.setItem('rol', rolPrincipal); // admin | evaluador | postulante
+    } else {
+      localStorage.removeItem('rol');
     }
   }
 
+  private calcularRolPrincipal(roles: string[]): 'admin' | 'evaluador' | 'postulante' | null {
+    const r = (roles ?? []).map(x => (x || '').toUpperCase());
+
+    const isAdmin =
+      r.includes('ROLE_SUPER_ADMIN') ||
+      r.includes('ROLE_ADMIN') ||
+      r.includes('ROLE_SECURITY_ADMIN') ||
+      r.includes('ROLE_MASTERDATA_ADMIN') ||
+      r.includes('ROLE_CONVOCATORIA_ADMIN');
+
+    if (isAdmin) return 'admin';
+
+    if (r.includes('ROLE_EVALUATOR') || r.includes('ROLE_EVALUADOR')) return 'evaluador';
+
+    if (r.includes('ROLE_POSTULANTE')) return 'postulante';
+
+    return null;
+  }
+
   getRol(): string | null {
-    return localStorage.getItem('rol');
+    return localStorage.getItem('rol'); // admin|evaluador|postulante
+  }
+
+  getRoles(): string[] {
+    try {
+      return JSON.parse(localStorage.getItem('roles') ?? '[]');
+    } catch {
+      return [];
+    }
   }
 
   isLoggedIn(): boolean {
-    return localStorage.getItem('rol') !== null;
+    // mejor chequear token
+    return localStorage.getItem('token') !== null;
   }
 
   logout(): void {
@@ -46,13 +76,11 @@ export class AuthService {
 
   redirigirPorRol(): void {
     const rol = this.getRol();
-    console.log("Redirigiendo a rol:", rol); // Log para depurar
-
-    switch(rol) {
+    switch (rol) {
       case 'admin': this.router.navigate(['/admin']); break;
       case 'evaluador': this.router.navigate(['/evaluador']); break;
       case 'postulante': this.router.navigate(['/postulante']); break;
-      default: this.router.navigate(['/login']);
+      default: this.router.navigate(['/login']); break;
     }
   }
 }

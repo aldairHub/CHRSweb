@@ -21,17 +21,16 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.disable()) // ✅ Postman no necesita CORS
+                .cors(cors -> cors.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/usuarios", "/api/auth/login").permitAll()
-                                .requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers("/api/demo/**").permitAll()
+                        .requestMatchers("/api/usuarios", "/api/auth/login", "/api/registro/**", "/api/prepostulacion/**", "/uploads/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/demo/**").permitAll()
                         .anyRequest().authenticated()
                 );
 
         return http.build();
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -44,7 +43,8 @@ public class SecurityConfig {
         config.setAllowCredentials(false);
 
         config.setAllowedOriginPatterns(List.of(
-                "http://localhost:8080"
+                "http://localhost:8080",
+                "http://localhost:4200"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));

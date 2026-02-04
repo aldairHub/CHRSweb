@@ -57,10 +57,10 @@ export class LoginComponent {
             ...res,
             rol: rolBackend
           };
-          this.authService.guardarSesion(userData);
+          this.authService.guardarSesion(res);
 
           // Redirigimos
-          this.executeRedirection(rolBackend);
+          this.authService.redirigirPorRol();
 
         } else {
           // Si el backend responde pero no hay token (caso raro)

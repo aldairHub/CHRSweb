@@ -19,7 +19,6 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
   display: flex;
   align-items: center;
   justify-content: center;
-  // Mismo degradado que el Login
   background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
   padding: 20px;
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -27,7 +26,7 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
 
 .login-content {
   width: 100%;
-  max-width: 480px; // Un poco más ancho que login por los pasos
+  max-width: 480px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -133,7 +132,7 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
       width: 35px;
       height: 35px;
       border-radius: 50%;
-      background-color: #f0fdf4; // Verde muy claro por defecto
+      background-color: #f0fdf4;
       border: 2px solid $border-color;
       color: $primary;
       display: flex;
@@ -152,7 +151,6 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
       transition: all 0.3s;
     }
 
-    // Estilo cuando el paso está ACTIVO o COMPLETADO
     &.active, &.completed {
       .step-number {
         background-color: $primary;
@@ -167,12 +165,11 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
     }
   }
 
-  // Línea conectora entre pasos
   .step-line {
     flex: 1;
     height: 3px;
     background-color: #e2e8f0;
-    margin: 0 5px 18px 5px; // Ajuste para alinear con los círculos
+    margin: 0 5px 18px 5px;
     border-radius: 10px;
     transition: all 0.3s ease;
 
@@ -197,13 +194,6 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-
-  .input-hint {
-    display: block;
-    font-size: 0.75rem;
-    color: $text-gray;
-    margin-top: 6px;
-  }
 }
 
 .input-wrapper {
@@ -224,7 +214,7 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
   input.form-input {
     width: 100%;
     height: 48px;
-    padding: 0 40px 0 45px; // Espacio para el icono
+    padding: 0 40px 0 45px;
     border: 1.5px solid $border-color;
     border-radius: 10px;
     font-size: 0.95rem;
@@ -241,36 +231,21 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
       box-shadow: 0 0 0 4px rgba(0, 166, 62, 0.1);
     }
 
-    // Si es readonly (como nombre/apellido)
-    &[readonly] {
+    &:disabled {
       background-color: #f1f5f9;
       border-color: #e2e8f0;
       cursor: not-allowed;
+      opacity: 0.7;
     }
   }
 
-  // Input especial para el código de verificación
   input.code-input {
     text-align: center;
     letter-spacing: 8px;
     font-family: monospace;
     font-size: 1.2rem;
     font-weight: 700;
-    padding-left: 15px; // Ajuste porque el texto está centrado
-  }
-
-  .eye-btn {
-    position: absolute;
-    right: 12px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: $text-gray;
-    padding: 5px;
-    display: flex;
-    align-items: center;
-    z-index: 5;
-    &:hover { color: $dark-green; }
+    padding-left: 15px;
   }
 
   .input-spinner {
@@ -281,7 +256,6 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
   }
 }
 
-// Fila para Nombre y Apellido
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -318,7 +292,8 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
 
   &:disabled {
     background-color: #a5d6a7;
-    cursor: wait;
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 
   .spinner {
@@ -338,13 +313,17 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
   cursor: pointer;
   transition: all 0.3s;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: #f0fdf4;
     border-color: $primary;
   }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
-// Botón de texto simple (reenviar código)
 .link-btn {
   background: none;
   border: none;
@@ -355,8 +334,15 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
   padding: 0;
   font-size: 0.85rem;
 
-  &:hover { color: $primary-dark; }
-  &:disabled { color: $text-gray; cursor: not-allowed; }
+  &:hover:not(:disabled) {
+    color: $primary-dark;
+  }
+
+  &:disabled {
+    color: $text-gray;
+    cursor: not-allowed;
+    text-decoration: none;
+  }
 }
 
 // ==========================================
@@ -376,8 +362,15 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
     margin-bottom: 8px;
   }
 
-  p { margin: 0; font-size: 0.9rem; }
-  strong { font-size: 1rem; color: $text-dark; }
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  strong {
+    font-size: 1rem;
+    color: $text-dark;
+  }
 }
 
 .resend-code {
@@ -385,8 +378,112 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
   margin-top: 15px;
   font-size: 0.85rem;
   color: $text-gray;
+  min-height: 24px;
 
-  span { margin-right: 5px; }
+  span {
+    margin-right: 5px;
+  }
+}
+
+// ==========================================
+// ESTILOS DE SUBIDA DE ARCHIVOS
+// ==========================================
+.file-upload-box {
+  width: 100%;
+  position: relative;
+
+  .file-label {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    background-color: #f8fafc;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: #f0fdf4;
+      border-color: $primary;
+    }
+  }
+
+  &.has-file .file-label {
+    border-style: solid;
+    border-color: $primary;
+    background-color: #f0fdf4;
+    padding-right: 50px; // Espacio para el botón de editar
+  }
+
+  .icon-area {
+    width: 40px;
+    height: 40px;
+    background-color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    color: $text-gray;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    flex-shrink: 0;
+  }
+
+  .text-area {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0; // Para que funcione el text-overflow
+
+    .main-text {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: $text-dark;
+    }
+
+    .sub-text {
+      font-size: 0.75rem;
+      color: $text-gray;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  // Botón de editar nombre de archivo
+  .edit-file-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background-color: $white;
+    border: 1.5px solid $primary;
+    color: $primary;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+
+    &:hover {
+      background-color: $primary;
+      color: $white;
+      box-shadow: 0 4px 8px rgba(0, 166, 62, 0.2);
+    }
+
+    &:active {
+      transform: translateY(-50%) scale(0.95);
+    }
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
 }
 
 // ==========================================
@@ -405,75 +502,75 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
     margin-left: 5px;
     cursor: pointer;
 
-    &:hover { text-decoration: underline; }
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 
-// Animaciones
+// ==========================================
+// ANIMACIONES
+// ==========================================
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 // ==========================================
-// ESTILOS DE SUBIDA DE ARCHIVOS
+// RESPONSIVE
 // ==========================================
-.file-upload-box {
-  width: 100%;
+@media (max-width: 600px) {
+  .login-content {
+    max-width: 100%;
+  }
 
-  .file-label {
-    display: flex;
-    align-items: center;
-    padding: 12px 15px;
-    background-color: #f8fafc;
-    border: 1.5px dashed #cbd5e1; // Borde punteado
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+  .login-card {
+    padding: 25px 20px;
+  }
 
-    &:hover {
-      background-color: #f0fdf4;
-      border-color: $primary;
+  .progress-steps {
+    padding: 0 5px;
+
+    .step {
+      .step-number {
+        width: 32px;
+        height: 32px;
+        font-size: 0.85rem;
+      }
+
+      .step-label {
+        font-size: 0.7rem;
+      }
     }
   }
 
-  // Estilo cuando ya se seleccionó archivo
-  &.has-file .file-label {
-    border-style: solid;
-    border-color: $primary;
-    background-color: #f0fdf4;
+  .form-row {
+    grid-template-columns: 1fr;
   }
 
-  .icon-area {
-    width: 40px;
-    height: 40px;
-    background-color: white;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 15px;
-    color: $text-gray;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  }
-
-  .text-area {
-    display: flex;
-    flex-direction: column;
-
-    .main-text {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: $text-dark;
+  .file-upload-box {
+    &.has-file .file-label {
+      padding-right: 15px;
+      flex-wrap: wrap;
     }
 
-    .sub-text {
-      font-size: 0.75rem;
-      color: $text-gray;
+    .edit-file-btn {
+      position: static;
+      transform: none;
+      margin-top: 10px;
+      width: 100%;
     }
   }
 }

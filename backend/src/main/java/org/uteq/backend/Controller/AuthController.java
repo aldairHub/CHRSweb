@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.uteq.backend.Service.DbSwitchService;
 import org.uteq.backend.dto.LoginRequest;
 import org.uteq.backend.dto.LoginResponse;
 import org.uteq.backend.Service.AuthService;
@@ -14,7 +15,8 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
-
+    @Autowired
+    private DbSwitchService dbSwitchService;
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         try {
@@ -25,5 +27,10 @@ public class AuthController {
 
         }
     }
-
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        // vuelve a conexión backend base
+        dbSwitchService.resetToDefault();
+        return ResponseEntity.ok("Logout OK (conexión reseteada)");
+    }
 }
