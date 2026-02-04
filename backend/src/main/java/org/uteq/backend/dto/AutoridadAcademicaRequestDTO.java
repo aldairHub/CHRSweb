@@ -1,4 +1,4 @@
-package org.uteq.backend.dto.autoridad;
+package org.uteq.backend.dto;
 
 import java.time.LocalDate;
 

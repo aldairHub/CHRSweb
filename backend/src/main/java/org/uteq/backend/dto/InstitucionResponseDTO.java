@@ -1,4 +1,4 @@
-package org.uteq.backend.dto.institucion;
+package org.uteq.backend.dto;
 
 public class InstitucionResponseDTO {
 

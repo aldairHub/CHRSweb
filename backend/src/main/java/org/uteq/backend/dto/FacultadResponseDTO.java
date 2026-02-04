@@ -1,4 +1,4 @@
-package org.uteq.backend.dto.facultad;
+package org.uteq.backend.dto;
 
 public class FacultadResponseDTO {
 

@@ -1,4 +1,4 @@
-package org.uteq.backend.dto.carrera;
+package org.uteq.backend.dto;
 
 public class CarreraResponseDTO {
 
