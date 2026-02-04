@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import org.uteq.backend.Service.InstitucionService;
-import org.uteq.backend.dto.institucion.InstitucionRequestDTO;
-import org.uteq.backend.dto.institucion.InstitucionResponseDTO;
+import org.uteq.backend.dto.InstitucionRequestDTO;
+import org.uteq.backend.dto.InstitucionResponseDTO;
 
 @RestController
 @RequestMapping("/api/instituciones")

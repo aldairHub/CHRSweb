@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import org.uteq.backend.Service.CarreraService;
-import org.uteq.backend.dto.carrera.CarreraRequestDTO;
-import org.uteq.backend.dto.carrera.CarreraResponseDTO;
+import org.uteq.backend.dto.CarreraRequestDTO;
+import org.uteq.backend.dto.CarreraResponseDTO;
 
 @RestController
 @RequestMapping("/api/carreras")

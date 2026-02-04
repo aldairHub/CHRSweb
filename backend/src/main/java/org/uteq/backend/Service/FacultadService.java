@@ -1,8 +1,8 @@
 package org.uteq.backend.Service;
 
 import java.util.List;
-import org.uteq.backend.dto.facultad.FacultadRequestDTO;
-import org.uteq.backend.dto.facultad.FacultadResponseDTO;
+import org.uteq.backend.dto.FacultadRequestDTO;
+import org.uteq.backend.dto.FacultadResponseDTO;
 
 public interface FacultadService {
 

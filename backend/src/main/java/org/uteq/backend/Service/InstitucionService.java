@@ -1,8 +1,8 @@
 package org.uteq.backend.Service;
 
 import java.util.List;
-import org.uteq.backend.dto.institucion.InstitucionRequestDTO;
-import org.uteq.backend.dto.institucion.InstitucionResponseDTO;
+import org.uteq.backend.dto.InstitucionRequestDTO;
+import org.uteq.backend.dto.InstitucionResponseDTO;
 
 public interface InstitucionService {
 

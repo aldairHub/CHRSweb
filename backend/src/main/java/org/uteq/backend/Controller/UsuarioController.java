@@ -36,11 +36,11 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.listarTodos());
     }
 
-    // Listar solo autoridades (ADMIN y EVALUATOR)
-    @GetMapping("/autoridades")
-    public ResponseEntity<List<UsuarioDTO>> listarAutoridades() {
-        return ResponseEntity.ok(usuarioService.listarAutoridades());
-    }
+//    // Listar solo autoridades (ADMIN y EVALUATOR)
+//    @GetMapping("/autoridades")
+//    public ResponseEntity<List<UsuarioDTO>> listarAutoridades() {
+//        return ResponseEntity.ok(usuarioService.listarAutoridades());
+//    }
 
     // Obtener por ID
     @GetMapping("/{id}")

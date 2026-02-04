@@ -1,8 +1,8 @@
 package org.uteq.backend.Service;
 
 import java.util.List;
-import org.uteq.backend.dto.carrera.CarreraRequestDTO;
-import org.uteq.backend.dto.carrera.CarreraResponseDTO;
+import org.uteq.backend.dto.CarreraRequestDTO;
+import org.uteq.backend.dto.CarreraResponseDTO;
 
 public interface CarreraService {
 

@@ -15,8 +15,8 @@ import org.uteq.backend.Repository.UsuarioRepository;
 import org.uteq.backend.Repository.InstitucionRepository;
 
 import org.uteq.backend.Service.AutoridadAcademicaService;
-import org.uteq.backend.dto.autoridad.AutoridadAcademicaRequestDTO;
-import org.uteq.backend.dto.autoridad.AutoridadAcademicaResponseDTO;
+import org.uteq.backend.dto.AutoridadAcademicaRequestDTO;
+import org.uteq.backend.dto.AutoridadAcademicaResponseDTO;
 
 @Service
 @Transactional
