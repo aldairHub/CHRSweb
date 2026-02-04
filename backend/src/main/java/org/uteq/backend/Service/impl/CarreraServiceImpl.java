@@ -31,15 +31,18 @@ public class CarreraServiceImpl implements CarreraService {
     @Override
     public CarreraResponseDTO crear(CarreraRequestDTO dto) {
 
+        // 1. Buscas la facultad (si no existe, falla aquí, lo cual es correcto)
         Facultad facultad = facultadRepository.findById(dto.getIdFacultad())
                 .orElseThrow(() -> new RuntimeException("Facultad no encontrada"));
 
+        // 2. Creas la carrera y asignas datos
         Carrera carrera = new Carrera();
-        carrera.setFacultad(facultad);
+        carrera.setFacultad(facultad); // Asignas la facultad encontrada
         carrera.setNombreCarrera(dto.getNombreCarrera());
         carrera.setModalidad(dto.getModalidad());
         carrera.setEstado(dto.isEstado());
 
+        // 3. Guardas
         Carrera guardada = carreraRepository.save(carrera);
         return mapToResponse(guardada);
     }

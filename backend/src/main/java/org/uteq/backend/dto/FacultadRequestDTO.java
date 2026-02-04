@@ -1,7 +1,10 @@
 package org.uteq.backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class FacultadRequestDTO {
 
+    @JsonProperty("nombre")
     private String nombreFacultad;
     private boolean estado;
 

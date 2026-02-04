@@ -10,7 +10,7 @@ import org.uteq.backend.dto.FacultadResponseDTO;
 
 @RestController
 @RequestMapping("/api/facultades")
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:4200")
 public class FacultadController {
 
     private final FacultadService facultadService;

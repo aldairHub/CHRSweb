@@ -10,7 +10,7 @@ import org.uteq.backend.dto.CarreraResponseDTO;
 
 @RestController
 @RequestMapping("/api/carreras")
-@CrossOrigin
+@CrossOrigin(origins = "*")
 public class CarreraController {
 
     private final CarreraService carreraService;

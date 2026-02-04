@@ -1,7 +1,34 @@
-// ==========================================
-// ESTADÍSTICAS
-// ==========================================
+// Variables de color (Coherencia con tu diseño verde)
+$primary-color: #016630;
+$primary-light: #B9F8CF;
+$text-dark: #2c3e50;
+$text-muted: #536b50;
+$border-color: #e2e8f0;
 
+// ==========================================
+// LAYOUT GENERAL
+// ==========================================
+.main-container {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  padding-bottom: 2rem;
+}
+
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.dashboard-header {
+  margin-bottom: 2rem;
+  h1 { color: $primary-color; margin-bottom: 0.5rem; }
+  p { color: $text-muted; }
+}
+
+// ==========================================
+// ESTADÍSTICAS (Tu código original)
+// ==========================================
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -13,7 +40,7 @@
   background: #ffffff;
   border-radius: 12px;
   padding: 1.2rem 1.4rem;
-  border: 1px solid #B9F8CF;
+  border: 1px solid $primary-light;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -27,7 +54,7 @@
 
   h3 {
     font-size: 0.85rem;
-    color: #536b50;
+    color: $text-muted;
     margin-bottom: 4px;
     font-weight: 600;
   }
@@ -35,56 +62,154 @@
   .stat-value {
     font-size: 1.7rem;
     font-weight: 700;
-    color: #016630;
+    color: $primary-color;
   }
 
-  span {
-    font-size: 1.8rem;
-  }
+  span { font-size: 1.8rem; }
 }
 
 // ==========================================
-// TABLA CONTENEDOR
+// TABLA Y CONTENEDOR
 // ==========================================
-
 .table-container {
   padding: 1.5rem;
   background: #ffffff;
   border-radius: 14px;
-  border: 1px solid #B9F8CF;
+  border: 1px solid $primary-light;
   box-shadow: 0 10px 25px rgba(0,0,0,0.05);
 }
 
-// ==========================================
-// BUSCADOR
-// ==========================================
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  h2 { color: $text-dark; font-size: 1.25rem; }
+}
 
-.form-group {
-  margin-bottom: 1rem;
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+
+  th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid $border-color;
+  }
+
+  th {
+    background-color: #f8fafc;
+    color: $text-muted;
+    font-weight: 600;
+  }
+
+  tr:hover { background-color: #f1fcf4; }
 }
 
 // ==========================================
-// MODAL
+// COMPONENTES UI (Botones, Badges, Inputs)
 // ==========================================
+.btn-primary {
+  background-color: $primary-color;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+  &:hover { background-color: darken($primary-color, 10%); }
+}
 
+.btn-outline {
+  background: transparent;
+  border: 1px solid $primary-color;
+  color: $primary-color;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  &:hover { background-color: #f0fdf4; }
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  outline: none;
+  &:focus { border-color: $primary-color; box-shadow: 0 0 0 2px rgba(1, 102, 48, 0.1); }
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  &.success { background-color: #dcfce7; color: #166534; }
+  &.danger { background-color: #fee2e2; color: #991b1b; }
+}
+
+// Toggle Switch Style
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+  margin-right: 10px;
+
+  input { opacity: 0; width: 0; height: 0; }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+    &:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+  }
+
+  input:checked + .slider { background-color: $primary-color; }
+  input:checked + .slider:before { transform: translateX(18px); }
+}
+
+.actions-cell {
+  display: flex;
+  align-items: center;
+}
+
+// ==========================================
+// MODAL (Tu código + correcciones)
+// ==========================================
 .modal {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,.45);
-  display: none;
+  display: none; // Oculto por defecto
   align-items: center;
   justify-content: center;
-  z-index: 999;
-}
+  z-index: 9999;
 
-.modal.active {
-  display: flex;
+  &.active {
+    display: flex; // Visible cuando tiene clase active
+  }
 }
 
 .modal-content {
   background: #ffffff;
   border-radius: 14px;
-  width: 420px;
+  width: 450px;
   max-width: 95%;
   box-shadow: 0 20px 40px rgba(0,0,0,.2);
   animation: fadeIn .25s ease;
@@ -92,19 +217,23 @@
 
 .modal-header {
   padding: 16px 20px;
-  border-bottom: 1px solid #e2e8f0;
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: #016630;
+  border-bottom: 1px solid $border-color;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  h3 { color: $primary-color; margin: 0; }
+  .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
 }
 
 .modal-body {
   padding: 20px;
+  .form-group { margin-bottom: 1rem; label { display: block; margin-bottom: 5px; font-weight: 600; } }
+  .checkbox-group { display: flex; align-items: center; gap: 10px; }
 }
 
 .modal-footer {
   padding: 16px 20px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid $border-color;
   display: flex;
   justify-content: flex-end;
   gap: 10px;

@@ -1,13 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core'; // 1. Importamos OnInit
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { NavbarComponent } from '../../../component/navbar';
 import { FooterComponent } from '../../../component/footer.component';
+import { MateriaService } from '../../../services/materia.service'; // 2. Asegúrate de que la ruta sea correcta
 
 interface Materia {
-  id: number;
+  id?: number; // El ID suele ser opcional al crear
   carrera: string;
+  carreraId?: number; // Ajustado según tu fragmento de código
   nombre: string;
   nivel: number;
   estado: boolean;
@@ -25,17 +27,9 @@ interface Materia {
   templateUrl: './materia.html',
   styleUrls: ['./materia.scss']
 })
-export class MateriaComponent {
+export class MateriaComponent implements OnInit { // 3. Implementamos OnInit
   search: string = '';
-
-
-  materias: Materia[] = [
-    { id: 1, carrera: 'Ingeniería en Software', nombre: 'Programación OO', nivel: 3, estado: true },
-    { id: 2, carrera: 'Ingeniería en Software', nombre: 'Estructuras de Datos', nivel: 4, estado: true },
-    { id: 3, carrera: 'Diseño Gráfico', nombre: 'Fundamentos del Diseño', nivel: 1, estado: true },
-    { id: 4, carrera: 'Administración', nombre: 'Gestión Estratégica', nivel: 7, estado: false }
-  ];
-
+  materias: Materia[] = []; // Empezamos con un array vacío
   modalAbierto = false;
   editando = false;
 
@@ -47,6 +41,23 @@ export class MateriaComponent {
     estado: true
   };
 
+  // 4. Inyectamos el servicio en el constructor
+  constructor(private materiaService: MateriaService) {}
+
+  // 5. Al iniciar el componente, traemos los datos del Backend
+  ngOnInit(): void {
+    this.cargarMaterias();
+  }
+
+  cargarMaterias(): void {
+    this.materiaService.listar().subscribe({
+      next: (data: any) => {
+        console.log('Datos recibidos del backend:', data);
+        this.materias = data;
+      },
+      error: (err) => console.error('Error de conexión:', err)
+    });
+  }
   get materiasActivas(): number {
     return this.materias.filter(m => m.estado).length;
   }
@@ -60,6 +71,7 @@ export class MateriaComponent {
     this.form = { id: 0, carrera: '', nombre: '', nivel: 1, estado: true };
     this.modalAbierto = true;
   }
+
   materiasFiltradas() {
     return this.materias.filter(m =>
       m.nombre.toLowerCase().includes(this.search.toLowerCase())
@@ -72,24 +84,32 @@ export class MateriaComponent {
     this.modalAbierto = true;
   }
 
+  // 6. Lógica de guardado conectada al servicio
   guardar() {
-
-    if (!this.form.nombre.trim() || !this.form.carrera.trim()) return;
+    if (!this.form.nombre.trim()) return;
 
     if (this.editando) {
-      const i = this.materias.findIndex(m => m.id === this.form.id);
-      this.materias[i] = { ...this.form };
-
+      // Aquí podrías llamar a this.materiaService.actualizar(...) si lo tienes
+      console.log('Lógica de edición pendiente de conectar al service');
     } else {
-      const nuevoId = Math.max(...this.materias.map(m => m.id), 0) + 1;
-      this.materias.push({ ...this.form, id: nuevoId });
+      // Usamos el código que proporcionaste para crear
+      this.materiaService.crear({
+        nombre: this.form.nombre,
+        estado: true,
+        carreraId: 1 // Ajusta esto según cómo manejes las IDs de carrera
+      }).subscribe({
+        next: () => {
+          this.cargarMaterias(); // Recargamos la lista desde el server
+          this.closeModal();
+        },
+        error: err => console.error('Error al guardar:', err)
+      });
     }
-
-    this.closeModal();
   }
 
   toggleEstado(m: Materia) {
     m.estado = !m.estado;
+    // Tip: Aquí también deberías llamar al servicio para que el cambio persista en la DB
   }
 
   closeModal() {
