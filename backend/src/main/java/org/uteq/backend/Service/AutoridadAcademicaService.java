@@ -1,8 +1,8 @@
 package org.uteq.backend.Service;
 
 import java.util.List;
-import org.uteq.backend.dto.autoridad.AutoridadAcademicaRequestDTO;
-import org.uteq.backend.dto.autoridad.AutoridadAcademicaResponseDTO;
+import org.uteq.backend.dto.AutoridadAcademicaRequestDTO;
+import org.uteq.backend.dto.AutoridadAcademicaResponseDTO;
 
 public interface AutoridadAcademicaService {
 

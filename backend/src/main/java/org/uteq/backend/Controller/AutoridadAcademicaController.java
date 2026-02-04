@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import org.uteq.backend.Service.AutoridadAcademicaService;
-import org.uteq.backend.dto.autoridad.AutoridadAcademicaRequestDTO;
-import org.uteq.backend.dto.autoridad.AutoridadAcademicaResponseDTO;
+import org.uteq.backend.dto.AutoridadAcademicaRequestDTO;
+import org.uteq.backend.dto.AutoridadAcademicaResponseDTO;
 
 @RestController
 @RequestMapping("/api/autoridades-academicas")
