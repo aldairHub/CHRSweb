@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -10,8 +10,15 @@ import { Router } from '@angular/router';
   templateUrl: './registro.html',
   styleUrls: ['./registro.scss']
 })
-export class RegistroComponent {
+export class RegistroComponent implements OnDestroy {
   currentStep: number = 1;
+
+  // ✅ NUEVAS PROPIEDADES FALTANTES
+  cargando: boolean = false;
+  enviandoCodigo: boolean = false;
+  puedeReenviar: boolean = false;
+  tiempoRestante: number = 60;
+  private intervalId: any;
 
   // Variables Paso 1 y 2
   email: string = '';
@@ -25,12 +32,12 @@ export class RegistroComponent {
   // Archivos (AHORA SON 3)
   archivoCedula: File | null = null;
   archivoFoto: File | null = null;
-  archivoPrerrequisitos: File | null = null; // ✅ NUEVO
+  archivoPrerrequisitos: File | null = null;
 
   // Nombres para mostrar
   nombreArchivoCedula: string = '';
   nombreArchivoFoto: string = '';
-  nombreArchivoPrerrequisitos: string = ''; // ✅ NUEVO
+  nombreArchivoPrerrequisitos: string = '';
 
   constructor(private router: Router) {}
 
@@ -41,7 +48,16 @@ export class RegistroComponent {
       alert('Por favor ingrese un correo válido');
       return;
     }
-    this.currentStep = 2; // Instantáneo
+
+    this.enviandoCodigo = true;
+
+    // Simular envío
+    setTimeout(() => {
+      this.enviandoCodigo = false;
+      this.currentStep = 2;
+      this.iniciarTemporizador();
+      alert('Código enviado a ' + this.email);
+    }, 1000);
   }
 
   verificarCodigo(): void {
@@ -49,11 +65,52 @@ export class RegistroComponent {
       alert('El código debe tener 6 dígitos');
       return;
     }
-    this.currentStep = 3; // Instantáneo
+
+    this.cargando = true;
+
+    // Simular verificación
+    setTimeout(() => {
+      this.cargando = false;
+      this.currentStep = 3;
+      this.detenerTemporizador();
+      alert('Código verificado correctamente');
+    }, 1000);
   }
 
   reenviarCodigo(): void {
-    alert('Código reenviado a ' + this.email);
+    if (!this.puedeReenviar) return;
+
+    this.enviandoCodigo = true;
+
+    setTimeout(() => {
+      this.enviandoCodigo = false;
+      this.puedeReenviar = false;
+      this.tiempoRestante = 60;
+      this.iniciarTemporizador();
+      alert('Código reenviado a ' + this.email);
+    }, 1000);
+  }
+
+  // ✅ TEMPORIZADOR PARA REENVÍO
+  iniciarTemporizador(): void {
+    this.puedeReenviar = false;
+    this.tiempoRestante = 60;
+
+    this.intervalId = setInterval(() => {
+      this.tiempoRestante--;
+
+      if (this.tiempoRestante <= 0) {
+        this.puedeReenviar = true;
+        this.detenerTemporizador();
+      }
+    }, 1000);
+  }
+
+  detenerTemporizador(): void {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
   }
 
   onCedulaInput(): void {
@@ -64,8 +121,13 @@ export class RegistroComponent {
   }
 
   buscarPorCedula(): void {
-    this.nombres = 'Juan Carlos';
-    this.apellidos = 'Pérez González';
+    this.cargando = true;
+
+    setTimeout(() => {
+      this.nombres = 'Juan Carlos';
+      this.apellidos = 'Pérez González';
+      this.cargando = false;
+    }, 500);
   }
 
   // --- MÉTODOS DE ARCHIVOS ---
@@ -94,7 +156,6 @@ export class RegistroComponent {
     }
   }
 
-  // ✅ NUEVO MÉTODO PARA PRE-REQUISITOS
   onFilePrerrequisitosSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
@@ -107,12 +168,42 @@ export class RegistroComponent {
     }
   }
 
+  // ✅ MÉTODO RENOMBRAR ARCHIVO
+  renombrarArchivo(tipo: string): void {
+    const nuevoNombre = prompt('Ingrese el nuevo nombre del archivo (sin extensión):');
+    if (!nuevoNombre) return;
+
+    switch(tipo) {
+      case 'cedula':
+        if (this.archivoCedula) {
+          this.nombreArchivoCedula = nuevoNombre + '.pdf';
+        }
+        break;
+      case 'foto':
+        if (this.archivoFoto) {
+          const extension = this.archivoFoto.name.split('.').pop();
+          this.nombreArchivoFoto = nuevoNombre + '.' + extension;
+        }
+        break;
+      case 'prerrequisitos':
+        if (this.archivoPrerrequisitos) {
+          this.nombreArchivoPrerrequisitos = nuevoNombre + '.pdf';
+        }
+        break;
+    }
+  }
+
   registrar(): void {
     if (!this.validarFormulario()) return;
 
-    // Lógica final
-    alert('Solicitud enviada con éxito. Su documentación será revisada.');
-    this.router.navigate(['/login']);
+    this.cargando = true;
+
+    // Simular envío al backend
+    setTimeout(() => {
+      this.cargando = false;
+      alert('Solicitud enviada con éxito. Su documentación será revisada.');
+      this.router.navigate(['/login']);
+    }, 2000);
   }
 
   // --- VALIDACIONES ---
@@ -134,7 +225,6 @@ export class RegistroComponent {
       alert('Debe subir la foto selfie con su cédula');
       return false;
     }
-    // ✅ NUEVA VALIDACIÓN
     if (!this.archivoPrerrequisitos) {
       alert('Debe subir la documentación de Pre-requisitos (Títulos, Experiencia)');
       return false;
@@ -142,6 +232,21 @@ export class RegistroComponent {
     return true;
   }
 
-  volverPaso() { if (this.currentStep > 1) this.currentStep--; }
-  irALogin() { this.router.navigate(['/login']); }
+  volverPaso(): void {
+    if (this.currentStep > 1) {
+      this.currentStep--;
+      if (this.currentStep === 1) {
+        this.detenerTemporizador();
+      }
+    }
+  }
+
+  irALogin(): void {
+    this.router.navigate(['/login']);
+  }
+
+  // ✅ LIMPIAR TEMPORIZADOR AL DESTRUIR COMPONENTE
+  ngOnDestroy(): void {
+    this.detenerTemporizador();
+  }
 }

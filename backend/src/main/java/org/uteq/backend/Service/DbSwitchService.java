@@ -18,7 +18,7 @@ public class DbSwitchService {
 
         // Default fijo (igual que en DataSourceConfig)
         HikariDataSource base = new HikariDataSource();
-        base.setJdbcUrl("jdbc:postgresql://localhost:5432/ssdc_DB");
+        base.setJdbcUrl("jdbc:postgresql://localhost:5432/ssdc_0");
         base.setUsername("postgres");
         base.setPassword("admin");
         base.setMaximumPoolSize(5);

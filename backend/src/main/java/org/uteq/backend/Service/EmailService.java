@@ -25,8 +25,7 @@ public class EmailService {
     public void enviarCodigoVerificacion(String destinatario, String codigo) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper =
-                    new MimeMessageHelper(message, true, "UTF-8");
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setFrom(emailFrom);
             helper.setTo(destinatario);
@@ -36,34 +35,25 @@ public class EmailService {
             mailSender.send(message);
 
         } catch (MessagingException e) {
-            throw new RuntimeException("Error al enviar el código de verificación");
+            throw new RuntimeException("Error al enviar el código de verificación", e);
         }
     }
 
     @Async
-    public void enviarCredenciales(
-            String destinatario,
-            String usuarioApp,
-            String claveApp) {
-
+    public void enviarCredenciales(String destinatario, String usuarioApp, String claveApp) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper =
-                    new MimeMessageHelper(message, true, "UTF-8");
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setFrom(emailFrom);
             helper.setTo(destinatario);
             helper.setSubject("Credenciales de acceso - " + appName);
-
-            helper.setText(
-                    construirEmailCredenciales(usuarioApp, claveApp),
-                    true
-            );
+            helper.setText(construirEmailCredenciales(usuarioApp, claveApp), true);
 
             mailSender.send(message);
 
         } catch (MessagingException e) {
-            throw new RuntimeException("Error al enviar credenciales");
+            throw new RuntimeException("Error al enviar credenciales", e);
         }
     }
 
@@ -97,7 +87,7 @@ public class EmailService {
             <!DOCTYPE html>
             <html>
             <body style="font-family: Arial;">
-                <h2>🎓 Bienvenido al Sistema UTEQ</h2>
+                <h2>Bienvenido al Sistema UTEQ</h2>
                 <p>Estas son tus credenciales de acceso:</p>
 
                 <p><strong>Usuario:</strong> %s</p>
