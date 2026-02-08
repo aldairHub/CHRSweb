@@ -327,7 +327,7 @@ export class RegistroComponent implements OnDestroy {
     formData.append('nombres', this.nombres);
     formData.append('apellidos', this.apellidos);
 
-    // ✅ Nombres que coinciden exactamente con el @RequestParam del backend
+    //  Nombres que coinciden exactamente con el @RequestParam del backend
     if (this.archivoCedula) {
       formData.append('archivoCedula', this.archivoCedula, this.nombreArchivoCedula);
     }
