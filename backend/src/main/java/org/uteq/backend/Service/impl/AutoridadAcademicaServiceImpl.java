@@ -52,7 +52,7 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         autoridad.setFechaNacimiento(dto.getFechaNacimiento());
         autoridad.setEstado(dto.isEstado());
         autoridad.setUsuario(usuario);
-        autoridad.setInstitucion(institucion);
+       autoridad.setIdInstitucion(institucion.getIdInstitucion());
 
         return mapToResponse(autoridadRepository.save(autoridad));
     }
@@ -90,7 +90,7 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         autoridad.setFechaNacimiento(dto.getFechaNacimiento());
         autoridad.setEstado(dto.isEstado());
         autoridad.setUsuario(usuario);
-        autoridad.setInstitucion(institucion);
+        autoridad.setIdInstitucion(institucion.getIdInstitucion());
 
         return mapToResponse(autoridadRepository.save(autoridad));
     }
@@ -107,9 +107,9 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         dto.setApellidos(autoridad.getApellidos());
         dto.setCorreo(autoridad.getCorreo());
         dto.setFechaNacimiento(autoridad.getFechaNacimiento());
-        dto.setEstado(autoridad.isEstado());
+        dto.setEstado(autoridad.getEstado());
         dto.setIdUsuario(autoridad.getUsuario().getIdUsuario());
-        dto.setIdInstitucion(autoridad.getInstitucion().getIdInstitucion());
+        dto.setIdInstitucion(autoridad.getIdInstitucion());
         return dto;
     }
 }

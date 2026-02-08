@@ -1,10 +1,16 @@
 package org.uteq.backend.Entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "autoridad_academica", schema = "public")
+@Table(name = "autoridad_academica")
 public class AutoridadAcademica {
 
     @Id
@@ -12,50 +18,32 @@ public class AutoridadAcademica {
     @Column(name = "id_autoridad")
     private Long idAutoridad;
 
-    @Column(name = "nombres", nullable = false)
+    @Column(name = "nombres", nullable = false, length = 255)
     private String nombres;
 
-    @Column(name = "apellidos", nullable = false)
+    @Column(name = "apellidos", nullable = false, length = 255)
     private String apellidos;
 
-    @Column(name = "correo", nullable = false)
+    @Column(name = "correo", nullable = false, length = 255)
     private String correo;
 
     @Column(name = "fecha_nacimiento", nullable = false)
     private LocalDate fechaNacimiento;
 
     @Column(name = "estado", nullable = false)
-    private boolean estado = true;
+    private Boolean estado = true;
 
+    @Column(name = "id_institucion", nullable = false)
+    private Long idInstitucion;
+
+    // 1 autoridad pertenece a 1 usuario
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
+    // 1 autoridad tiene 1 cargo (rol_autoridad)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_institucion", nullable = false)
-    private Institucion institucion;
+    @JoinColumn(name = "id_rol_autoridad", nullable = false)
+    private RolAutoridad rolAutoridad;
 
-    public AutoridadAcademica() {}
-
-    public Long getIdAutoridad() { return idAutoridad; }
-    public String getNombres() { return nombres; }
-    public void setNombres(String nombres) { this.nombres = nombres; }
-
-    public String getApellidos() { return apellidos; }
-    public void setApellidos(String apellidos) { this.apellidos = apellidos; }
-
-    public String getCorreo() { return correo; }
-    public void setCorreo(String correo) { this.correo = correo; }
-
-    public LocalDate getFechaNacimiento() { return fechaNacimiento; }
-    public void setFechaNacimiento(LocalDate fechaNacimiento) { this.fechaNacimiento = fechaNacimiento; }
-
-    public boolean isEstado() { return estado; }
-    public void setEstado(boolean estado) { this.estado = estado; }
-
-    public Usuario getUsuario() { return usuario; }
-    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
-
-    public Institucion getInstitucion() { return institucion; }
-    public void setInstitucion(Institucion institucion) { this.institucion = institucion; }
 }
