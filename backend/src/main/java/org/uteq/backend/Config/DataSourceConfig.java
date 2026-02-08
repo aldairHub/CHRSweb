@@ -1,21 +1,27 @@
 package org.uteq.backend.Config;
 
 import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class DataSourceConfig {
+    // Esto lee automáticamente de tu application.properties
+    @Value("${spring.datasource.url}")
+    private String url;
+    @Value("${spring.datasource.username}")
+    private String username;
+    @Value("${spring.datasource.password}")
+    private String password;
 
     @Bean
     public MutableDataSource dataSource() {
-
-        // CAMBIAR conexión inicial base (admin backend)
         HikariDataSource base = new HikariDataSource();
-        base.setJdbcUrl("jdbc:postgresql://localhost:5432/ssdc_0");
-        base.setUsername("postgres");
-        base.setPassword("admin");
-
+        base.setJdbcUrl(url);
+        base.setUsername(username);
+        base.setPassword(password);
+        System.out.println("DEBUG: Intentando conectar a " + base.getJdbcUrl() + " con usuario " + base.getUsername());
         return new MutableDataSource(base);
     }
 }

@@ -1,6 +1,7 @@
 package org.uteq.backend.Service;
 
 import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.uteq.backend.Config.MutableDataSource;
 
@@ -12,24 +13,37 @@ public class DbSwitchService {
     private final MutableDataSource mutable;
     private final DataSource defaultDs;
 
+    // Leemos las propiedades del archivo application.properties
+    @Value("${spring.datasource.url}")
+    private String dbUrl;
 
-    public DbSwitchService(MutableDataSource mutable) {
+    @Value("${spring.datasource.username}")
+    private String dbUser;
+
+    @Value("${spring.datasource.password}")
+    private String dbPassword;
+
+    public DbSwitchService(MutableDataSource mutable,
+                           @Value("${spring.datasource.url}") String url,
+                           @Value("${spring.datasource.username}") String user,
+                           @Value("${spring.datasource.password}") String pass) {
         this.mutable = mutable;
 
-        // Default fijo (igual que en DataSourceConfig)
+        // Usamos los parámetros inyectados para el default
         HikariDataSource base = new HikariDataSource();
-        base.setJdbcUrl("jdbc:postgresql://localhost:5432/ssdc_0");
-        base.setUsername("postgres");
-        base.setPassword("admin");
+        base.setJdbcUrl(url);
+        base.setUsername(user);
+        base.setPassword(pass);
         base.setMaximumPoolSize(5);
 
         this.defaultDs = base;
     }
-    public void switchToUser(String usuarioBd, String claveBd) {
 
+    public void switchToUser(String usuarioBd, String claveBd) {
         HikariDataSource ds = new HikariDataSource();
-        //CAMBIAR
-        ds.setJdbcUrl("jdbc:postgresql://localhost:5432/ssdc_practice");
+
+        // Usamos la URL del properties pero con las credenciales dinámicas
+        ds.setJdbcUrl(dbUrl);
         ds.setUsername(usuarioBd);
         ds.setPassword(claveBd);
 
@@ -39,6 +53,7 @@ public class DbSwitchService {
 
         System.out.println("Backend conectado ahora como usuario BD: " + usuarioBd);
     }
+
     public void resetToDefault() {
         mutable.switchTo(defaultDs);
         System.out.println("Conexión devuelta al usuario backend default");
