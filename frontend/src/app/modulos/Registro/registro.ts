@@ -28,7 +28,7 @@ export class RegistroComponent implements OnDestroy {
   codigoVerificacion: string = '';
 
   // Paso 3
-  tipoDocumento: string = 'CEDULA'; // <--- NUEVO: Por defecto Cédula
+  tipoDocumento: string = 'CEDULA'; // Por defecto Cédula
   cedula: string = '';
   nombres: string = '';
   apellidos: string = '';
@@ -43,8 +43,9 @@ export class RegistroComponent implements OnDestroy {
   nombreArchivoFoto: string = '';
   nombreArchivoPrerrequisitos: string = '';
 
-  // URL Base del Backend
-  private baseUrl = 'http://localhost:8080/api/verificacion';
+  // URLs Base del Backend
+  private baseUrlVerificacion = 'http://localhost:8080/api/verificacion';
+  private baseUrlPrepostulacion = 'http://localhost:8080/api/prepostulacion';
 
   constructor(
     private router: Router,
@@ -65,7 +66,7 @@ export class RegistroComponent implements OnDestroy {
     this.enviandoCodigo = true;
     const params = new HttpParams().set('correo', this.email);
 
-    this.http.post(`${this.baseUrl}/enviar`, null, {
+    this.http.post(`${this.baseUrlVerificacion}/enviar`, null, {
       params,
       responseType: 'text'
     })
@@ -110,7 +111,7 @@ export class RegistroComponent implements OnDestroy {
       .set('correo', this.email)
       .set('codigo', this.codigoVerificacion);
 
-    this.http.post<boolean>(`${this.baseUrl}/validar`, null, { params })
+    this.http.post<boolean>(`${this.baseUrlVerificacion}/validar`, null, { params })
       .subscribe({
         next: (esValido) => {
           this.cargando = false;
@@ -144,7 +145,7 @@ export class RegistroComponent implements OnDestroy {
 
     const params = new HttpParams().set('correo', this.email);
 
-    this.http.post(`${this.baseUrl}/enviar`, null, { params, responseType: 'text' })
+    this.http.post(`${this.baseUrlVerificacion}/enviar`, null, { params, responseType: 'text' })
       .subscribe({
         next: () => {
           this.enviandoCodigo = false;
@@ -307,25 +308,82 @@ export class RegistroComponent implements OnDestroy {
     }
   }
 
+  // ==========================================
+  //     MÉTODO REGISTRAR - INTEGRADO AL BACKEND
+  // ==========================================
+
   registrar(): void {
     if (!this.validarFormulario()) return;
 
     this.cargando = true;
+    this.cdr.detectChanges();
 
-    // AQUÍ VA TU LOGICA DE ENVIO AL BACKEND
+    // Crear FormData para enviar archivos
+    const formData = new FormData();
+
+    // Agregar datos del usuario
+    formData.append('correo', this.email);
+    formData.append('cedula', this.cedula);
+    formData.append('nombres', this.nombres);
+    formData.append('apellidos', this.apellidos);
+
+    // ✅ Nombres que coinciden exactamente con el @RequestParam del backend
+    if (this.archivoCedula) {
+      formData.append('archivoCedula', this.archivoCedula, this.nombreArchivoCedula);
+    }
+    if (this.archivoFoto) {
+      formData.append('archivoFoto', this.archivoFoto, this.nombreArchivoFoto);
+    }
+    if (this.archivoPrerrequisitos) {
+      formData.append('archivoPrerrequisitos', this.archivoPrerrequisitos, this.nombreArchivoPrerrequisitos);
+    }
+
+    // Logging para debug
     console.log('Enviando datos:', {
-      tipo: this.tipoDocumento, // Enviamos el tipo también
+      tipo: this.tipoDocumento,
       cedula: this.cedula,
       nombres: this.nombres,
       apellidos: this.apellidos,
-      archivos: [this.archivoCedula, this.archivoFoto]
+      email: this.email,
+      archivos: {
+        cedula: this.nombreArchivoCedula,
+        foto: this.nombreArchivoFoto,
+        prerrequisitos: this.nombreArchivoPrerrequisitos
+      }
     });
 
-    setTimeout(() => {
-      this.cargando = false;
-      alert('Solicitud enviada con éxito. Su documentación será revisada.');
-      this.router.navigate(['/login']);
-    }, 2000);
+    // ✅ POST a /api/prepostulacion
+    this.http.post(`${this.baseUrlPrepostulacion}`, formData)
+      .subscribe({
+        next: (respuesta: any) => {
+          this.cargando = false;
+          console.log('✅ Registro exitoso:', respuesta);
+
+          // Mostrar mensaje del backend si existe
+          const mensaje = respuesta.mensaje || '¡Solicitud enviada con éxito!';
+          alert(`${mensaje}\n\nSu documentación será revisada en breve.`);
+
+          // Redirigir al login
+          this.router.navigate(['/login']);
+        },
+        error: (err) => {
+          this.cargando = false;
+          console.error('❌ Error al registrar:', err);
+
+          // Mostrar mensaje específico del backend si existe
+          if (err.error && err.error.mensaje) {
+            alert(`Error: ${err.error.mensaje}`);
+          } else if (err.status === 400) {
+            alert('Error: Datos inválidos. Verifique la información ingresada.');
+          } else if (err.status === 500) {
+            alert('Error interno del servidor. Por favor intente más tarde.');
+          } else {
+            alert('Error al enviar la solicitud. Por favor intente nuevamente.');
+          }
+
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   // --- VALIDACIONES AUXILIARES ---
@@ -335,15 +393,37 @@ export class RegistroComponent implements OnDestroy {
   }
 
   validarFormulario(): boolean {
+    // Validar nombres
+    if (!this.nombres || this.nombres.trim() === '') {
+      alert('Ingrese sus nombres');
+      return false;
+    }
+
+    // Validar apellidos
+    if (!this.apellidos || this.apellidos.trim() === '') {
+      alert('Ingrese sus apellidos');
+      return false;
+    }
+
+    // Validar identificación
     if (!this.cedula) {
       alert('Ingrese su número de identificación');
       return false;
     }
-    // Validación extra: si es cédula, asegurarse que tenga 10 dígitos
-    if (this.tipoDocumento === 'CEDULA' && this.cedula.length !== 10) {
-      alert('La cédula debe tener 10 dígitos');
-      return false;
+
+    // Validación específica para cédula ecuatoriana
+    if (this.tipoDocumento === 'CEDULA') {
+      if (this.cedula.length !== 10) {
+        alert('La cédula debe tener 10 dígitos');
+        return false;
+      }
+      if (!this.validadorDeCedula(this.cedula)) {
+        alert('Número de cédula inválido');
+        return false;
+      }
     }
+
+    // Validar archivos obligatorios
     if (!this.archivoCedula) {
       alert('Falta subir el documento de identidad (PDF)');
       return false;
@@ -352,7 +432,12 @@ export class RegistroComponent implements OnDestroy {
       alert('Falta subir la foto');
       return false;
     }
-    return true; // <--- IMPORTANTE: Retornar true si todo está bien
+    if (!this.archivoPrerrequisitos) {
+      alert('Falta subir los pre-requisitos (PDF)');
+      return false;
+    }
+
+    return true; // ✅ Todo válido
   }
 
   volverPaso(): void {
