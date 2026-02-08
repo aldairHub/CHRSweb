@@ -35,8 +35,10 @@ public class SecurityConfig {
                                 "/api/materias/**",
                                 "/uploads/**",
                                 "/api/verificacion/enviar",
-                                "/api/verificacion/validar"
-                        ).permitAll()
+                                "/api/verificacion/validar",
+                                "/api/autoridades-academicas/**",
+                                "/api/autoridades-academicas/registro"
+                                ).permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/demo/**").permitAll()
                         .anyRequest().authenticated()

@@ -1,9 +1,11 @@
 package org.uteq.backend.Entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
+
 import java.util.HashSet;
 import java.util.Set;
-
+@Data
 @Entity
 @Table(name = "rol_autoridad",
         uniqueConstraints = @UniqueConstraint(name="uq_rol_autoridad_nombre", columnNames="nombre"))

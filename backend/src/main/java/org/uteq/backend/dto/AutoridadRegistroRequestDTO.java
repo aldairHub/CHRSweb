@@ -1,19 +1,21 @@
 package org.uteq.backend.dto;
 
+
 import lombok.Data;
 
 import java.time.LocalDate;
-@Data
-public class AutoridadAcademicaRequestDTO {
 
+@Data
+public class AutoridadRegistroRequestDTO {
     private String nombres;
     private String apellidos;
     private String correo;
     private LocalDate fechaNacimiento;
-    private Boolean estado;
 
-    private Long idUsuario;
     private Long idInstitucion;
+    private Long idRolAutoridad;   // cargo seleccionado
 
-    private Long idRolAutoridad;
+    private String usuarioApp;
+
+    private String claveApp;
 }

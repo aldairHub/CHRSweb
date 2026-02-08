@@ -2,6 +2,7 @@ package org.uteq.backend.Service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -14,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap; // Import necesario para el mapa
 
 @Service
 @RequiredArgsConstructor
+@Data
 public class EmailService {
 
     private final JavaMailSender mailSender;
