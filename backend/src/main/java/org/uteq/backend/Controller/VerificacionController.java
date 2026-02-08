@@ -18,11 +18,18 @@ public class VerificacionController {
     @PostMapping("/enviar")
     public ResponseEntity<?> enviarCodigo(
             @RequestParam String correo) {
+        try
+        {
+            String codigo = codigoService.generarCodigo(correo);
+            emailService.enviarCodigoVerificacion(correo, codigo);
 
-        String codigo = codigoService.generarCodigo(correo);
-        emailService.enviarCodigoVerificacion(correo, codigo);
-
-        return ResponseEntity.ok().build();
+            return ResponseEntity.ok().build();
+        }
+         catch (Exception e) {
+            return ResponseEntity.status(500).body(
+                    "No se pudo enviar el correo de verificación: " + e.getMessage()
+            );
+        }
     }
 
     // Paso 2: validar código

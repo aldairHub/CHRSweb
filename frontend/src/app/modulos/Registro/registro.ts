@@ -2,6 +2,8 @@ import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-registro',
@@ -39,7 +41,7 @@ export class RegistroComponent implements OnDestroy {
   nombreArchivoFoto: string = '';
   nombreArchivoPrerrequisitos: string = '';
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private http: HttpClient) {}
 
   // --- MÉTODOS ---
 
@@ -51,14 +53,25 @@ export class RegistroComponent implements OnDestroy {
 
     this.enviandoCodigo = true;
 
-    // Simular envío
-    setTimeout(() => {
-      this.enviandoCodigo = false;
-      this.currentStep = 2;
-      this.iniciarTemporizador();
-      alert('Código enviado a ' + this.email);
-    }, 1000);
+    const params = new HttpParams().set('correo', this.email);
+
+    this.http
+      .post('http://localhost:8080/api/verificacion/enviar', null, { params })
+      .pipe(finalize(() => (this.enviandoCodigo = false)))
+      .subscribe({
+        next: () => {
+          this.currentStep = 2;
+          this.iniciarTemporizador();
+          alert('Código enviado a ' + this.email);
+        },
+        error: (err) => {
+          // Aquí ya no se queda cargando por finalize()
+          const msg = err?.error ? String(err.error) : 'No se pudo enviar el código';
+          alert(msg);
+        }
+      });
   }
+
 
   verificarCodigo(): void {
     if (this.codigoVerificacion.length !== 6) {
@@ -91,7 +104,7 @@ export class RegistroComponent implements OnDestroy {
     }, 1000);
   }
 
-  // ✅ TEMPORIZADOR PARA REENVÍO
+  // TEMPORIZADOR PARA REENVÍO
   iniciarTemporizador(): void {
     this.puedeReenviar = false;
     this.tiempoRestante = 60;
