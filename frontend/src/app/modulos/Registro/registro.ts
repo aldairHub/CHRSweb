@@ -28,6 +28,7 @@ export class RegistroComponent implements OnDestroy {
   codigoVerificacion: string = '';
 
   // Paso 3
+  tipoDocumento: string = 'CEDULA'; // <--- NUEVO: Por defecto Cédula
   cedula: string = '';
   nombres: string = '';
   apellidos: string = '';
@@ -48,7 +49,7 @@ export class RegistroComponent implements OnDestroy {
   constructor(
     private router: Router,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef // Importante para actualizar la vista manual
+    private cdr: ChangeDetectorRef
   ) {}
 
   // ==========================================
@@ -66,15 +67,15 @@ export class RegistroComponent implements OnDestroy {
 
     this.http.post(`${this.baseUrl}/enviar`, null, {
       params,
-      responseType: 'text' // Esperamos texto plano o vacío, no JSON
+      responseType: 'text'
     })
       .subscribe({
         next: (res) => {
           console.log('Código enviado:', res);
           this.enviandoCodigo = false;
           this.currentStep = 2;
-          this.iniciarTemporizador(); // Arrancamos el reloj
-          this.cdr.detectChanges();   // Actualizamos vista
+          this.iniciarTemporizador();
+          this.cdr.detectChanges();
         },
         error: (err) => {
           this.enviandoCodigo = false;
@@ -103,7 +104,7 @@ export class RegistroComponent implements OnDestroy {
     }
 
     this.cargando = true;
-    this.cdr.detectChanges(); // Bloqueamos botón visualmente
+    this.cdr.detectChanges();
 
     const params = new HttpParams()
       .set('correo', this.email)
@@ -112,7 +113,7 @@ export class RegistroComponent implements OnDestroy {
     this.http.post<boolean>(`${this.baseUrl}/validar`, null, { params })
       .subscribe({
         next: (esValido) => {
-          this.cargando = false; // Desbloqueamos botón siempre
+          this.cargando = false;
 
           if (esValido) {
             console.log('Código aceptado');
@@ -120,7 +121,7 @@ export class RegistroComponent implements OnDestroy {
             this.currentStep = 3;
           } else {
             alert('Código incorrecto. Inténtalo de nuevo.');
-            this.codigoVerificacion = ''; // Limpiamos para reintentar
+            this.codigoVerificacion = '';
           }
           this.cdr.detectChanges();
         },
@@ -137,7 +138,6 @@ export class RegistroComponent implements OnDestroy {
   reenviarCodigo(): void {
     if (!this.puedeReenviar) return;
 
-    // Reseteamos estados
     this.puedeReenviar = false;
     this.tiempoRestante = 60;
     this.enviandoCodigo = true;
@@ -154,7 +154,7 @@ export class RegistroComponent implements OnDestroy {
         error: () => {
           this.enviandoCodigo = false;
           alert('Error al reenviar. Intente más tarde.');
-          this.puedeReenviar = true; // Dejamos que intente de nuevo
+          this.puedeReenviar = true;
           this.cdr.detectChanges();
         }
       });
@@ -165,17 +165,15 @@ export class RegistroComponent implements OnDestroy {
   // ==========================================
 
   iniciarTemporizador(): void {
-    this.detenerTemporizador(); // Limpiamos por si acaso había uno corriendo
+    this.detenerTemporizador();
     this.tiempoRestante = 60;
     this.puedeReenviar = false;
 
     this.intervalId = setInterval(() => {
       if (this.tiempoRestante > 0) {
         this.tiempoRestante--;
-        // --- ESTA ES LA LÍNEA MÁGICA PARA QUE BAJEN LOS SEGUNDOS ---
         this.cdr.detectChanges();
       } else {
-        // Se acabó el tiempo
         this.puedeReenviar = true;
         this.detenerTemporizador();
         this.cdr.detectChanges();
@@ -198,11 +196,61 @@ export class RegistroComponent implements OnDestroy {
   //          PASO 3: DATOS Y ARCHIVOS
   // ==========================================
 
+  // --- LÓGICA DE VALIDACIÓN DE CÉDULA MEJORADA ---
   onCedulaInput(): void {
-    // Solo permitir números
-    this.cedula = this.cedula.replace(/\D/g, '');
+    if (this.tipoDocumento === 'CEDULA') {
+      // 1. Solo números
+      this.cedula = this.cedula.replace(/\D/g, '');
+
+      // 2. Máximo 10 caracteres
+      if (this.cedula.length > 10) {
+        this.cedula = this.cedula.slice(0, 10);
+      }
+
+      // 3. Validación Matemática al completar 10 dígitos
+      if (this.cedula.length === 10) {
+        if (!this.validadorDeCedula(this.cedula)) {
+          alert('Número de cédula inválido. Por favor verifique.');
+          this.cedula = ''; // Borramos para que corrija
+        }
+      }
+
+    } else {
+      // CASO PASAPORTE
+      // Permitir letras y números, convertir a mayúsculas
+      this.cedula = this.cedula.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+      if (this.cedula.length > 20) {
+        this.cedula = this.cedula.slice(0, 20);
+      }
+    }
   }
 
+  // --- ALGORITMO MÓDULO 10 ECUADOR ---
+  validadorDeCedula(cedula: string): boolean {
+    if (cedula.length !== 10) return false;
+    const provincia = parseInt(cedula.substring(0, 2), 10);
+    if (provincia < 1 || provincia > 24) return false;
+    const tercerDigito = parseInt(cedula.substring(2, 3), 10);
+    if (tercerDigito >= 6) return false;
+
+    const coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
+    let suma = 0;
+
+    for (let i = 0; i < 9; i++) {
+      let valor = parseInt(cedula[i], 10) * coeficientes[i];
+      if (valor >= 10) valor -= 9;
+      suma += valor;
+    }
+
+    const decenaSuperior = Math.ceil(suma / 10) * 10;
+    let digitoCalculado = decenaSuperior - suma;
+    if (digitoCalculado === 10) digitoCalculado = 0;
+    const ultimoDigito = parseInt(cedula[9], 10);
+    return digitoCalculado === ultimoDigito;
+  }
+
+  // --- MANEJO DE ARCHIVOS ---
   onFileCedulaSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
@@ -238,6 +286,7 @@ export class RegistroComponent implements OnDestroy {
       this.nombreArchivoPrerrequisitos = file.name;
     }
   }
+
   renombrarArchivo(tipo: string): void {
     const nuevoNombre = prompt('Ingrese el nuevo nombre del archivo (sin extensión):');
     if (!nuevoNombre) return;
@@ -248,7 +297,6 @@ export class RegistroComponent implements OnDestroy {
         break;
       case 'foto':
         if (this.archivoFoto) {
-          // Mantenemos la extensión original de la imagen
           const ext = this.archivoFoto.name.split('.').pop();
           this.nombreArchivoFoto = nuevoNombre + '.' + ext;
         }
@@ -264,10 +312,12 @@ export class RegistroComponent implements OnDestroy {
 
     this.cargando = true;
 
-    // AQUÍ IRÁ TU LÓGICA DE SUBIR ARCHIVOS AL BACKEND MÁS ADELANTE
+    // AQUÍ VA TU LOGICA DE ENVIO AL BACKEND
     console.log('Enviando datos:', {
+      tipo: this.tipoDocumento, // Enviamos el tipo también
       cedula: this.cedula,
       nombres: this.nombres,
+      apellidos: this.apellidos,
       archivos: [this.archivoCedula, this.archivoFoto]
     });
 
@@ -285,20 +335,24 @@ export class RegistroComponent implements OnDestroy {
   }
 
   validarFormulario(): boolean {
-    // Agrega validaciones según necesites
     if (!this.cedula) {
-      alert('Ingrese su cédula');
+      alert('Ingrese su número de identificación');
+      return false;
+    }
+    // Validación extra: si es cédula, asegurarse que tenga 10 dígitos
+    if (this.tipoDocumento === 'CEDULA' && this.cedula.length !== 10) {
+      alert('La cédula debe tener 10 dígitos');
       return false;
     }
     if (!this.archivoCedula) {
-      alert('Falta subir la cédula (PDF)');
+      alert('Falta subir el documento de identidad (PDF)');
       return false;
     }
     if (!this.archivoFoto) {
       alert('Falta subir la foto');
       return false;
     }
-    return false; // OJO: Cambia esto a true cuando quieras que pase
+    return true; // <--- IMPORTANTE: Retornar true si todo está bien
   }
 
   volverPaso(): void {

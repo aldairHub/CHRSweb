@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // Variables de color (Coherencia con tu diseño verde)
 $primary-color: #016630;
 $primary-light: #B9F8CF;
@@ -119,7 +121,8 @@ $border-color: #e2e8f0;
   cursor: pointer;
   font-weight: 600;
   transition: background 0.2s;
-  &:hover { background-color: darken($primary-color, 10%); }
+  // AHORA (CORRECTO)
+  &:hover { background-color: color.adjust($primary-color, $lightness: -10%); }
 }
 
 .btn-outline {
