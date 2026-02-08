@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { HttpClientTestingModule } from '@angular/common/http/testing'; // <--- IMPORTANTE
 import { RegistroComponent } from './registro';
 
 declare var jasmine: any;
@@ -14,7 +15,10 @@ describe('RegistroComponent', () => {
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [RegistroComponent],
+      imports: [
+        RegistroComponent,
+        HttpClientTestingModule // <--- NECESARIO para simular peticiones HTTP
+      ],
       providers: [{ provide: Router, useValue: routerSpy }]
     }).compileComponents();
 

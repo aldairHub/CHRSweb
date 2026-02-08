@@ -1,9 +1,8 @@
-import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { finalize } from 'rxjs/operators';
+import { Component, OnDestroy, ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-registro',
@@ -13,37 +12,48 @@ import { finalize } from 'rxjs/operators';
   styleUrls: ['./registro.scss']
 })
 export class RegistroComponent implements OnDestroy {
+
+  // --- VARIABLES DE ESTADO ---
   currentStep: number = 1;
+  cargando: boolean = false;       // Para el spinner de botones
+  enviandoCodigo: boolean = false; // Para el paso 1
+  puedeReenviar: boolean = false;  // Controla si se puede clickear "Reenviar"
 
-  // ✅ NUEVAS PROPIEDADES FALTANTES
-  cargando: boolean = false;
-  enviandoCodigo: boolean = false;
-  puedeReenviar: boolean = false;
+  // --- TEMPORIZADOR ---
   tiempoRestante: number = 60;
-  private intervalId: any;
+  private intervalId: any = null; // Variable unificada para el timer
 
-  // Variables Paso 1 y 2
+  // --- VARIABLES DE DATOS ---
   email: string = '';
   codigoVerificacion: string = '';
 
-  // Variables Paso 3 (Datos)
+  // Paso 3
   cedula: string = '';
   nombres: string = '';
   apellidos: string = '';
 
-  // Archivos (AHORA SON 3)
+  // Archivos
   archivoCedula: File | null = null;
   archivoFoto: File | null = null;
   archivoPrerrequisitos: File | null = null;
 
-  // Nombres para mostrar
+  // Nombres para mostrar en los inputs de archivo
   nombreArchivoCedula: string = '';
   nombreArchivoFoto: string = '';
   nombreArchivoPrerrequisitos: string = '';
 
-  constructor(private router: Router, private http: HttpClient) {}
+  // URL Base del Backend
+  private baseUrl = 'http://localhost:8080/api/verificacion';
 
-  // --- MÉTODOS ---
+  constructor(
+    private router: Router,
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef // Importante para actualizar la vista manual
+  ) {}
+
+  // ==========================================
+  //               PASO 1: ENVIAR
+  // ==========================================
 
   enviarCodigo(): void {
     if (!this.email || !this.validarEmail(this.email)) {
@@ -52,69 +62,123 @@ export class RegistroComponent implements OnDestroy {
     }
 
     this.enviandoCodigo = true;
-
     const params = new HttpParams().set('correo', this.email);
 
-    this.http
-      .post('http://localhost:8080/api/verificacion/enviar', null, { params })
-      .pipe(finalize(() => (this.enviandoCodigo = false)))
+    this.http.post(`${this.baseUrl}/enviar`, null, {
+      params,
+      responseType: 'text' // Esperamos texto plano o vacío, no JSON
+    })
       .subscribe({
-        next: () => {
+        next: (res) => {
+          console.log('Código enviado:', res);
+          this.enviandoCodigo = false;
           this.currentStep = 2;
-          this.iniciarTemporizador();
-          alert('Código enviado a ' + this.email);
+          this.iniciarTemporizador(); // Arrancamos el reloj
+          this.cdr.detectChanges();   // Actualizamos vista
         },
         error: (err) => {
-          // Aquí ya no se queda cargando por finalize()
-          const msg = err?.error ? String(err.error) : 'No se pudo enviar el código';
-          alert(msg);
+          this.enviandoCodigo = false;
+          console.error(err);
+
+          // Manejo de errores falsos (si el backend devuelve texto y Angular espera JSON)
+          if (err.status === 200) {
+            this.currentStep = 2;
+            this.iniciarTemporizador();
+          } else {
+            alert('Error al enviar el código. Verifique su conexión.');
+          }
+          this.cdr.detectChanges();
         }
       });
   }
 
+  // ==========================================
+  //               PASO 2: VERIFICAR
+  // ==========================================
 
   verificarCodigo(): void {
-    if (this.codigoVerificacion.length !== 6) {
+    if (!this.codigoVerificacion || this.codigoVerificacion.length !== 6) {
       alert('El código debe tener 6 dígitos');
       return;
     }
 
     this.cargando = true;
+    this.cdr.detectChanges(); // Bloqueamos botón visualmente
 
-    // Simular verificación
-    setTimeout(() => {
-      this.cargando = false;
-      this.currentStep = 3;
-      this.detenerTemporizador();
-      alert('Código verificado correctamente');
-    }, 1000);
+    const params = new HttpParams()
+      .set('correo', this.email)
+      .set('codigo', this.codigoVerificacion);
+
+    this.http.post<boolean>(`${this.baseUrl}/validar`, null, { params })
+      .subscribe({
+        next: (esValido) => {
+          this.cargando = false; // Desbloqueamos botón siempre
+
+          if (esValido) {
+            console.log('Código aceptado');
+            this.detenerTemporizador();
+            this.currentStep = 3;
+          } else {
+            alert('Código incorrecto. Inténtalo de nuevo.');
+            this.codigoVerificacion = ''; // Limpiamos para reintentar
+          }
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.cargando = false;
+          console.error('Error backend:', err);
+          alert('El código es incorrecto o expiró.');
+          this.codigoVerificacion = '';
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   reenviarCodigo(): void {
     if (!this.puedeReenviar) return;
 
-    this.enviandoCodigo = true;
-
-    setTimeout(() => {
-      this.enviandoCodigo = false;
-      this.puedeReenviar = false;
-      this.tiempoRestante = 60;
-      this.iniciarTemporizador();
-      alert('Código reenviado a ' + this.email);
-    }, 1000);
-  }
-
-  // TEMPORIZADOR PARA REENVÍO
-  iniciarTemporizador(): void {
+    // Reseteamos estados
     this.puedeReenviar = false;
     this.tiempoRestante = 60;
+    this.enviandoCodigo = true;
+
+    const params = new HttpParams().set('correo', this.email);
+
+    this.http.post(`${this.baseUrl}/enviar`, null, { params, responseType: 'text' })
+      .subscribe({
+        next: () => {
+          this.enviandoCodigo = false;
+          alert('Nuevo código enviado a ' + this.email);
+          this.iniciarTemporizador();
+        },
+        error: () => {
+          this.enviandoCodigo = false;
+          alert('Error al reenviar. Intente más tarde.');
+          this.puedeReenviar = true; // Dejamos que intente de nuevo
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  // ==========================================
+  //               TEMPORIZADOR
+  // ==========================================
+
+  iniciarTemporizador(): void {
+    this.detenerTemporizador(); // Limpiamos por si acaso había uno corriendo
+    this.tiempoRestante = 60;
+    this.puedeReenviar = false;
 
     this.intervalId = setInterval(() => {
-      this.tiempoRestante--;
-
-      if (this.tiempoRestante <= 0) {
+      if (this.tiempoRestante > 0) {
+        this.tiempoRestante--;
+        // --- ESTA ES LA LÍNEA MÁGICA PARA QUE BAJEN LOS SEGUNDOS ---
+        this.cdr.detectChanges();
+      } else {
+        // Se acabó el tiempo
         this.puedeReenviar = true;
         this.detenerTemporizador();
+        this.cdr.detectChanges();
       }
     }, 1000);
   }
@@ -126,24 +190,18 @@ export class RegistroComponent implements OnDestroy {
     }
   }
 
+  ngOnDestroy(): void {
+    this.detenerTemporizador();
+  }
+
+  // ==========================================
+  //          PASO 3: DATOS Y ARCHIVOS
+  // ==========================================
+
   onCedulaInput(): void {
+    // Solo permitir números
     this.cedula = this.cedula.replace(/\D/g, '');
-    if (this.cedula.length === 10) {
-      this.buscarPorCedula();
-    }
   }
-
-  buscarPorCedula(): void {
-    this.cargando = true;
-
-    setTimeout(() => {
-      this.nombres = 'Juan Carlos';
-      this.apellidos = 'Pérez González';
-      this.cargando = false;
-    }, 500);
-  }
-
-  // --- MÉTODOS DE ARCHIVOS ---
 
   onFileCedulaSelected(event: any): void {
     const file = event.target.files[0];
@@ -180,28 +238,23 @@ export class RegistroComponent implements OnDestroy {
       this.nombreArchivoPrerrequisitos = file.name;
     }
   }
-
-  // ✅ MÉTODO RENOMBRAR ARCHIVO
   renombrarArchivo(tipo: string): void {
     const nuevoNombre = prompt('Ingrese el nuevo nombre del archivo (sin extensión):');
     if (!nuevoNombre) return;
 
     switch(tipo) {
       case 'cedula':
-        if (this.archivoCedula) {
-          this.nombreArchivoCedula = nuevoNombre + '.pdf';
-        }
+        if (this.archivoCedula) this.nombreArchivoCedula = nuevoNombre + '.pdf';
         break;
       case 'foto':
         if (this.archivoFoto) {
-          const extension = this.archivoFoto.name.split('.').pop();
-          this.nombreArchivoFoto = nuevoNombre + '.' + extension;
+          // Mantenemos la extensión original de la imagen
+          const ext = this.archivoFoto.name.split('.').pop();
+          this.nombreArchivoFoto = nuevoNombre + '.' + ext;
         }
         break;
       case 'prerrequisitos':
-        if (this.archivoPrerrequisitos) {
-          this.nombreArchivoPrerrequisitos = nuevoNombre + '.pdf';
-        }
+        if (this.archivoPrerrequisitos) this.nombreArchivoPrerrequisitos = nuevoNombre + '.pdf';
         break;
     }
   }
@@ -211,7 +264,13 @@ export class RegistroComponent implements OnDestroy {
 
     this.cargando = true;
 
-    // Simular envío al backend
+    // AQUÍ IRÁ TU LÓGICA DE SUBIR ARCHIVOS AL BACKEND MÁS ADELANTE
+    console.log('Enviando datos:', {
+      cedula: this.cedula,
+      nombres: this.nombres,
+      archivos: [this.archivoCedula, this.archivoFoto]
+    });
+
     setTimeout(() => {
       this.cargando = false;
       alert('Solicitud enviada con éxito. Su documentación será revisada.');
@@ -219,30 +278,27 @@ export class RegistroComponent implements OnDestroy {
     }, 2000);
   }
 
-  // --- VALIDACIONES ---
+  // --- VALIDACIONES AUXILIARES ---
 
   validarEmail(email: string): boolean {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 
   validarFormulario(): boolean {
-    if (!this.cedula || !this.nombres) {
-      alert('Complete la información de cédula');
+    // Agrega validaciones según necesites
+    if (!this.cedula) {
+      alert('Ingrese su cédula');
       return false;
     }
     if (!this.archivoCedula) {
-      alert('Debe subir el PDF de su cédula o pasaporte');
+      alert('Falta subir la cédula (PDF)');
       return false;
     }
     if (!this.archivoFoto) {
-      alert('Debe subir la foto selfie con su cédula');
+      alert('Falta subir la foto');
       return false;
     }
-    if (!this.archivoPrerrequisitos) {
-      alert('Debe subir la documentación de Pre-requisitos (Títulos, Experiencia)');
-      return false;
-    }
-    return true;
+    return false; // OJO: Cambia esto a true cuando quieras que pase
   }
 
   volverPaso(): void {
@@ -256,10 +312,5 @@ export class RegistroComponent implements OnDestroy {
 
   irALogin(): void {
     this.router.navigate(['/login']);
-  }
-
-  // ✅ LIMPIAR TEMPORIZADOR AL DESTRUIR COMPONENTE
-  ngOnDestroy(): void {
-    this.detenerTemporizador();
   }
 }
