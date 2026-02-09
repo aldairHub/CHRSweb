@@ -47,9 +47,17 @@ export class NavbarComponent {
   rolUsuario = '';
   iniciales = '';
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {
     this.cargarDatosUsuario();
   }
+
+  logout(): void {
+    this.authService.logoutYSalir();
+  }
+
 
   cargarDatosUsuario(): void {
     this.nombreUsuario = localStorage.getItem('usuario') || 'Usuario';
@@ -69,11 +77,9 @@ export class NavbarComponent {
     this.showNotifications = !this.showNotifications;
   }
 
-  logout(): void {
-    // 1. Borrar datos del navegador
-    localStorage.clear();
 
-    // 2. Redirigir al login
+  private cerrarSesion(): void {
+    localStorage.clear();
     this.router.navigate(['/login']);
   }
 }

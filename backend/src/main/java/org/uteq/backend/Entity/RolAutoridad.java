@@ -2,11 +2,15 @@ package org.uteq.backend.Entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
 @Data
 @Entity
+@Getter
+@Setter
 @Table(name = "rol_autoridad",
         uniqueConstraints = @UniqueConstraint(name="uq_rol_autoridad_nombre", columnNames="nombre"))
 public class RolAutoridad {
@@ -27,4 +31,5 @@ public class RolAutoridad {
             inverseJoinColumns = @JoinColumn(name = "id_rol_usuario", referencedColumnName = "id_rol_usuario")
     )
     private Set<RolUsuario> rolesUsuario = new HashSet<>();
+
 }

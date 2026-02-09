@@ -31,6 +31,8 @@ public class AuthController {
     public ResponseEntity<?> logout() {
         // vuelve a conexión backend base
         dbSwitchService.resetToDefault();
+        System.out.println("Deslogueando");
+
         return ResponseEntity.ok("Logout OK (conexión reseteada)");
     }
 }

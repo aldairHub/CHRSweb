@@ -10,13 +10,13 @@ public class UsuarioRol {
     @EmbeddedId
     private UsuarioRolId id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("idUsuario")
-    @JoinColumn(name="id_usuario")
+    @JoinColumn(name="id_usuario", nullable = false)
     private Usuario usuario;
 
-    @ManyToOne
-    @MapsId("idRol")
-    @JoinColumn(name="id_rol")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("idRolUsuario")
+    @JoinColumn(name="id_rol_usuario", nullable = false)
     private RolUsuario rol;
 }

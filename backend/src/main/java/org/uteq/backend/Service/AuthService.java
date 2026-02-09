@@ -73,7 +73,7 @@ public class AuthService {
         }
 
 
-        // ✅ CAMBIO REAL DE CONEXIÓN BD (DEMO)
+        //  CAMBIO REAL DE CONEXIÓN BD (DEMO)
         dbSwitchService.switchToUser(usuario.getUsuarioBd(), usuario.getClaveBd());
         // SUCCESS
         List<String> roles = usuarioRolRepository.findRoleNamesByUserId(usuario.getIdUsuario());
