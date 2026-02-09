@@ -55,6 +55,7 @@ export class AuthService {
       .pipe(finalize(() => this.cerrarSesionLocal()))
       .subscribe();
   }
+  //un cambio
 
   isLoggedIn(): boolean {
     return !!localStorage.getItem('token');
