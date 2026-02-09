@@ -25,12 +25,36 @@ public class FacultadServiceImpl implements FacultadService {
     @Override
     public FacultadResponseDTO crear(FacultadRequestDTO dto) {
 
+        String nombre = dto.getNombreFacultad() == null ? "" : dto.getNombreFacultad().trim();
+        if (nombre.isEmpty()) {
+            throw new RuntimeException("El nombre de la facultad es obligatorio");
+        }
+
         Facultad facultad = new Facultad();
-        facultad.setNombreFacultad(dto.getNombreFacultad());
-        facultad.setEstado(dto.isEstado());
+        facultad.setNombreFacultad(nombre);
+        facultad.setEstado(dto.getEstado() != null ? dto.getEstado() : true);
 
         Facultad guardada = facultadRepository.save(facultad);
         return mapToResponse(guardada);
+    }
+
+    @Override
+    public FacultadResponseDTO actualizar(Long id, FacultadRequestDTO dto) {
+
+        Facultad facultad = facultadRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Facultad no encontrada"));
+
+        String nombre = dto.getNombreFacultad() == null ? "" : dto.getNombreFacultad().trim();
+        if (nombre.isEmpty()) {
+            throw new RuntimeException("El nombre de la facultad es obligatorio");
+        }
+
+        facultad.setNombreFacultad(nombre);
+        if (dto.getEstado() != null) {
+            facultad.setEstado(dto.getEstado());
+        }
+
+        return mapToResponse(facultadRepository.save(facultad));
     }
 
     @Override
@@ -48,17 +72,6 @@ public class FacultadServiceImpl implements FacultadService {
         return mapToResponse(facultad);
     }
 
-    @Override
-    public FacultadResponseDTO actualizar(Long id, FacultadRequestDTO dto) {
-
-        Facultad facultad = facultadRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Facultad no encontrada"));
-
-        facultad.setNombreFacultad(dto.getNombreFacultad());
-        facultad.setEstado(dto.isEstado());
-
-        return mapToResponse(facultadRepository.save(facultad));
-    }
 
     @Override
     public void eliminar(Long id) {

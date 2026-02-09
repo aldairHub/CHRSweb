@@ -2,6 +2,7 @@ package org.uteq.backend.Controller;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import org.uteq.backend.Service.FacultadService;
@@ -20,10 +21,14 @@ public class FacultadController {
     }
 
     @PostMapping
-    public FacultadResponseDTO crear(@RequestBody FacultadRequestDTO dto) {
+    public FacultadResponseDTO crear(@Valid @RequestBody FacultadRequestDTO dto) {
         return facultadService.crear(dto);
     }
 
+    @PutMapping("/{id}")
+    public FacultadResponseDTO actualizar(@PathVariable Long id, @Valid @RequestBody FacultadRequestDTO dto) {
+        return facultadService.actualizar(id, dto);
+    }
     @GetMapping
     public List<FacultadResponseDTO> listar() {
         return facultadService.listar();
@@ -34,12 +39,6 @@ public class FacultadController {
         return facultadService.obtenerPorId(id);
     }
 
-    @PutMapping("/{id}")
-    public FacultadResponseDTO actualizar(
-            @PathVariable Long id,
-            @RequestBody FacultadRequestDTO dto) {
-        return facultadService.actualizar(id, dto);
-    }
 
     @DeleteMapping("/{id}")
     public void eliminar(@PathVariable Long id) {

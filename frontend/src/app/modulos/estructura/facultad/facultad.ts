@@ -20,7 +20,6 @@ export class FacultadComponent implements OnInit {
   modalAbierto = false;
   editando = false;
 
-  // Formulario actualizado con los nombres correctos
   form: Facultad = {
     idFacultad: 0,
     nombreFacultad: '',
@@ -36,8 +35,12 @@ export class FacultadComponent implements OnInit {
   cargarFacultades(): void {
     this.facultadService.listar().subscribe({
       next: (data: any[]) => {
-        this.facultades = data;
-        console.log("Facultades cargadas:", data); // Para depurar
+        this.facultades = data.map(x => ({
+          idFacultad: x.idFacultad ?? x.id_facultad,
+          nombreFacultad: x.nombreFacultad ?? x.nombre_facultad,
+          estado: x.estado
+        }));
+        console.log('Facultades cargadas (mapeadas):', this.facultades);
       },
       error: (err) => console.error('Error al cargar:', err)
     });
@@ -45,18 +48,18 @@ export class FacultadComponent implements OnInit {
 
   // ===== ESTADÍSTICAS =====
   get facultadesActivas(): number {
-    return this.facultades.filter(f => f.estado).length;
+    return this.facultades.filter(f => !!f.estado).length;
   }
 
   get facultadesInactivas(): number {
     return this.facultades.filter(f => !f.estado).length;
   }
 
-  // ===== FILTROS (Aquí estaba el error) =====
+  // ===== FILTRO =====
   facultadesFiltradas(): Facultad[] {
+    const q = (this.search ?? '').toLowerCase();
     return this.facultades.filter(f =>
-      // Usamos 'nombreFacultad' y validamos que exista
-      (f.nombreFacultad || '').toLowerCase().includes(this.search.toLowerCase())
+      ((f.nombreFacultad ?? '')).toLowerCase().includes(q)
     );
   }
 
@@ -69,7 +72,7 @@ export class FacultadComponent implements OnInit {
 
   edit(f: Facultad): void {
     this.editando = true;
-    this.form = { ...f }; // Copia los datos al formulario
+    this.form = { ...f };
     this.modalAbierto = true;
   }
 
@@ -77,17 +80,27 @@ export class FacultadComponent implements OnInit {
     this.modalAbierto = false;
   }
 
+  // ===== MAPEADOR (CLAVE PARA QUE NO MANDE NULL) =====
+  private toPayload(f: Facultad) {
+    return {
+      nombre_facultad: (f.nombreFacultad ?? '').trim(),
+      estado: !!f.estado
+    };
+  }
+
   // ===== ACCIONES =====
   guardar(): void {
-    if (!this.form.nombreFacultad || !this.form.nombreFacultad.trim()) {
-      alert("El nombre de la facultad es obligatorio");
+    const nombre = (this.form.nombreFacultad ?? '').trim();
+    if (!nombre) {
+      alert('El nombre de la facultad es obligatorio');
       return;
     }
 
-    const payload = {
-      nombre_facultad: this.form.nombreFacultad,
-      estado: this.form.estado
-    };
+    // aseguramos el trim en el form también
+    this.form.nombreFacultad = nombre;
+
+    const payload = this.toPayload(this.form);
+    console.log('Payload enviado (guardar):', payload);
 
     const request = this.editando
       ? this.facultadService.actualizar(this.form.idFacultad, payload)
@@ -100,17 +113,22 @@ export class FacultadComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error al guardar:', err);
-        alert("Error: " + (err.error?.message || "Revisa la consola"));
+        alert('Error: ' + (err.error?.message || 'Revisa la consola'));
       }
     });
   }
 
-
   toggleEstado(f: Facultad): void {
-    f.estado = !f.estado; // Cambio visual inmediato
-    this.facultadService.actualizar(f.idFacultad, f as any).subscribe({
+    const anterior = f.estado;
+    f.estado = !f.estado; // cambio visual inmediato
+
+    // IMPORTANTÍSIMO: no mandes "f" (camelCase) al backend
+    const payload = this.toPayload(f);
+    console.log('Payload enviado (toggleEstado):', payload);
+
+    this.facultadService.actualizar(f.idFacultad, payload).subscribe({
       error: (err) => {
-        f.estado = !f.estado; // Revertir si falla
+        f.estado = anterior; // revertir si falla
         console.error('Error al cambiar estado', err);
       }
     });
