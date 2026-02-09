@@ -38,7 +38,8 @@ public class SecurityConfig {
                                 "/api/verificacion/enviar",
                                 "/api/verificacion/validar",
                                 "/api/autoridades-academicas/**",
-                                "/api/autoridades-academicas/registro"
+                                "/api/autoridades-academicas/registro",
+                                "/api/admin/prepostulaciones/**"
                                 ).permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/demo/**").permitAll()
