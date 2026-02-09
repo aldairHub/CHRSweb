@@ -1,17 +1,16 @@
 package org.uteq.backend.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+/**
+ * Entidad Prepostulacion
+ * Mapea la tabla "prepostulacion" de Supabase
+ */
 @Entity
 @Table(name = "prepostulacion")
+@Data
 public class Prepostulacion {
 
     @Id
@@ -19,30 +18,46 @@ public class Prepostulacion {
     @Column(name = "id_prepostulacion")
     private Long idPrepostulacion;
 
-    @Column(name = "nombres", nullable = false)
-    private String nombres;
-
-    @Column(name = "apellidos", nullable = false)
+    @Column(nullable = false)
     private String apellidos;
 
-    @Column(name = "identificacion", nullable = false, unique = true)
-    private String identificacion;
-
-    @Column(name = "correo", nullable = false)
+    @Column(nullable = false)
     private String correo;
 
+    @Column(name = "estado_revision")
+    private String estadoRevision;
+
     @Column(name = "fecha_envio", nullable = false)
-    private LocalDateTime fechaEnvio = LocalDateTime.now();
-
-    @Column(name = "estado_revision", nullable = false)
-    private String estadoRevision = "pendiente"; // pendiente, aprobada, rechazada, observada
-
-    @Column(name = "id_revisor")
-    private Long idRevisor;
+    private LocalDateTime fechaEnvio;
 
     @Column(name = "fecha_revision")
     private LocalDateTime fechaRevision;
 
-    @Column(name = "observaciones_revision")
+    @Column(name = "id_revisor")
+    private Long idRevisor;
+
+    @Column(nullable = false)
+    private String identificacion;
+
+    @Column(nullable = false)
+    private String nombres;
+
+    @Column(name = "observaciones_revision", length = 1000)
     private String observacionesRevision;
+
+    // ✅ Nuevas columnas para las URLs de Supabase
+    @Column(name = "url_cedula", length = 500)
+    private String urlCedula;
+
+    @Column(name = "url_foto", length = 500)
+    private String urlFoto;
+
+    @Column(name = "url_prerrequisitos", length = 500)
+    private String urlPrerrequisitos;
+
+    // Constructor vacío requerido por JPA
+    public Prepostulacion() {
+        this.fechaEnvio = LocalDateTime.now();
+        this.estadoRevision = "PENDIENTE";
+    }
 }
