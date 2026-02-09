@@ -477,3 +477,456 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
     }
   }
 }
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  animation: fadeIn 0.3s ease-out;
+}
+
+// Contenedor del modal
+.success-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+
+  .modal-content {
+    background: $white;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 24px;
+    padding: 40px 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.4s ease-out;
+    position: relative;
+  }
+}
+
+// Ícono de éxito animado (checkmark circular)
+.success-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 25px;
+
+  .success-icon {
+    width: 80px;
+    height: 80px;
+  }
+
+  .success-circle {
+    stroke: $primary;
+    stroke-width: 2;
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-linecap: round;
+    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+  }
+
+  .success-check {
+    stroke: $primary;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.5s forwards;
+  }
+}
+
+// Título del modal
+.modal-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: $dark-green;
+  text-align: center;
+  margin: 0 0 30px 0;
+}
+
+// Pasos del proceso
+.modal-steps {
+  margin-bottom: 25px;
+
+  .step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 18px;
+    background-color: #f8fafc;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: #f0fdf4;
+      border-color: $border-color;
+      transform: translateX(3px);
+    }
+
+    .step-icon {
+      width: 45px;
+      height: 45px;
+      min-width: 45px;
+      background: linear-gradient(135deg, $primary 0%, #00c853 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0, 166, 62, 0.2);
+
+      svg {
+        width: 24px;
+        height: 24px;
+        color: $white;
+      }
+    }
+
+    .step-content {
+      flex: 1;
+
+      h3 {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: $dark-green;
+        margin: 0 0 5px 0;
+      }
+
+      p {
+        font-size: 0.85rem;
+        color: $text-gray;
+        margin: 0;
+        line-height: 1.4;
+
+        strong {
+          color: $primary;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}
+
+// Mensaje de agradecimiento
+.thank-you-message {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid $border-color;
+  border-radius: 12px;
+  padding: 15px 20px;
+  margin-bottom: 25px;
+  text-align: center;
+
+  p {
+    font-size: 0.9rem;
+    color: $dark-green;
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
+// Botón del modal
+.modal-btn {
+  margin-top: 0 !important;
+  font-size: 1rem !important;
+  height: 52px !important;
+}
+
+// Animaciones
+@keyframes stroke {
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+// Responsive
+@media (max-width: 600px) {
+  .success-modal .modal-content {
+    padding: 30px 20px;
+  }
+
+  .modal-title {
+    font-size: 1.4rem;
+  }
+
+  .modal-steps .step-item {
+    padding: 14px;
+
+    .step-icon {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    .step-content h3 {
+      font-size: 0.9rem;
+    }
+
+    .step-content p {
+      font-size: 0.8rem;
+    }
+  }
+}
+// ==========================================
+// MODAL DE ERROR - Código de Verificación
+// Agregar después de los estilos del modal de éxito
+// ==========================================
+
+// Contenedor del modal de error
+.error-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+
+  .modal-content {
+    background: $white;
+    width: 100%;
+    max-width: 480px;
+    border-radius: 24px;
+    padding: 40px 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: shakeError 0.5s ease-out;
+    position: relative;
+  }
+}
+
+// Ícono de error animado (X circular)
+.error-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 25px;
+
+  .error-icon {
+    width: 80px;
+    height: 80px;
+  }
+
+  .error-circle {
+    stroke: #ef4444; // Rojo de error
+    stroke-width: 2;
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-linecap: round;
+    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+  }
+
+  .error-x {
+    stroke: #ef4444;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 57;
+    stroke-dashoffset: 57;
+    animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.5s forwards;
+  }
+}
+
+// Título del modal de error
+.error-title {
+  color: #dc2626; // Rojo oscuro
+}
+
+// Caja del mensaje de error
+.error-message-box {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 25px;
+  text-align: center;
+
+  .error-main-text {
+    font-size: 0.95rem;
+    color: #991b1b;
+    margin: 0;
+    line-height: 1.5;
+    font-weight: 500;
+  }
+}
+
+// Tarjetas de acción (qué hacer)
+.error-actions {
+  margin-bottom: 25px;
+
+  .action-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 16px;
+    background-color: #f8fafc;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: #fef2f2;
+      border-color: #fecaca;
+      transform: translateX(3px);
+    }
+
+    .action-icon {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+
+      svg {
+        width: 22px;
+        height: 22px;
+        color: $white;
+      }
+
+      // Variante para reenvío (color diferente)
+      &.reenviar {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);
+      }
+
+      // Variante para espera
+      &.waiting {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        box-shadow: 0 4px 10px rgba(107, 114, 128, 0.2);
+      }
+    }
+
+    .action-content {
+      flex: 1;
+
+      h3 {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: $text-dark;
+        margin: 0 0 4px 0;
+      }
+
+      p {
+        font-size: 0.8rem;
+        color: $text-gray;
+        margin: 0;
+        line-height: 1.4;
+      }
+    }
+  }
+}
+
+// Botones del modal
+.modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .modal-btn {
+    margin: 0 !important;
+  }
+
+  .modal-btn-secondary {
+    margin-top: 0 !important;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    border: none;
+    color: $white;
+    box-shadow: 0 4px 6px rgba(245, 158, 11, 0.2);
+
+    &:hover {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 12px rgba(245, 158, 11, 0.3);
+    }
+  }
+}
+
+// Animación de sacudida (shake) para el modal de error
+@keyframes shakeError {
+  0%, 100% {
+    transform: translateX(0) translateY(0) scale(1);
+    opacity: 1;
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px) translateY(0) scale(1);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px) translateY(0) scale(1);
+  }
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+}
+
+// Responsive para modal de error
+@media (max-width: 600px) {
+  .error-modal .modal-content {
+    padding: 30px 20px;
+  }
+
+  .error-actions .action-card {
+    padding: 12px;
+
+    .action-icon {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+
+      svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    .action-content h3 {
+      font-size: 0.85rem;
+    }
+
+    .action-content p {
+      font-size: 0.75rem;
+    }
+  }
+
+  .modal-buttons {
+    .modal-btn {
+      height: 46px !important;
+      font-size: 0.9rem !important;
+    }
+  }
+}

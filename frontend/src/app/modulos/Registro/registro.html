@@ -290,6 +290,166 @@
         </a>
       </div>
     </div>
+    <!-- ============================================ -->
+    <!-- MODAL DE ÉXITO - Agregar al final del HTML -->
+    <!-- ============================================ -->
+
+    <!-- Backdrop del modal -->
+    <div class="modal-backdrop" *ngIf="mostrarModalExito" (click)="cerrarModalExito()"></div>
+
+    <!-- Modal de éxito -->
+    <div class="success-modal" *ngIf="mostrarModalExito">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+
+        <!-- Ícono de éxito animado -->
+        <div class="success-icon-wrapper">
+          <svg class="success-icon" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+            <circle class="success-circle" cx="26" cy="26" r="25" fill="none"/>
+            <path class="success-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+          </svg>
+        </div>
+
+        <!-- Contenido del modal -->
+        <h2 class="modal-title">¡Solicitud Enviada!</h2>
+
+        <div class="modal-steps">
+
+          <!-- Paso 1: Revisión -->
+          <div class="step-item">
+            <div class="step-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div class="step-content">
+              <h3>Revisión de documentos</h3>
+              <p>Nuestro equipo verificará su información</p>
+            </div>
+          </div>
+
+          <!-- Paso 2: Correo -->
+          <div class="step-item">
+            <div class="step-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div class="step-content">
+              <h3>Credenciales por correo</h3>
+              <p>Recibirá su usuario y contraseña a <strong>{{ email }}</strong></p>
+            </div>
+          </div>
+
+          <!-- Paso 3: Acceso -->
+          <div class="step-item">
+            <div class="step-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+            </div>
+            <div class="step-content">
+              <h3>¡Listo para ingresar!</h3>
+              <p>Podrá acceder al sistema con sus credenciales</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Mensaje de agradecimiento -->
+        <div class="thank-you-message">
+          <p>Gracias por su paciencia. Le notificaremos cuando su solicitud sea aprobada.</p>
+        </div>
+
+        <!-- Botón de aceptar -->
+        <button class="btn-primary modal-btn" (click)="cerrarModalExito()">
+          Entendido
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Backdrop del modal de error -->
+    <div class="modal-backdrop" *ngIf="mostrarModalError" (click)="cerrarModalError()"></div>
+
+    <!-- Modal de error -->
+    <div class="error-modal" *ngIf="mostrarModalError">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+
+        <!-- Ícono de error animado -->
+        <div class="error-icon-wrapper">
+          <svg class="error-icon" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+            <circle class="error-circle" cx="26" cy="26" r="25" fill="none"/>
+            <path class="error-x" fill="none" d="M16 16 L36 36 M36 16 L16 36"/>
+          </svg>
+        </div>
+
+        <!-- Contenido del modal -->
+        <h2 class="modal-title error-title">Código Incorrecto</h2>
+
+        <div class="error-message-box">
+          <p class="error-main-text">
+            El código de verificación que ingresaste no es válido o ha expirado.
+          </p>
+        </div>
+
+        <!-- Opciones de acción -->
+        <div class="error-actions">
+
+          <div class="action-card">
+            <div class="action-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="action-content">
+              <h3>Revisa tu correo</h3>
+              <p>Verifica que ingresaste el código correcto de 6 dígitos</p>
+            </div>
+          </div>
+
+          <div class="action-card" *ngIf="puedeReenviar">
+            <div class="action-icon reenviar">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </div>
+            <div class="action-content">
+              <h3>Solicita uno nuevo</h3>
+              <p>Puedes pedir que te enviemos un código nuevo</p>
+            </div>
+          </div>
+
+          <div class="action-card" *ngIf="!puedeReenviar">
+            <div class="action-icon waiting">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="action-content">
+              <h3>Espera {{ tiempoRestante }}s</h3>
+              <p>Podrás solicitar un nuevo código cuando termine el tiempo</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="modal-buttons">
+          <button
+            class="btn-primary modal-btn"
+            (click)="cerrarModalError()">
+            Intentar de Nuevo
+          </button>
+
+          <button
+            class="btn-outline modal-btn-secondary"
+            *ngIf="puedeReenviar"
+            (click)="cerrarModalError(); reenviarCodigo()">
+            Reenviar Código
+          </button>
+        </div>
+      </div>
+    </div>
     <div class="form-footer">
       © 2026 Universidad Técnica Estatal de Quevedo
     </div>

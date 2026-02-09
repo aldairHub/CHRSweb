@@ -18,6 +18,8 @@ export class RegistroComponent implements OnDestroy {
   cargando: boolean = false;       // Para el spinner de botones
   enviandoCodigo: boolean = false; // Para el paso 1
   puedeReenviar: boolean = false;  // Controla si se puede clickear "Reenviar"
+  mostrarModalExito: boolean = false; // Para mostrar modal de éxito
+  mostrarModalError: boolean = false; // Para mostrar modal de error de código
 
   // --- TEMPORIZADOR ---
   tiempoRestante: number = 60;
@@ -121,7 +123,8 @@ export class RegistroComponent implements OnDestroy {
             this.detenerTemporizador();
             this.currentStep = 3;
           } else {
-            alert('Código incorrecto. Inténtalo de nuevo.');
+            // Mostrar modal de error en lugar de alert
+            this.mostrarModalError = true;
             this.codigoVerificacion = '';
           }
           this.cdr.detectChanges();
@@ -129,7 +132,8 @@ export class RegistroComponent implements OnDestroy {
         error: (err) => {
           this.cargando = false;
           console.error('Error backend:', err);
-          alert('El código es incorrecto o expiró.');
+          // Mostrar modal de error en lugar de alert
+          this.mostrarModalError = true;
           this.codigoVerificacion = '';
           this.cdr.detectChanges();
         }
@@ -327,7 +331,7 @@ export class RegistroComponent implements OnDestroy {
     formData.append('nombres', this.nombres);
     formData.append('apellidos', this.apellidos);
 
-    //  Nombres que coinciden exactamente con el @RequestParam del backend
+    // ✅ Nombres que coinciden exactamente con el @RequestParam del backend
     if (this.archivoCedula) {
       formData.append('archivoCedula', this.archivoCedula, this.nombreArchivoCedula);
     }
@@ -359,12 +363,9 @@ export class RegistroComponent implements OnDestroy {
           this.cargando = false;
           console.log('✅ Registro exitoso:', respuesta);
 
-          // Mostrar mensaje del backend si existe
-          const mensaje = respuesta.mensaje || '¡Solicitud enviada con éxito!';
-          alert(`${mensaje}\n\nSu documentación será revisada en breve.`);
-
-          // Redirigir al login
-          this.router.navigate(['/login']);
+          // Mostrar modal de éxito en lugar de alert
+          this.mostrarModalExito = true;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           this.cargando = false;
@@ -451,5 +452,15 @@ export class RegistroComponent implements OnDestroy {
 
   irALogin(): void {
     this.router.navigate(['/login']);
+  }
+
+  cerrarModalExito(): void {
+    this.mostrarModalExito = false;
+    this.router.navigate(['/login']);
+  }
+
+  cerrarModalError(): void {
+    this.mostrarModalError = false;
+    this.cdr.detectChanges();
   }
 }
