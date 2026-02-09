@@ -32,6 +32,7 @@ public class SecurityConfig {
                                 "/api/prepostulacion/**",
                                 "/api/carreras/**",
                                 "/api/facultades/**",
+                                "/api/facultades",
                                 "/api/materias/**",
                                 "/uploads/**",
                                 "/api/verificacion/enviar",

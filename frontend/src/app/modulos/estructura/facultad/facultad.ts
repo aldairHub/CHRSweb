@@ -84,10 +84,14 @@ export class FacultadComponent implements OnInit {
       return;
     }
 
-    // Usamos 'as any' temporalmente para evitar conflictos de tipos si el servicio no se actualizó
+    const payload = {
+      nombre_facultad: this.form.nombreFacultad,
+      estado: this.form.estado
+    };
+
     const request = this.editando
-      ? this.facultadService.actualizar(this.form.idFacultad, this.form as any)
-      : this.facultadService.crear(this.form as any);
+      ? this.facultadService.actualizar(this.form.idFacultad, payload)
+      : this.facultadService.crear(payload);
 
     request.subscribe({
       next: () => {
@@ -100,6 +104,7 @@ export class FacultadComponent implements OnInit {
       }
     });
   }
+
 
   toggleEstado(f: Facultad): void {
     f.estado = !f.estado; // Cambio visual inmediato
