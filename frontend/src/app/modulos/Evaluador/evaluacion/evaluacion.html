@@ -1,0 +1,82 @@
+<app-navbar></app-navbar>
+
+<div class="main-container">
+
+  <div class="header-section">
+    <div class="search-bar">
+      <i class="pi pi-search"></i>
+      <input type="text" placeholder="Buscar postulantes por nombre o posición...">
+    </div>
+
+    <div class="actions">
+      <button class="btn-config">Configurar Criterios</button>
+      <button class="btn-export pdf"><i class="pi pi-file-pdf"></i> Exportar PDF</button>
+      <button class="btn-export excel"><i class="pi pi-file-excel"></i> Exportar Excel</button>
+    </div>
+  </div>
+
+  <div class="card-evaluacion">
+    <div class="card-header-uteq">
+      <h2>UNIVERSIDAD TÉCNICA ESTATAL DE QUEVEDO - CUADRO DE SELECCIÓN</h2>
+      <span class="badge">{{ candidatos.length }} candidatos</span>
+    </div>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+        <tr>
+          <th class="col-parametro">PARÁMETROS</th>
+          <th *ngFor="let c of candidatos" class="col-candidato">
+            <div class="candidato-header">
+              <span class="nombre">{{ c.nombre }}</span>
+              <span class="cargo">{{ c.cargo }}</span>
+            </div>
+          </th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <ng-container *ngFor="let seccion of rubrica">
+
+          <tr class="section-row">
+            <td class="section-title">
+              <strong>{{ seccion.titulo }}</strong>
+              <p>{{ seccion.descripcion }}</p>
+              <small class="max-points">MÁXIMO {{ seccion.maximo }} PUNTOS</small>
+            </td>
+            <td *ngFor="let c of candidatos" class="section-bg"></td>
+          </tr>
+
+          <tr *ngFor="let item of seccion.items">
+            <td class="item-label">- {{ item.label }}</td>
+
+            <td *ngFor="let c of candidatos" class="cell-input">
+              <input
+                type="number"
+                min="0"
+                [max]="item.max"
+                [(ngModel)]="c.puntajes[item.id]"
+                (ngModelChange)="calcularTotal(c)"
+                class="score-input">
+            </td>
+          </tr>
+
+        </ng-container>
+
+        <tr class="total-row">
+          <td class="total-label">PUNTAJE TOTAL</td>
+          <td *ngFor="let c of candidatos" class="total-score">
+            {{ c.total | number:'1.1-2' }}
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer-actions">
+      <button class="btn-save" (click)="guardarEvaluacion()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

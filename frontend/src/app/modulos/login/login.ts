@@ -8,7 +8,7 @@ import { AuthService } from '../../services/auth.service';
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './login.html',
+  templateUrl: './login.html', // Asegúrate que el nombre coincida con tu archivo
   styleUrls: ['./login.scss']
 })
 export class LoginComponent {
@@ -17,7 +17,7 @@ export class LoginComponent {
 
   showPassword = false;
   isLoading = false;
-  serverError = '';
+  serverError: string = '';
 
   constructor(
     private authService: AuthService,
@@ -30,74 +30,51 @@ export class LoginComponent {
 
   onLogin() {
     // 1. Limpieza inicial
-    this.usuarioApp = this.usuarioApp.trim();
     this.serverError = '';
 
-    // 2. Validación rápida antes de enviar
-    if (this.usuarioApp.length < 3 || this.claveApp.length < 4) {
-      this.serverError = 'Por favor, revise sus credenciales.';
+    // Validación simple
+    if (!this.usuarioApp || !this.claveApp) {
+      this.serverError = 'Por favor, ingrese usuario y contraseña.';
       return;
     }
 
     this.isLoading = true;
+    console.log('Intentando login con:', this.usuarioApp); // Debug
 
-    // 3. Petición directa al servicio
+    // 2. Petición al servicio
+    // NOTA: Asegúrate que tu authService.login acepte (usuario, clave) y no un objeto {usuario, clave}
     this.authService.login(this.usuarioApp, this.claveApp).subscribe({
       next: (res: any) => {
         this.isLoading = false;
+        console.log('Login exitoso:', res);
 
-        // Verificamos si llegó el token correctamente
         if (res && res.token) {
-
-          // Extraemos el rol (ej: "ADMIN") o asignamos uno por defecto
-          const rolBackend = (res.roles && res.roles.length > 0) ? res.roles[0] : 'invitado';
-
-          // Guardamos datos en sesión
-          const userData = {
-            ...res,
-            rol: rolBackend
-          };
+          // Guardar sesión
           this.authService.guardarSesion(res);
 
-          // Redirigimos
+          // Redirigir usando la lógica del servicio o manual
+          // Si tu authService tiene 'redirigirPorRol', úsalo:
           this.authService.redirigirPorRol();
 
+          // O si prefieres hacerlo manual aquí:
+          // this.executeRedirection(res.roles ? res.roles[0] : 'invitado');
         } else {
-          // Si el backend responde pero no hay token (caso raro)
-          this.serverError = 'Credenciales no válidas.';
+          this.serverError = 'Error: No se recibió el token de seguridad.';
         }
       },
       error: (err) => {
-        this.isLoading = false;
+        this.isLoading = false; // IMPORTANTE: Apagamos el spinner
+        console.error('Error login:', err);
 
-        // Manejo de errores rápido y limpio
         if (err.status === 401) {
           this.serverError = 'Usuario o contraseña incorrectos.';
         } else if (err.status === 0) {
-          this.serverError = 'No hay conexión con el servidor.';
+          this.serverError = 'No se pudo conectar con el servidor. Revise su internet o si el backend está encendido.';
         } else {
-          this.serverError = 'Ocurrió un error inesperado.';
+          this.serverError = 'Ocurrió un error inesperado. Intente más tarde.';
         }
       }
     });
-  }
-
-  private executeRedirection(rol: string) {
-    const rolNormalizado = rol.toLowerCase();
-
-    const routes: { [key: string]: string } = {
-      'admin': '/admin',
-      'postulante': '/postulante',
-      'evaluador': '/evaluador'
-    };
-
-    const target = routes[rolNormalizado];
-
-    if (target) {
-      this.router.navigate([target]);
-    } else {
-      this.serverError = 'Su cuenta no tiene permisos asignados.';
-    }
   }
 
   irARegistro() {

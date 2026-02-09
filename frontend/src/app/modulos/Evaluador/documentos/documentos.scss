@@ -1,0 +1,133 @@
+// VARIABLES UTEQ
+$uteq-green: #16a34a;
+$uteq-green-dark: #0d5e2f;
+$uteq-green-light: #dcfce7;
+$text-dark: #111827;
+$text-gray: #4b5563;
+$danger: #dc2626;
+$danger-light: #fee2e2;
+$border-color: #e5e7eb;
+$bg-color: #f3f4f6;
+
+// === ESTRUCTURA BASE ===
+.main-container { padding: 20px; min-height: 85vh; background-color: $bg-color; }
+.content-wrapper { max-width: 1200px; margin: 0 auto; }
+
+// === HEADER CON INFO DEL POSTULANTE ===
+.page-header {
+  display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px;
+
+  &__title { font-size: 1.6rem; font-weight: 800; color: $text-dark; margin: 0 0 10px 0; }
+  &__description { color: $uteq-green-dark; margin: 5px 0 0; font-size: 0.9rem; font-style: italic; }
+
+  .applicant-info {
+    display: flex; gap: 10px; margin-bottom: 5px;
+    .info-badge {
+      background: white; border: 1px solid $uteq-green; color: $uteq-green-dark;
+      padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;
+      display: flex; align-items: center; gap: 6px;
+    }
+  }
+}
+
+// === TARJETAS ===
+.form-card {
+  background: white; border-radius: 12px; padding: 1.5rem;
+  border: 1px solid $border-color; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.form-section {
+  &__header { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+  &__icon {
+    width: 36px; height: 36px; background-color: $uteq-green-light; color: $uteq-green-dark;
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; border: 1px solid #bbf7d0;
+  }
+  &__title { color: $uteq-green-dark; font-size: 1.1rem; font-weight: 700; margin: 0; }
+}
+
+// === TABLA DE VALIDACIÓN ===
+.table-container { overflow-x: auto; }
+.custom-table {
+  width: 100%; border-collapse: collapse;
+  thead th {
+    text-align: left; padding: 12px; color: $text-gray; font-size: 0.75rem;
+    font-weight: 700; text-transform: uppercase; border-bottom: 2px solid $border-color;
+    background: #f9fafb;
+  }
+  tbody td {
+    padding: 12px; border-bottom: 1px solid $border-color;
+    color: $text-dark; font-size: 0.9rem; vertical-align: middle;
+  }
+  tbody tr:hover { background-color: #fcfcfc; }
+}
+
+.doc-title { font-weight: 600; color: $text-dark; }
+
+// Botón Ver PDF
+.btn-view {
+  background: white; border: 1px solid $border-color; color: $text-gray;
+  padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer;
+  display: flex; align-items: center; gap: 6px; transition: 0.2s;
+  &:hover { border-color: $uteq-green; color: $uteq-green; background: $uteq-green-light; }
+}
+
+// Botones Validar/Rechazar
+.action-buttons {
+  display: flex; justify-content: center; gap: 10px;
+
+  .btn-action {
+    width: 36px; height: 36px; border-radius: 50%; border: 1px solid $border-color;
+    background: white; cursor: pointer; color: $text-gray; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; font-size: 1rem;
+
+    &:hover { transform: scale(1.1); }
+
+    // Estilo APROBAR
+    &.btn-approve:hover, &.btn-approve.active {
+      background: $uteq-green; color: white; border-color: $uteq-green;
+      box-shadow: 0 0 10px rgba($uteq-green, 0.4);
+    }
+
+    // Estilo RECHAZAR
+    &.btn-reject:hover, &.btn-reject.active {
+      background: $danger; color: white; border-color: $danger;
+      box-shadow: 0 0 10px rgba($danger, 0.4);
+    }
+  }
+}
+
+// Input Observación
+.obs-input {
+  width: 100%; padding: 8px; border: 1px solid $border-color; border-radius: 6px;
+  font-size: 0.85rem; outline: none; background: #f9fafb;
+  &:focus { border-color: $uteq-green; background: white; }
+  &:disabled { background: #f3f4f6; cursor: not-allowed; opacity: 0.6; }
+}
+
+// Badges de Estado
+.status-badge {
+  padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-block;
+  &.status-pendiente { background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; } // Amarillo
+  &.status-valido { background: $uteq-green-light; color: $uteq-green-dark; border: 1px solid #86efac; } // Verde
+  &.status-rechazado { background: $danger-light; color: $danger; border: 1px solid #fecaca; } // Rojo
+}
+
+// === FOOTER Y BOTONES GLOBALES ===
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+
+.form-footer {
+  display: flex; justify-content: space-between; align-items: center; border-top: 1px solid $border-color; padding-top: 1.5rem;
+  .summary-text { font-size: 0.9rem; color: $text-gray; }
+}
+
+.btn {
+  padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: none; font-size: 0.9rem;
+
+  &--primary { background: $uteq-green; color: white; &:hover { background: $uteq-green-dark; } }
+  &--outline-back { background: transparent; border: 1px solid $uteq-green; color: $uteq-green; &:hover { background: $uteq-green-light; } }
+}
+
+.text-center { text-align: center; }

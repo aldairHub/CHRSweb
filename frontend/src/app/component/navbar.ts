@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -69,7 +70,10 @@ export class NavbarComponent {
   }
 
   logout(): void {
+    // 1. Borrar datos del navegador
     localStorage.clear();
+
+    // 2. Redirigir al login
     this.router.navigate(['/login']);
   }
 }

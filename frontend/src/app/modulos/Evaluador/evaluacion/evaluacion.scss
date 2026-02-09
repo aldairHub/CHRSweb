@@ -1,0 +1,157 @@
+.main-container {
+  padding: 20px;
+  background-color: #f0fdf4; // Fondo verde muy claro
+  min-height: 100vh;
+}
+
+// --- Header y Botones ---
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+
+  .search-bar {
+    background: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    width: 40%;
+
+    input { border: none; outline: none; width: 90%; margin-left: 10px; }
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+
+    button {
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-config { background: #e0f2f1; color: #00695c; }
+    .btn-export.pdf { background: #1B5E20; color: white; }
+    .btn-export.excel { background: #2E7D32; color: white; }
+  }
+}
+
+// --- Tarjeta Principal ---
+.card-evaluacion {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  overflow: hidden;
+
+  .card-header-uteq {
+    background: white;
+    padding: 20px;
+    border-bottom: 2px solid #1B5E20; // Línea verde institucional
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h2 { font-size: 1.1rem; color: #333; margin: 0; font-weight: bold; }
+    .badge { background: #e3f2fd; color: #1565c0; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; }
+  }
+}
+
+// --- Tabla ---
+.table-responsive {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 12px 15px;
+    border: 1px solid #e0e0e0;
+  }
+
+  // Encabezados Columnas
+  thead th {
+    background-color: #1B5E20; // Verde UTEQ
+    color: white;
+    text-align: center;
+
+    &.col-parametro { width: 40%; text-align: left; }
+    &.col-candidato { width: 20%; }
+
+    .candidato-header {
+      display: flex;
+      flex-direction: column;
+      .nombre { font-weight: bold; font-size: 0.9rem; }
+      .cargo { font-size: 0.75rem; opacity: 0.9; font-weight: normal; }
+    }
+  }
+
+  // Filas de Sección (A, B, C...)
+  .section-row {
+    background-color: #f1f8e9; // Verde muy pálido
+
+    .section-title {
+      strong { display: block; color: #1B5E20; }
+      p { margin: 2px 0; font-size: 0.85rem; color: #555; }
+      .max-points { color: #1976d2; font-weight: bold; display: block; margin-top: 4px; }
+    }
+    .section-bg { background-color: #f1f8e9; }
+  }
+
+  // Items
+  .item-label { color: #444; font-size: 0.9rem; padding-left: 25px; }
+
+  .cell-input {
+    text-align: center;
+    background-color: #fafafa;
+  }
+
+  .score-input {
+    width: 60px;
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+
+    &:focus {
+      border-color: #1B5E20;
+      outline: none;
+      background: white;
+    }
+  }
+
+  // Total Final
+  .total-row {
+    background-color: #1B5E20;
+    color: white;
+    font-weight: bold;
+
+    .total-score { text-align: center; font-size: 1.2rem; }
+  }
+}
+
+// --- Footer ---
+.footer-actions {
+  padding: 20px;
+  text-align: right;
+  background: #f9f9f9;
+
+  .btn-save {
+    background-color: #004d40;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+
+    &:hover { background-color: #00695c; }
+  }
+}

@@ -1,0 +1,137 @@
+<app-navbar></app-navbar>
+
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <header class="page-header">
+      <div class="page-header__info">
+        <h2 class="page-header__title">Gestión de Postulantes</h2>
+        <p class="page-header__description">Revise y administre la información de los candidatos registrados.</p>
+      </div>
+      <button class="btn btn--outline-back" (click)="volver()">
+        <i class="pi pi-arrow-left"></i> Volver
+      </button>
+    </header>
+
+    <div class="form-card mb-4">
+      <section class="form-section">
+        <div class="form-section__header">
+          <div class="form-section__icon">
+            <i class="pi pi-search"></i>
+          </div>
+          <h3 class="form-section__title">Filtros de Búsqueda</h3>
+        </div>
+
+        <div class="form-grid form-grid--3 mt-3">
+          <div class="form-group">
+            <label class="form-label">Cédula / Identificación</label>
+            <input type="text" class="form-input" placeholder="Ej. 120..." [(ngModel)]="filtro.cedula">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Apellidos</label>
+            <input type="text" class="form-input" placeholder="Buscar por apellido..." [(ngModel)]="filtro.apellido">
+          </div>
+          <div class="form-group d-flex-end">
+            <button class="btn btn--primary full-width" (click)="buscar()">
+              <i class="pi pi-search"></i> Buscar Postulante
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="form-card">
+      <div class="table-container">
+        <table class="custom-table">
+          <thead>
+          <tr>
+            <th>Identificación</th>
+            <th>Apellidos y Nombres</th>
+            <th>Correo</th>
+            <th>Teléfono</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let p of postulantes">
+            <td><span class="badge-id">{{ p.identificacion }}</span></td>
+            <td>
+              <div class="user-info">
+                <span class="user-name">{{ p.apellidos_postulante }} {{ p.nombres_postulante }}</span>
+              </div>
+            </td>
+            <td>{{ p.correo_postulante }}</td>
+            <td>{{ p.telefono_postulante }}</td>
+            <td>
+                <span class="status-badge"
+                      [ngClass]="{
+                        'status-pendiente': p.estado === 'pendiente',
+                        'status-aprobado': p.estado === 'aprobado'
+                      }">
+                  {{ p.estado | titlecase }}
+                </span>
+            </td>
+            <td class="text-center">
+              <button class="btn-icon" title="Ver Perfil" (click)="verPerfil(p)">
+                <i class="pi pi-eye"></i>
+              </button>
+              <button class="btn-icon btn-icon--edit" title="Enviar Notificación" (click)="abrirModalExito()">
+                <i class="pi pi-envelope"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="postulantes.length === 0">
+            <td colspan="6" class="empty-state">
+              <i class="pi pi-inbox"></i>
+              <p>No se encontraron postulantes con esos criterios.</p>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModal">
+  <div class="modal-card">
+
+    <div class="modal-header-icon">
+      <div class="check-circle">
+        <i class="pi pi-check"></i>
+      </div>
+    </div>
+
+    <h2 class="modal-title">¡Notificación Enviada!</h2>
+
+    <div class="modal-steps">
+      <div class="step-item">
+        <div class="step-icon"><i class="pi pi-file"></i></div>
+        <div class="step-text">
+          <strong>Revisión de Perfil</strong>
+          <span>Se ha notificado al postulante sobre la revisión.</span>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-icon"><i class="pi pi-envelope"></i></div>
+        <div class="step-text">
+          <strong>Correo Enviado</strong>
+          <span>Copia enviada a {{ correoSeleccionado }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-info-box">
+      Gracias por gestionar este proceso. El estado del postulante se actualizará automáticamente.
+    </div>
+
+    <button class="btn btn--primary btn--block" (click)="cerrarModal()">
+      ENTENDIDO
+    </button>
+  </div>
+</div>
+
+<app-footer></app-footer>

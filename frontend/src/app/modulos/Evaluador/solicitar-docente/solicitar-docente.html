@@ -1,0 +1,127 @@
+<app-navbar></app-navbar>
+
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <header class="page-header">
+      <div class="page-header__info">
+        <h2 class="page-header__title">Nueva Solicitud de Personal</h2>
+        <p class="page-header__description">Complete el formulario para requerir un nuevo docente.</p>
+      </div>
+      <button class="btn btn--outline-back" (click)="cancelar()">
+        <i class="pi pi-arrow-left"></i> Volver
+      </button>
+    </header>
+
+    <form class="form-card" (ngSubmit)="guardarSolicitud()" #formSolicitud="ngForm">
+
+      <section class="form-section">
+        <div class="form-section__header">
+          <div class="form-section__icon">
+            <i class="pi pi-book"></i>
+          </div>
+          <h3 class="form-section__title">Información Académica</h3>
+        </div>
+
+        <div class="form-grid form-grid--3">
+          <div class="form-group">
+            <label class="form-label">Carrera <span class="required">*</span></label>
+            <div class="select-wrapper">
+              <select class="form-input" [(ngModel)]="solicitud.id_carrera" name="id_carrera" required>
+                <option value="" disabled selected>Seleccione una carrera</option>
+                <option value="1">Ingeniería de Software</option>
+                <option value="2">Telemática</option>
+                <option value="3">Alimentos</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Área de Conocimiento <span class="required">*</span></label>
+            <div class="select-wrapper">
+              <select class="form-input" [(ngModel)]="solicitud.id_area" name="id_area" required>
+                <option value="" disabled selected>Seleccione el área</option>
+                <option value="1">Programación e Ingeniería</option>
+                <option value="2">Redes y Seguridad</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Materia / Asignatura <span class="required">*</span></label>
+            <div class="select-wrapper">
+              <select class="form-input" [(ngModel)]="solicitud.id_materia" name="id_materia" required>
+                <option value="" disabled selected>Seleccione la materia</option>
+                <option value="1">Desarrollo Web</option>
+                <option value="2">Aplicaciones Móviles</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Nivel Académico <span class="required">*</span></label>
+            <div class="select-wrapper">
+              <select class="form-input" [(ngModel)]="solicitud.nivel_academico" name="nivel_academico" required>
+                <option value="" disabled selected>Seleccione nivel</option>
+                <option value="Tercer Nivel">Tercer Nivel (Ingeniería)</option>
+                <option value="Cuarto Nivel">Cuarto Nivel (Maestría/PhD)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="form-section">
+        <div class="form-section__header">
+          <div class="form-section__icon">
+            <i class="pi pi-briefcase"></i>
+          </div>
+          <h3 class="form-section__title">Detalles de la Vacante</h3>
+        </div>
+
+        <div class="form-grid form-grid--3">
+          <div class="form-group">
+            <label class="form-label">Cantidad <span class="required">*</span></label>
+            <input type="number" class="form-input" [(ngModel)]="solicitud.cantidad_docentes" name="cantidad_docentes" min="1" placeholder="Ej. 1" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Exp. Profesional (Años) <span class="required">*</span></label>
+            <input type="number" class="form-input" [(ngModel)]="solicitud.experiencia_profesional_min" name="experiencia_profesional_min" min="0" placeholder="0" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Exp. Docente (Años) <span class="required">*</span></label>
+            <input type="number" class="form-input" [(ngModel)]="solicitud.experiencia_docente_min" name="experiencia_docente_min" min="0" placeholder="0" required>
+          </div>
+        </div>
+
+        <div class="form-grid form-grid--1">
+          <div class="form-group">
+            <label class="form-label">Justificación <span class="required">*</span></label>
+            <textarea class="form-input" rows="3" [(ngModel)]="solicitud.justificacion" name="justificacion" placeholder="Explique la necesidad de esta contratación..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Observaciones</label>
+            <textarea class="form-input" rows="2" [(ngModel)]="solicitud.observaciones" name="observaciones" placeholder="Detalles extra (horarios, requisitos específicos, etc.)"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn--cancel" (click)="cancelar()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn--primary" [disabled]="!formSolicitud.form.valid">
+          <i class="pi pi-save"></i> Guardar Solicitud
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<app-footer></app-footer>

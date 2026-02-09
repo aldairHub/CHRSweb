@@ -8,6 +8,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 
 // 1. IMPORTAMOS EL SERVICIO DE USUARIOS
 import { UsuarioService } from '../../services/usuario.service';
+import {NavbarComponent} from '../../component/navbar';
 
 // Interfaces
 interface Usuario {
@@ -64,7 +65,8 @@ interface RolAutoridad {
   imports: [
     CommonModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NavbarComponent
   ],
   templateUrl: './gestion-usuarios.html',
   styleUrls: ['./gestion-usuarios.scss']

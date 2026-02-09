@@ -1,0 +1,168 @@
+// VARIABLES DE COLOR (Tema UTEQ)
+$uteq-green: #16a34a;
+$uteq-green-dark: #0d5e2f;
+$uteq-green-light: #dcfce7;
+$text-dark: #111827;
+$text-gray: #4b5563;
+$danger: #dc2626;
+$border-color: #e5e7eb;
+
+// ESTRUCTURA PRINCIPAL
+.main-container {
+  padding: 20px;
+  // El fondo general lo toma de tu styles.scss global
+}
+
+.content-wrapper {
+  max-width: 950px;
+  margin: 0 auto;
+}
+
+// HEADER
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+
+  &__title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: $text-dark;
+    margin: 0;
+  }
+
+  &__description {
+    color: $uteq-green-dark;
+    margin: 5px 0 0;
+    font-size: 0.95rem;
+  }
+}
+
+// TARJETA DEL FORMULARIO
+.form-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 2.5rem;
+  border: 1px solid $border-color;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+// SECCIONES E ÍCONOS (Lo que pediste)
+.form-section {
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  // EL CUADRITO VERDE
+  &__icon {
+    width: 42px;
+    height: 42px;
+    background-color: $uteq-green-light; // Fondo verde suave
+    color: $uteq-green-dark;             // Ícono verde oscuro
+    border-radius: 10px;                 // Bordes redondeados
+
+    // Centrado perfecto del ícono
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 1.2rem; // Tamaño del ícono
+    border: 1px solid #bbf7d0; // Borde sutil
+  }
+
+  &__title {
+    color: $uteq-green-dark;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0;
+  }
+}
+
+.divider {
+  height: 1px;
+  background: $border-color;
+  margin: 30px 0;
+}
+
+// GRID SYSTEM
+.form-grid {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+
+  &--3 {
+    grid-template-columns: 1fr;
+    @media(min-width: 768px) { grid-template-columns: repeat(3, 1fr); }
+  }
+  &--1 { grid-template-columns: 1fr; }
+}
+
+// INPUTS
+.form-group {
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: $text-gray;
+  text-transform: uppercase;
+  .required { color: $danger; }
+}
+
+.form-input {
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+  background-color: #f9fafb;
+  transition: all 0.2s;
+
+  &:focus {
+    outline: none;
+    background-color: #fff;
+    border-color: $uteq-green;
+    box-shadow: 0 0 0 3px rgba($uteq-green, 0.15);
+  }
+}
+
+// BOTONES
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 2.5rem;
+  border-top: 1px solid $border-color;
+  padding-top: 2rem;
+}
+
+.btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px;
+  border: none;
+  font-size: 0.95rem;
+
+  &--primary {
+    background: $uteq-green; color: white;
+    &:hover { background: $uteq-green-dark; transform: translateY(-1px); }
+    &:disabled { background: #9ca3af; cursor: not-allowed; transform: none; }
+  }
+
+  &--cancel {
+    background: white; border: 1px solid #d1d5db; color: $text-gray;
+    &:hover { background: #fef2f2; border-color: $danger; color: $danger; }
+  }
+
+  &--outline-back {
+    background: transparent; border: 1px solid $uteq-green; color: $uteq-green; padding: 8px 16px;
+    &:hover { background: $uteq-green-light; }
+  }
+}

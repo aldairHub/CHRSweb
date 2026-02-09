@@ -1,0 +1,73 @@
+<app-navbar></app-navbar>
+
+<div class="main-container">
+
+  <div class="page-header">
+    <div>
+      <h1>Panel de Reportes e Indicadores</h1>
+      <p>Resumen estadístico del proceso de selección docente</p>
+    </div>
+    <button class="btn-print" (click)="imprimir()">🖨️ Imprimir Resumen</button>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" *ngFor="let kpi of kpis" [ngClass]="kpi.color">
+      <div class="kpi-info">
+        <h3>{{ kpi.valor }}</h3>
+        <span>{{ kpi.titulo }}</span>
+      </div>
+      <div class="kpi-icon">{{ kpi.icono }}</div>
+    </div>
+  </div>
+
+  <div class="content-grid">
+
+    <div class="card-box reports-section">
+      <div class="card-header">
+        <h2>📂 Documentos Generados</h2>
+        <button class="btn-link">Ver todos</button>
+      </div>
+
+      <div class="file-list">
+        <div class="file-item" *ngFor="let rep of reportesRecientes">
+          <div class="file-icon" [ngClass]="rep.tipo">
+            {{ rep.tipo === 'pdf' ? 'PDF' : 'XLS' }}
+          </div>
+          <div class="file-details">
+            <span class="file-name">{{ rep.nombre }}</span>
+            <span class="file-meta">{{ rep.fecha }} • {{ rep.peso }}</span>
+          </div>
+          <button class="btn-download" (click)="descargar(rep.nombre)">⬇️</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-box stats-section">
+      <div class="card-header">
+        <h2>📊 Promedio por Área</h2>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-row" *ngFor="let item of rendimientoPorArea">
+          <div class="chart-label">
+            <span>{{ item.area }}</span>
+            <span>{{ item.puntaje }}%</span>
+          </div>
+          <div class="progress-bg">
+            <div class="progress-bar"
+                 [style.width.%]="item.puntaje"
+                 [style.background-color]="item.color">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert-box">
+        ℹ️ El área de <strong>Inteligencia Artificial</strong> tiene el promedio más bajo.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<app-footer></app-footer>

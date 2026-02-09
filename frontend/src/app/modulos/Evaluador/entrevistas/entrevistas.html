@@ -1,0 +1,90 @@
+<app-navbar></app-navbar>
+
+<div class="main-container">
+
+  <div class="layout-grid">
+
+    <div class="sidebar-list">
+      <div class="sidebar-header">
+        <h3>Programación Hoy</h3>
+        <span>3 Agendados</span>
+      </div>
+
+      <div class="candidate-list">
+        <div *ngFor="let c of candidatos"
+             class="candidate-card"
+             [class.active]="candidatoSeleccionado === c"
+             (click)="seleccionar(c)">
+
+          <img [src]="c.foto" class="avatar">
+
+          <div class="info">
+            <span class="name">{{ c.nombre }}</span>
+            <span class="time">🕒 {{ c.hora }}</span>
+          </div>
+
+          <span class="status-badge" [ngClass]="c.estado === 'Completado' ? 'done' : 'pending'">
+            {{ c.estado === 'Completado' ? '✔' : '⏳' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="evaluation-panel">
+
+      <div *ngIf="!candidatoSeleccionado" class="empty-state">
+        <i class="pi pi-user" style="font-size: 3rem; color: #ccc;"></i>
+        <h2>Seleccione un postulante</h2>
+        <p>Haga clic en la lista de la izquierda para iniciar la evaluación.</p>
+      </div>
+
+      <div *ngIf="candidatoSeleccionado" class="form-content">
+
+        <div class="panel-header">
+          <div>
+            <h2>Evaluación de Clase Demostrativa</h2>
+            <p class="subtitle">{{ candidatoSeleccionado.nombre }}</p>
+          </div>
+          <div class="total-score">
+            <span>TOTAL</span>
+            <strong>{{ calcularTotal() }} / 30</strong>
+          </div>
+        </div>
+
+        <div class="criteria-section">
+
+          <div class="input-group">
+            <label>1. Dominio Científico del Tema (Max 10)</label>
+            <input type="number" min="0" max="10" [(ngModel)]="candidatoSeleccionado.puntajes.dominio">
+          </div>
+
+          <div class="input-group">
+            <label>2. Didáctica y Metodología (Max 10)</label>
+            <input type="number" min="0" max="10" [(ngModel)]="candidatoSeleccionado.puntajes.didactica">
+          </div>
+
+          <div class="input-group">
+            <label>3. Uso de Recursos Didácticos (Max 10)</label>
+            <input type="number" min="0" max="10" [(ngModel)]="candidatoSeleccionado.puntajes.recursos">
+          </div>
+
+          <div class="input-group full-width">
+            <label>Observaciones / Comentarios</label>
+            <textarea rows="4" [(ngModel)]="candidatoSeleccionado.notas" placeholder="Escriba aquí sus observaciones..."></textarea>
+          </div>
+
+        </div>
+
+        <div class="actions">
+          <button class="btn-cancel" (click)="candidatoSeleccionado = null">Cancelar</button>
+          <button class="btn-save" (click)="guardarEntrevista()">Guardar Evaluación</button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<app-footer></app-footer>
