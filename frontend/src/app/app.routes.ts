@@ -95,6 +95,33 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     data: { rol: 'admin' }
   },
+  {
+    path: 'facultad',
+    loadComponent: () => import('./modulos/estructura/facultad/facultad').then(m => m.FacultadComponent),
+    canActivate: [AuthGuard],
+    data: { rol: 'admin' }
+  },
+  {
+    path: 'carrera',
+    loadComponent: () => import('./modulos/estructura/carrera/carrera')
+      .then(m => m.CarreraComponent),
+    canActivate: [AuthGuard],
+    data: { rol: 'admin' }
+  },
+  {
+    path: 'materia',
+    loadComponent: () => import('./modulos/estructura/materia/materia')
+      .then(m => m.MateriaComponent),
+    canActivate: [AuthGuard],
+    data: { rol: 'admin' }
+  },
+  {
+    path: 'gestion-postulante',
+    loadComponent: () => import('./modulos/Postulante/postulante')
+      .then(m => m.PostulanteComponent),
+    canActivate: [AuthGuard],
+    data: { rol: 'admin' }
+  },
 
   // ==========================================
   // ERROR 404 (Cualquier ruta desconocida)
