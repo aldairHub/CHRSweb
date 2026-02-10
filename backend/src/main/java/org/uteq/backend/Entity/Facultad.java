@@ -3,7 +3,10 @@ package org.uteq.backend.Entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "facultad", schema = "public")
+@Table(name = "facultad", schema = "public",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uq_facultad_nombre_facultad", columnNames = "nombre_facultad")
+})
 public class Facultad {
 
     @Id
