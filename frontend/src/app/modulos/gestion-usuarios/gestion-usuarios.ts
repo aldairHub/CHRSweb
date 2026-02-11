@@ -1,276 +1,187 @@
 // gestion-usuarios.component.ts
-
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ReactiveFormsModule } from '@angular/forms';
 
-// 1. IMPORTAMOS EL SERVICIO DE USUARIOS
-import { UsuarioService } from '../../services/usuario.service';
-import {NavbarComponent} from '../../component/navbar';
-
-// Interfaces
-interface Usuario {
-  idUsuario: number;
-  idAutoridad: number;
-  usuarioApp: string;
-  nombres: string;
-  apellidos: string;
-  correo: string;
-  activo: boolean;
-  rolesAutoridad: string[];
-  facultad?: { id: number; nombre: string };
-  carrera?: { id: number; nombre: string };
-  rolesUsuario?: string[];
-}
-
-interface Institucion {
-  id: number;
-  nombre: string;
-}
-
-interface Facultad {
-  id: number;
-  nombre: string;
-}
-
-interface Carrera {
-  id: number;
-  nombre: string;
-  idFacultad: number;
-}
+import { NavbarComponent } from '../../component/navbar';
+import {
+  AutoridadAcademicaService,
+  AutoridadResponseDto,
+  AutoridadRegistroPayload,
+  AutoridadUpdatePayload,
+  InstitucionDto,
+  RolAutoridadDto
+} from '../../services/autoridad-academica.service';
 
 interface RolPreview {
   nombre: string;
   descripcion: string;
 }
 
-interface RolUsuario {
-  nombre: string;
-  descripcion: string;
-  automatico: boolean;
-  activo: boolean;
-
-}
-
-interface RolAutoridad {
-  id: string;
-  nombre: string;
-}
-
 @Component({
   selector: 'app-gestion-usuarios',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    NavbarComponent
-  ],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NavbarComponent],
   templateUrl: './gestion-usuarios.html',
   styleUrls: ['./gestion-usuarios.scss']
 })
-
 export class GestionUsuariosComponent implements OnInit {
 
-  // Datos de la tabla
-  usuarios: Usuario[] = [];
-  usuariosFiltrados: Usuario[] = [];
+  // data
+  usuarios: AutoridadResponseDto[] = [];
+  usuariosFiltrados: AutoridadResponseDto[] = [];
 
-  // Estadísticas
+  // catalogs
+  instituciones: InstitucionDto[] = [];
+  rolesAutoridadDisponibles: RolAutoridadDto[] = [];
+
+  // stats
   totalUsuarios = 0;
   usuariosActivos = 0;
   totalDecanos = 0;
   totalCoordinadores = 0;
 
-  // Filtros
+  // filtros
   searchTerm = '';
-  filterRole = '';
+  filterRoleId: number | null = null;
   filterStatus = '';
 
-  // Paginación
+  // paginación
   currentPage = 1;
   pageSize = 10;
   totalPages = 1;
   Math = Math;
 
-  // Modales
+  // modals
   showCreateModal = false;
   showEditModal = false;
   showRolesModal = false;
 
-  // Formularios
+  // forms
   createForm!: FormGroup;
   editForm!: FormGroup;
 
-  // Loading states
+  // states
   isSaving = false;
   isUpdating = false;
 
-  // Usuario seleccionado
-  selectedUsuario: Usuario | null = null;
+  // selected
+  selectedUsuario: AutoridadResponseDto | null = null;
 
-  // Datos para selects
-  instituciones: Institucion[] = [];
-  facultades: Facultad[] = [];
-  carreras: Carrera[] = [];
-  rolesAutoridadDisponibles: RolAutoridad[] = [
-    { id: 'DECANATO_FACULTAD', nombre: 'Decanato de la Facultad' },
-    { id: 'COORDINADOR_CARRERA', nombre: 'Coordinador de Carrera' },
-    { id: 'VICERRECTORADO_ACADEMICO', nombre: 'Miembro de Vicerrectorado' },
-    { id: 'CONSEJO_ACADEMICO', nombre: 'Miembro del Consejo Académico' }
-  ];
+  // errors
+  rolesAutoridadErrorCreate = false;
+  rolesAutoridadErrorEdit = false;
 
-  // Preview de roles
+  // preview
   previewRoles: RolPreview[] = [];
-
-  // Flags condicionales
-  needsFacultad = false;
-  needsCarrera = false;
-  editNeedsFacultad = false;
-  editNeedsCarrera = false;
-
-  // Roles en edición
-  editRolesAutoridad: string[] = [];
-  editRolesUsuario: RolUsuario[] = [];
-
-  // Modal de roles
-  rolesAutomaticos: string[] = [];
-  rolesAdicionales: string[] = [];
-  availableRolesToAdd: string[] = [];
-  newRoleToAdd = '';
 
   constructor(
     private fb: FormBuilder,
-    // 2. INYECTAMOS EL SERVICIO
-    private usuarioService: UsuarioService
+    private autoridadService: AutoridadAcademicaService
   ) {}
 
   ngOnInit(): void {
     this.initForms();
-    this.loadData();
     this.loadCatalogs();
+    this.loadData();
   }
 
   // ==========================================
-  // INICIALIZACIÓN
+  // INIT FORMS
   // ==========================================
-
   initForms(): void {
     this.createForm = this.fb.group({
       nombres: ['', [Validators.required, Validators.minLength(2)]],
       apellidos: ['', [Validators.required, Validators.minLength(2)]],
       correo: ['', [Validators.required, Validators.email]],
       fechaNacimiento: ['', Validators.required],
-      idInstitucion: ['', Validators.required],
-      rolesAutoridad: this.fb.array([]),
-      idFacultad: [''],
-      idCarrera: ['']
+      idInstitucion: [null, Validators.required],
+      rolesAutoridad: this.fb.array([]) // boolean array
     });
 
     this.editForm = this.fb.group({
-      nombres: ['', [Validators.required]],
-      apellidos: ['', [Validators.required]],
+      nombres: ['', [Validators.required, Validators.minLength(2)]],
+      apellidos: ['', [Validators.required, Validators.minLength(2)]],
       correo: ['', [Validators.required, Validators.email]],
       fechaNacimiento: ['', Validators.required],
-      idFacultad: [''],
-      idCarrera: ['']
+      idInstitucion: [null, Validators.required],
+      rolesAutoridad: this.fb.array([]), // boolean array
+      estado: [true, Validators.required]
+    });
+  }
+
+  private resetRolesArray(form: FormGroup): void {
+    const arr = form.get('rolesAutoridad') as FormArray;
+    arr.clear();
+    this.rolesAutoridadDisponibles.forEach(() => arr.push(this.fb.control(false)));
+  }
+
+  // ==========================================
+  // LOAD
+  // ==========================================
+  loadCatalogs(): void {
+    this.autoridadService.listarInstituciones().subscribe({
+      next: (data) => (this.instituciones = data),
+      error: (err) => console.error('Error instituciones', err)
+    });
+
+    this.autoridadService.listarCargosAutoridad().subscribe({
+      next: (roles) => {
+        this.rolesAutoridadDisponibles = roles;
+        this.resetRolesArray(this.createForm);
+        this.resetRolesArray(this.editForm);
+      },
+      error: (err) => console.error('Error roles autoridad', err)
     });
   }
 
   loadData(): void {
-    // Datos de ejemplo - Reemplazar con servicio real
-    // OPCIONAL: Podrías llamar a this.usuarioService.listarTodos() aquí
-    this.usuarios = [
-      {
-        idUsuario: 1,
-        idAutoridad: 1,
-        usuarioApp: 'jperez',
-        nombres: 'Juan Carlos',
-        apellidos: 'Pérez Morales',
-        correo: 'jperez@uteq.edu.ec',
-        activo: true,
-        rolesAutoridad: ['DECANATO_FACULTAD'],
-        facultad: { id: 1, nombre: 'Ciencias de la Computación' },
-        rolesUsuario: ['ROLE_AUTORIDAD', 'ROLE_EVALUATOR']
+    this.autoridadService.listarAutoridades().subscribe({
+      next: (data) => {
+        this.usuarios = data;
+        this.usuariosFiltrados = [...this.usuarios];
+        this.updateStats();
+        this.calculatePagination();
       },
-      // ... (Tus datos de ejemplo siguen aquí)
-      {
-        idUsuario: 2,
-        idAutoridad: 2,
-        usuarioApp: 'mrodriguez',
-        nombres: 'María Elena',
-        apellidos: 'Rodríguez Silva',
-        correo: 'mrodriguez@uteq.edu.ec',
-        activo: true,
-        rolesAutoridad: ['COORDINADOR_CARRERA'],
-        carrera: { id: 1, nombre: 'Ingeniería en Software' },
-        facultad: { id: 1, nombre: 'Ciencias de la Computación' },
-        rolesUsuario: ['ROLE_AUTORIDAD', 'ROLE_ENTREVISTADOR']
-      }
-    ];
-
-    this.usuariosFiltrados = [...this.usuarios];
-    this.updateStats();
-    this.calculatePagination();
-  }
-
-  loadCatalogs(): void {
-    this.instituciones = [
-      { id: 1, nombre: 'Universidad Técnica Estatal de Quevedo (UTEQ)' },
-      { id: 2, nombre: 'Campus Buena Fe' },
-      { id: 3, nombre: 'Campus Valencia' }
-    ];
-
-    this.facultades = [
-      { id: 1, nombre: 'Ciencias de la Computación y Diseño Digital' },
-      { id: 2, nombre: 'Ciencias Empresariales' },
-      { id: 3, nombre: 'Ciencias de la Ingeniería' },
-      { id: 4, nombre: 'Ciencias Pecuarias' }
-    ];
-
-    this.carreras = [
-      { id: 1, nombre: 'Ingeniería en Software', idFacultad: 1 },
-      { id: 2, nombre: 'Diseño Gráfico', idFacultad: 1 },
-      { id: 3, nombre: 'Administración de Empresas', idFacultad: 2 },
-      { id: 4, nombre: 'Marketing Digital', idFacultad: 2 },
-      { id: 5, nombre: 'Ingeniería Civil', idFacultad: 3 }
-    ];
+      error: (err) => console.error('Error listar autoridades', err)
+    });
   }
 
   // ==========================================
-  // ESTADÍSTICAS
+  // STATS
   // ==========================================
-
   updateStats(): void {
     this.totalUsuarios = this.usuarios.length;
-    this.usuariosActivos = this.usuarios.filter(u => u.activo).length;
-    this.totalDecanos = this.usuarios.filter(u =>
-      u.rolesAutoridad.includes('DECANATO_FACULTAD')
-    ).length;
-    this.totalCoordinadores = this.usuarios.filter(u =>
-      u.rolesAutoridad.includes('COORDINADOR_CARRERA')
-    ).length;
+    this.usuariosActivos = this.usuarios.filter(u => u.estado).length;
+
+    // si tus nombres de rol son distintos, esto igual funciona por "includes"
+    const hasByName = (u: AutoridadResponseDto, text: string) =>
+      (u.rolesAutoridad || []).some(r => (r.nombre || '').toLowerCase().includes(text));
+
+    this.totalDecanos = this.usuarios.filter(u => hasByName(u, 'decano')).length;
+    this.totalCoordinadores = this.usuarios.filter(u => hasByName(u, 'coordin')).length;
   }
 
   // ==========================================
-  // FILTROS Y BÚSQUEDA
+  // FILTERS
   // ==========================================
-
   applyFilters(): void {
-    this.usuariosFiltrados = this.usuarios.filter(usuario => {
-      const searchMatch = !this.searchTerm ||
-        usuario.nombres.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        usuario.apellidos.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        usuario.correo.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        usuario.usuarioApp.toLowerCase().includes(this.searchTerm.toLowerCase());
+    const term = this.searchTerm.trim().toLowerCase();
 
-      const roleMatch = !this.filterRole ||
-        usuario.rolesAutoridad.includes(this.filterRole);
+    this.usuariosFiltrados = this.usuarios.filter(u => {
+      const searchMatch =
+        !term ||
+        u.nombres.toLowerCase().includes(term) ||
+        u.apellidos.toLowerCase().includes(term) ||
+        u.correo.toLowerCase().includes(term);
 
-      const statusMatch = !this.filterStatus ||
-        usuario.activo.toString() === this.filterStatus;
+      const roleMatch =
+        this.filterRoleId == null ||
+        (u.rolesAutoridad || []).some(r => r.idRolAutoridad === this.filterRoleId);
+
+      const statusMatch =
+        !this.filterStatus || u.estado.toString() === this.filterStatus;
 
       return searchMatch && roleMatch && statusMatch;
     });
@@ -280,17 +191,20 @@ export class GestionUsuariosComponent implements OnInit {
   }
 
   // ==========================================
-  // PAGINACIÓN
+  // PAGINATION
   // ==========================================
-
   calculatePagination(): void {
-    this.totalPages = Math.ceil(this.usuariosFiltrados.length / this.pageSize);
+    this.totalPages = Math.max(1, Math.ceil(this.usuariosFiltrados.length / this.pageSize));
+  }
+
+  get usuariosPaginados(): AutoridadResponseDto[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    return this.usuariosFiltrados.slice(start, end);
   }
 
   changePage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-    }
+    if (page >= 1 && page <= this.totalPages) this.currentPage = page;
   }
 
   getPageNumbers(): number[] {
@@ -298,79 +212,74 @@ export class GestionUsuariosComponent implements OnInit {
     const maxVisible = 5;
 
     if (this.totalPages <= maxVisible) {
-      for (let i = 1; i <= this.totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      pages.push(1);
-      if (this.currentPage > 3) {
-        pages.push(-1);
-      }
-
-      const start = Math.max(2, this.currentPage - 1);
-      const end = Math.min(this.totalPages - 1, this.currentPage + 1);
-
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
-
-      if (this.currentPage < this.totalPages - 2) {
-        pages.push(-1);
-      }
-      pages.push(this.totalPages);
+      for (let i = 1; i <= this.totalPages; i++) pages.push(i);
+      return pages;
     }
+
+    pages.push(1);
+    if (this.currentPage > 3) pages.push(-1);
+
+    const start = Math.max(2, this.currentPage - 1);
+    const end = Math.min(this.totalPages - 1, this.currentPage + 1);
+    for (let i = start; i <= end; i++) pages.push(i);
+
+    if (this.currentPage < this.totalPages - 2) pages.push(-1);
+    pages.push(this.totalPages);
 
     return pages;
   }
 
   // ==========================================
-  // UTILIDADES DE ROLES
+  // UI HELPERS
   // ==========================================
-
-  getRolClass(rol: string): string {
-    const classMap: { [key: string]: string } = {
-      'DECANATO_FACULTAD': 'decano',
-      'COORDINADOR_CARRERA': 'coordinador',
-      'VICERRECTORADO_ACADEMICO': 'vicerrectorado',
-      'CONSEJO_ACADEMICO': 'consejo'
-    };
-    return classMap[rol] || '';
+  getNombreInstitucion(idInstitucion: number): string {
+    return this.instituciones.find(i => i.idInstitucion === idInstitucion)?.nombre || '';
   }
 
-  getRolLabel(rol: string): string {
-    const labelMap: { [key: string]: string } = {
-      'DECANATO_FACULTAD': 'Decano',
-      'COORDINADOR_CARRERA': 'Coordinador',
-      'VICERRECTORADO_ACADEMICO': 'Vicerrectorado',
-      'CONSEJO_ACADEMICO': 'Consejo'
-    };
-    return labelMap[rol] || rol;
+  getRolClass(nombre: string): string {
+    const n = (nombre || '').toLowerCase();
+    if (n.includes('decano')) return 'decano';
+    if (n.includes('coordin')) return 'coordinador';
+    if (n.includes('vicer')) return 'vicerrectorado';
+    if (n.includes('consejo')) return 'consejo';
+    return '';
   }
 
   // ==========================================
-  // TOGGLE STATUS
+  // ROLES SELECTED (FormArray -> ids)
   // ==========================================
+  private getSelectedIdsRol(form: FormGroup): number[] {
+    const arr = form.get('rolesAutoridad') as FormArray;
+    return arr.controls
+      .map((c, i) => (c.value ? this.rolesAutoridadDisponibles[i]?.idRolAutoridad : null))
+      .filter((x): x is number => x !== null && x !== undefined);
+  }
 
-  toggleStatus(usuario: Usuario): void {
-    const newStatus = !usuario.activo;
-    const action = newStatus ? 'activar' : 'desactivar';
-
-    if (confirm(`¿Está seguro que desea ${action} este usuario?\n\n${newStatus ? 'El usuario podrá acceder al sistema.' : 'El usuario NO podrá acceder al sistema.'}`)) {
-      usuario.activo = newStatus;
-      this.updateStats();
-      alert(`Usuario ${action} exitosamente`);
-    }
+  private setSelectedRolesInForm(form: FormGroup, ids: number[]): void {
+    const arr = form.get('rolesAutoridad') as FormArray;
+    arr.controls.forEach((c, i) => {
+      const id = this.rolesAutoridadDisponibles[i]?.idRolAutoridad;
+      c.setValue(ids.includes(id));
+    });
   }
 
   // ==========================================
-  // MODAL CREAR
+  // CREATE
   // ==========================================
-
   openCreateModal(): void {
-    this.createForm.reset();
+    this.rolesAutoridadErrorCreate = false;
     this.previewRoles = [];
-    this.needsFacultad = false;
-    this.needsCarrera = false;
+    this.createForm.reset({
+      nombres: '',
+      apellidos: '',
+      correo: '',
+      fechaNacimiento: '',
+      idInstitucion: null
+    });
+
+    const arr = this.createForm.get('rolesAutoridad') as FormArray;
+    arr.controls.forEach(c => c.setValue(false));
+
     this.showCreateModal = true;
   }
 
@@ -378,157 +287,80 @@ export class GestionUsuariosComponent implements OnInit {
     this.showCreateModal = false;
   }
 
-  onRoleChange(event: any): void {
-    const value = event.target.value;
-    const checked = event.target.checked;
-    this.updateConditionalFields();
-    this.updateRolesPreview();
+  onCreateRolesChanged(): void {
+    const ids = this.getSelectedIdsRol(this.createForm);
+    this.rolesAutoridadErrorCreate = ids.length === 0;
+
+    // Preview simple (sin inventar roles usuario)
+    this.previewRoles = ids.length
+      ? [{ nombre: 'Asignación automática', descripcion: 'El backend asigna roles de usuario según los cargos.' }]
+      : [];
   }
-
-  updateConditionalFields(): void {
-    const checkboxes = document.querySelectorAll<HTMLInputElement>('input[type="checkbox"][value]');
-    const selectedRoles: string[] = [];
-
-    checkboxes.forEach(cb => {
-      if (cb.checked) {
-        selectedRoles.push(cb.value);
-      }
-    });
-
-    this.needsFacultad = selectedRoles.includes('DECANATO_FACULTAD');
-    this.needsCarrera = selectedRoles.includes('COORDINADOR_CARRERA');
-
-    if (this.needsFacultad) {
-      this.createForm.get('idFacultad')?.setValidators([Validators.required]);
-    } else {
-      this.createForm.get('idFacultad')?.clearValidators();
-      this.createForm.get('idFacultad')?.setValue('');
-    }
-
-    if (this.needsCarrera) {
-      this.createForm.get('idCarrera')?.setValidators([Validators.required]);
-    } else {
-      this.createForm.get('idCarrera')?.clearValidators();
-      this.createForm.get('idCarrera')?.setValue('');
-    }
-
-    this.createForm.get('idFacultad')?.updateValueAndValidity();
-    this.createForm.get('idCarrera')?.updateValueAndValidity();
-  }
-
-  updateRolesPreview(): void {
-    const checkboxes = document.querySelectorAll<HTMLInputElement>('input[type="checkbox"][value]');
-    const selectedRoles: string[] = [];
-
-    checkboxes.forEach(cb => {
-      if (cb.checked) {
-        selectedRoles.push(cb.value);
-      }
-    });
-
-    this.previewRoles = [];
-    if (selectedRoles.length === 0) return;
-
-    this.previewRoles.push({
-      nombre: 'ROLE_AUTORIDAD',
-      descripcion: 'Rol base para todas las autoridades'
-    });
-
-    if (selectedRoles.includes('DECANATO_FACULTAD')) {
-      this.previewRoles.push({
-        nombre: 'ROLE_EVALUATOR',
-        descripcion: 'Por rol Decanato de Facultad'
-      });
-    }
-
-    if (selectedRoles.includes('VICERRECTORADO_ACADEMICO') || selectedRoles.includes('CONSEJO_ACADEMICO')) {
-      this.previewRoles.push({
-        nombre: 'ROLE_REPORT_VIEWER',
-        descripcion: 'Por rol Vicerrectorado o Consejo Académico'
-      });
-    }
-
-    if (selectedRoles.includes('COORDINADOR_CARRERA')) {
-      this.previewRoles.push({
-        nombre: 'ROLE_ENTREVISTADOR',
-        descripcion: 'Por rol Coordinador de Carrera'
-      });
-    }
-  }
-
-  // ==========================================
-  // SAVE AUTORIDAD (MODIFICADO PARA BACKEND)
-  // ==========================================
 
   saveAutoridad(): void {
     if (this.createForm.invalid) {
-      Object.keys(this.createForm.controls).forEach(key => {
-        this.createForm.get(key)?.markAsTouched();
-      });
+      Object.keys(this.createForm.controls).forEach(k => this.createForm.get(k)?.markAsTouched());
       return;
     }
 
-    this.isSaving = true;
+    const idsRolAutoridad = this.getSelectedIdsRol(this.createForm);
+    this.rolesAutoridadErrorCreate = idsRolAutoridad.length === 0;
+    if (this.rolesAutoridadErrorCreate) return;
 
-    // 1. Obtener datos del formulario
-    const formValues = this.createForm.value;
-    const correo = formValues.correo;
-    const usuarioGenerado = correo.split('@')[0]; // Generar usuario desde el correo
+    const v = this.createForm.value;
 
-    // 2. Preparar el JSON EXACTO para tu Backend
-    const usuarioParaBackend = {
-      usuarioApp: usuarioGenerado,
-      claveApp: 'UtEq2026.',       // Contraseña por defecto
-      correo: correo,
-      usuarioBd: 'invitado_bd',    // Dato obligatorio por tu backend
-      claveBd: 'clave_bd_123',     // Dato obligatorio por tu backend
-      activo: true
+    const payload: AutoridadRegistroPayload = {
+      nombres: (v.nombres ?? '').trim(),
+      apellidos: (v.apellidos ?? '').trim(),
+      correo: (v.correo ?? '').trim(),
+      fechaNacimiento: v.fechaNacimiento,
+      idInstitucion: Number(v.idInstitucion),
+      idsRolAutoridad
     };
 
-    console.log('Enviando al backend:', usuarioParaBackend);
-
-    // 3. Llamada al servicio
-    this.usuarioService.crear(usuarioParaBackend).subscribe({
+    this.isSaving = true;
+    this.autoridadService.registrarAutoridad(payload).subscribe({
       next: (res) => {
         this.isSaving = false;
         this.closeCreateModal();
 
-        // Mensaje de éxito con los datos reales creados
-        alert(`✅ Usuario creado exitosamente!\n\nID: ${res.idUsuario}\nUsuario: ${res.usuarioApp}\nCorreo: ${res.correo}`);
+        alert(
+          `✅ Autoridad registrada\n\n` +
+          `ID Autoridad: ${res.idAutoridad}\n` +
+          `Usuario App: ${res.usuarioApp}\n` +
+          `Usuario BD: ${res.usuarioBd}\n\n` +
+          `Se enviaron credenciales al correo.`
+        );
 
-        // Opcional: Recargar la tabla si implementas listarTodos()
-        // this.loadData();
+        this.loadData();
       },
       error: (err) => {
         this.isSaving = false;
-        console.error('Error del servidor:', err);
-        const mensaje = err.error || err.message || 'Error desconocido';
-        alert('❌ Error al crear usuario: ' + mensaje);
+        const msg = err?.error?.message || err?.error || err?.message || 'Error al registrar';
+        alert('❌ ' + msg);
       }
     });
   }
 
   // ==========================================
-  // MODAL EDITAR
+  // EDIT
   // ==========================================
-
-  openEditModal(usuario: Usuario): void {
+  openEditModal(usuario: AutoridadResponseDto): void {
     this.selectedUsuario = usuario;
-    this.editRolesAutoridad = [...usuario.rolesAutoridad];
+    this.rolesAutoridadErrorEdit = false;
 
     this.editForm.patchValue({
       nombres: usuario.nombres,
       apellidos: usuario.apellidos,
       correo: usuario.correo,
-      fechaNacimiento: '1980-05-15',
-      idFacultad: usuario.facultad?.id || '',
-      idCarrera: usuario.carrera?.id || ''
+      fechaNacimiento: usuario.fechaNacimiento,
+      idInstitucion: usuario.idInstitucion,
+      estado: usuario.estado
     });
 
-    this.editNeedsFacultad = this.editRolesAutoridad.includes('DECANATO_FACULTAD');
-    this.editNeedsCarrera = this.editRolesAutoridad.includes('COORDINADOR_CARRERA');
+    const ids = (usuario.rolesAutoridad || []).map(r => r.idRolAutoridad);
+    this.setSelectedRolesInForm(this.editForm, ids);
 
-    this.loadEditRolesUsuario(usuario);
     this.showEditModal = true;
   }
 
@@ -537,140 +369,109 @@ export class GestionUsuariosComponent implements OnInit {
     this.selectedUsuario = null;
   }
 
-  onEditRoleChange(rolId: string, event: any): void {
-    const checked = event.target.checked;
-
-    if (checked) {
-      if (!this.editRolesAutoridad.includes(rolId)) {
-        this.editRolesAutoridad.push(rolId);
-      }
-    } else {
-      this.editRolesAutoridad = this.editRolesAutoridad.filter(r => r !== rolId);
-    }
-
-    this.editNeedsFacultad = this.editRolesAutoridad.includes('DECANATO_FACULTAD');
-    this.editNeedsCarrera = this.editRolesAutoridad.includes('COORDINADOR_CARRERA');
-  }
-
-  loadEditRolesUsuario(usuario: Usuario): void {
-    const automaticRoles: string[] = ['ROLE_AUTORIDAD'];
-
-    if (usuario.rolesAutoridad.includes('DECANATO_FACULTAD')) {
-      automaticRoles.push('ROLE_EVALUATOR');
-    }
-    if (usuario.rolesAutoridad.includes('VICERRECTORADO_ACADEMICO') ||
-      usuario.rolesAutoridad.includes('CONSEJO_ACADEMICO')) {
-      automaticRoles.push('ROLE_REPORT_VIEWER');
-    }
-    if (usuario.rolesAutoridad.includes('COORDINADOR_CARRERA')) {
-      automaticRoles.push('ROLE_ENTREVISTADOR');
-    }
-
-    this.editRolesUsuario = [
-      ...automaticRoles.map(rol => ({
-        nombre: rol,
-        descripcion: this.getRolUsuarioDescription(rol),
-        automatico: true,
-        activo: true
-      })),
-      {
-        nombre: 'ROLE_CONTENT_MANAGER',
-        descripcion: 'Gestión de contenidos',
-        automatico: false,
-        activo: false
-      },
-      {
-        nombre: 'ROLE_SYSTEM_MONITOR',
-        descripcion: 'Monitoreo del sistema',
-        automatico: false,
-        activo: false
-      }
-    ];
-  }
-
-  getRolUsuarioDescription(rol: string): string {
-    const descriptions: { [key: string]: string } = {
-      'ROLE_AUTORIDAD': 'Rol base para autoridades',
-      'ROLE_EVALUATOR': 'Por rol Decanato',
-      'ROLE_REPORT_VIEWER': 'Por rol Vicerrectorado/Consejo',
-      'ROLE_ENTREVISTADOR': 'Por rol Coordinador'
-    };
-    return descriptions[rol] || 'Rol adicional';
-  }
-
-  toggleRolUsuario(rol: RolUsuario): void {
-    rol.activo = !rol.activo;
+  onEditRolesChanged(): void {
+    const ids = this.getSelectedIdsRol(this.editForm);
+    this.rolesAutoridadErrorEdit = ids.length === 0;
   }
 
   updateAutoridad(): void {
-    if (this.editForm.invalid) {
-      return;
-    }
+    if (!this.selectedUsuario) return;
+
+    if (this.editForm.invalid) return;
+
+    const idsRolAutoridad = this.getSelectedIdsRol(this.editForm);
+    this.rolesAutoridadErrorEdit = idsRolAutoridad.length === 0;
+    if (this.rolesAutoridadErrorEdit) return;
+
+    const v = this.editForm.value;
+
+    const payload: AutoridadUpdatePayload = {
+      nombres: (v.nombres ?? '').trim(),
+      apellidos: (v.apellidos ?? '').trim(),
+      correo: (v.correo ?? '').trim(),
+      fechaNacimiento: v.fechaNacimiento,
+      estado: !!v.estado,
+      idUsuario: this.selectedUsuario.idUsuario,       // NO se cambia
+      idInstitucion: Number(v.idInstitucion),
+      idsRolAutoridad
+    };
 
     this.isUpdating = true;
 
-    const updateData = {
-      ...this.editForm.value,
-      rolesAutoridad: this.editRolesAutoridad,
-      rolesUsuario: this.editRolesUsuario.filter(r => r.activo && !r.automatico).map(r => r.nombre)
-    };
-
-    console.log('Datos de actualización:', updateData);
-
-    setTimeout(() => {
-      this.isUpdating = false;
-      this.closeEditModal();
-      alert('Autoridad actualizada exitosamente');
-      this.loadData();
-    }, 1500);
+    this.autoridadService.actualizarAutoridad(this.selectedUsuario.idAutoridad, payload).subscribe({
+      next: () => {
+        this.isUpdating = false;
+        this.closeEditModal();
+        alert('✅ Autoridad actualizada');
+        this.loadData();
+      },
+      error: (err) => {
+        this.isUpdating = false;
+        const msg = err?.error?.message || err?.error || err?.message || 'Error al actualizar';
+        alert('❌ ' + msg);
+      }
+    });
   }
 
   // ==========================================
-  // MODAL ROLES
+  // TOGGLE STATUS (usa PUT cambiando autoridad.estado)
   // ==========================================
+  toggleStatus(usuario: AutoridadResponseDto): void {
+    const nuevoEstado = !usuario.estado;
 
-  openRolesModal(usuario: Usuario): void {
+    // armamos el payload completo (tu backend lo requiere)
+    const payload: AutoridadUpdatePayload = {
+      nombres: usuario.nombres,
+      apellidos: usuario.apellidos,
+      correo: usuario.correo,
+      fechaNacimiento: usuario.fechaNacimiento,
+      estado: nuevoEstado,
+      idUsuario: usuario.idUsuario,
+      idInstitucion: usuario.idInstitucion,
+      idsRolAutoridad: (usuario.rolesAutoridad || []).map(r => r.idRolAutoridad)
+    };
+
+    this.autoridadService.actualizarAutoridad(usuario.idAutoridad, payload).subscribe({
+      next: () => {
+        usuario.estado = nuevoEstado;
+        this.updateStats();
+        this.applyFilters();
+      },
+      error: (err) => {
+        const msg = err?.error?.message || err?.error || err?.message || 'No se pudo actualizar el estado';
+        alert('❌ ' + msg);
+      }
+    });
+  }
+
+  // ==========================================
+  // DELETE
+  // ==========================================
+  deleteAutoridad(usuario: AutoridadResponseDto): void {
+    if (!confirm(`¿Eliminar autoridad ${usuario.nombres} ${usuario.apellidos}?`)) return;
+
+    this.autoridadService.eliminarAutoridad(usuario.idAutoridad).subscribe({
+      next: () => {
+        alert('✅ Eliminado');
+        this.loadData();
+      },
+      error: (err) => {
+        const msg = err?.error?.message || err?.error || err?.message || 'No se pudo eliminar';
+        alert('❌ ' + msg);
+      }
+    });
+  }
+
+  // ==========================================
+  // ROLES MODAL (solo visualizar cargos reales)
+  // ==========================================
+  openRolesModal(usuario: AutoridadResponseDto): void {
     this.selectedUsuario = usuario;
-
-    const automaticRoles = ['ROLE_AUTORIDAD'];
-    if (usuario.rolesAutoridad.includes('DECANATO_FACULTAD')) automaticRoles.push('ROLE_EVALUATOR');
-    if (usuario.rolesAutoridad.includes('VICERRECTORADO_ACADEMICO') || usuario.rolesAutoridad.includes('CONSEJO_ACADEMICO')) automaticRoles.push('ROLE_REPORT_VIEWER');
-    if (usuario.rolesAutoridad.includes('COORDINADOR_CARRERA')) automaticRoles.push('ROLE_ENTREVISTADOR');
-
-    this.rolesAutomaticos = automaticRoles;
-    this.rolesAdicionales = (usuario.rolesUsuario || []).filter(r => !automaticRoles.includes(r));
-
-    this.availableRolesToAdd = [
-      'ROLE_CONTENT_MANAGER',
-      'ROLE_SYSTEM_MONITOR',
-      'ROLE_DATA_ANALYST',
-      'ROLE_AUDIT_VIEWER'
-    ].filter(r => ![...automaticRoles, ...this.rolesAdicionales].includes(r));
-
-    this.newRoleToAdd = '';
     this.showRolesModal = true;
   }
 
   closeRolesModal(): void {
     this.showRolesModal = false;
     this.selectedUsuario = null;
-  }
-
-  addRole(): void {
-    if (!this.newRoleToAdd || !this.selectedUsuario) {
-      return;
-    }
-    this.rolesAdicionales.push(this.newRoleToAdd);
-    this.availableRolesToAdd = this.availableRolesToAdd.filter(r => r !== this.newRoleToAdd);
-    this.newRoleToAdd = '';
-    alert('Rol agregado exitosamente');
-  }
-
-  removeRole(rol: string): void {
-    if (confirm(`¿Está seguro que desea remover el rol ${rol}?`)) {
-      this.rolesAdicionales = this.rolesAdicionales.filter(r => r !== rol);
-      this.availableRolesToAdd.push(rol);
-      alert('Rol removido exitosamente');
-    }
   }
 }

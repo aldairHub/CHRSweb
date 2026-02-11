@@ -6,6 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -41,9 +44,16 @@ public class AutoridadAcademica {
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    // 1 autoridad tiene 1 cargo (rol_autoridad)
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_rol_autoridad", nullable = false)
-    private RolAutoridad rolAutoridad;
+        /*// 1 autoridad tiene 1 cargo (rol_autoridad)
+        @ManyToOne(fetch = FetchType.LAZY, optional = false)
+        @JoinColumn(name = "id_rol_autoridad", nullable = false)
+        private RolAutoridad rolAutoridad;*/
+        @ManyToMany
+        @JoinTable(
+                name = "autoridad_rol_autoridad",
+                joinColumns = @JoinColumn(name = "id_autoridad"),
+                inverseJoinColumns = @JoinColumn(name = "id_rol_autoridad")
+        )
+        private Set<RolAutoridad> rolesAutoridad = new HashSet<>();
 
 }

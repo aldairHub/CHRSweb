@@ -1,30 +1,35 @@
 package org.uteq.backend.Service.impl;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import jakarta.validation.constraints.Email;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.uteq.backend.Entity.AutoridadAcademica;
 import org.uteq.backend.Entity.RolAutoridad;
+import org.uteq.backend.Entity.RolUsuario;
 import org.uteq.backend.Entity.Usuario;
-import org.uteq.backend.Entity.Institucion;
 
 import org.uteq.backend.Repository.AutoridadAcademicaRepository;
 import org.uteq.backend.Repository.IRolAutoridadRepository;
-import org.uteq.backend.Repository.UsuarioRepository;
 import org.uteq.backend.Repository.InstitucionRepository;
+import org.uteq.backend.Repository.UsuarioRepository;
 
 import org.uteq.backend.Service.AutoridadAcademicaService;
 import org.uteq.backend.Service.EmailService;
+
 import org.uteq.backend.dto.AutoridadAcademicaRequestDTO;
 import org.uteq.backend.dto.AutoridadAcademicaResponseDTO;
 import org.uteq.backend.dto.AutoridadRegistroRequestDTO;
 import org.uteq.backend.dto.AutoridadRegistroResponseDTO;
+import org.uteq.backend.dto.RolAutoridadDTO;
+
+import java.security.SecureRandom;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @Transactional
@@ -34,8 +39,11 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
     private final UsuarioRepository usuarioRepository;
     private final InstitucionRepository institucionRepository;
     private final IRolAutoridadRepository rolAutoridadRepository;
-    private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+
+    private static final Logger log =
+            LoggerFactory.getLogger(AutoridadAcademicaServiceImpl.class);
 
     public AutoridadAcademicaServiceImpl(
             AutoridadAcademicaRepository autoridadRepository,
@@ -43,8 +51,8 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
             InstitucionRepository institucionRepository,
             IRolAutoridadRepository rolAutoridadRepository,
             PasswordEncoder passwordEncoder,
-            EmailService emailService) {
-
+            EmailService emailService
+    ) {
         this.autoridadRepository = autoridadRepository;
         this.usuarioRepository = usuarioRepository;
         this.institucionRepository = institucionRepository;
@@ -53,6 +61,9 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         this.emailService = emailService;
     }
 
+    // -------------------------
+    // CRUD "normal"
+    // -------------------------
     @Override
     public AutoridadAcademicaResponseDTO crear(AutoridadAcademicaRequestDTO dto) {
 
@@ -62,25 +73,29 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         institucionRepository.findById(dto.getIdInstitucion())
                 .orElseThrow(() -> new RuntimeException("Institución no encontrada"));
 
-        RolAutoridad rolAutoridad = rolAutoridadRepository.findById(dto.getIdRolAutoridad())
-                .orElseThrow(() -> new RuntimeException("Cargo (rol_autoridad) no encontrado"));
+        Set<RolAutoridad> cargos = cargarCargos(dto.getIdsRolAutoridad());
 
-        // Crear autoridad
         AutoridadAcademica autoridad = new AutoridadAcademica();
         autoridad.setNombres(dto.getNombres());
         autoridad.setApellidos(dto.getApellidos());
         autoridad.setCorreo(dto.getCorreo());
         autoridad.setFechaNacimiento(dto.getFechaNacimiento());
-        autoridad.setEstado(dto.getEstado());
+        autoridad.setEstado(dto.getEstado() != null ? dto.getEstado() : true);
         autoridad.setIdInstitucion(dto.getIdInstitucion());
         autoridad.setUsuario(usuario);
-        autoridad.setRolAutoridad(rolAutoridad);
+
+        // MULTI CARGOS
+        autoridad.setRolesAutoridad(cargos);
 
         autoridadRepository.save(autoridad);
 
-        // Asignar roles al usuario según el cargo
-        usuario.getRoles().addAll(rolAutoridad.getRolesUsuario());
+        // roles_usuario derivados de TODOS los cargos
+        Set<RolUsuario> rolesDerivados = unirRolesUsuarioDesdeCargos(cargos);
+
+        // Si tu Usuario tiene getRoles() como Set<RolUsuario>
+        usuario.setRoles(new HashSet<>(rolesDerivados));
         usuarioRepository.save(usuario);
+
 
         return mapToResponse(autoridad);
     }
@@ -109,8 +124,8 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         Usuario usuario = usuarioRepository.findById(dto.getIdUsuario())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        Institucion institucion = institucionRepository.findById(dto.getIdInstitucion())
-                .orElseThrow(() -> new RuntimeException("Institucion no encontrada"));
+        institucionRepository.findById(dto.getIdInstitucion())
+                .orElseThrow(() -> new RuntimeException("Institución no encontrada"));
 
         autoridad.setNombres(dto.getNombres());
         autoridad.setApellidos(dto.getApellidos());
@@ -118,7 +133,23 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         autoridad.setFechaNacimiento(dto.getFechaNacimiento());
         autoridad.setEstado(dto.getEstado());
         autoridad.setUsuario(usuario);
-        autoridad.setIdInstitucion(institucion.getIdInstitucion());
+        autoridad.setIdInstitucion(dto.getIdInstitucion());
+
+        // Si vienen cargos, actualiza cargos y roles
+        if (dto.getIdsRolAutoridad() != null) {
+            Set<RolAutoridad> cargos = cargarCargos(dto.getIdsRolAutoridad());
+            autoridad.setRolesAutoridad(cargos);
+
+            Set<RolUsuario> rolesDerivados = unirRolesUsuarioDesdeCargos(cargos);
+
+            // Sincronizar roles del usuario según cargos (evita acumulación)
+            // Si NO manejas roles extras manuales, lo correcto es reemplazar:
+            usuario.setRoles(new HashSet<>(rolesDerivados));
+            usuarioRepository.save(usuario);
+
+
+            usuarioRepository.save(usuario);
+        }
 
         return mapToResponse(autoridadRepository.save(autoridad));
     }
@@ -128,6 +159,83 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         autoridadRepository.deleteById(id);
     }
 
+    // -------------------------
+    // Registro (crea Usuario + Autoridad)
+    // -------------------------
+    @Override
+    public AutoridadRegistroResponseDTO registrarAutoridad(AutoridadRegistroRequestDTO dto) {
+        if (dto.getIdInstitucion() == null) {
+            throw new RuntimeException("idInstitucion es obligatorio");
+        }
+        if (dto.getIdsRolAutoridad() == null || dto.getIdsRolAutoridad().isEmpty()) {
+            throw new RuntimeException("Debe seleccionar al menos un cargo (idsRolAutoridad)");
+        }
+        if (dto.getIdsRolAutoridad().stream().anyMatch(Objects::isNull)) {
+            throw new RuntimeException("idsRolAutoridad contiene valores nulos");
+        }
+        institucionRepository.findById(dto.getIdInstitucion())
+                .orElseThrow(() -> new RuntimeException("Institución no encontrada"));
+
+        Set<RolAutoridad> cargos = cargarCargos(dto.getIdsRolAutoridad());
+
+        // generar usuarioApp (a partir del correo)
+        String usuarioApp = generarUsuarioAppDesdeCorreo(dto.getCorreo());
+
+        // generar usuarioBd (a partir de nombres+apellidos, único)
+        String baseBd = generarUsuarioBdBase(dto.getNombres(), dto.getApellidos());
+        String usuarioBd = generarUsuarioBdUnico(baseBd);
+
+        // clave temporal (solo email), hash en BD
+        String claveTemporal = generarClaveTemporal(12);
+        String claveHash = passwordEncoder.encode(claveTemporal);
+
+        Usuario usuario = new Usuario();
+        usuario.setUsuarioApp(usuarioApp);
+        usuario.setClaveApp(claveHash);
+        usuario.setCorreo(dto.getCorreo());
+        usuario.setUsuarioBd(usuarioBd);
+
+        // Cambiar
+        usuario.setClaveBd("MTIzNA==");
+        usuario.setActivo(true);
+
+        //  Asignar roles_usuario desde todos los cargos
+        Set<RolUsuario> rolesDerivados = unirRolesUsuarioDesdeCargos(cargos);
+        usuario.getRoles().addAll(rolesDerivados);
+
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+        AutoridadAcademica autoridad = new AutoridadAcademica();
+        autoridad.setNombres(dto.getNombres());
+        autoridad.setApellidos(dto.getApellidos());
+        autoridad.setCorreo(dto.getCorreo());
+        autoridad.setFechaNacimiento(dto.getFechaNacimiento());
+        autoridad.setEstado(true);
+        autoridad.setIdInstitucion(dto.getIdInstitucion());
+        autoridad.setUsuario(usuarioGuardado);
+
+        // MULTI CARGOS
+        autoridad.setRolesAutoridad(cargos);
+
+        AutoridadAcademica autoridadGuardada = autoridadRepository.save(autoridad);
+
+        // correo con credenciales
+        try {
+            emailService.enviarCredenciales(dto.getCorreo(), usuarioApp, claveTemporal);
+        } catch (Exception ex) {
+            log.warn("No se pudo enviar correo a {}", dto.getCorreo(), ex);
+        }
+        AutoridadRegistroResponseDTO resp = new AutoridadRegistroResponseDTO();
+        resp.setIdUsuario(usuarioGuardado.getIdUsuario());
+        resp.setIdAutoridad(autoridadGuardada.getIdAutoridad());
+        resp.setUsuarioApp(usuarioGuardado.getUsuarioApp());
+        resp.setUsuarioBd(usuarioGuardado.getUsuarioBd());
+        return resp;
+    }
+
+    // -------------------------
+    // Mapper (incluye cargos)
+    // -------------------------
     private AutoridadAcademicaResponseDTO mapToResponse(AutoridadAcademica autoridad) {
         AutoridadAcademicaResponseDTO dto = new AutoridadAcademicaResponseDTO();
         dto.setIdAutoridad(autoridad.getIdAutoridad());
@@ -138,67 +246,56 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         dto.setEstado(autoridad.getEstado());
         dto.setIdUsuario(autoridad.getUsuario().getIdUsuario());
         dto.setIdInstitucion(autoridad.getIdInstitucion());
+
+        // cargos (rol_autoridad)
+        List<RolAutoridadDTO> cargos = autoridad.getRolesAutoridad() == null
+                ? Collections.emptyList()
+                : autoridad.getRolesAutoridad().stream().map(r -> {
+                    RolAutoridadDTO rdto = new RolAutoridadDTO();
+                    rdto.setIdRolAutoridad(r.getIdRolAutoridad());
+                    rdto.setNombre(r.getNombre());
+                    return rdto;
+                }).sorted(Comparator.comparing(RolAutoridadDTO::getNombre, String.CASE_INSENSITIVE_ORDER))
+                .collect(Collectors.toList());
+
+        dto.setRolesAutoridad(cargos);
+
         return dto;
     }
 
-    @Override
-    public AutoridadRegistroResponseDTO registrarAutoridad(AutoridadRegistroRequestDTO dto) {
+    // -------------------------
+    // Helpers multi-cargos
+    // -------------------------
+    private Set<RolAutoridad> cargarCargos(List<Long> idsRolAutoridad) {
+        if (idsRolAutoridad == null || idsRolAutoridad.isEmpty()) {
+            throw new RuntimeException("Debe seleccionar al menos un cargo (rol_autoridad)");
+        }
 
-        institucionRepository.findById(dto.getIdInstitucion())
-                .orElseThrow(() -> new RuntimeException("Institución no encontrada"));
+        List<RolAutoridad> encontrados = rolAutoridadRepository.findAllById(idsRolAutoridad);
 
-        RolAutoridad rolAutoridad = rolAutoridadRepository.findById(dto.getIdRolAutoridad())
-                .orElseThrow(() -> new RuntimeException("Cargo no encontrado"));
+        Set<Long> esperados = new HashSet<>(idsRolAutoridad);
+        Set<Long> encontradosIds = encontrados.stream()
+                .map(RolAutoridad::getIdRolAutoridad)
+                .collect(Collectors.toSet());
 
-        // usuarioApp = prefijo del correo
-        String usuarioApp = generarUsuarioAppDesdeCorreo(dto.getCorreo());
+        if (encontradosIds.size() != esperados.size()) {
+            esperados.removeAll(encontradosIds);
+            throw new RuntimeException("Cargos (rol_autoridad) no encontrados: " + esperados);
+        }
 
-        // usuarioBd = nombres+apellidos (único)
-        String baseBd = generarUsuarioBdBase(dto.getNombres(), dto.getApellidos());
-        String usuarioBd = generarUsuarioBdUnico(baseBd);
-
-        // clave temporal generada
-        String claveTemporal = generarClaveTemporal(12);
-        String claveHash = passwordEncoder.encode(claveTemporal);
-
-        // Crear usuario
-        Usuario usuario = new Usuario();
-        usuario.setUsuarioApp(usuarioApp);
-        usuario.setClaveApp(claveHash);
-        usuario.setCorreo(dto.getCorreo());
-        usuario.setUsuarioBd(usuarioBd);
-        usuario.setClaveBd("MTIzNA==");
-        usuario.setActivo(true);
-
-        // asignar roles según cargo
-        usuario.getRoles().addAll(rolAutoridad.getRolesUsuario());
-
-        Usuario usuarioGuardado = usuarioRepository.save(usuario);
-
-        // Crear autoridad
-        AutoridadAcademica autoridad = new AutoridadAcademica();
-        autoridad.setNombres(dto.getNombres());
-        autoridad.setApellidos(dto.getApellidos());
-        autoridad.setCorreo(dto.getCorreo());
-        autoridad.setFechaNacimiento(dto.getFechaNacimiento());
-        autoridad.setEstado(true);
-        autoridad.setIdInstitucion(dto.getIdInstitucion());
-        autoridad.setUsuario(usuarioGuardado);
-        autoridad.setRolAutoridad(rolAutoridad);
-
-        AutoridadAcademica autoridadGuardada = autoridadRepository.save(autoridad);
-
-        // enviar correo
-        emailService.enviarCredenciales(dto.getCorreo(), usuarioApp, claveTemporal);
-
-        AutoridadRegistroResponseDTO resp = new AutoridadRegistroResponseDTO();
-        resp.setIdUsuario(usuarioGuardado.getIdUsuario());
-        resp.setIdAutoridad(autoridadGuardada.getIdAutoridad());
-        resp.setUsuarioApp(usuarioGuardado.getUsuarioApp());
-        resp.setUsuarioBd(usuarioGuardado.getUsuarioBd());
-        return resp;
+        return new HashSet<>(encontrados);
     }
 
+    private Set<RolUsuario> unirRolesUsuarioDesdeCargos(Set<RolAutoridad> cargos) {
+        return cargos.stream()
+                .filter(Objects::nonNull)
+                .flatMap(c -> c.getRolesUsuario().stream())
+                .collect(Collectors.toSet());
+    }
+
+    // -------------------------
+    // Helpers generación usuarios
+    // -------------------------
     private String generarUsuarioAppDesdeCorreo(String correo) {
         if (correo == null || !correo.contains("@")) {
             throw new RuntimeException("Correo inválido para generar usuarioApp");
@@ -223,8 +320,7 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         t = t.replace("á","a").replace("é","e").replace("í","i")
                 .replace("ó","o").replace("ú","u").replace("ü","u")
                 .replace("ñ","n");
-        t = t.replaceAll("[^a-z0-9]", "");
-        return t;
+        return t.replaceAll("[^a-z0-9]", "");
     }
 
     private String generarUsuarioBdBase(String nombres, String apellidos) {
@@ -244,10 +340,9 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
 
     private String generarClaveTemporal(int length) {
         final String ABC = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%";
-        java.security.SecureRandom r = new java.security.SecureRandom();
+        SecureRandom r = new SecureRandom();
         StringBuilder sb = new StringBuilder(length);
         for (int i = 0; i < length; i++) sb.append(ABC.charAt(r.nextInt(ABC.length())));
         return sb.toString();
     }
-
 }

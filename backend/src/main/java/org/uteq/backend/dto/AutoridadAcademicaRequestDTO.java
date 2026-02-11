@@ -3,6 +3,8 @@ package org.uteq.backend.dto;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
+
 @Data
 public class AutoridadAcademicaRequestDTO {
 
@@ -15,5 +17,6 @@ public class AutoridadAcademicaRequestDTO {
     private Long idUsuario;
     private Long idInstitucion;
 
-    private Long idRolAutoridad;
+    // Múltiples cargos seleccionados (rol_autoridad)
+    private List<Long> idsRolAutoridad;
 }

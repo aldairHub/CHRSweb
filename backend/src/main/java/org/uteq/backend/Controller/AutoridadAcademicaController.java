@@ -28,6 +28,8 @@ public class AutoridadAcademicaController {
 
     @PostMapping("/registro")
     public ResponseEntity<?> registrar(@RequestBody AutoridadRegistroRequestDTO dto) {
+        System.out.println("idInstitucion=" + dto.getIdInstitucion());
+        System.out.println("idsRolAutoridad=" + dto.getIdsRolAutoridad());
         return ResponseEntity.ok(autoridadService.registrarAutoridad(dto));
     }
 
