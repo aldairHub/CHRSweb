@@ -314,6 +314,26 @@
           <div *ngIf="selectedRolIds.length === 0" class="preview-empty">
             Seleccione roles de autoridad...
           </div>
+
+          <div *ngIf="selectedRolIds.length > 0">
+            <div class="section-description" style="margin: 6px 0 10px;">
+              Roles de usuario asignados automáticamente
+            </div>
+
+            <div *ngIf="loadingRolesUsuario" class="preview-empty">
+              Cargando roles de usuario...
+            </div>
+
+            <div *ngIf="!loadingRolesUsuario && rolesUsuarioPreview.length === 0" class="preview-empty">
+              No hay roles de usuario asociados.
+            </div>
+
+            <div class="roles-container" *ngIf="!loadingRolesUsuario && rolesUsuarioPreview.length > 0">
+      <span class="role-badge" *ngFor="let ru of rolesUsuarioPreview">
+        {{ ru.nombre }}
+      </span>
+            </div>
+          </div>
         </div>
 
       </form>

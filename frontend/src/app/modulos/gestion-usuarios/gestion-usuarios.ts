@@ -1,11 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
-
 import { NavbarComponent } from '../../component/navbar';
-import { AutoridadAcademicaService } from '../../services/autoridad-academica.service';
+import {AutoridadAcademicaService, RolUsuarioResponseDto} from '../../services/autoridad-academica.service';
 
 // ===== Interfaces segun TU backend =====
 
@@ -92,7 +91,8 @@ export class GestionUsuariosComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private autoridadService: AutoridadAcademicaService
+    private autoridadService: AutoridadAcademicaService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -121,9 +121,10 @@ export class GestionUsuariosComponent implements OnInit {
     this.autoridadService.listarAutoridades().subscribe({
       next: (data) => {
         this.usuarios = Array.isArray(data) ? data : [];
-        this.usuariosFiltrados = [...this.usuarios]; // ✅ evita bug del "clic en buscador"
+        this.usuariosFiltrados = [...this.usuarios]; //  evita bug del "clic en buscador"
         this.updateStats();
         this.calculatePagination();
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error cargando autoridades:', err);
@@ -131,6 +132,7 @@ export class GestionUsuariosComponent implements OnInit {
         this.usuariosFiltrados = [];
         this.updateStats();
         this.calculatePagination();
+        this.cdr.detectChanges();
       }
     });
   }
@@ -318,7 +320,10 @@ export class GestionUsuariosComponent implements OnInit {
   openCreateModal(): void {
     this.createForm.reset();
     this.selectedRolIds = [];
+    this.rolesUsuarioPreview = [];
     this.showCreateModal = true;
+    this.cdr.detectChanges();
+
   }
 
   closeCreateModal(): void {
@@ -335,6 +340,7 @@ export class GestionUsuariosComponent implements OnInit {
     } else {
       this.selectedRolIds = this.selectedRolIds.filter(x => x !== idRolAutoridad);
     }
+    this.refreshRolesUsuarioPreview();
   }
 
   saveAutoridad(): void {
@@ -404,5 +410,36 @@ export class GestionUsuariosComponent implements OnInit {
   closeRolesModal(): void {
     this.showRolesModal = false;
     this.selectedUsuario = null;
+  }
+  rolesUsuarioPreview: RolUsuarioResponseDto[] = [];
+  loadingRolesUsuario = false;
+  refreshRolesUsuarioPreview(): void {
+    if (!this.selectedRolIds.length) {
+      this.rolesUsuarioPreview = [];
+      this.loadingRolesUsuario = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.loadingRolesUsuario = true;
+    this.cdr.detectChanges();
+
+    this.autoridadService.listarRolesUsuarioPorRolesAutoridad(this.selectedRolIds).subscribe({
+      next: (data) => {
+        // por si acaso vienen repetidos
+        const map = new Map<number, RolUsuarioResponseDto>();
+        (Array.isArray(data) ? data : []).forEach(r => map.set(r.idRolUsuario, r));
+        this.rolesUsuarioPreview = Array.from(map.values());
+        this.loadingRolesUsuario = false;
+        this.cdr.detectChanges();
+
+      },
+      error: (err) => {
+        console.error('Error roles usuario:', err);
+        this.rolesUsuarioPreview = [];
+        this.loadingRolesUsuario = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 }
