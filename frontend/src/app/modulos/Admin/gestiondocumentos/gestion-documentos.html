@@ -1,0 +1,378 @@
+<!-- gestion-documentos.component.html -->
+<app-navbar></app-navbar>
+
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <!-- Header de la página -->
+    <div class="page-header">
+      <div>
+        <h2>Gestión de Documentos</h2>
+        <p class="page-subtitle">Documentos de Postulantes</p>
+      </div>
+      <button class="btn btn-primary" (click)="exportarReporte()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        Exportar Reporte
+      </button>
+    </div>
+
+    <!-- Tarjetas de Estadísticas -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>Total Documentos</h3>
+          <div class="stat-value">{{ totalDocumentos }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon success">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>Validados</h3>
+          <div class="stat-value">{{ documentosValidados }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon warning">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>Pendientes</h3>
+          <div class="stat-value">{{ documentosPendientes }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon danger">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>Rechazados</h3>
+          <div class="stat-value">{{ documentosRechazados }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros y Búsqueda -->
+    <div class="filters-section">
+      <div class="search-box">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input
+          type="text"
+          class="form-input with-icon"
+          placeholder="Buscar por nombre, cédula o correo..."
+          [(ngModel)]="searchTerm"
+          (input)="applyFilters()"
+        >
+      </div>
+
+      <select class="form-select" [(ngModel)]="filterPostulacion" (change)="applyFilters()">
+        <option value="">Todas las Postulaciones</option>
+        <option *ngFor="let post of postulaciones" [value]="post.id">
+          {{ post.nombre }}
+        </option>
+      </select>
+
+      <select class="form-select" [(ngModel)]="filterEstado" (change)="applyFilters()">
+        <option value="">Todos los Estados</option>
+        <option value="validado">Validados</option>
+        <option value="pendiente">Pendientes</option>
+        <option value="rechazado">Rechazados</option>
+      </select>
+    </div>
+
+    <!-- Tabla de Documentos -->
+    <div class="table-container">
+      <table class="table">
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Postulante</th>
+          <th>Cédula</th>
+          <th>Postulación</th>
+          <th>Documentos Enviados</th>
+          <th>Estado</th>
+          <th>Fecha Envío</th>
+          <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        <tr *ngFor="let doc of documentosPaginados">
+          <td><strong>#{{ doc.id }}</strong></td>
+
+          <td>
+            <div class="postulante-info">
+              <div class="postulante-nombre">{{ doc.nombreCompleto }}</div>
+              <div class="postulante-email">{{ doc.correo }}</div>
+            </div>
+          </td>
+
+          <td>{{ doc.cedula }}</td>
+
+          <td>
+            <span class="postulacion-badge" [ngClass]="getPostulacionClass(doc.postulacion)">
+              {{ doc.postulacion }}
+            </span>
+          </td>
+
+          <td>
+            <div class="documentos-list">
+              <span
+                *ngFor="let documento of doc.documentos"
+                class="documento-tag"
+                [title]="documento.nombre"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                {{ documento.tipo }}
+              </span>
+              <span class="documentos-count">{{ doc.documentos.length }} archivos</span>
+            </div>
+          </td>
+
+          <td>
+            <span class="badge" [ngClass]="getEstadoBadgeClass(doc.estado)">
+              <span class="status-dot"></span>
+              {{ getEstadoLabel(doc.estado) }}
+            </span>
+          </td>
+
+          <td>
+            <div class="fecha-info">
+              {{ doc.fechaEnvio | date: 'dd/MM/yyyy' }}
+              <small>{{ doc.fechaEnvio | date: 'HH:mm' }}</small>
+            </div>
+          </td>
+
+          <td>
+            <div class="action-buttons">
+              <button class="btn-icon" (click)="verDocumentos(doc)" title="Ver Documentos">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
+
+              <button class="btn-icon success" (click)="validarDocumentos(doc)" title="Validar" *ngIf="doc.estado === 'pendiente'">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </button>
+
+              <button class="btn-icon danger" (click)="rechazarDocumentos(doc)" title="Rechazar" *ngIf="doc.estado === 'pendiente'">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              <button class="btn-icon" (click)="descargarDocumentos(doc)" title="Descargar Todo">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <tr *ngIf="documentosFiltrados.length === 0">
+          <td colspan="8" class="empty-state">
+            <div class="empty-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <p>No se encontraron documentos</p>
+            <small>Intenta ajustar los filtros de búsqueda</small>
+          </td>
+        </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <div class="pagination-info">
+        Mostrando {{ (currentPage - 1) * pageSize + 1 }}-{{ Math.min(currentPage * pageSize, documentosFiltrados.length) }} de {{ documentosFiltrados.length }}
+      </div>
+      <div class="pagination-controls">
+        <button class="btn btn-sm btn-outline" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+          Anterior
+        </button>
+
+        <button
+          *ngFor="let page of getPageNumbers()"
+          class="btn btn-sm"
+          [ngClass]="page === currentPage ? 'btn-primary' : 'btn-outline'"
+          (click)="page > 0 && changePage(page)"
+          [disabled]="page === -1"
+        >
+          {{ page === -1 ? '…' : page }}
+        </button>
+
+        <button class="btn btn-sm btn-outline" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+          Siguiente
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: VER DOCUMENTOS -->
+<div class="modal-overlay" *ngIf="showDocumentosModal" (click)="closeDocumentosModal()">
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <h3>Documentos del Postulante</h3>
+        <p class="modal-subtitle">{{ selectedDocumento?.nombreCompleto }} - {{ selectedDocumento?.cedula }}</p>
+      </div>
+      <button class="close-btn" (click)="closeDocumentosModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="alert info">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div>
+          <strong>Postulación:</strong>
+          <p>{{ selectedDocumento?.postulacion }}</p>
+        </div>
+      </div>
+
+      <div class="documentos-grid">
+        <div class="documento-card" *ngFor="let documento of selectedDocumento?.documentos">
+          <div class="documento-header">
+            <div class="documento-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div class="documento-info">
+              <h4>{{ documento.tipo }}</h4>
+              <p>{{ documento.nombre }}</p>
+            </div>
+          </div>
+
+          <div class="documento-meta">
+            <span class="meta-item">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              {{ documento.formato }}
+            </span>
+            <span class="meta-item">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+              </svg>
+              {{ documento.tamanio }}
+            </span>
+          </div>
+
+          <div class="documento-actions">
+            <button class="btn btn-sm btn-outline" (click)="verDocumento(documento)">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              Ver
+            </button>
+            <button class="btn btn-sm btn-primary" (click)="descargarDocumento(documento)">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Descargar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeDocumentosModal()">Cerrar</button>
+      <button class="btn btn-success" (click)="validarTodosDocumentos()" *ngIf="selectedDocumento?.estado === 'pendiente'">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        Validar Todos
+      </button>
+      <button class="btn btn-danger" (click)="rechazarTodosDocumentos()" *ngIf="selectedDocumento?.estado === 'pendiente'">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        Rechazar Todos
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: RECHAZAR CON MOTIVO -->
+<div class="modal-overlay" *ngIf="showRechazarModal" (click)="closeRechazarModal()">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Rechazar Documentos</h3>
+      <button class="close-btn" (click)="closeRechazarModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="alert danger">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <div>
+          <strong>Atención</strong>
+          <p>Esta acción rechazará los documentos del postulante. Por favor indique el motivo.</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Motivo del Rechazo <span class="required">*</span></label>
+        <textarea
+          class="form-input"
+          rows="4"
+          [(ngModel)]="motivoRechazo"
+          placeholder="Describa el motivo del rechazo..."
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeRechazarModal()">Cancelar</button>
+      <button class="btn btn-danger" (click)="confirmarRechazo()" [disabled]="!motivoRechazo">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        Confirmar Rechazo
+      </button>
+    </div>
+  </div>
+</div>

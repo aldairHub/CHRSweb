@@ -1,0 +1,113 @@
+<app-navbar></app-navbar>
+
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <nav class="breadcrumb">
+      <a>Dashboard</a>
+      <span>/</span>
+      <span>Postulantes</span>
+    </nav>
+
+    <div class="page-header">
+      <h2>Información de Postulantes</h2>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <h3>Lista de Postulantes</h3>
+        <div class="header-actions">
+          <input type="text" placeholder="🔍 Buscar postulante..." class="search-input">
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombres</th>
+            <th>Apellidos</th>
+            <th>Identificación</th>
+            <th>Correo</th>
+            <th>Estado</th>
+            <th>Fecha Registro</th>
+            <th>Acciones</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>001</td>
+            <td>Juan</td>
+            <td>Pérez García</td>
+            <td>1234567890</td>
+            <td>juan.perez@mail.com</td>
+            <td><span class="badge badge-pending">Pendiente</span></td>
+            <td>12/02/2026</td>
+            <td>
+              <button class="btn-icon" title="Ver detalles">👁️</button>
+              <button class="btn-icon" title="Editar">✏️</button>
+            </td>
+          </tr>
+          <tr>
+            <td>002</td>
+            <td>María</td>
+            <td>González López</td>
+            <td>0987654321</td>
+            <td>maria.gonzalez@mail.com</td>
+            <td><span class="badge badge-approved">Aprobado</span></td>
+            <td>11/02/2026</td>
+            <td>
+              <button class="btn-icon" title="Ver detalles">👁️</button>
+              <button class="btn-icon" title="Editar">✏️</button>
+            </td>
+          </tr>
+          <tr>
+            <td>003</td>
+            <td>Carlos</td>
+            <td>Ramírez Torres</td>
+            <td>1122334455</td>
+            <td>carlos.ramirez@mail.com</td>
+            <td><span class="badge badge-rejected">Rechazado</span></td>
+            <td>10/02/2026</td>
+            <td>
+              <button class="btn-icon" title="Ver detalles">👁️</button>
+              <button class="btn-icon" title="Editar">✏️</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <span>Mostrando 3 de 3 postulantes</span>
+        <div class="pagination">
+          <button disabled>Anterior</button>
+          <button class="active">1</button>
+          <button disabled>Siguiente</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h4>Total Postulantes</h4>
+        <p class="stat-number">3</p>
+      </div>
+      <div class="stat-card">
+        <h4>Pendientes</h4>
+        <p class="stat-number pending">1</p>
+      </div>
+      <div class="stat-card">
+        <h4>Aprobados</h4>
+        <p class="stat-number approved">1</p>
+      </div>
+      <div class="stat-card">
+        <h4>Rechazados</h4>
+        <p class="stat-number rejected">1</p>
+      </div>
+    </div>
+
+  </div>
+  <app-footer></app-footer>
+</div>

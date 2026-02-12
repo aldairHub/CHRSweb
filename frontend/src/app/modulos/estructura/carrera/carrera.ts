@@ -19,6 +19,7 @@ import { Carrera } from '../../../models/carrera.model';
   ],
   templateUrl: './carrera.html',
   styleUrls: ['./carrera.scss']
+
 })
 export class CarreraComponent implements OnInit {
 

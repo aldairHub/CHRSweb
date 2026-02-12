@@ -1,0 +1,788 @@
+// gestion-documentos.component.scss
+
+// Variables locales basadas en el diseño UTEQ
+$primary: #00A63E;
+$dark: #016630;
+$light-green: #00D149;
+$light-card-bg: #EEF9EC;
+$border: #B9F8CF;
+$text-dark: #1a1a1a;
+$text-gray: #536b50;
+$bg-white: #ffffff;
+$error: #dc2626;
+$warning: #f59e0b;
+$success: #16a34a;
+
+// ==========================================
+// PAGE HEADER
+// ==========================================
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+
+  h2 {
+    font-size: 1.75rem;
+    color: $dark;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .page-subtitle {
+    font-size: 0.95rem;
+    color: $text-gray;
+    margin: 0.25rem 0 0 0;
+  }
+}
+
+// ==========================================
+// STATS GRID
+// ==========================================
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: $light-card-bg;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 166, 62, 0.12);
+    background: $bg-white;
+  }
+
+  .stat-icon {
+    width: 56px;
+    height: 56px;
+    background: rgba($primary, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg {
+      width: 28px;
+      height: 28px;
+      stroke: $primary;
+    }
+
+    &.success {
+      background: rgba($success, 0.1);
+      svg { stroke: $success; }
+    }
+
+    &.warning {
+      background: rgba($warning, 0.1);
+      svg { stroke: $warning; }
+    }
+
+    &.danger {
+      background: rgba($error, 0.1);
+      svg { stroke: $error; }
+    }
+  }
+
+  .stat-content {
+    flex: 1;
+
+    h3 {
+      font-size: 0.875rem;
+      color: $text-gray;
+      font-weight: 500;
+      margin: 0 0 0.5rem 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: $dark;
+      line-height: 1;
+    }
+  }
+}
+
+// ==========================================
+// FILTERS SECTION
+// ==========================================
+.filters-section {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+
+  .search-box {
+    position: relative;
+    flex: 1;
+    min-width: 280px;
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      stroke: $text-gray;
+      pointer-events: none;
+    }
+  }
+
+  .form-select {
+    min-width: 180px;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid $border;
+    border-radius: 8px;
+    background: $bg-white;
+    font-size: 0.9rem;
+    color: $text-dark;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.1);
+    }
+
+    &:hover {
+      border-color: $primary;
+    }
+  }
+}
+
+// ==========================================
+// TABLE
+// ==========================================
+.table-container {
+  background: $bg-white;
+  border-radius: 12px;
+  border: 1px solid $border;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    background: #f8faf9;
+
+    th {
+      padding: 1rem 1.25rem;
+      text-align: left;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: $text-gray;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid $border;
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid #f0f0f0;
+      transition: background 0.15s;
+
+      &:hover {
+        background: #fafdfb;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    td {
+      padding: 1.125rem 1.25rem;
+      font-size: 0.9rem;
+      color: $text-dark;
+      vertical-align: middle;
+
+      strong {
+        color: $dark;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+
+    .empty-icon {
+      margin: 0 auto 1rem;
+      width: 64px;
+      height: 64px;
+      background: rgba($primary, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      svg {
+        width: 32px;
+        height: 32px;
+        stroke: $primary;
+      }
+    }
+
+    p {
+      font-size: 1rem;
+      color: $text-dark;
+      font-weight: 600;
+      margin: 0 0 0.25rem 0;
+    }
+
+    small {
+      font-size: 0.875rem;
+      color: $text-gray;
+    }
+  }
+}
+
+// ==========================================
+// POSTULANTE INFO
+// ==========================================
+.postulante-info {
+  .postulante-nombre {
+    font-weight: 600;
+    color: $dark;
+    font-size: 0.9rem;
+  }
+
+  .postulante-email {
+    font-size: 0.8125rem;
+    color: $text-gray;
+    margin-top: 0.125rem;
+  }
+}
+
+// ==========================================
+// POSTULACION BADGE
+// ==========================================
+.postulacion-badge {
+  display: inline-block;
+  padding: 0.375rem 0.875rem;
+  border-radius: 20px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &.docente {
+    background: #dbeafe;
+    color: #2563eb;
+  }
+
+  &.coordinador {
+    background: #f3e8ff;
+    color: #7c3aed;
+  }
+
+  &.director {
+    background: #fed7aa;
+    color: #ea580c;
+  }
+}
+
+// ==========================================
+// DOCUMENTOS LIST
+// ==========================================
+.documentos-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+
+  .documento-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    background: #f8faf9;
+    border: 1px solid $border;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: $dark;
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+
+  .documentos-count {
+    font-size: 0.75rem;
+    color: $text-gray;
+    font-weight: 600;
+    padding: 0.25rem 0.625rem;
+    background: rgba($primary, 0.1);
+    border-radius: 6px;
+  }
+}
+
+// ==========================================
+// FECHA INFO
+// ==========================================
+.fecha-info {
+  font-size: 0.875rem;
+  color: $text-dark;
+
+  small {
+    display: block;
+    font-size: 0.75rem;
+    color: $text-gray;
+    margin-top: 0.125rem;
+  }
+}
+
+// ==========================================
+// BADGES
+// ==========================================
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: 20px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+
+  &.success {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  &.warning {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  &.danger {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+}
+
+// ==========================================
+// ACTION BUTTONS
+// ==========================================
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: $text-gray;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    background: rgba($primary, 0.1);
+    color: $primary;
+  }
+
+  &.success {
+    &:hover {
+      background: rgba($success, 0.1);
+      color: $success;
+    }
+  }
+
+  &.danger {
+    &:hover {
+      background: rgba($error, 0.1);
+      color: $error;
+    }
+  }
+}
+
+// ==========================================
+// PAGINATION
+// ==========================================
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: $bg-white;
+  border-radius: 12px;
+  border: 1px solid $border;
+
+  .pagination-info {
+    font-size: 0.875rem;
+    color: $text-gray;
+  }
+
+  .pagination-controls {
+    display: flex;
+    gap: 0.5rem;
+  }
+}
+
+// ==========================================
+// MODAL
+// ==========================================
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+  overflow-y: auto;
+}
+
+.modal-content {
+  background: $bg-white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+  margin: 2rem auto;
+
+  &.modal-sm {
+    max-width: 550px;
+  }
+
+  &.modal-lg {
+    max-width: 1000px;
+  }
+}
+
+.modal-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid $border;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h3 {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: $dark;
+    margin: 0;
+  }
+
+  .modal-subtitle {
+    font-size: 0.875rem;
+    color: $text-gray;
+    margin: 0.25rem 0 0 0;
+  }
+
+  .close-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: $text-gray;
+
+    svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    &:hover {
+      background: rgba($error, 0.1);
+      color: $error;
+    }
+  }
+}
+
+.modal-body {
+  padding: 2rem;
+  overflow-y: auto;
+  flex: 1;
+
+  .form-group {
+    margin-bottom: 1.25rem;
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: $dark;
+      margin-bottom: 0.5rem;
+
+      .required {
+        color: $error;
+        margin-left: 0.25rem;
+      }
+    }
+  }
+}
+
+.modal-footer {
+  padding: 1.25rem 2rem;
+  border-top: 1px solid $border;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+// ==========================================
+// DOCUMENTOS GRID
+// ==========================================
+.documentos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.documento-card {
+  background: $bg-white;
+  border: 1.5px solid $border;
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: $primary;
+    box-shadow: 0 4px 12px rgba(0, 166, 62, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .documento-header {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    .documento-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba($primary, 0.1);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      svg {
+        width: 24px;
+        height: 24px;
+        stroke: $primary;
+      }
+    }
+
+    .documento-info {
+      flex: 1;
+      min-width: 0;
+
+      h4 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: $dark;
+        margin: 0 0 0.25rem 0;
+      }
+
+      p {
+        font-size: 0.8125rem;
+        color: $text-gray;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  .documento-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f0f0f0;
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      font-size: 0.75rem;
+      color: $text-gray;
+
+      svg {
+        stroke: $text-gray;
+      }
+    }
+  }
+
+  .documento-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+}
+
+// ==========================================
+// ALERTS
+// ==========================================
+.alert {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  align-items: flex-start;
+
+  &.success {
+    background: #dcfce7;
+    border-left: 4px solid #16a34a;
+
+    svg { stroke: #16a34a; }
+    strong { color: #166534; }
+    p { color: #166534; font-size: 0.875rem; margin: 0.25rem 0 0 0; }
+  }
+
+  &.danger {
+    background: #fee2e2;
+    border-left: 4px solid #dc2626;
+
+    svg { stroke: #dc2626; }
+    strong { color: #991b1b; }
+    p { color: #991b1b; font-size: 0.875rem; margin: 0.25rem 0 0 0; }
+  }
+
+  &.info {
+    background: #dbeafe;
+    border-left: 4px solid #2563eb;
+
+    svg { stroke: #2563eb; }
+    strong { color: #1e40af; }
+    p { color: #1e3a8a; font-size: 0.875rem; margin: 0.25rem 0 0 0; }
+  }
+
+  svg {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+
+  strong {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+}
+
+// ==========================================
+// ANIMATIONS
+// ==========================================
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ==========================================
+// RESPONSIVE
+// ==========================================
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filters-section {
+    flex-direction: column;
+
+    .search-box,
+    .form-select {
+      width: 100%;
+    }
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .modal-content {
+    max-width: 100%;
+    margin: 0;
+    border-radius: 16px 16px 0 0;
+
+    &.modal-lg {
+      max-width: 100%;
+    }
+  }
+
+  .documentos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .action-buttons {
+    flex-wrap: wrap;
+  }
+}
