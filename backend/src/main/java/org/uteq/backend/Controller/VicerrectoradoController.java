@@ -12,10 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * Controller para el Vicerrectorado Académico
- * Gestión de prepostulaciones de nuevos estudiantes
- */
+// comentario
 @RestController
 @RequestMapping("/api/vicerrectorado")
 @CrossOrigin(origins = "*")
