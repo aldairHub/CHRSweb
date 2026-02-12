@@ -1,89 +1,195 @@
+<!-- facultad.component.html -->
 <app-navbar></app-navbar>
 
 <div class="main-container">
   <div class="content-wrapper">
 
-    <header class="dashboard-header">
-      <h1>Gestión de Facultades</h1>
-    </header>
+    <!-- Header de la página -->
+    <div class="page-header">
+      <div>
+        <h2>Gestión de Facultades</h2>
+        <p class="page-subtitle">Administración de Facultades</p>
+      </div>
+      <button class="btn btn-primary" (click)="openCreate()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Nueva Facultad
+      </button>
+    </div>
 
+    <!-- Tarjetas de Estadísticas -->
     <div class="stats-grid">
       <div class="stat-card">
-        <div><h3>Total</h3><div class="stat-value">{{ facultades.length }}</div></div>
-        <span>🏛️</span>
+        <div class="stat-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>Total Facultades</h3>
+          <div class="stat-value">{{ facultades.length }}</div>
+        </div>
       </div>
+
       <div class="stat-card">
-        <div><h3>Activas</h3><div class="stat-value">{{ facultadesActivas }}</div></div>
-        <span>✅</span>
+        <div class="stat-icon success">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>Activas</h3>
+          <div class="stat-value">{{ facultadesActivas }}</div>
+        </div>
       </div>
+
       <div class="stat-card">
-        <div><h3>Inactivas</h3><div class="stat-value">{{ facultadesInactivas }}</div></div>
-        <span>⏸️</span>
+        <div class="stat-icon purple">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>Inactivas</h3>
+          <div class="stat-value">{{ facultadesInactivas }}</div>
+        </div>
       </div>
     </div>
 
+    <!-- Filtros y Búsqueda -->
+    <div class="filters-section">
+      <div class="search-box">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input
+          type="text"
+          class="form-input with-icon"
+          placeholder="Buscar por nombre de facultad..."
+          [(ngModel)]="search"
+        >
+      </div>
+    </div>
+
+    <!-- Tabla de Facultades -->
     <div class="table-container">
-      <div class="page-header">
-        <h2>Listado de Facultades</h2>
-        <button class="btn-primary" (click)="openCreate()">➕ Nueva Facultad</button>
-      </div>
-
-      <div class="form-group search-bar">
-        <input class="form-input" placeholder="🔍 Buscar facultad..." [(ngModel)]="search">
-      </div>
-
       <table class="table">
         <thead>
         <tr>
           <th>ID</th>
-          <th>Nombre</th>
+          <th>Nombre Facultad</th>
           <th>Estado</th>
           <th>Acciones</th>
         </tr>
         </thead>
         <tbody>
+
         <tr *ngFor="let f of facultadesFiltradas()">
-          <td>#{{ f.idFacultad }}</td>
-          <td><strong>{{ f.nombreFacultad }}</strong></td>
+          <td><strong>#{{ f.idFacultad }}</strong></td>
+          <td>{{ f.nombreFacultad }}</td>
+
           <td>
-              <span class="badge" [ngClass]="f.estado ? 'success' : 'danger'">
-                {{ f.estado ? 'Activa' : 'Inactiva' }}
-              </span>
+            <span class="badge" [ngClass]="f.estado ? 'success' : 'danger'">
+              <span class="status-dot"></span>
+              {{ f.estado ? 'Activa' : 'Inactiva' }}
+            </span>
           </td>
-          <td class="actions-cell">
-            <label class="switch">
-              <input type="checkbox" [checked]="f.estado" (change)="toggleEstado(f)">
-              <span class="slider round"></span>
-            </label>
-            <button class="btn-outline btn-sm" (click)="edit(f)">✏️ Editar</button>
+
+          <td>
+            <div class="action-buttons">
+              <label class="toggle-switch" [title]="f.estado ? 'Desactivar' : 'Activar'">
+                <input type="checkbox" [checked]="f.estado" (change)="toggleEstado(f)">
+                <span class="toggle-slider"></span>
+              </label>
+
+              <button class="btn-icon" (click)="edit(f)" title="Editar">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </button>
+            </div>
           </td>
         </tr>
+
+        <tr *ngIf="facultadesFiltradas().length === 0">
+          <td colspan="4" class="empty-state">
+            <div class="empty-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+              </svg>
+            </div>
+            <p>No se encontraron facultades</p>
+            <small>Intenta ajustar los filtros de búsqueda</small>
+          </td>
+        </tr>
+
         </tbody>
       </table>
     </div>
+
   </div>
   <app-footer></app-footer>
 </div>
 
-<div class="modal" [class.active]="modalAbierto">
-  <div class="modal-content">
+<!-- MODAL CREAR/EDITAR -->
+<div class="modal-overlay" *ngIf="modalAbierto" (click)="closeModal()">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ editando ? 'Editar Facultad' : 'Nueva Facultad' }}</h3>
-      <button class="close-btn" (click)="closeModal()">×</button>
+      <button class="close-btn" (click)="closeModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
+
     <div class="modal-body">
+
+      <div class="alert info">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div>
+          <strong>Información</strong>
+          <p>{{ editando ? 'Modifique los datos de la facultad.' : 'Complete los datos para crear una nueva facultad.' }}</p>
+        </div>
+      </div>
+
       <div class="form-group">
-        <label>Nombre de la Facultad *</label>
-        <input class="form-input" [(ngModel)]="form.nombreFacultad" placeholder="Nombre oficial">
+        <label>Nombre de la Facultad <span class="required">*</span></label>
+        <input 
+          type="text" 
+          class="form-input" 
+          [(ngModel)]="form.nombreFacultad"
+          name="nombreFacultad"
+          placeholder="Ej: Facultad de Ciencias de la Ingeniería"
+        >
       </div>
-      <div class="form-group checkbox-group">
-        <input type="checkbox" id="estadoCheck" [(ngModel)]="form.estado">
-        <label for="estadoCheck">Facultad activa</label>
+
+      <div class="form-group">
+        <label class="checkbox-item">
+          <input 
+            type="checkbox"
+            [(ngModel)]="form.estado"
+            name="estado"
+          >
+          <span>Facultad activa</span>
+        </label>
       </div>
+
     </div>
+
     <div class="modal-footer">
-      <button class="btn-outline" (click)="closeModal()">Cancelar</button>
-      <button class="btn-primary" (click)="guardar()">💾 Guardar</button>
+      <button class="btn btn-outline" (click)="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" (click)="guardar()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        {{ editando ? 'Actualizar' : 'Crear Facultad' }}
+      </button>
     </div>
   </div>
 </div>

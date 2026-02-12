@@ -1,12 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FooterComponent } from '../../../component/footer.component';
 import { NavbarComponent } from '../../../component/navbar';
 import { CarreraService } from '../../../services/carrera.service';
 import { FacultadService } from '../../../services/facultad.service';
-// Asegúrate de importar la interfaz Carrera actualizada
-import { Carrera } from '../../../models/carrera.model';
 
 @Component({
   selector: 'app-carrera',
@@ -14,25 +12,52 @@ import { Carrera } from '../../../models/carrera.model';
   imports: [
     CommonModule,
     FormsModule,
-    NavbarComponent,
-    FooterComponent
+    NavbarComponent
   ],
   templateUrl: './carrera.html',
   styleUrls: ['./carrera.scss']
-
 })
 export class CarreraComponent implements OnInit {
 
+  // ===== Datos =====
   carreras: any[] = [];
-  facultades: any[] = []; // Guardará objetos { idFacultad: 1, nombreFacultad: '...' }
+  carrerasFiltradas: any[] = [];
+  facultades: any[] = [];
 
+  // ===== Filtros =====
   search = '';
   filtroFacultad = '';
+  filtroModalidad = '';
+  filtroEstado = '';
 
+  // ===== Paginación =====
+  currentPage = 1;
+  pageSize = 10;
+  totalPages = 1;
+  Math = Math;
+
+  get carrerasPaginadas(): any[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.carrerasFiltradas.slice(start, start + this.pageSize);
+  }
+
+  // ===== Estadísticas =====
+  get carrerasActivas(): number {
+    return this.carreras.filter(c => c.estado).length;
+  }
+
+  get totalModalidades(): number {
+    if (!this.carreras || this.carreras.length === 0) return 0;
+    return new Set(this.carreras.map(c => c.modalidad)).size;
+  }
+
+  // ===== Modales =====
   modalAbierto = false;
   editando = false;
+  isSaving = false;
+  submitted = false;
 
-  // Formulario ajustado para Spring Boot
+  // ===== Formulario =====
   form = {
     id: 0,
     idFacultad: null as number | null,
@@ -41,67 +66,152 @@ export class CarreraComponent implements OnInit {
     estado: true
   };
 
-  constructor(private carreraService: CarreraService,
-              private facultadService: FacultadService) {}
+  constructor(
+    private carreraService: CarreraService,
+    private facultadService: FacultadService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
-    this.cargarCarreras();
     this.cargarFacultades();
+    this.cargarCarreras();
   }
 
-  // ===== CARGAR =====
-  cargarCarreras() {
+  // =========================
+  // LOADERS BACKEND
+  // =========================
+  cargarCarreras(): void {
     this.carreraService.getAll().subscribe({
-      next: data => {
-        this.carreras = data;
-        // No sobrescribimos 'this.facultades' aquí para no perder los IDs
+      next: (data) => {
+        this.carreras = Array.isArray(data) ? data : [];
+        this.carrerasFiltradas = [...this.carreras];
+        this.calculatePagination();
+        this.cdr.detectChanges();
       },
-      error: err => console.error('Error al cargar carreras', err)
+      error: (err) => {
+        console.error('Error al cargar carreras:', err);
+        this.carreras = [];
+        this.carrerasFiltradas = [];
+        this.calculatePagination();
+        this.cdr.detectChanges();
+      }
     });
   }
 
-  cargarFacultades() {
+  cargarFacultades(): void {
     this.facultadService.listar().subscribe({
       next: (data: any[]) => {
-        // Cargamos la lista completa de objetos
-        this.facultades = data;
+        this.facultades = Array.isArray(data) ? data : [];
+        this.cdr.detectChanges();
       },
-      error: err => console.error('Error al cargar facultades', err)
+      error: (err) => {
+        console.error('Error al cargar facultades:', err);
+        this.facultades = [];
+      }
     });
   }
 
-  // ===== ESTADÍSTICAS =====
-  get carrerasActivas(): number {
-    return this.carreras.filter(c => c.estado).length;
-  }
+  // =========================
+  // FILTROS
+  // =========================
+  applyFilters(): void {
+    const term = (this.search || '').trim().toLowerCase();
+    const facultadFilter = this.filtroFacultad;
+    const modalidadFilter = this.filtroModalidad;
+    const estadoFilter = this.filtroEstado;
 
-  get totalModalidades(): number {
-    // Verificamos si existe data antes de mapear
-    if(!this.carreras) return 0;
-    return new Set(this.carreras.map(c => c.modalidad)).size;
-  }
-
-  // ===== FILTRO =====
-  carrerasFiltradas(): any[] {
-    return this.carreras.filter(c => {
-      // Manejo seguro del nombre (puede venir como nombre o nombreCarrera)
+    this.carrerasFiltradas = this.carreras.filter(c => {
+      // Búsqueda por texto
       const nombre = c.nombre || c.nombreCarrera || '';
-      // Manejo seguro de la facultad (puede ser objeto o string)
+      const searchMatch =
+        !term ||
+        nombre.toLowerCase().includes(term) ||
+        String(c.id || c.idCarrera).includes(term);
+
+      // Filtro por facultad
       const nombreFacultad = c.facultad?.nombreFacultad || c.facultad || '';
+      const facultadMatch =
+        !facultadFilter || nombreFacultad === facultadFilter;
 
-      const matchSearch = nombre.toLowerCase().includes(this.search.toLowerCase());
-      const matchFiltro = !this.filtroFacultad || nombreFacultad === this.filtroFacultad;
+      // Filtro por modalidad
+      const modalidadMatch =
+        !modalidadFilter || c.modalidad === modalidadFilter;
 
-      return matchSearch && matchFiltro;
+      // Filtro por estado
+      const estadoMatch =
+        !estadoFilter || String(c.estado) === estadoFilter;
+
+      return searchMatch && facultadMatch && modalidadMatch && estadoMatch;
     });
+
+    this.currentPage = 1;
+    this.calculatePagination();
   }
 
-  // ===== CREAR =====
-  openCreate() {
+  // =========================
+  // PAGINACIÓN
+  // =========================
+  calculatePagination(): void {
+    this.totalPages = Math.max(1, Math.ceil(this.carrerasFiltradas.length / this.pageSize));
+  }
+
+  changePage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxVisible = 5;
+
+    if (this.totalPages <= maxVisible) {
+      for (let i = 1; i <= this.totalPages; i++) pages.push(i);
+      return pages;
+    }
+
+    pages.push(1);
+
+    if (this.currentPage > 3) pages.push(-1);
+
+    const start = Math.max(2, this.currentPage - 1);
+    const end = Math.min(this.totalPages - 1, this.currentPage + 1);
+
+    for (let i = start; i <= end; i++) pages.push(i);
+
+    if (this.currentPage < this.totalPages - 2) pages.push(-1);
+
+    pages.push(this.totalPages);
+    return pages;
+  }
+
+  // =========================
+  // UI HELPERS
+  // =========================
+  getModalidadClass(modalidad: string): string {
+    const m = (modalidad || '').toLowerCase();
+    if (m === 'presencial') return 'presencial';
+    if (m === 'virtual') return 'virtual';
+    if (m === 'hibrido' || m === 'híbrido') return 'hibrido';
+    return '';
+  }
+
+  getModalidadLabel(modalidad: string): string {
+    const m = (modalidad || '').toLowerCase();
+    if (m === 'presencial') return 'Presencial';
+    if (m === 'virtual') return 'Virtual';
+    if (m === 'hibrido' || m === 'híbrido') return 'Híbrido';
+    return modalidad;
+  }
+
+  // =========================
+  // MODAL CREAR
+  // =========================
+  openCreate(): void {
     this.editando = false;
+    this.submitted = false;
     this.form = {
       id: 0,
-      // Seleccionamos el primer ID disponible o null
       idFacultad: this.facultades.length > 0 ? this.facultades[0].idFacultad : null,
       nombreCarrera: '',
       modalidad: 'presencial',
@@ -110,14 +220,14 @@ export class CarreraComponent implements OnInit {
     this.modalAbierto = true;
   }
 
-  // ===== EDITAR =====
-  edit(carrera: any) {
+  // =========================
+  // MODAL EDITAR
+  // =========================
+  edit(carrera: any): void {
     this.editando = true;
-
-    // Mapeamos los datos recibidos al formato del formulario
+    this.submitted = false;
     this.form = {
       id: carrera.id || carrera.idCarrera,
-      // Intentamos obtener el ID de la facultad si viene anidado
       idFacultad: carrera.facultad?.idFacultad || carrera.idFacultad,
       nombreCarrera: carrera.nombre || carrera.nombreCarrera,
       modalidad: carrera.modalidad,
@@ -126,60 +236,94 @@ export class CarreraComponent implements OnInit {
     this.modalAbierto = true;
   }
 
-  // ===== GUARDAR =====
-  guardar() {
-    console.log("Intentando guardar...", this.form); // 1. Ver qué datos tiene el formulario
+  // =========================
+  // GUARDAR
+  // =========================
+  guardar(): void {
+    this.submitted = true;
 
-    // Validación manual para ver si falta algo
+    // Validación
     if (!this.form.nombreCarrera || !this.form.nombreCarrera.trim()) {
-      alert("¡Error! El nombre de la carrera está vacío.");
+      alert('El nombre de la carrera es obligatorio.');
       return;
     }
 
     if (!this.form.idFacultad) {
-      alert("¡Error! No has seleccionado ninguna facultad.");
+      alert('Debe seleccionar una facultad.');
       return;
     }
 
-    const carreraEnvio = this.form as any;
+    this.isSaving = true;
+
+    const carreraEnvio = { ...this.form };
 
     if (this.editando) {
       this.carreraService.update(this.form.id, carreraEnvio).subscribe({
         next: () => {
-          alert("¡Actualizado con éxito!"); // Feedback visual
-          this.cargarCarreras();
+          this.isSaving = false;
           this.closeModal();
+          alert('✅ Carrera actualizada con éxito.');
+          this.cargarCarreras();
         },
-        error: err => {
-          console.error('Error al actualizar', err);
-          alert("Error al actualizar: " + (err.error?.message || err.message));
+        error: (err) => {
+          this.isSaving = false;
+          console.error('Error al actualizar:', err);
+          const msg = err?.error?.message || err?.error || err?.message || 'Error desconocido';
+          alert('❌ No se pudo actualizar: ' + msg);
         }
       });
     } else {
       this.carreraService.create(carreraEnvio).subscribe({
         next: () => {
-          alert("¡Creado con éxito!"); // Feedback visual
-          this.cargarCarreras();
+          this.isSaving = false;
           this.closeModal();
+          alert('✅ Carrera creada con éxito.');
+          this.cargarCarreras();
         },
-        error: err => {
-          console.error('Error al crear', err);
-          alert("Error al crear: Mira la consola (F12) para más detalles");
+        error: (err) => {
+          this.isSaving = false;
+          console.error('Error al crear:', err);
+          const msg = err?.error?.message || err?.error || err?.message || 'Error desconocido';
+          alert('❌ No se pudo crear: ' + msg);
         }
       });
     }
   }
 
-  // ===== ESTADO =====
-  toggleEstado(carrera: any) {
+  // =========================
+  // TOGGLE ESTADO
+  // =========================
+  toggleEstado(carrera: any): void {
+    const nuevoEstado = !carrera.estado;
+    const accion = nuevoEstado ? 'activar' : 'desactivar';
+
+    if (!confirm(`¿Seguro que deseas ${accion} esta carrera?`)) return;
+
     const id = carrera.id || carrera.idCarrera;
+    const estadoAnterior = carrera.estado;
+
+    // Optimistic UI
+    carrera.estado = nuevoEstado;
+
     this.carreraService.toggleEstado(id).subscribe({
-      next: () => carrera.estado = !carrera.estado,
-      error: err => console.error('Error al cambiar estado', err)
+      next: () => {
+        this.applyFilters();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error al cambiar estado:', err);
+        carrera.estado = estadoAnterior; // Revertir
+        alert('❌ No se pudo cambiar el estado.');
+        this.cdr.detectChanges();
+      }
     });
   }
 
-  closeModal() {
+  // =========================
+  // CERRAR MODAL
+  // =========================
+  closeModal(): void {
     this.modalAbierto = false;
+    this.submitted = false;
   }
 }

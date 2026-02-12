@@ -15,11 +15,17 @@ import { Facultad } from '../../../models/facultad.model';
 })
 export class FacultadComponent implements OnInit {
 
+  // ===== Tabla =====
   facultades: Facultad[] = [];
+
+  // ===== Filtros =====
   search: string = '';
+
+  // ===== Modales =====
   modalAbierto = false;
   editando = false;
 
+  // ===== Formulario =====
   form: Facultad = {
     idFacultad: 0,
     nombreFacultad: '',
@@ -32,6 +38,9 @@ export class FacultadComponent implements OnInit {
     this.cargarFacultades();
   }
 
+  // =========================
+  // LOADERS BACKEND
+  // =========================
   cargarFacultades(): void {
     this.facultadService.listar().subscribe({
       next: (data: any[]) => {
@@ -46,7 +55,9 @@ export class FacultadComponent implements OnInit {
     });
   }
 
-  // ===== ESTADÍSTICAS =====
+  // =========================
+  // ESTADÍSTICAS
+  // =========================
   get facultadesActivas(): number {
     return this.facultades.filter(f => !!f.estado).length;
   }
@@ -55,7 +66,9 @@ export class FacultadComponent implements OnInit {
     return this.facultades.filter(f => !f.estado).length;
   }
 
-  // ===== FILTRO =====
+  // =========================
+  // FILTROS
+  // =========================
   facultadesFiltradas(): Facultad[] {
     const q = (this.search ?? '').toLowerCase();
     return this.facultades.filter(f =>
@@ -63,13 +76,18 @@ export class FacultadComponent implements OnInit {
     );
   }
 
-  // ===== MODAL =====
+  // =========================
+  // MODAL CREAR
+  // =========================
   openCreate(): void {
     this.editando = false;
     this.form = { idFacultad: 0, nombreFacultad: '', estado: true };
     this.modalAbierto = true;
   }
 
+  // =========================
+  // MODAL EDITAR
+  // =========================
   edit(f: Facultad): void {
     this.editando = true;
     this.form = { ...f };
@@ -80,7 +98,9 @@ export class FacultadComponent implements OnInit {
     this.modalAbierto = false;
   }
 
-  // ===== MAPEADOR (CLAVE PARA QUE NO MANDE NULL) =====
+  // =========================
+  // MAPEADOR (CLAVE PARA QUE NO MANDE NULL)
+  // =========================
   private toPayload(f: Facultad) {
     return {
       nombre_facultad: (f.nombreFacultad ?? '').trim(),
@@ -88,7 +108,9 @@ export class FacultadComponent implements OnInit {
     };
   }
 
-  // ===== ACCIONES =====
+  // =========================
+  // GUARDAR
+  // =========================
   guardar(): void {
     const nombre = (this.form.nombreFacultad ?? '').trim();
     if (!nombre) {
@@ -96,10 +118,14 @@ export class FacultadComponent implements OnInit {
       return;
     }
 
-    // aseguramos el trim en el form también
+    // Aseguramos el trim en el form también
     this.form.nombreFacultad = nombre;
 
-    const payload = this.toPayload(this.form);
+    const payload = {
+      nombreFacultad: this.form.nombreFacultad,
+      estado: this.form.estado
+    };
+
     console.log('Payload enviado (guardar):', payload);
 
     const request = this.editando
@@ -118,6 +144,9 @@ export class FacultadComponent implements OnInit {
     });
   }
 
+  // =========================
+  // TOGGLE STATUS
+  // =========================
   toggleEstado(f: Facultad): void {
     const anterior = f.estado;
     f.estado = !f.estado; // cambio visual inmediato

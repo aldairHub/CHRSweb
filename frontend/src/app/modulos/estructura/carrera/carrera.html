@@ -1,160 +1,298 @@
 <app-navbar></app-navbar>
 
 <div class="main-container">
-
-
   <div class="content-wrapper">
 
-    <nav class="breadcrumb">
-      <a>Dashboard</a>
-      <span>/</span>
-      <a>Estructura Académica</a>
-      <span>/</span>
-      <span>Carreras</span>
-    </nav>
-
+    <!-- Header de la página -->
     <div class="page-header">
-      <h2>Gestión de Carreras</h2>
+      <div>
+        <h2>Gestión de Carreras</h2>
+        <p class="page-subtitle">Estructura Académica</p>
+      </div>
+      <button class="btn btn-primary" (click)="openCreate()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Nueva Carrera
+      </button>
     </div>
 
+    <!-- Tarjetas de Estadísticas -->
     <div class="stats-grid">
       <div class="stat-card">
-        <div>
+        <div class="stat-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        </div>
+        <div class="stat-content">
           <h3>Total Carreras</h3>
           <div class="stat-value">{{ carreras.length }}</div>
         </div>
-        <div class="stat-icon">📚</div>
       </div>
+
       <div class="stat-card">
-        <div>
+        <div class="stat-icon success">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="stat-content">
           <h3>Activas</h3>
           <div class="stat-value">{{ carrerasActivas }}</div>
         </div>
-        <div class="stat-icon">✅</div>
       </div>
+
       <div class="stat-card">
-        <div>
+        <div class="stat-icon purple">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+          </svg>
+        </div>
+        <div class="stat-content">
           <h3>Modalidades</h3>
           <div class="stat-value">{{ totalModalidades }}</div>
         </div>
-        <div class="stat-icon">🎯</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon blue">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>Facultades</h3>
+          <div class="stat-value">{{ facultades.length }}</div>
+        </div>
       </div>
     </div>
 
-    <div class="content-card">
-      <div class="card-header">
-        <h3>Listado de Carreras</h3>
+    <!-- Filtros y Búsqueda -->
+    <div class="filters-section">
+      <div class="search-box">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input
+          type="text"
+          class="form-input with-icon"
+          placeholder="Buscar por nombre de carrera..."
+          [(ngModel)]="search"
+          (input)="applyFilters()"
+        >
       </div>
 
-      <div class="search-actions">
-        <div class="search-box">
-          <span>🔍</span>
-          <input type="text" placeholder="Buscar carrera..." [(ngModel)]="search">
-        </div>
+      <select class="form-select" [(ngModel)]="filtroFacultad" (change)="applyFilters()">
+        <option value="">Todas las Facultades</option>
+        <option *ngFor="let f of facultades" [value]="f.nombreFacultad">
+          {{ f.nombreFacultad }}
+        </option>
+      </select>
 
-        <select [(ngModel)]="filtroFacultad">
-          <option value="">Todas las Facultades</option>
-          <option *ngFor="let f of facultades" [value]="f.nombreFacultad">
-            {{ f.nombreFacultad }}
-          </option>
-        </select>
+      <select class="form-select" [(ngModel)]="filtroModalidad" (change)="applyFilters()">
+        <option value="">Todas las Modalidades</option>
+        <option value="presencial">Presencial</option>
+        <option value="virtual">Virtual</option>
+        <option value="hibrido">Híbrido</option>
+      </select>
 
-        <button class="btn btn-primary" (click)="openCreate()">
-          ➕ Nueva Carrera
+      <select class="form-select" [(ngModel)]="filtroEstado" (change)="applyFilters()">
+        <option value="">Todos los Estados</option>
+        <option value="true">Activas</option>
+        <option value="false">Inactivas</option>
+      </select>
+    </div>
+
+    <!-- Tabla de Carreras -->
+    <div class="table-container">
+      <table class="table">
+        <thead>
+        <tr>
+          <th>ID Carrera</th>
+          <th>Nombre de la Carrera</th>
+          <th>Facultad</th>
+          <th>Modalidad</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        <tr *ngFor="let c of carrerasPaginadas">
+          <td><strong>#{{ c.id || c.idCarrera }}</strong></td>
+          <td>{{ c.nombre || c.nombreCarrera }}</td>
+          <td>{{ c.facultad?.nombreFacultad || c.facultad }}</td>
+
+          <td>
+            <span
+              class="role-badge"
+              [ngClass]="getModalidadClass(c.modalidad)"
+            >
+              {{ getModalidadLabel(c.modalidad) }}
+            </span>
+          </td>
+
+          <td>
+            <span class="badge" [ngClass]="c.estado ? 'success' : 'danger'">
+              <span class="status-dot"></span>
+              {{ c.estado ? 'Activa' : 'Inactiva' }}
+            </span>
+          </td>
+
+          <td>
+            <div class="action-buttons">
+              <label class="toggle-switch" [title]="c.estado ? 'Desactivar' : 'Activar'">
+                <input type="checkbox" [checked]="c.estado" (change)="toggleEstado(c)">
+                <span class="toggle-slider"></span>
+              </label>
+
+              <button class="btn-icon" (click)="edit(c)" title="Editar">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <tr *ngIf="carrerasFiltradas.length === 0">
+          <td colspan="6" class="empty-state">
+            <div class="empty-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+              </svg>
+            </div>
+            <p>No se encontraron carreras</p>
+            <small>Intenta ajustar los filtros o crear una nueva carrera</small>
+          </td>
+        </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="pagination" *ngIf="carrerasFiltradas.length > 0">
+      <div class="pagination-info">
+        Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, carrerasFiltradas.length) }} de {{ carrerasFiltradas.length }} carreras
+      </div>
+      <div class="pagination-controls">
+        <button class="page-btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        <button
+          *ngFor="let page of getPageNumbers()"
+          class="page-btn"
+          [class.active]="page === currentPage"
+          [disabled]="page === -1"
+          (click)="page !== -1 && changePage(page)"
+        >
+          {{ page === -1 ? '...' : page }}
+        </button>
+
+        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
         </button>
       </div>
-
-      <div class="table-container">
-        <table>
-          <thead>
-          <tr>
-            <th>ID</th>
-            <th>Facultad</th>
-            <th>Nombre</th>
-            <th>Modalidad</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let c of carrerasFiltradas()">
-            <td>#{{ c.id || c.idCarrera }}</td>
-            <td>{{ c.facultad?.nombreFacultad || c.facultad }}</td>
-            <td>{{ c.nombre || c.nombreCarrera }}</td>
-            <td>
-                <span class="badge {{ c.modalidad }}">
-                  {{ c.modalidad | titlecase }}
-                </span>
-            </td>
-            <td>
-                <span class="status-badge" [ngClass]="c.estado ? 'active' : 'inactive'">
-                  <span class="status-dot"></span>
-                  {{ c.estado ? 'Activa' : 'Inactiva' }}
-                </span>
-            </td>
-            <td>
-              <div class="action-buttons">
-                <label class="toggle-switch">
-                  <input type="checkbox" [checked]="c.estado" (change)="toggleEstado(c)">
-                  <span class="toggle-slider"></span>
-                </label>
-                <button class="btn-icon" (click)="edit(c)">✏️</button>
-              </div>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
-
     </div>
-  </div>
 
-  <app-footer></app-footer>
+  </div>
 </div>
 
-<div class="modal" [class.active]="modalAbierto">
-  <div class="modal-content">
+<!-- MODAL CREAR/EDITAR -->
+<div class="modal-overlay" *ngIf="modalAbierto" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ editando ? 'Editar Carrera' : 'Nueva Carrera' }}</h3>
-      <button class="close-btn" (click)="closeModal()">×</button>
+      <button class="close-btn" (click)="closeModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
 
     <div class="modal-body">
 
-      <div class="form-group">
-        <label>Facultad *</label>
-        <select [(ngModel)]="form.idFacultad">
-          <option *ngFor="let f of facultades" [ngValue]="f.idFacultad">
-            {{ f.nombreFacultad }}
-          </option>
-        </select>
+      <div class="alert info">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div>
+          <strong>Información Importante</strong>
+          <p>Asegúrate de seleccionar la facultad correcta y configurar la modalidad adecuada para la carrera.</p>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title">Información de la Carrera</div>
+        <div class="section-description">Datos básicos de identificación</div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre de la Carrera <span class="required">*</span></label>
+          <input
+            type="text"
+            class="form-input"
+            [(ngModel)]="form.nombreCarrera"
+            placeholder="Ej: Ingeniería de Software"
+          >
+          <div class="error-message" *ngIf="submitted && !form.nombreCarrera.trim()">
+            El nombre de la carrera es obligatorio
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Facultad <span class="required">*</span></label>
+          <select class="form-select" [(ngModel)]="form.idFacultad">
+            <option [ngValue]="null">Seleccionar facultad...</option>
+            <option *ngFor="let f of facultades" [ngValue]="f.idFacultad">
+              {{ f.nombreFacultad }}
+            </option>
+          </select>
+          <div class="error-message" *ngIf="submitted && !form.idFacultad">
+            Debe seleccionar una facultad
+          </div>
+        </div>
       </div>
 
       <div class="form-group">
-        <label>Nombre *</label>
-        <input [(ngModel)]="form.nombreCarrera" placeholder="Ej: Ingeniería de Software">
-      </div>
-
-      <div class="form-group">
-        <label>Modalidad *</label>
-        <select [(ngModel)]="form.modalidad">
+        <label>Modalidad <span class="required">*</span></label>
+        <select class="form-select" [(ngModel)]="form.modalidad">
           <option value="presencial">Presencial</option>
           <option value="virtual">Virtual</option>
           <option value="hibrido">Híbrido</option>
         </select>
       </div>
 
-      <label class="toggle-switch">
-        <input type="checkbox" [(ngModel)]="form.estado">
-        <span class="toggle-slider"></span>
-        Activa
-      </label>
+      <div class="form-group">
+        <label class="checkbox-item">
+          <input
+            type="checkbox"
+            [(ngModel)]="form.estado"
+          >
+          <span>Carrera activa</span>
+        </label>
+      </div>
 
     </div>
 
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" (click)="guardar()">💾 Guardar</button>
+      <button class="btn btn-outline" (click)="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" (click)="guardar()" [disabled]="isSaving">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        {{ isSaving ? 'Guardando...' : 'Guardar Carrera' }}
+      </button>
     </div>
   </div>
 </div>
