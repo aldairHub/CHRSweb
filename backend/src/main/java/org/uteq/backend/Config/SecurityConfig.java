@@ -39,7 +39,11 @@ public class SecurityConfig {
                                 "/api/verificacion/validar",
                                 "/api/autoridades-academicas/**",
                                 "/api/autoridades-academicas/registro",
-                                "/api/admin/prepostulaciones/**"
+                                "/api/admin/prepostulaciones/**",
+                                "/api/instituciones",
+                                "/api/instituciones/**",
+                                "/api/roles-autoridad",
+                                "/api/roles-autoridad/**"
                                 ).permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/demo/**").permitAll()
@@ -64,7 +68,7 @@ public class SecurityConfig {
                 "http://localhost:8080",
                 "http://localhost:4200"
         ));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

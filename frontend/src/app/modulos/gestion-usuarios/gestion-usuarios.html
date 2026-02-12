@@ -4,13 +4,12 @@
 <div class="main-container">
   <div class="content-wrapper">
 
-    <!-- Header -->
+    <!-- Header de la página -->
     <div class="page-header">
       <div>
         <h2>Gestión de Usuarios</h2>
         <p class="page-subtitle">Autoridades Académicas</p>
       </div>
-
       <button class="btn btn-primary" (click)="openCreateModal()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -19,7 +18,7 @@
       </button>
     </div>
 
-    <!-- Stats -->
+    <!-- Tarjetas de Estadísticas -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon">
@@ -70,7 +69,7 @@
       </div>
     </div>
 
-    <!-- Filters -->
+    <!-- Filtros y Búsqueda -->
     <div class="filters-section">
       <div class="search-box">
         <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -85,10 +84,10 @@
         >
       </div>
 
-      <select class="form-select" [(ngModel)]="filterRoleId" (change)="applyFilters()">
-        <option [ngValue]="null">Todos los Roles</option>
-        <option *ngFor="let rol of rolesAutoridadDisponibles" [ngValue]="rol.idRolAutoridad">
-          {{ rol.nombre }}
+      <select class="form-select" [(ngModel)]="filterRole" (change)="applyFilters()">
+        <option value="">Todos los Roles</option>
+        <option *ngFor="let r of rolesAutoridadDisponibles" [value]="r.idRolAutoridad">
+          {{ r.nombre }}
         </option>
       </select>
 
@@ -99,12 +98,12 @@
       </select>
     </div>
 
-    <!-- Table -->
+    <!-- Tabla de Usuarios -->
     <div class="table-container">
       <table class="table">
         <thead>
         <tr>
-          <th>ID</th>
+          <th>ID Autoridad</th>
           <th>Nombre Completo</th>
           <th>Correo</th>
           <th>Roles de Autoridad</th>
@@ -113,8 +112,8 @@
           <th>Acciones</th>
         </tr>
         </thead>
-
         <tbody>
+
         <tr *ngFor="let usuario of usuariosPaginados">
           <td><strong>#{{ usuario.idAutoridad }}</strong></td>
           <td>{{ usuario.nombres }} {{ usuario.apellidos }}</td>
@@ -126,15 +125,20 @@
                 *ngFor="let rol of usuario.rolesAutoridad"
                 class="role-badge"
                 [ngClass]="getRolClass(rol.nombre)"
+                title="ID rol: {{ rol.idRolAutoridad }}"
               >
-                {{ rol.nombre }}
+                {{ getRolLabel(rol.nombre) }}
               </span>
-              <span *ngIf="!usuario.rolesAutoridad?.length" class="text-muted">N/A</span>
             </div>
           </td>
 
           <td>
-            {{ getNombreInstitucion(usuario.idInstitucion) || 'N/A' }}
+            <span *ngIf="getInstitucionNombre(usuario.idInstitucion); else instNA">
+              {{ getInstitucionNombre(usuario.idInstitucion) }}
+            </span>
+            <ng-template #instNA>
+              <span class="text-muted">N/A</span>
+            </ng-template>
           </td>
 
           <td>
@@ -146,6 +150,7 @@
 
           <td>
             <div class="action-buttons">
+              <!-- Por ahora el toggle es UI (si aún no tienes endpoint de activar/desactivar autoridad/usuario) -->
               <label class="toggle-switch" [title]="usuario.estado ? 'Desactivar' : 'Activar'">
                 <input type="checkbox" [checked]="usuario.estado" (change)="toggleStatus(usuario)">
                 <span class="toggle-slider"></span>
@@ -153,19 +158,15 @@
 
               <button class="btn-icon" (click)="openEditModal(usuario)" title="Editar">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                 </svg>
               </button>
 
               <button class="btn-icon" (click)="openRolesModal(usuario)" title="Ver Roles">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                </svg>
-              </button>
-
-              <button class="btn-icon" (click)="deleteAutoridad(usuario)" title="Eliminar">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
                 </svg>
               </button>
             </div>
@@ -174,19 +175,26 @@
 
         <tr *ngIf="usuariosFiltrados.length === 0">
           <td colspan="7" class="empty-state">
+            <div class="empty-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+              </svg>
+            </div>
             <p>No se encontraron usuarios</p>
+            <small>Intenta ajustar los filtros de búsqueda</small>
           </td>
         </tr>
+
         </tbody>
       </table>
     </div>
 
-    <!-- Pagination -->
+    <!-- Paginación -->
     <div class="pagination" *ngIf="totalPages > 1">
       <div class="pagination-info">
         Mostrando {{ (currentPage - 1) * pageSize + 1 }}-{{ Math.min(currentPage * pageSize, usuariosFiltrados.length) }} de {{ usuariosFiltrados.length }}
       </div>
-
       <div class="pagination-controls">
         <button class="btn btn-sm btn-outline" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
           Anterior
@@ -196,10 +204,10 @@
           *ngFor="let page of getPageNumbers()"
           class="btn btn-sm"
           [ngClass]="page === currentPage ? 'btn-primary' : 'btn-outline'"
-          (click)="page !== -1 && changePage(page)"
+          (click)="page > 0 && changePage(page)"
           [disabled]="page === -1"
         >
-          {{ page === -1 ? '...' : page }}
+          {{ page === -1 ? '…' : page }}
         </button>
 
         <button class="btn btn-sm btn-outline" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
@@ -211,195 +219,162 @@
   </div>
 </div>
 
-<!-- MODAL: CREAR -->
+<!-- MODAL: CREAR AUTORIDAD -->
 <div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Nueva Autoridad Académica</h3>
-      <button class="close-btn" (click)="closeCreateModal()">✕</button>
+      <button class="close-btn" (click)="closeCreateModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
 
     <div class="modal-body">
+
       <div class="alert info">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
         <div>
-          <strong>Información</strong>
-          <p>Se generarán credenciales automáticamente y se enviarán al correo.</p>
+          <strong>Información Importante</strong>
+          <p>El sistema generará automáticamente las credenciales y enviará un correo electrónico al usuario con sus datos de acceso.</p>
         </div>
       </div>
 
       <form [formGroup]="createForm">
+
+        <div class="form-section">
+          <div class="section-title">Datos Personales</div>
+          <div class="section-description">Información básica de la autoridad académica</div>
+        </div>
+
         <div class="form-row">
           <div class="form-group">
-            <label>Nombres *</label>
-            <input type="text" class="form-input" formControlName="nombres">
+            <label>Nombres <span class="required">*</span></label>
+            <input type="text" class="form-input" formControlName="nombres" placeholder="Ej: Juan Carlos">
+            <div class="error-message" *ngIf="createForm.get('nombres')?.invalid && createForm.get('nombres')?.touched">
+              Este campo es obligatorio
+            </div>
           </div>
+
           <div class="form-group">
-            <label>Apellidos *</label>
-            <input type="text" class="form-input" formControlName="apellidos">
+            <label>Apellidos <span class="required">*</span></label>
+            <input type="text" class="form-input" formControlName="apellidos" placeholder="Ej: Pérez Morales">
+            <div class="error-message" *ngIf="createForm.get('apellidos')?.invalid && createForm.get('apellidos')?.touched">
+              Este campo es obligatorio
+            </div>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label>Correo *</label>
-            <input type="email" class="form-input" formControlName="correo">
+            <label>Correo Electrónico <span class="required">*</span></label>
+            <input type="email" class="form-input" formControlName="correo" placeholder="usuario@uteq.edu.ec">
+            <small class="help-text">Se enviará las credenciales a este correo</small>
+            <div class="error-message" *ngIf="createForm.get('correo')?.invalid && createForm.get('correo')?.touched">
+              Ingrese un correo válido
+            </div>
           </div>
+
           <div class="form-group">
-            <label>Fecha Nacimiento *</label>
+            <label>Fecha de Nacimiento <span class="required">*</span></label>
             <input type="date" class="form-input" formControlName="fechaNacimiento">
           </div>
         </div>
 
         <div class="form-group">
-          <label>Institución *</label>
+          <label>Institución <span class="required">*</span></label>
           <select class="form-select" formControlName="idInstitucion">
-            <option [ngValue]="null">Seleccionar...</option>
-            <option *ngFor="let inst of instituciones" [ngValue]="inst.idInstitucion">{{ inst.nombre }}</option>
+            <option [ngValue]="null">Seleccionar institución...</option>
+            <option *ngFor="let inst of instituciones" [ngValue]="inst.idInstitucion">
+              {{ inst.nombreInstitucion }}
+            </option>
           </select>
         </div>
 
         <div class="form-section">
-          <div class="section-title">Roles de Autoridad *</div>
-          <div class="section-description">Seleccione uno o más</div>
+          <div class="section-title">Roles de Autoridad</div>
+          <div class="section-description">Seleccione uno o más roles</div>
         </div>
 
-        <div class="checkbox-grid" formArrayName="rolesAutoridad">
-          <label class="checkbox-item" *ngFor="let rol of rolesAutoridadDisponibles; let i = index">
-            <input type="checkbox" [formControlName]="i" (change)="onCreateRolesChanged()">
+        <div class="checkbox-grid">
+          <label class="checkbox-item" *ngFor="let rol of rolesAutoridadDisponibles">
+            <input
+              type="checkbox"
+              [checked]="selectedRolIds.includes(rol.idRolAutoridad)"
+              (change)="onRoleToggle(rol.idRolAutoridad, $event)"
+            >
             <span>{{ rol.nombre }}</span>
           </label>
         </div>
 
-        <div class="error-message" *ngIf="rolesAutoridadErrorCreate">
-          Debe seleccionar al menos un rol de autoridad
+        <div class="roles-preview">
+          <div *ngIf="selectedRolIds.length === 0" class="preview-empty">
+            Seleccione roles de autoridad...
+          </div>
         </div>
 
-        <div class="roles-preview">
-          <div *ngIf="previewRoles.length === 0" class="preview-empty">
-            Seleccione roles para ver un resumen...
-          </div>
-          <div *ngFor="let rol of previewRoles" class="role-preview-item">
-            <div>
-              <div class="role-name">{{ rol.nombre }}</div>
-              <div class="role-description">{{ rol.descripcion }}</div>
-            </div>
-            <span class="auto-badge">Automático</span>
-          </div>
-        </div>
       </form>
     </div>
 
     <div class="modal-footer">
       <button class="btn btn-outline" (click)="closeCreateModal()">Cancelar</button>
-      <button class="btn btn-primary" (click)="saveAutoridad()" [disabled]="createForm.invalid || isSaving">
+      <button class="btn btn-primary" (click)="saveAutoridad()" [disabled]="createForm.invalid || isSaving || selectedRolIds.length === 0">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
         {{ isSaving ? 'Guardando...' : 'Crear Autoridad' }}
       </button>
     </div>
   </div>
 </div>
 
-<!-- MODAL: EDITAR -->
+<!-- MODAL EDITAR / ROLES: se mantiene tu estructura, pero por ahora queda como UI si no tienes endpoints -->
 <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>Editar Autoridad</h3>
-      <button class="close-btn" (click)="closeEditModal()">✕</button>
+      <h3>Editar Autoridad Académica</h3>
+      <button class="close-btn" (click)="closeEditModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
 
     <div class="modal-body">
-      <form [formGroup]="editForm" *ngIf="selectedUsuario">
-        <div class="form-row">
-          <div class="form-group">
-            <label>ID Autoridad</label>
-            <input class="form-input" [value]="'#' + selectedUsuario.idAutoridad" disabled>
-          </div>
-          <div class="form-group">
-            <label>ID Usuario</label>
-            <input class="form-input" [value]="'#' + selectedUsuario.idUsuario" disabled>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Nombres *</label>
-            <input type="text" class="form-input" formControlName="nombres">
-          </div>
-          <div class="form-group">
-            <label>Apellidos *</label>
-            <input type="text" class="form-input" formControlName="apellidos">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Correo *</label>
-            <input type="email" class="form-input" formControlName="correo">
-          </div>
-          <div class="form-group">
-            <label>Fecha Nacimiento *</label>
-            <input type="date" class="form-input" formControlName="fechaNacimiento">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Institución *</label>
-          <select class="form-select" formControlName="idInstitucion">
-            <option [ngValue]="null">Seleccionar...</option>
-            <option *ngFor="let inst of instituciones" [ngValue]="inst.idInstitucion">{{ inst.nombre }}</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Estado</label>
-          <select class="form-select" formControlName="estado">
-            <option [ngValue]="true">Activo</option>
-            <option [ngValue]="false">Inactivo</option>
-          </select>
-        </div>
-
-        <div class="form-section">
-          <div class="section-title">Roles de Autoridad *</div>
-        </div>
-
-        <div class="checkbox-grid" formArrayName="rolesAutoridad">
-          <label class="checkbox-item" *ngFor="let rol of rolesAutoridadDisponibles; let i = index">
-            <input type="checkbox" [formControlName]="i" (change)="onEditRolesChanged()">
-            <span>{{ rol.nombre }}</span>
-          </label>
-        </div>
-
-        <div class="error-message" *ngIf="rolesAutoridadErrorEdit">
-          Debe seleccionar al menos un rol de autoridad
-        </div>
-      </form>
+      <div class="alert info">
+        <p>Edición aún en modo UI (hasta tener endpoint PUT). Puedes pedírmelo y lo conectamos.</p>
+      </div>
     </div>
 
     <div class="modal-footer">
-      <button class="btn btn-outline" (click)="closeEditModal()">Cancelar</button>
-      <button class="btn btn-primary" (click)="updateAutoridad()" [disabled]="editForm.invalid || isUpdating">
-        {{ isUpdating ? 'Actualizando...' : 'Actualizar' }}
-      </button>
+      <button class="btn btn-outline" (click)="closeEditModal()">Cerrar</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL: VER ROLES -->
 <div class="modal-overlay" *ngIf="showRolesModal" (click)="closeRolesModal()">
   <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>Roles de Autoridad</h3>
-      <button class="close-btn" (click)="closeRolesModal()">✕</button>
+      <h3>Roles - #{{ selectedUsuario?.idAutoridad }}</h3>
+      <button class="close-btn" (click)="closeRolesModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
 
-    <div class="modal-body" *ngIf="selectedUsuario">
+    <div class="modal-body">
       <div class="roles-list">
-        <div *ngFor="let rol of selectedUsuario.rolesAutoridad" class="role-list-item">
-          <span class="role-name">{{ rol.nombre }}</span>
+        <div *ngFor="let r of selectedUsuario?.rolesAutoridad" class="role-list-item locked">
+          <span class="role-name">{{ r.nombre }}</span>
+          <span class="auto-badge">Autoridad</span>
         </div>
-
-        <div *ngIf="!selectedUsuario.rolesAutoridad?.length" class="empty-state-sm">
-          No hay roles asignados
-        </div>
+      </div>
+      <div *ngIf="!selectedUsuario?.rolesAutoridad?.length" class="empty-state-sm">
+        Sin roles
       </div>
     </div>
 

@@ -2,12 +2,14 @@ package org.uteq.backend.Controller;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import org.uteq.backend.Service.AutoridadAcademicaService;
 import org.uteq.backend.dto.AutoridadAcademicaRequestDTO;
 import org.uteq.backend.dto.AutoridadAcademicaResponseDTO;
+import org.uteq.backend.dto.AutoridadEstadoRequestDTO;
 import org.uteq.backend.dto.AutoridadRegistroRequestDTO;
 
 @RestController
@@ -53,5 +55,14 @@ public class AutoridadAcademicaController {
     @DeleteMapping("/{id}")
     public void eliminar(@PathVariable Long id) {
         autoridadService.eliminar(id);
+    }
+
+    @PatchMapping("/{idAutoridad}/estado")
+    public ResponseEntity<?> cambiarEstado(
+            @PathVariable Long idAutoridad,
+            @RequestBody @Valid AutoridadEstadoRequestDTO dto
+    ) {
+        autoridadService.cambiarEstado(idAutoridad, dto.estado());
+        return ResponseEntity.ok().build();
     }
 }

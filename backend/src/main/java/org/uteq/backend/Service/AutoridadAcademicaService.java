@@ -19,4 +19,6 @@ public interface AutoridadAcademicaService {
     void eliminar(Long id);
 
     AutoridadRegistroResponseDTO registrarAutoridad(AutoridadRegistroRequestDTO dto);
+
+    void cambiarEstado(Long idAutoridad, Boolean estado);
 }

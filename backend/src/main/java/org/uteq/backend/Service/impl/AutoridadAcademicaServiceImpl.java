@@ -345,4 +345,16 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         for (int i = 0; i < length; i++) sb.append(ABC.charAt(r.nextInt(ABC.length())));
         return sb.toString();
     }
+    @Override
+    @Transactional
+    public void cambiarEstado(Long idAutoridad, Boolean estado) {
+        if (idAutoridad == null) throw new IllegalArgumentException("idAutoridad no puede ser null");
+        if (estado == null) throw new IllegalArgumentException("estado no puede ser null");
+
+        AutoridadAcademica a = autoridadRepository.findById(idAutoridad)
+                .orElseThrow(() -> new RuntimeException("Autoridad no encontrada: " + idAutoridad));
+
+        a.setEstado(estado);
+        autoridadRepository.save(a);
+    }
 }
