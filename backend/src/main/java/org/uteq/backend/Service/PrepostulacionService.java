@@ -10,6 +10,7 @@ import org.uteq.backend.dto.PrepostulacionResponseDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -82,13 +83,12 @@ public class PrepostulacionService {
         Prepostulacion guardado = prepostulacionRepository.save(prepostulacion);
         System.out.println("💾 Prepostulación guardada en BD con ID: " + guardado.getIdPrepostulacion());
 
-        // ✅ RETURN CORREGIDO - Asegúrate que los tipos coincidan
         return new PrepostulacionResponseDTO(
                 "Solicitud registrada exitosamente",
                 guardado.getCorreo(),
-                guardado.getIdPrepostulacion(),  // Long
-                true,                             // Boolean
-                guardado.getFechaEnvio()         // LocalDateTime
+                guardado.getIdPrepostulacion(),
+                true,
+                guardado.getFechaEnvio()
         );
     }
 
@@ -97,7 +97,7 @@ public class PrepostulacionService {
      */
     public Prepostulacion obtenerPorId(Long id) {
         return prepostulacionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Prepostulación no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Prepostulación no encontrada con ID: " + id));
     }
 
     /**
@@ -108,7 +108,7 @@ public class PrepostulacionService {
     }
 
     /**
-     * Listar por estado
+     * Listar por estado de revisión
      */
     public List<Prepostulacion> listarPorEstado(String estado) {
         return prepostulacionRepository.findByEstadoRevision(estado);
@@ -120,11 +120,69 @@ public class PrepostulacionService {
     @Transactional
     public void actualizarEstado(Long id, String nuevoEstado, String observaciones, Long idRevisor) {
         Prepostulacion prepostulacion = obtenerPorId(id);
+
         prepostulacion.setEstadoRevision(nuevoEstado);
         prepostulacion.setObservacionesRevision(observaciones);
         prepostulacion.setFechaRevision(LocalDateTime.now());
         prepostulacion.setIdRevisor(idRevisor);
+
         prepostulacionRepository.save(prepostulacion);
-        System.out.println("✅ Estado actualizado a: " + nuevoEstado);
+
+        System.out.println("✅ Estado de prepostulación " + id + " actualizado a: " + nuevoEstado);
+    }
+
+    /**
+     * Buscar prepostulaciones por identificación, nombre o apellido
+     */
+    public List<Prepostulacion> buscar(String query) {
+        List<Prepostulacion> todas = prepostulacionRepository.findAll();
+
+        String queryLower = query.toLowerCase().trim();
+
+        return todas.stream()
+                .filter(p ->
+                        p.getIdentificacion().toLowerCase().contains(queryLower) ||
+                                p.getNombres().toLowerCase().contains(queryLower) ||
+                                p.getApellidos().toLowerCase().contains(queryLower) ||
+                                p.getCorreo().toLowerCase().contains(queryLower)
+                )
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Eliminar una prepostulación
+     * IMPORTANTE: También elimina los archivos de Supabase
+     */
+    @Transactional
+    public void eliminar(Long id) {
+        Prepostulacion prepostulacion = obtenerPorId(id);
+
+        // Eliminar archivos de Supabase primero
+        try {
+            if (prepostulacion.getUrlCedula() != null) {
+                supabaseService.eliminarArchivo(prepostulacion.getUrlCedula());
+            }
+            if (prepostulacion.getUrlFoto() != null) {
+                supabaseService.eliminarArchivo(prepostulacion.getUrlFoto());
+            }
+            if (prepostulacion.getUrlPrerrequisitos() != null) {
+                supabaseService.eliminarArchivo(prepostulacion.getUrlPrerrequisitos());
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Error al eliminar archivos de Supabase: " + e.getMessage());
+            // Continuamos con la eliminación de la BD aunque falle Supabase
+        }
+
+        // Eliminar de la base de datos
+        prepostulacionRepository.deleteById(id);
+
+        System.out.println("🗑️ Prepostulación " + id + " eliminada correctamente");
+    }
+
+    /**
+     * Contar prepostulaciones por estado
+     */
+    public long contarPorEstado(String estado) {
+        return prepostulacionRepository.findByEstadoRevision(estado).size();
     }
 }
