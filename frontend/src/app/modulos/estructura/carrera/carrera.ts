@@ -18,6 +18,13 @@ import { FacultadService } from '../../../services/facultad.service';
   styleUrls: ['./carrera.scss']
 })
 export class CarreraComponent implements OnInit {
+  getNombreFacultad(idFacultad: number | null | undefined): string {
+    if (!idFacultad) return '—';
+
+    const f = this.facultades.find(x => x.idFacultad === idFacultad);
+    return f ? f.nombreFacultad : 'No encontrada';
+  }
+
 
   // ===== Datos =====
   carreras: any[] = [];

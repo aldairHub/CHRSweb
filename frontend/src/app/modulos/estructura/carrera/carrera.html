@@ -122,7 +122,8 @@
         <tr *ngFor="let c of carrerasPaginadas">
           <td><strong>#{{ c.id || c.idCarrera }}</strong></td>
           <td>{{ c.nombre || c.nombreCarrera }}</td>
-          <td>{{ c.facultad?.nombreFacultad || c.facultad }}</td>
+          <td>{{ getNombreFacultad(c.idFacultad) }}</td>
+
 
           <td>
             <span
