@@ -93,7 +93,7 @@
           <td>{{ m.nombre }}</td>
           <td>
             <span *ngIf="m.carrera; else showCarreraById">{{ m.carrera }}</span>
-            <ng-template #showCarreraById>{{ getCarreraNombre(m.carreraId) }}</ng-template>
+            <ng-template #showCarreraById>{{ getCarreraNombre(m.idCarrera) }}</ng-template>
           </td>
 
           <td>
@@ -208,7 +208,7 @@
 
         <div class="form-group">
           <label>Carrera <span class="required">*</span></label>
-          <select class="form-select" [(ngModel)]="form.carreraId">
+          <select class="form-select" [(ngModel)]="form.idCarrera">
             <option [ngValue]="null">Seleccionar carrera...</option>
             <option *ngFor="let c of carreras" [ngValue]="c.idCarrera">
             {{ c.nombre || c.nombreCarrera }}
@@ -216,11 +216,11 @@
           </select>
 
           <p style="color:red">
-            DEBUG carreraId enviado: {{ form.carreraId }}
+            DEBUG carreraId enviado: {{ form.idCarrera }}
           </p>
 
 
-          <div class="error-message" *ngIf="submitted && !form.carreraId">
+          <div class="error-message" *ngIf="submitted && !form.idCarrera">
             Debe seleccionar una carrera
           </div>
         </div>

@@ -6,7 +6,7 @@ export interface Materia {
   id?: number;
   nombre: string;
   nivel: number;
-  carreraId: number;
+  idCarrera: number;
 }
 
 @Injectable({

@@ -36,6 +36,7 @@ public class SecurityConfig {
                                 "/api/facultades/**",
                                 "/api/facultades",
                                 "/api/materias/**",
+                                "/api/materias",
                                 "/uploads/**",
                                 "/api/verificacion/enviar",
                                 "/api/verificacion/validar",
@@ -66,7 +67,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
+        config.setAllowCredentials(false);
 
         config.setAllowedOriginPatterns(List.of(
                 "http://localhost:8080",

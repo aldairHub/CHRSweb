@@ -8,7 +8,7 @@ import { CarreraService } from '../../../services/carrera.service';
 interface Materia {
   id?: number;
   carrera?: string;
-  carreraId?: number | null;
+  idCarrera?: number | null;
   nombre: string;
   nivel: number;
 }
@@ -83,7 +83,7 @@ export class MateriaComponent implements OnInit {
   // ===== Formulario =====
   form: Materia = {
     id: 0,
-    carreraId: null,
+    idCarrera: null,
     nombre: '',
     nivel: 1
   };
@@ -123,7 +123,7 @@ export class MateriaComponent implements OnInit {
           id: m.idMateria,
           nombre: m.nombre,
           nivel: m.nivel,
-          carreraId: m.idCarrera,
+          idCarrera: m.idCarrera,
           carrera: m.nombreCarrera
         }));
 
@@ -211,12 +211,12 @@ export class MateriaComponent implements OnInit {
   // =========================
   // UI HELPERS
   // =========================
-  getCarreraNombre(carreraId?: number | null): string {
-    if (!carreraId) return 'Sin carrera';
+  getCarreraNombre(idCarrera?: number | null): string {
+    if (!idCarrera) return 'Sin carrera';
 
     const carrera = this.carreras.find(c =>
-      (c.id && c.id === carreraId) ||
-      (c.idCarrera && c.idCarrera === carreraId)
+      (c.id && c.id === idCarrera) ||
+      (c.idCarrera && c.idCarrera === idCarrera)
     );
 
     return carrera
@@ -232,7 +232,7 @@ export class MateriaComponent implements OnInit {
     this.submitted = false;
     this.form = {
       id: 0,
-      carreraId: this.carreras.length > 0
+      idCarrera: this.carreras.length > 0
         ? (this.carreras[0].id || this.carreras[0].idCarrera || null)
         : null,
       nombre: '',
@@ -262,7 +262,7 @@ export class MateriaComponent implements OnInit {
       return;
     }
 
-    if (this.form.carreraId == null) {
+    if (this.form.idCarrera == null) {
       alert('Debe seleccionar una carrera.');
       return;
     }
@@ -270,13 +270,13 @@ export class MateriaComponent implements OnInit {
     console.log('Payload enviado:', {
       nombre: this.form.nombre,
       nivel: this.form.nivel,
-      carreraId: this.form.carreraId
+      idCarrera: this.form.idCarrera
     });
 
     this.materiaService.crear({
       nombre: this.form.nombre.trim(),
       nivel: this.form.nivel,
-      carreraId: Number(this.form.carreraId) // ← fuerza número real
+      idCarrera: Number(this.form.idCarrera) // ← fuerza número real
 
     }).subscribe({
       next: () => {
