@@ -14,7 +14,7 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/login`, { usuarioApp, claveApp });
   }
 
-  guardarSesion(datos: any): void {
+  guardarSesion(datos: any, recordarme: boolean): void {
     if (datos?.token) localStorage.setItem('token', datos.token);
     if (datos?.usuarioApp) localStorage.setItem('usuario', datos.usuarioApp);
 
@@ -75,13 +75,26 @@ export class AuthService {
 
   redirigirPorRol(): void {
     const rol = this.getRol();
+
     switch (rol) {
-      case 'admin': this.router.navigate(['/admin']); break;
-      case 'evaluador': this.router.navigate(['/evaluador']); break;
-      case 'postulante': this.router.navigate(['/postulante']); break;
-      default: this.router.navigate(['/login']); break;
+      case 'admin':
+        this.router.navigate(['/admin'], { replaceUrl: true });
+        break;
+
+      case 'evaluador':
+        this.router.navigate(['/evaluador'], { replaceUrl: true });
+        break;
+
+      case 'postulante':
+        this.router.navigate(['/postulante'], { replaceUrl: true });
+        break;
+
+      default:
+        this.router.navigate(['/login'], { replaceUrl: true });
+        break;
     }
   }
+
 
   private calcularRolPrincipal(roles: string[]): 'admin' | 'evaluador' | 'postulante' | null {
     const r = (roles ?? []).map(x => (x || '').toUpperCase());

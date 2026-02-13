@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <footer class="footer">
-      <p>© 2025 Universidad Técnica Estatal de Quevedo - Todos los derechos reservados</p>
+      <p>© 2026 Universidad Técnica Estatal de Quevedo - Todos los derechos reservados</p>
     </footer>
   `,
   styles: [`

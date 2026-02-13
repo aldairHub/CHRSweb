@@ -12,6 +12,8 @@ interface Documento {
   url?: string;
 }
 
+
+
 interface PostulanteDocumento {
   id: number;
   nombreCompleto: string;

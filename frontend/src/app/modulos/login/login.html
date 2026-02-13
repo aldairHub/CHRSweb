@@ -19,7 +19,7 @@
         {{ serverError }}
       </div>
 
-      <form (ngSubmit)="onLogin()">
+      <form autocomplete="on" (ngSubmit)="onLogin()">
 
         <div class="form-group">
           <label>USUARIO</label>
@@ -27,12 +27,14 @@
             <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
+
             <input
               type="text"
-              name="usuarioApp"
+              name="username"
               [(ngModel)]="usuarioApp"
               class="form-input"
               placeholder="admin"
+              autocomplete="username"
               required>
           </div>
         </div>
@@ -43,12 +45,14 @@
             <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
+
             <input
               [type]="showPassword ? 'text' : 'password'"
-              name="claveApp"
+              name="password"
               [(ngModel)]="claveApp"
               class="form-input password-input"
               placeholder="•••••"
+              autocomplete="current-password"
               required>
 
             <button type="button" class="eye-btn" (click)="togglePassword()">
@@ -64,9 +68,6 @@
         </div>
 
         <div class="form-actions">
-          <label class="remember">
-            <input type="checkbox"> Recordarme
-          </label>
           <a class="forgot" style="cursor: pointer;">¿Olvidaste tu contraseña?</a>
         </div>
 
@@ -83,7 +84,9 @@
             Regístrate aquí
           </a>
         </div>
+
       </form>
+
     </div>
 
     <div class="form-footer">

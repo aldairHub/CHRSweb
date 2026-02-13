@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-login',
@@ -11,9 +12,10 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './login.html', // Asegúrate que el nombre coincida con tu archivo
   styleUrls: ['./login.scss']
 })
-export class LoginComponent {
+export class LoginComponent  implements OnInit{
   usuarioApp: string = '';
   claveApp: string = '';
+  recordarme: boolean = false;
 
   showPassword = false;
   isLoading = false;
@@ -23,6 +25,7 @@ export class LoginComponent {
     private authService: AuthService,
     private router: Router
   ) {}
+
 
   togglePassword() {
     this.showPassword = !this.showPassword;
@@ -50,7 +53,8 @@ export class LoginComponent {
 
         if (res && res.token) {
           // Guardar sesión
-          this.authService.guardarSesion(res);
+          this.authService.guardarSesion(res, this.recordarme);
+
 
           // Redirigir usando la lógica del servicio o manual
           // Si tu authService tiene 'redirigirPorRol', úsalo:
@@ -76,8 +80,15 @@ export class LoginComponent {
       }
     });
   }
+  ngOnInit() {
+    const token = localStorage.getItem('token');
+    if (token) {
+      this.router.navigate(['/'], { replaceUrl: true });
+    }
+  }
+
 
   irARegistro() {
-    this.router.navigate(['/registro']);
+    this.router.navigate(['/registro'], {replaceUrl: true});
   }
 }

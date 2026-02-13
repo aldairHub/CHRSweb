@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
   import { AuthGuard } from './services/auth.guard'; // Ajusta la ruta si es necesario
+import { NoAuthGuard } from './services/no-auth.guard';
 
   export const routes: Routes = [
 
@@ -8,16 +9,18 @@ import { Routes } from '@angular/router';
     // ==========================================
     {
       path: '',
-      redirectTo: 'login',
-      pathMatch: 'full'
+      loadComponent: () =>
+        import('./modulos/login/login').then(m => m.LoginComponent)
     },
     {
       path: 'login',
-      loadComponent: () => import('./modulos/login/login').then(m => m.LoginComponent)
+      loadComponent: () => import('./modulos/login/login').then(m => m.LoginComponent),
+      canActivate: [NoAuthGuard]
     },
     {
       path: 'registro',
-      loadComponent: () => import('./modulos/Registro/registro').then(m => m.RegistroComponent)
+      loadComponent: () => import('./modulos/Registro/registro').then(m => m.RegistroComponent),
+      canActivate: [NoAuthGuard]
     },
 
     // ==========================================
@@ -135,12 +138,6 @@ import { Routes } from '@angular/router';
       path: 'gestion-documentos',
       loadComponent: () => import('./modulos/Admin/gestiondocumentos/gestion-documentos')
         .then(m => m.GestionDocumentosComponent),
-      canActivate: [AuthGuard],
-      data: { rol: 'admin' }
-    },{
-      path: 'registrar-terna',
-      loadComponent: () => import('./modulos/estructura/terna/terna')
-        .then(m => m.TernaComponent),
       canActivate: [AuthGuard],
       data: { rol: 'admin' }
     },

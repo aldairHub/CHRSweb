@@ -245,7 +245,7 @@
             [(ngModel)]="form.nombre"
             placeholder="Ej: Programación Orientada a Objetos"
           >
-          <div class="error-message" *ngIf="submitted && !form.nombre?.trim()">
+          <div class="error-message" *ngIf="submitted && !form.nombre.trim()">
             El nombre de la materia es obligatorio
           </div>
         </div>
