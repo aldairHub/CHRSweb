@@ -3,101 +3,119 @@
 <div class="main-container">
   <div class="content-wrapper">
 
-    <header class="page-header">
-      <div class="page-header__info">
-        <h2 class="page-header__title">Validación Documental</h2>
-        <div class="applicant-info">
-          <span class="info-badge"><i class="pi pi-user"></i> {{ postulante.nombres }}</span>
-          <span class="info-badge"><i class="pi pi-id-card"></i> {{ postulante.cedula }}</span>
+    <!-- Mensaje de carga -->
+    <div *ngIf="cargando" class="loading-message">
+      <i class="pi pi-spin pi-spinner"></i>
+      <p>Cargando información del postulante...</p>
+    </div>
+
+    <!-- Mensaje de error -->
+    <div *ngIf="error && !cargando" class="error-message">
+      <i class="pi pi-exclamation-triangle"></i>
+      <p>{{ error }}</p>
+      <button class="btn btn--primary" (click)="volver()">Volver a Lista</button>
+    </div>
+
+    <!-- Contenido principal (solo si no hay error y no está cargando) -->
+    <div *ngIf="!cargando && !error">
+
+      <header class="page-header">
+        <div class="page-header__info">
+          <h2 class="page-header__title">Validación Documental</h2>
+          <div class="applicant-info">
+            <span class="info-badge"><i class="pi pi-user"></i> {{ postulante.nombres }}</span>
+            <span class="info-badge"><i class="pi pi-id-card"></i> {{ postulante.cedula }}</span>
+          </div>
+          <p class="page-header__description">{{ postulante.cargo }}</p>
         </div>
-        <p class="page-header__description">{{ postulante.cargo }}</p>
+        <button class="btn btn--outline-back" (click)="volver()">
+          <i class="pi pi-arrow-left"></i> Volver a Lista
+        </button>
+      </header>
+
+      <div class="form-card">
+        <section class="form-section">
+          <div class="form-section__header">
+            <div class="form-section__icon">
+              <i class="pi pi-check-square"></i>
+            </div>
+            <h3 class="form-section__title">Documentos Cargados</h3>
+          </div>
+
+          <div class="table-container mt-3">
+            <table class="custom-table">
+              <thead>
+              <tr>
+                <th style="width: 25%;">Documento Requerido</th>
+                <th style="width: 10%;">Archivo</th>
+                <th style="width: 20%; text-align: center;">Validación</th>
+                <th style="width: 35%;">Observación</th>
+                <th style="width: 10%; text-align: center;">Estado</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let doc of documentos">
+                <td>
+                  <div class="doc-title">{{ doc.nombre }}</div>
+                </td>
+
+                <td>
+                  <button class="btn-view" (click)="verArchivo(doc.urlCompleta)">
+                    <i class="pi pi-eye"></i> Ver
+                  </button>
+                </td>
+
+                <td class="text-center">
+                  <div class="action-buttons">
+                    <button class="btn-action btn-approve"
+                            [class.active]="doc.estado === 'valido'"
+                            (click)="validarDocumento(doc, 'valido')"
+                            title="Validar">
+                      <i class="pi pi-check"></i>
+                    </button>
+                    <button class="btn-action btn-reject"
+                            [class.active]="doc.estado === 'rechazado'"
+                            (click)="validarDocumento(doc, 'rechazado')"
+                            title="Rechazar">
+                      <i class="pi pi-times"></i>
+                    </button>
+                  </div>
+                </td>
+
+                <td>
+                  <input type="text"
+                         class="form-input obs-input"
+                         [(ngModel)]="doc.observacion"
+                         placeholder="Ej. Documento ilegible..."
+                         [disabled]="doc.estado === 'valido'">
+                </td>
+
+                <td class="text-center">
+                    <span class="status-badge" [ngClass]="{
+                      'status-pendiente': doc.estado === 'pendiente',
+                      'status-valido': doc.estado === 'valido',
+                      'status-rechazado': doc.estado === 'rechazado'
+                    }">
+                      {{ doc.estado | titlecase }}
+                    </span>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="form-footer mt-4">
+            <div class="summary-text">
+              Se han revisado <strong>{{ documentos.length }}</strong> documentos.
+            </div>
+            <button class="btn btn--primary" (click)="guardarRevision()">
+              <i class="pi pi-save"></i> Guardar y Finalizar Revisión
+            </button>
+          </div>
+
+        </section>
       </div>
-      <button class="btn btn--outline-back" (click)="volver()">
-        <i class="pi pi-arrow-left"></i> Volver a Lista
-      </button>
-    </header>
 
-    <div class="form-card">
-      <section class="form-section">
-        <div class="form-section__header">
-          <div class="form-section__icon">
-            <i class="pi pi-check-square"></i>
-          </div>
-          <h3 class="form-section__title">Documentos Cargados</h3>
-        </div>
-
-        <div class="table-container mt-3">
-          <table class="custom-table">
-            <thead>
-            <tr>
-              <th style="width: 25%;">Documento Requerido</th>
-              <th style="width: 10%;">Archivo</th>
-              <th style="width: 20%; text-align: center;">Validación</th>
-              <th style="width: 35%;">Observación</th>
-              <th style="width: 10%; text-align: center;">Estado</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr *ngFor="let doc of documentos">
-              <td>
-                <div class="doc-title">{{ doc.nombre }}</div>
-              </td>
-
-              <td>
-                <button class="btn-view" (click)="verArchivo(doc.archivo)">
-                  <i class="pi pi-eye"></i> Ver PDF
-                </button>
-              </td>
-
-              <td class="text-center">
-                <div class="action-buttons">
-                  <button class="btn-action btn-approve"
-                          [class.active]="doc.estado === 'valido'"
-                          (click)="validarDocumento(doc, 'valido')"
-                          title="Validar">
-                    <i class="pi pi-check"></i>
-                  </button>
-                  <button class="btn-action btn-reject"
-                          [class.active]="doc.estado === 'rechazado'"
-                          (click)="validarDocumento(doc, 'rechazado')"
-                          title="Rechazar">
-                    <i class="pi pi-times"></i>
-                  </button>
-                </div>
-              </td>
-
-              <td>
-                <input type="text"
-                       class="form-input obs-input"
-                       [(ngModel)]="doc.observacion"
-                       placeholder="Ej. Documento ilegible..."
-                       [disabled]="doc.estado === 'valido'">
-              </td>
-
-              <td class="text-center">
-                  <span class="status-badge" [ngClass]="{
-                    'status-pendiente': doc.estado === 'pendiente',
-                    'status-valido': doc.estado === 'valido',
-                    'status-rechazado': doc.estado === 'rechazado'
-                  }">
-                    {{ doc.estado | titlecase }}
-                  </span>
-              </td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="form-footer mt-4">
-          <div class="summary-text">
-            Se han revisado <strong>{{ documentos.length }}</strong> documentos.
-          </div>
-          <button class="btn btn--primary" (click)="guardarRevision()">
-            <i class="pi pi-save"></i> Guardar y Finalizar Revisión
-          </button>
-        </div>
-
-      </section>
     </div>
 
   </div>

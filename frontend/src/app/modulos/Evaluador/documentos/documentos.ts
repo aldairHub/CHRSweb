@@ -1,81 +1,171 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Para *ngFor, *ngIf
-import { FormsModule } from '@angular/forms';   // Para ngModel
-import { Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { HttpClientModule } from '@angular/common/http';
 
-// 1. IMPORTA TUS COMPONENTES (Ajusta la ruta si te sale error de ruta)
-// Si tu carpeta 'component' está en 'src/app/component', la ruta relativa desde aquí es algo así:
+// Importar el servicio
+import { PrepostulacionService, Prepostulacion, DocumentosResponse } from '../../../services/prepostulacion.service';
+
+// Importar componentes
 import { NavbarComponent } from '../../../component/navbar';
 import { FooterComponent } from '../../../component/footer';
-// NOTA: Si te marca error en la ruta, intenta borrando la ruta y escribiendo
-// "NavbarComponent" para que VS Code te sugiera la importación automática.
+
+// Interfaz para los documentos en la vista
+interface Documento {
+  id: number;
+  nombre: string;
+  archivo: string;
+  urlCompleta: string;
+  estado: 'pendiente' | 'valido' | 'rechazado';
+  observacion: string;
+  tipoDocumento: 'cedula' | 'foto' | 'prerrequisitos';
+}
 
 @Component({
   selector: 'app-documentos',
   standalone: true,
-  // 2. AGRÉGALOS AQUÍ EN EL ARRAY IMPORTS (Esto es lo que te falta)
   imports: [
     CommonModule,
     FormsModule,
-    NavbarComponent, // <--- OBLIGATORIO
-    FooterComponent  // <--- OBLIGATORIO
+    HttpClientModule,
+    NavbarComponent,
+    FooterComponent
   ],
+  providers: [PrepostulacionService],
   templateUrl: './documentos.html',
-  styleUrls: ['./documentos.scss'] // O .css, según uses
+  styleUrls: ['./documentos.scss']
 })
-export class DocumentosComponent {
+export class DocumentosComponent implements OnInit {
 
+  // ID de la prepostulación (viene de la ruta)
+  prepostulacionId!: number;
+
+  // Datos del postulante
   postulante = {
-    nombres: 'Juan Carlos Pérez Loor',
-    cedula: '1205489632',
+    nombres: '',
+    cedula: '',
     cargo: 'Docente Tiempo Completo - Ingeniería Software'
   };
 
-  documentos = [
-    {
-      id: 1,
-      nombre: 'Cédula de Identidad',
-      archivo: 'cedula_jperez.pdf',
-      estado: 'pendiente',
-      observacion: ''
-    },
-    {
-      id: 2,
-      nombre: 'Título de Tercer Nivel',
-      archivo: 'titulo_grado.pdf',
-      estado: 'pendiente',
-      observacion: ''
-    },
-    {
-      id: 3,
-      nombre: 'Certificado de Experiencia Laboral',
-      archivo: 'cert_trabajo.pdf',
-      estado: 'rechazado',
-      observacion: 'El certificado no tiene firma electrónica.'
-    },
-    {
-      id: 4,
-      nombre: 'Récord Policial',
-      archivo: 'record.pdf',
-      estado: 'valido',
-      observacion: ''
-    }
-  ];
+  // Lista de documentos para validar
+  documentos: Documento[] = [];
 
-  constructor(private router: Router) {}
+  // Estado de carga
+  cargando = true;
+  error: string | null = null;
 
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private prepostulacionService: PrepostulacionService
+  ) {}
+
+  ngOnInit() {
+    // Obtener el ID de la prepostulación desde la ruta
+    // Ejemplo: /evaluador/documentos/123
+    this.route.params.subscribe(params => {
+      this.prepostulacionId = +params['id']; // El + convierte string a number
+      this.cargarDatos();
+    });
+  }
+
+  /**
+   * Cargar los datos de la prepostulación desde el backend
+   */
+  cargarDatos() {
+    this.cargando = true;
+    this.error = null;
+
+    // Primero obtenemos los datos básicos de la prepostulación
+    this.prepostulacionService.obtenerPrepostulacion(this.prepostulacionId)
+      .subscribe({
+        next: (prepostulacion: Prepostulacion) => {
+          // Llenar datos del postulante
+          this.postulante.nombres = `${prepostulacion.nombres} ${prepostulacion.apellidos}`;
+          this.postulante.cedula = prepostulacion.identificacion;
+
+          // Ahora obtenemos las URLs de los documentos
+          this.cargarDocumentos();
+        },
+        error: (err) => {
+          console.error('Error al cargar prepostulación:', err);
+          this.error = 'No se pudo cargar la información del postulante';
+          this.cargando = false;
+        }
+      });
+  }
+
+  /**
+   * Cargar las URLs de los documentos desde el backend
+   */
+  cargarDocumentos() {
+    this.prepostulacionService.obtenerDocumentos(this.prepostulacionId)
+      .subscribe({
+        next: (docs: DocumentosResponse) => {
+          // Crear la lista de documentos para la validación
+          this.documentos = [
+            {
+              id: 1,
+              nombre: 'Cédula de Identidad',
+              archivo: 'cedula.pdf',
+              urlCompleta: docs.cedula,
+              estado: 'pendiente',
+              observacion: '',
+              tipoDocumento: 'cedula'
+            },
+            {
+              id: 2,
+              nombre: 'Fotografía',
+              archivo: 'foto.jpg',
+              urlCompleta: docs.foto,
+              estado: 'pendiente',
+              observacion: '',
+              tipoDocumento: 'foto'
+            },
+            {
+              id: 3,
+              nombre: 'Prerrequisitos',
+              archivo: 'prerrequisitos.pdf',
+              urlCompleta: docs.prerrequisitos,
+              estado: 'pendiente',
+              observacion: '',
+              tipoDocumento: 'prerrequisitos'
+            }
+          ];
+
+          this.cargando = false;
+        },
+        error: (err) => {
+          console.error('Error al cargar documentos:', err);
+          this.error = 'No se pudieron cargar los documentos';
+          this.cargando = false;
+        }
+      });
+  }
+
+  /**
+   * Volver a la lista de postulantes
+   */
   volver() {
     this.router.navigate(['/evaluador/postulantes']);
   }
 
-  validarDocumento(doc: any, estado: string) {
+  /**
+   * Validar o rechazar un documento
+   */
+  validarDocumento(doc: Documento, estado: 'valido' | 'rechazado') {
     doc.estado = estado;
     if (estado === 'valido') {
       doc.observacion = '';
     }
   }
 
+  /**
+   * Guardar la revisión y enviarla al backend
+   */
   guardarRevision() {
+    // Validar que todos los documentos estén revisados
     const pendientes = this.documentos.filter(d => d.estado === 'pendiente');
 
     if (pendientes.length > 0) {
@@ -83,12 +173,48 @@ export class DocumentosComponent {
       return;
     }
 
-    console.log('Enviando revisión:', this.documentos);
-    alert('Validación guardada correctamente.');
-    this.volver();
+    // Determinar el estado general de la prepostulación
+    const tieneRechazados = this.documentos.some(d => d.estado === 'rechazado');
+    const estadoFinal = tieneRechazados ? 'RECHAZADO' : 'APROBADO';
+
+    // Juntar todas las observaciones
+    const observaciones = this.documentos
+      .filter(d => d.observacion.trim() !== '')
+      .map(d => `${d.nombre}: ${d.observacion}`)
+      .join(' | ');
+
+    // Preparar el request
+    const request = {
+      estado: estadoFinal,
+      observaciones: observaciones || 'Documentos revisados correctamente',
+      idRevisor: 1 // ⚠️ TODO: Obtener el ID del usuario logueado
+    };
+
+    // Enviar al backend
+    this.prepostulacionService.actualizarEstado(this.prepostulacionId, request)
+      .subscribe({
+        next: (response) => {
+          console.log('Respuesta del servidor:', response);
+          alert('✅ Validación guardada correctamente.');
+          this.volver();
+        },
+        error: (err) => {
+          console.error('Error al guardar validación:', err);
+          alert('❌ Error al guardar la validación. Intenta nuevamente.');
+        }
+      });
   }
 
-  verArchivo(nombreArchivo: string) {
-    alert(`Abriendo visor para: ${nombreArchivo}`);
+  /**
+   * Abrir el archivo en una nueva pestaña
+   */
+  verArchivo(urlCompleta: string) {
+    if (!urlCompleta) {
+      alert('No hay archivo disponible para este documento.');
+      return;
+    }
+
+    // Abrir en nueva pestaña
+    window.open(urlCompleta, '_blank');
   }
 }
