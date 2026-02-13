@@ -266,34 +266,51 @@ export class MateriaComponent implements OnInit {
       alert('Debe seleccionar una carrera.');
       return;
     }
-    this.isSaving = true;
-    console.log('Payload enviado:', {
-      nombre: this.form.nombre,
-      nivel: this.form.nivel,
-      idCarrera: this.form.idCarrera
-    });
 
-    this.materiaService.crear({
+    this.isSaving = true;
+
+    const payload = {
       nombre: this.form.nombre.trim(),
       nivel: this.form.nivel,
-      idCarrera: Number(this.form.idCarrera) // ← fuerza número real
+      idCarrera: Number(this.form.idCarrera)
+    };
 
-    }).subscribe({
-      next: () => {
-        this.isSaving = false;
-        this.closeModal();
-        alert('✅ Materia creada con éxito.');
-        this.cargarMaterias();
-      },
-      error: (err) => {
-        this.isSaving = false;
-        console.error('Error al guardar:', err);
-        const msg = err?.error?.message || err?.error || err?.message || 'Error desconocido';
-        alert('❌ No se pudo crear: ' + msg);
-      }
-    });
+    // 👉 SI ESTÁ EDITANDO → PUT
+    if (this.editando && this.form.id) {
+
+      this.materiaService.actualizar(this.form.id, payload).subscribe({
+        next: () => {
+          this.isSaving = false;
+          this.closeModal();
+          alert('✅ Materia actualizada con éxito.');
+          this.cargarMaterias();
+        },
+        error: (err) => {
+          this.isSaving = false;
+          console.error('Error al actualizar:', err);
+          alert('❌ No se pudo actualizar.');
+        }
+      });
+
+    } else {
+
+      // 👉 CREAR
+      this.materiaService.crear(payload).subscribe({
+        next: () => {
+          this.isSaving = false;
+          this.closeModal();
+          alert('✅ Materia creada con éxito.');
+          this.cargarMaterias();
+        },
+        error: (err) => {
+          this.isSaving = false;
+          console.error('Error al guardar:', err);
+          alert('❌ No se pudo crear.');
+        }
+      });
+
+    }
   }
-
 
   // =========================
   // CERRAR MODAL

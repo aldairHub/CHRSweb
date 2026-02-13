@@ -23,6 +23,13 @@ public class MateriaController {
         return materiaService.crear(dto);
     }
 
+    @PutMapping("/{id}")
+    public MateriaResponseDTO actualizar(@PathVariable Long id,
+                                         @RequestBody MateriaRequestDTO dto) {
+        return materiaService.actualizar(id, dto);
+    }
+
+
     @GetMapping
     public List<MateriaResponseDTO> listar() {
         return materiaService.listar();

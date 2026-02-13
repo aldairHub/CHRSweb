@@ -48,6 +48,24 @@ public class MateriaServiceImpl implements MateriaService {
 
         return mapToDTO(materia);
     }
+    @Override
+    public MateriaResponseDTO actualizar(Long id, MateriaRequestDTO dto) {
+
+        Materia materia = materiaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Materia no encontrada"));
+
+        Carrera carrera = carreraRepository.findById(dto.getIdCarrera())
+                .orElseThrow(() -> new RuntimeException("Carrera no encontrada"));
+
+        materia.setNombreMateria(dto.getNombre());
+        materia.setNivel(dto.getNivel());
+        materia.setCarrera(carrera);
+
+        materia = materiaRepository.save(materia);
+
+        return mapToDTO(materia);
+    }
+
 
     @Override
     public List<MateriaResponseDTO> listar() {
