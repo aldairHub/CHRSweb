@@ -1,6 +1,6 @@
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
+import {provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
 import { routes } from './app.routes';
@@ -9,6 +9,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(),
-    importProvidersFrom(FormsModule) // 👈 ESTA ES LA LÍNEA CORRECTA
+    importProvidersFrom(FormsModule), // 👈 ESTA ES LA LÍNEA CORRECTA
+    provideHttpClient(withInterceptorsFromDi())
   ]
 };

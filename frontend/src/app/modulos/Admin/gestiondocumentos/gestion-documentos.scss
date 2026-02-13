@@ -1,6 +1,4 @@
-// gestion-documentos.component.scss
-
-// Variables locales basadas en el diseño UTEQ
+// Variables
 $primary: #00A63E;
 $dark: #016630;
 $light-green: #00D149;
@@ -13,9 +11,18 @@ $error: #dc2626;
 $warning: #f59e0b;
 $success: #16a34a;
 
-// ==========================================
+.main-container {
+  min-height: 100vh;
+  background: #f8faf9;
+  padding: 2rem;
+}
+
+.content-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
 // PAGE HEADER
-// ==========================================
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -36,9 +43,7 @@ $success: #16a34a;
   }
 }
 
-// ==========================================
 // STATS GRID
-// ==========================================
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -55,12 +60,10 @@ $success: #16a34a;
   align-items: center;
   gap: 1.25rem;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 16px rgba(0, 166, 62, 0.12);
-    background: $bg-white;
   }
 
   .stat-icon {
@@ -71,7 +74,6 @@ $success: #16a34a;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
 
     svg {
       width: 28px;
@@ -79,46 +81,28 @@ $success: #16a34a;
       stroke: $primary;
     }
 
-    &.success {
-      background: rgba($success, 0.1);
-      svg { stroke: $success; }
-    }
-
-    &.warning {
-      background: rgba($warning, 0.1);
-      svg { stroke: $warning; }
-    }
-
-    &.danger {
-      background: rgba($error, 0.1);
-      svg { stroke: $error; }
-    }
+    &.success svg { stroke: $success; }
+    &.warning svg { stroke: $warning; }
+    &.danger svg { stroke: $error; }
   }
 
   .stat-content {
-    flex: 1;
-
     h3 {
       font-size: 0.875rem;
       color: $text-gray;
-      font-weight: 500;
       margin: 0 0 0.5rem 0;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
 
     .stat-value {
       font-size: 2rem;
       font-weight: 700;
       color: $dark;
-      line-height: 1;
     }
   }
 }
 
-// ==========================================
-// FILTERS SECTION
-// ==========================================
+// FILTERS
 .filters-section {
   display: flex;
   gap: 1rem;
@@ -138,62 +122,56 @@ $success: #16a34a;
       width: 20px;
       height: 20px;
       stroke: $text-gray;
-      pointer-events: none;
+    }
+
+    .with-icon {
+      padding-left: 45px;
     }
   }
 
-  .form-select {
-    min-width: 180px;
+  .form-input, .form-select {
+    width: 100%;
     padding: 0.75rem 1rem;
     border: 1.5px solid $border;
     border-radius: 8px;
     background: $bg-white;
     font-size: 0.9rem;
-    color: $text-dark;
-    cursor: pointer;
-    transition: all 0.2s;
 
     &:focus {
       outline: none;
       border-color: $primary;
       box-shadow: 0 0 0 3px rgba($primary, 0.1);
     }
+  }
 
-    &:hover {
-      border-color: $primary;
-    }
+  .form-select {
+    min-width: 180px;
+    cursor: pointer;
   }
 }
 
-// ==========================================
 // TABLE
-// ==========================================
 .table-container {
   background: $bg-white;
   border-radius: 12px;
   border: 1px solid $border;
-  overflow: hidden;
+  overflow-x: auto;
   margin-bottom: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
 
-  thead {
+  thead th {
+    padding: 1rem 1.25rem;
+    text-align: left;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: $text-gray;
+    text-transform: uppercase;
     background: #f8faf9;
-
-    th {
-      padding: 1rem 1.25rem;
-      text-align: left;
-      font-size: 0.8125rem;
-      font-weight: 600;
-      color: $text-gray;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border-bottom: 1px solid $border;
-    }
+    border-bottom: 1px solid $border;
   }
 
   tbody {
@@ -204,22 +182,12 @@ $success: #16a34a;
       &:hover {
         background: #fafdfb;
       }
-
-      &:last-child {
-        border-bottom: none;
-      }
     }
 
     td {
       padding: 1.125rem 1.25rem;
       font-size: 0.9rem;
       color: $text-dark;
-      vertical-align: middle;
-
-      strong {
-        color: $dark;
-        font-weight: 600;
-      }
     }
   }
 
@@ -243,119 +211,10 @@ $success: #16a34a;
         stroke: $primary;
       }
     }
-
-    p {
-      font-size: 1rem;
-      color: $text-dark;
-      font-weight: 600;
-      margin: 0 0 0.25rem 0;
-    }
-
-    small {
-      font-size: 0.875rem;
-      color: $text-gray;
-    }
   }
 }
 
-// ==========================================
-// POSTULANTE INFO
-// ==========================================
-.postulante-info {
-  .postulante-nombre {
-    font-weight: 600;
-    color: $dark;
-    font-size: 0.9rem;
-  }
-
-  .postulante-email {
-    font-size: 0.8125rem;
-    color: $text-gray;
-    margin-top: 0.125rem;
-  }
-}
-
-// ==========================================
-// POSTULACION BADGE
-// ==========================================
-.postulacion-badge {
-  display: inline-block;
-  padding: 0.375rem 0.875rem;
-  border-radius: 20px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  white-space: nowrap;
-
-  &.docente {
-    background: #dbeafe;
-    color: #2563eb;
-  }
-
-  &.coordinador {
-    background: #f3e8ff;
-    color: #7c3aed;
-  }
-
-  &.director {
-    background: #fed7aa;
-    color: #ea580c;
-  }
-}
-
-// ==========================================
-// DOCUMENTOS LIST
-// ==========================================
-.documentos-list {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-
-  .documento-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.25rem 0.625rem;
-    background: #f8faf9;
-    border: 1px solid $border;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: $dark;
-
-    svg {
-      flex-shrink: 0;
-    }
-  }
-
-  .documentos-count {
-    font-size: 0.75rem;
-    color: $text-gray;
-    font-weight: 600;
-    padding: 0.25rem 0.625rem;
-    background: rgba($primary, 0.1);
-    border-radius: 6px;
-  }
-}
-
-// ==========================================
-// FECHA INFO
-// ==========================================
-.fecha-info {
-  font-size: 0.875rem;
-  color: $text-dark;
-
-  small {
-    display: block;
-    font-size: 0.75rem;
-    color: $text-gray;
-    margin-top: 0.125rem;
-  }
-}
-
-// ==========================================
 // BADGES
-// ==========================================
 .badge {
   display: inline-flex;
   align-items: center;
@@ -365,17 +224,17 @@ $success: #16a34a;
   font-size: 0.8125rem;
   font-weight: 600;
 
-  &.success {
+  &.badge-success {
     background: #dcfce7;
     color: #166534;
   }
 
-  &.warning {
+  &.badge-warning {
     background: #fef3c7;
     color: #92400e;
   }
 
-  &.danger {
+  &.badge-danger {
     background: #fee2e2;
     color: #991b1b;
   }
@@ -388,13 +247,47 @@ $success: #16a34a;
   }
 }
 
-// ==========================================
+.postulacion-badge {
+  display: inline-block;
+  padding: 0.375rem 0.875rem;
+  border-radius: 20px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+// DOCUMENT TAGS
+.documentos-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  .documento-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    background: #f8faf9;
+    border: 1px solid $border;
+    border-radius: 6px;
+    font-size: 0.75rem;
+  }
+
+  .documentos-count {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.625rem;
+    background: rgba($primary, 0.1);
+    border-radius: 6px;
+    color: $dark;
+    font-weight: 600;
+  }
+}
+
 // ACTION BUTTONS
-// ==========================================
 .action-buttons {
   display: flex;
   gap: 0.5rem;
-  align-items: center;
 }
 
 .btn-icon {
@@ -408,7 +301,6 @@ $success: #16a34a;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
-  color: $text-gray;
 
   svg {
     width: 18px;
@@ -420,24 +312,77 @@ $success: #16a34a;
     color: $primary;
   }
 
-  &.success {
-    &:hover {
-      background: rgba($success, 0.1);
-      color: $success;
-    }
+  &.success:hover {
+    background: rgba($success, 0.1);
+    color: $success;
   }
 
-  &.danger {
-    &:hover {
-      background: rgba($error, 0.1);
-      color: $error;
-    }
+  &.danger:hover {
+    background: rgba($error, 0.1);
+    color: $error;
   }
 }
 
-// ==========================================
+// BUTTONS
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+
+  &.btn-primary {
+    background: $primary;
+    color: white;
+
+    &:hover {
+      background: $dark;
+    }
+  }
+
+  &.btn-success {
+    background: $success;
+    color: white;
+
+    &:hover {
+      background: #0d8533; // Color más oscuro manualmente
+      // o usa: filter: brightness(0.9);
+    }
+  }
+
+  &.btn-danger {
+    background: $error;
+    color: white;
+
+    &:hover {
+      background: #b91c1c; // Color más oscuro manualmente
+      // o usa: filter: brightness(0.9);
+    }
+  }
+
+  &.btn-outline {
+    background: transparent;
+    border: 1.5px solid $border;
+    color: $text-dark;
+
+    &:hover {
+      border-color: $primary;
+      color: $primary;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
 // PAGINATION
-// ==========================================
 .pagination {
   display: flex;
   justify-content: space-between;
@@ -447,20 +392,13 @@ $success: #16a34a;
   border-radius: 12px;
   border: 1px solid $border;
 
-  .pagination-info {
-    font-size: 0.875rem;
-    color: $text-gray;
-  }
-
   .pagination-controls {
     display: flex;
     gap: 0.5rem;
   }
 }
 
-// ==========================================
-// MODAL
-// ==========================================
+// MODALS
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -473,8 +411,6 @@ $success: #16a34a;
   justify-content: center;
   z-index: 9999;
   padding: 1rem;
-  animation: fadeIn 0.2s ease;
-  overflow-y: auto;
 }
 
 .modal-content {
@@ -486,8 +422,6 @@ $success: #16a34a;
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.3s ease;
-  margin: 2rem auto;
 
   &.modal-sm {
     max-width: 550px;
@@ -524,17 +458,8 @@ $success: #16a34a;
     border-radius: 8px;
     border: none;
     background: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     cursor: pointer;
-    transition: all 0.2s;
     color: $text-gray;
-
-    svg {
-      width: 22px;
-      height: 22px;
-    }
 
     &:hover {
       background: rgba($error, 0.1);
@@ -547,23 +472,6 @@ $success: #16a34a;
   padding: 2rem;
   overflow-y: auto;
   flex: 1;
-
-  .form-group {
-    margin-bottom: 1.25rem;
-
-    label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: $dark;
-      margin-bottom: 0.5rem;
-
-      .required {
-        color: $error;
-        margin-left: 0.25rem;
-      }
-    }
-  }
 }
 
 .modal-footer {
@@ -574,9 +482,7 @@ $success: #16a34a;
   justify-content: flex-end;
 }
 
-// ==========================================
-// DOCUMENTOS GRID
-// ==========================================
+// DOCUMENT GRID IN MODAL
 .documentos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -589,12 +495,11 @@ $success: #16a34a;
   border: 1.5px solid $border;
   border-radius: 12px;
   padding: 1.25rem;
-  transition: all 0.3s ease;
+  transition: all 0.3s;
 
   &:hover {
     border-color: $primary;
-    box-shadow: 0 4px 12px rgba(0, 166, 62, 0.1);
-    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba($primary, 0.1);
   }
 
   .documento-header {
@@ -610,7 +515,6 @@ $success: #16a34a;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
 
       svg {
         width: 24px;
@@ -621,12 +525,10 @@ $success: #16a34a;
 
     .documento-info {
       flex: 1;
-      min-width: 0;
 
       h4 {
         font-size: 0.9rem;
         font-weight: 600;
-        color: $dark;
         margin: 0 0 0.25rem 0;
       }
 
@@ -634,9 +536,6 @@ $success: #16a34a;
         font-size: 0.8125rem;
         color: $text-gray;
         margin: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
       }
     }
   }
@@ -654,37 +553,34 @@ $success: #16a34a;
       gap: 0.375rem;
       font-size: 0.75rem;
       color: $text-gray;
-
-      svg {
-        stroke: $text-gray;
-      }
     }
   }
 
   .documento-actions {
     display: flex;
     gap: 0.5rem;
+
+    .btn-sm {
+      padding: 0.5rem 1rem;
+      font-size: 0.8125rem;
+    }
   }
 }
 
-// ==========================================
 // ALERTS
-// ==========================================
 .alert {
   display: flex;
   gap: 1rem;
   padding: 1rem 1.25rem;
   border-radius: 10px;
   margin-bottom: 1.5rem;
-  align-items: flex-start;
 
-  &.success {
-    background: #dcfce7;
-    border-left: 4px solid #16a34a;
+  &.info {
+    background: #dbeafe;
+    border-left: 4px solid #2563eb;
 
-    svg { stroke: #16a34a; }
-    strong { color: #166534; }
-    p { color: #166534; font-size: 0.875rem; margin: 0.25rem 0 0 0; }
+    svg { stroke: #2563eb; }
+    strong { color: #1e40af; }
   }
 
   &.danger {
@@ -693,16 +589,6 @@ $success: #16a34a;
 
     svg { stroke: #dc2626; }
     strong { color: #991b1b; }
-    p { color: #991b1b; font-size: 0.875rem; margin: 0.25rem 0 0 0; }
-  }
-
-  &.info {
-    background: #dbeafe;
-    border-left: 4px solid #2563eb;
-
-    svg { stroke: #2563eb; }
-    strong { color: #1e40af; }
-    p { color: #1e3a8a; font-size: 0.875rem; margin: 0.25rem 0 0 0; }
   }
 
   svg {
@@ -712,38 +598,39 @@ $success: #16a34a;
   }
 
   strong {
-    display: block;
     font-weight: 600;
-    margin-bottom: 0.25rem;
+  }
+
+  p {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.875rem;
   }
 }
 
-// ==========================================
-// ANIMATIONS
-// ==========================================
-@keyframes fadeIn {
-  from {
-    opacity: 0;
+// FORM ELEMENTS
+.form-group {
+  margin-bottom: 1.25rem;
+
+  label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $dark;
+    margin-bottom: 0.5rem;
+
+    .required {
+      color: $error;
+    }
   }
-  to {
-    opacity: 1;
+
+  textarea.form-input {
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
   }
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-// ==========================================
 // RESPONSIVE
-// ==========================================
 @media (max-width: 768px) {
   .stats-grid {
     grid-template-columns: 1fr;
@@ -751,18 +638,7 @@ $success: #16a34a;
 
   .filters-section {
     flex-direction: column;
-
-    .search-box,
-    .form-select {
-      width: 100%;
-    }
   }
-
-  .table-container {
-    overflow-x: auto;
-  }
-
-
 
   .page-header {
     flex-direction: column;
@@ -770,21 +646,7 @@ $success: #16a34a;
     gap: 1rem;
   }
 
-  .modal-content {
-    max-width: 100%;
-    margin: 0;
-    border-radius: 16px 16px 0 0;
-
-    &.modal-lg {
-      max-width: 100%;
-    }
-  }
-
   .documentos-grid {
     grid-template-columns: 1fr;
-  }
-
-  .action-buttons {
-    flex-wrap: wrap;
   }
 }

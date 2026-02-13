@@ -136,9 +136,9 @@ export class DocumentosComponent implements OnInit {
 
           this.cargando = false;
         },
-        error: (err) => {
-          console.error('Error al cargar documentos:', err);
-          this.error = 'No se pudieron cargar los documentos';
+        error: (err: any) => {
+          console.error('Error al cargar prepostulación:', err);
+          this.error = 'No se pudo cargar la información del postulante';
           this.cargando = false;
         }
       });

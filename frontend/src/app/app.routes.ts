@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
   import { AuthGuard } from './services/auth.guard'; // Ajusta la ruta si es necesario
-import { NoAuthGuard } from './services/no-auth.guard';
 
   export const routes: Routes = [
 
@@ -9,18 +8,16 @@ import { NoAuthGuard } from './services/no-auth.guard';
     // ==========================================
     {
       path: '',
-      loadComponent: () =>
-        import('./modulos/login/login').then(m => m.LoginComponent)
+      redirectTo: 'login',
+      pathMatch: 'full'
     },
     {
       path: 'login',
-      loadComponent: () => import('./modulos/login/login').then(m => m.LoginComponent),
-      canActivate: [NoAuthGuard]
+      loadComponent: () => import('./modulos/login/login').then(m => m.LoginComponent)
     },
     {
       path: 'registro',
-      loadComponent: () => import('./modulos/Registro/registro').then(m => m.RegistroComponent),
-      canActivate: [NoAuthGuard]
+      loadComponent: () => import('./modulos/Registro/registro').then(m => m.RegistroComponent)
     },
 
     // ==========================================
