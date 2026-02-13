@@ -266,7 +266,6 @@ export class MateriaComponent implements OnInit {
       alert('Debe seleccionar una carrera.');
       return;
     }
-
     this.isSaving = true;
     console.log('Payload enviado:', {
       nombre: this.form.nombre,
