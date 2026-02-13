@@ -3,6 +3,7 @@ package org.uteq.backend.dto;
 import lombok.Data;
 
 @Data
+
 public class RolUsuarioResponseDTO {
 
     private Long idRolUsuario;
@@ -13,4 +14,7 @@ public class RolUsuarioResponseDTO {
         this.nombre = nombre;
     }
 
+    public RolUsuarioResponseDTO() {
+
+    }
 }

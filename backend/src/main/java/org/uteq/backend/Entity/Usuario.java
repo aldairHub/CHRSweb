@@ -6,10 +6,11 @@ import lombok.*;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "usuario",
         uniqueConstraints = {
                 @UniqueConstraint(name = "uq_usuario_usuario_app", columnNames = "usuario_app"),
@@ -19,6 +20,8 @@ import java.util.Set;
 public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     @Column(name = "id_usuario")
     private Long idUsuario;
 

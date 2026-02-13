@@ -17,4 +17,13 @@ public interface IRolAutoridadRepository extends JpaRepository<RolAutoridad, Lon
         ORDER BY ru.nombre
     """)
     List<RolUsuarioResponseDTO> findRolesUsuarioByIdsRolAutoridad(@Param("ids") List<Long> ids);
+
+    // (NUEVO) Listar roles_autoridad + roles_usuario
+    @Query("""
+        SELECT DISTINCT ra
+        FROM RolAutoridad ra
+        LEFT JOIN FETCH ra.rolesUsuario
+        ORDER BY ra.nombre
+    """)
+    List<RolAutoridad> findAllConRolesUsuario();
 }

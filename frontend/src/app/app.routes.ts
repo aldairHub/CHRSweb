@@ -1,4 +1,4 @@
-  import { Routes } from '@angular/router';
+import { Routes } from '@angular/router';
   import { AuthGuard } from './services/auth.guard'; // Ajusta la ruta si es necesario
 
   export const routes: Routes = [
@@ -27,8 +27,9 @@
       path: 'postulante',
       loadComponent: () => import('./modulos/Postulante/postulante').then(m => m.PostulanteComponent),
       canActivate: [AuthGuard],
-      data: { rol: 'postulante' }
+      data: { rol: 'postulante', isHome: true }
     },
+
 
     // ==========================================
     // RUTAS DEL EVALUADOR (Aquí estaban los errores)
@@ -41,7 +42,8 @@
         {
           // DASHBOARD PRINCIPAL
           path: '',
-          loadComponent: () => import('./modulos/Evaluador/evaluador').then(m => m.EvaluadorComponent)
+          loadComponent: () => import('./modulos/Evaluador/evaluador').then(m => m.EvaluadorComponent),
+          data: { isHome: true }
         },
         {
           path: 'solicitar',
@@ -85,6 +87,13 @@
     {
       path: 'admin',
       loadComponent: () => import('./modulos/Admin/admin').then(m => m.AdminComponent),
+      canActivate: [AuthGuard],
+      data: { rol: 'admin', isHome: true }
+    },
+    {
+      path: 'roles-autoridad',
+      loadComponent: () => import('./modulos/Admin/roles-autoridad/roles-autoridad')
+        .then(m => m.RolesAutoridadComponent),
       canActivate: [AuthGuard],
       data: { rol: 'admin' }
     },

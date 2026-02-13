@@ -2,6 +2,7 @@ package org.uteq.backend.Config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -25,6 +26,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(withDefaults()) // aquí: habilita CORS usando tu CorsConfigurationSource
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
                                 "/api/usuarios",
                                 "/api/auth/login",
@@ -43,7 +45,9 @@ public class SecurityConfig {
                                 "/api/instituciones",
                                 "/api/instituciones/**",
                                 "/api/roles-autoridad",
-                                "/api/roles-autoridad/**"
+                                "/api/roles-autoridad/**",
+                                "/api/roles-usuario",
+                                "/api/roles-usuario/**"
                                 ).permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/demo/**").permitAll()

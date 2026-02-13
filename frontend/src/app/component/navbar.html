@@ -4,12 +4,24 @@
     <img src="imgs/logo-uteq.png" alt="Logo UTEQ" class="logo">
     <div class="brand-text">
       <h1>UTEQ</h1>
-      <span>Universidad Técnica Estatal de Quevedo</span>
+      <span>Sistema de selección docente</span>
     </div>
   </div>
 
   <div class="navbar-actions">
-
+    <!-- ✅ BOTÓN VOLVER (no se muestra en dashboard) -->
+    <button
+      *ngIf="!isDashboard"
+      class="btn-back"
+      (click)="goBack()"
+      title="Volver"
+      aria-label="Volver"
+      type="button"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
     <div class="notification-wrapper" (click)="toggleNotifications()">
       <div class="bell-icon">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
