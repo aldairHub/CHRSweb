@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 export interface Materia {
   id?: number;
   nombre: string;
-  estado: boolean;
+  nivel: number;
   carreraId: number;
 }
 
@@ -28,9 +28,5 @@ export class MateriaService {
 
   actualizar(id: number, materia: Materia): Observable<Materia> {
     return this.http.put<Materia>(`${this.apiUrl}/${id}`, materia);
-  }
-
-  eliminar(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

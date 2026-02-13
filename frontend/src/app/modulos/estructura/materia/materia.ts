@@ -11,7 +11,6 @@ interface Materia {
   carreraId?: number | null;
   nombre: string;
   nivel: number;
-  estado: boolean;
 }
 
 interface Carrera {
@@ -43,7 +42,6 @@ export class MateriaComponent implements OnInit {
   search = '';
   filtroCarrera = '';
   filtroNivel: number | string = '';
-  filtroEstado = '';
 
   // ===== Paginación =====
   currentPage = 1;
@@ -57,14 +55,6 @@ export class MateriaComponent implements OnInit {
   }
 
   // ===== Estadísticas =====
-  get materiasActivas(): number {
-    return this.materias.filter(m => m.estado).length;
-  }
-
-  get materiasInactivas(): number {
-    return this.materias.filter(m => !m.estado).length;
-  }
-
   get nivelesUnicos(): number {
     if (!this.materias || this.materias.length === 0) return 0;
     return new Set(this.materias.map(m => m.nivel)).size;
@@ -74,7 +64,7 @@ export class MateriaComponent implements OnInit {
     const carreras = new Set(
       this.materias
         .map(m => m.carrera)
-        .filter((c): c is string => c !== undefined && c !== null) // Type guard
+        .filter((c): c is string => c !== undefined && c !== null)
     );
     return Array.from(carreras).sort();
   }
@@ -95,8 +85,7 @@ export class MateriaComponent implements OnInit {
     id: 0,
     carreraId: null,
     nombre: '',
-    nivel: 1,
-    estado: true
+    nivel: 1
   };
 
   constructor(
@@ -128,9 +117,16 @@ export class MateriaComponent implements OnInit {
 
   cargarMaterias(): void {
     this.materiaService.listar().subscribe({
-      next: (data: any) => {
-        console.log('Datos recibidos del backend:', data);
-        this.materias = Array.isArray(data) ? data : [];
+      next: (data: any[]) => {
+
+        this.materias = data.map(m => ({
+          id: m.idMateria,
+          nombre: m.nombre,
+          nivel: m.nivel,
+          carreraId: m.idCarrera,
+          carrera: m.nombreCarrera
+        }));
+
         this.materiasFiltradas = [...this.materias];
         this.calculatePagination();
         this.cdr.detectChanges();
@@ -145,8 +141,7 @@ export class MateriaComponent implements OnInit {
     });
   }
 
-  // =========================
-  // FILTROS
+
   // =========================
   // FILTROS
   // =========================
@@ -154,29 +149,22 @@ export class MateriaComponent implements OnInit {
     const term = (this.search || '').trim().toLowerCase();
     const carreraFilter = this.filtroCarrera;
     const nivelFilter = this.filtroNivel;
-    const estadoFilter = this.filtroEstado;
 
     this.materiasFiltradas = this.materias.filter(m => {
-      // Búsqueda por texto
+
       const searchMatch =
         !term ||
         m.nombre.toLowerCase().includes(term) ||
         (m.carrera?.toLowerCase().includes(term) ?? false) ||
         String(m.id ?? '').includes(term);
 
-      // Filtro por carrera
       const carreraMatch =
         !carreraFilter || m.carrera === carreraFilter;
 
-      // Filtro por nivel
       const nivelMatch =
         !nivelFilter || m.nivel === Number(nivelFilter);
 
-      // Filtro por estado
-      const estadoMatch =
-        !estadoFilter || String(m.estado) === estadoFilter;
-
-      return searchMatch && carreraMatch && nivelMatch && estadoMatch;
+      return searchMatch && carreraMatch && nivelMatch;
     });
 
     this.currentPage = 1;
@@ -236,7 +224,6 @@ export class MateriaComponent implements OnInit {
       : 'Carrera no encontrada';
   }
 
-
   // =========================
   // MODAL CREAR
   // =========================
@@ -245,10 +232,11 @@ export class MateriaComponent implements OnInit {
     this.submitted = false;
     this.form = {
       id: 0,
-      carreraId: this.carreras.length > 0 ? (this.carreras[0].id || this.carreras[0].idCarrera || null) : null,
+      carreraId: this.carreras.length > 0
+        ? (this.carreras[0].id || this.carreras[0].idCarrera || null)
+        : null,
       nombre: '',
-      nivel: 1,
-      estado: true
+      nivel: 1
     };
     this.modalAbierto = true;
   }
@@ -269,77 +257,44 @@ export class MateriaComponent implements OnInit {
   guardar(): void {
     this.submitted = true;
 
-    // Validación
-    if (!this.form.nombre || !this.form.nombre.trim()) {
+    if (!this.form.nombre?.trim()) {
       alert('El nombre de la materia es obligatorio.');
       return;
     }
 
-    if (!this.form.carreraId) {
+    if (this.form.carreraId == null) {
       alert('Debe seleccionar una carrera.');
       return;
     }
 
     this.isSaving = true;
+    console.log('Payload enviado:', {
+      nombre: this.form.nombre,
+      nivel: this.form.nivel,
+      carreraId: this.form.carreraId
+    });
 
-    if (this.editando) {
-      // Lógica de edición (cuando esté disponible en el servicio)
-      console.log('Lógica de edición pendiente de conectar al servicio');
-      this.isSaving = false;
-      this.closeModal();
-      alert('⚠️ Funcionalidad de edición pendiente de implementar en el servicio.');
-    } else {
-      this.materiaService.crear({
-        nombre: this.form.nombre,
-        estado: this.form.estado,
-        carreraId: this.form.carreraId
-      }).subscribe({
-        next: () => {
-          this.isSaving = false;
-          this.closeModal();
-          alert('✅ Materia creada con éxito.');
-          this.cargarMaterias();
-        },
-        error: (err) => {
-          this.isSaving = false;
-          console.error('Error al guardar:', err);
-          const msg = err?.error?.message || err?.error || err?.message || 'Error desconocido';
-          alert('❌ No se pudo crear: ' + msg);
-        }
-      });
-    }
+    this.materiaService.crear({
+      nombre: this.form.nombre.trim(),
+      nivel: this.form.nivel,
+      carreraId: Number(this.form.carreraId) // ← fuerza número real
+
+    }).subscribe({
+      next: () => {
+        this.isSaving = false;
+        this.closeModal();
+        alert('✅ Materia creada con éxito.');
+        this.cargarMaterias();
+      },
+      error: (err) => {
+        this.isSaving = false;
+        console.error('Error al guardar:', err);
+        const msg = err?.error?.message || err?.error || err?.message || 'Error desconocido';
+        alert('❌ No se pudo crear: ' + msg);
+      }
+    });
   }
 
-  // =========================
-  // TOGGLE ESTADO
-  // =========================
-  toggleEstado(m: Materia): void {
-    const nuevoEstado = !m.estado;
-    const accion = nuevoEstado ? 'activar' : 'desactivar';
-
-    if (!confirm(`¿Seguro que deseas ${accion} esta materia?`)) return;
-
-    const estadoAnterior = m.estado;
-
-    // Optimistic UI
-    m.estado = nuevoEstado;
-
-    // Aquí deberías llamar al servicio para que el cambio persista en la DB
-    // Por ahora solo hace el cambio en memoria
-    console.log('⚠️ Cambio de estado solo en UI. Implementa servicio para persistencia.');
-
-    this.applyFilters();
-    this.cdr.detectChanges();
-
-    // Ejemplo de cómo revertir si falla:
-    // this.materiaService.toggleEstado(m.id).subscribe({
-    //   next: () => { this.applyFilters(); },
-    //   error: (err) => {
-    //     m.estado = estadoAnterior;
-    //     alert('❌ No se pudo cambiar el estado.');
-    //   }
-    // });
-  }
 
   // =========================
   // CERRAR MODAL

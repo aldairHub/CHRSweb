@@ -32,30 +32,6 @@
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon success">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-        <div class="stat-content">
-          <h3>Activas</h3>
-          <div class="stat-value">{{ materiasActivas }}</div>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon purple">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-        <div class="stat-content">
-          <h3>Inactivas</h3>
-          <div class="stat-value">{{ materiasInactivas }}</div>
-        </div>
-      </div>
-
-      <div class="stat-card">
         <div class="stat-icon blue">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
@@ -96,12 +72,6 @@
           Nivel {{ n }}
         </option>
       </select>
-
-      <select class="form-select" [(ngModel)]="filtroEstado" (change)="applyFilters()">
-        <option value="">Todos los Estados</option>
-        <option value="true">Activas</option>
-        <option value="false">Inactivas</option>
-      </select>
     </div>
 
     <!-- Tabla de Materias -->
@@ -113,7 +83,6 @@
           <th>Nombre de la Materia</th>
           <th>Carrera</th>
           <th>Nivel</th>
-          <th>Estado</th>
           <th>Acciones</th>
         </tr>
         </thead>
@@ -132,21 +101,8 @@
               Nivel {{ m.nivel }}
             </span>
           </td>
-
-          <td>
-            <span class="badge" [ngClass]="m.estado ? 'success' : 'danger'">
-              <span class="status-dot"></span>
-              {{ m.estado ? 'Activa' : 'Inactiva' }}
-            </span>
-          </td>
-
           <td>
             <div class="action-buttons">
-              <label class="toggle-switch" [title]="m.estado ? 'Desactivar' : 'Activar'">
-                <input type="checkbox" [checked]="m.estado" (change)="toggleEstado(m)">
-                <span class="toggle-slider"></span>
-              </label>
-
               <button class="btn-icon" (click)="edit(m)" title="Editar">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -158,7 +114,7 @@
         </tr>
 
         <tr *ngIf="materiasFiltradas.length === 0">
-          <td colspan="6" class="empty-state">
+          <td colspan="5" class="empty-state">
             <div class="empty-icon">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -254,10 +210,16 @@
           <label>Carrera <span class="required">*</span></label>
           <select class="form-select" [(ngModel)]="form.carreraId">
             <option [ngValue]="null">Seleccionar carrera...</option>
-            <option *ngFor="let c of carreras" [ngValue]="c.id || c.idCarrera">
-              {{ c.nombre || c.nombreCarrera }}
+            <option *ngFor="let c of carreras" [ngValue]="c.idCarrera">
+            {{ c.nombre || c.nombreCarrera }}
             </option>
           </select>
+
+          <p style="color:red">
+            DEBUG carreraId enviado: {{ form.carreraId }}
+          </p>
+
+
           <div class="error-message" *ngIf="submitted && !form.carreraId">
             Debe seleccionar una carrera
           </div>
@@ -271,16 +233,6 @@
             Nivel {{ n }}
           </option>
         </select>
-      </div>
-
-      <div class="form-group">
-        <label class="checkbox-item">
-          <input
-            type="checkbox"
-            [(ngModel)]="form.estado"
-          >
-          <span>Materia activa</span>
-        </label>
       </div>
 
     </div>

@@ -27,6 +27,14 @@ public class MateriaServiceImpl implements MateriaService {
 
     @Override
     public MateriaResponseDTO crear(MateriaRequestDTO dto) {
+        if (dto.getNombre() == null || dto.getNombre().trim().isEmpty())
+            throw new RuntimeException("Nombre obligatorio");
+
+        if (dto.getIdCarrera() == null)
+            throw new RuntimeException("Carrera obligatoria");
+
+        if (dto.getNivel() == null)
+            throw new RuntimeException("Nivel obligatorio");
 
         Carrera carrera = carreraRepository.findById(dto.getIdCarrera())
                 .orElseThrow(() -> new RuntimeException("Carrera no encontrada"));
@@ -34,6 +42,7 @@ public class MateriaServiceImpl implements MateriaService {
         Materia materia = new Materia();
         materia.setNombreMateria(dto.getNombre());
         materia.setCarrera(carrera);
+        materia.setNivel(dto.getNivel());
 
         materia = materiaRepository.save(materia);
 
@@ -62,6 +71,7 @@ public class MateriaServiceImpl implements MateriaService {
         dto.setNombre(materia.getNombreMateria());
         dto.setIdCarrera(materia.getCarrera().getIdCarrera());
         dto.setNombreCarrera(materia.getCarrera().getNombreCarrera());
+        dto.setNivel(materia.getNivel());
         return dto;
     }
 }
