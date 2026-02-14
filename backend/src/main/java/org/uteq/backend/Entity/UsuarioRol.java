@@ -1,10 +1,12 @@
 package org.uteq.backend.Entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.io.Serializable;
 
 @Entity
+@Data
 @Table(name="usuario_rol")
 public class UsuarioRol {
     @EmbeddedId

@@ -134,4 +134,71 @@ public class EmailService {
             </html>
             """.formatted(usuario, clave);
     }
+
+    /**
+     * Envía correo notificando el rechazo de la prepostulación
+     */
+    public void enviarCorreoRechazo(String destinatario, String nombreCompleto, String motivo) {
+        try {
+            MimeMessage mensaje = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
+
+            helper.setTo(destinatario);
+            helper.setSubject("Prepostulación Rechazada - UTEQ");
+
+            String contenidoHtml = String.format("""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background-color: #dc2626; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+                    .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+                    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+                    .motivo { background-color: #fee2e2; border-left: 4px solid #dc2626; padding: 15px; margin: 20px 0; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Prepostulación Rechazada</h1>
+                    </div>
+                    <div class="content">
+                        <p>Estimado/a <strong>%s</strong>,</p>
+                        
+                        <p>Lamentamos informarle que su prepostulación ha sido rechazada.</p>
+                        
+                        <div class="motivo">
+                            <strong>Motivo del rechazo:</strong><br>
+                            %s
+                        </div>
+                        
+                        <p>Si tiene alguna consulta, por favor comuníquese con nosotros.</p>
+                        
+                        <p>Atentamente,<br>
+                        <strong>Universidad Técnica Estatal de Quevedo</strong></p>
+                    </div>
+                    <div class="footer">
+                        <p>Este es un correo automático, por favor no responder.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """,
+                    nombreCompleto,
+                    motivo
+            );
+
+            helper.setText(contenidoHtml, true);
+            mailSender.send(mensaje);
+
+            System.out.println("✅ Correo de rechazo enviado exitosamente a: " + destinatario);
+
+        } catch (Exception e) {
+            System.err.println("❌ Error al enviar correo de rechazo: " + e.getMessage());
+            throw new RuntimeException("Error al enviar correo de rechazo", e);
+        }
+    }
 }

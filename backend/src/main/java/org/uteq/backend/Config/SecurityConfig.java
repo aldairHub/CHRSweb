@@ -42,13 +42,16 @@ public class SecurityConfig {
                                 "/api/verificacion/validar",
                                 "/api/autoridades-academicas/**",
                                 "/api/autoridades-academicas/registro",
+                                "/api/admin/prepostulaciones",
                                 "/api/admin/prepostulaciones/**",
                                 "/api/instituciones",
                                 "/api/instituciones/**",
                                 "/api/roles-autoridad",
                                 "/api/roles-autoridad/**",
                                 "/api/roles-usuario",
-                                "/api/roles-usuario/**"
+                                "/api/roles-usuario/**",
+                                "/api/vicerrectorado/",
+                                "/api/vicerrectorado/**"
                                 ).permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/demo/**").permitAll()

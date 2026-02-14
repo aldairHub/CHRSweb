@@ -12,7 +12,7 @@ public class DbRoleSyncService {
         this.jdbc = jdbc;
     }
 
-    public void syncRolesUsuarioBd(int idUsuario, boolean revocarSobrantes) {
+    public void syncRolesUsuarioBd(Integer idUsuario, boolean revocarSobrantes) {
         jdbc.update("CALL public.sp_sync_roles_usuario_bd(?, ?)", idUsuario, revocarSobrantes);
     }
 }

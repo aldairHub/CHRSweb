@@ -2,11 +2,13 @@ package org.uteq.backend.Repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 import org.uteq.backend.Entity.UsuarioRol;
 import org.uteq.backend.Entity.UsuarioRolId;
 
 import java.util.List;
 
+@Repository
 public interface IUsuarioRolRepository extends JpaRepository<UsuarioRol, UsuarioRolId> {
     @Query("""
     select r.nombre
