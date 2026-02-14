@@ -15,6 +15,7 @@ import org.uteq.backend.Repository.InstitucionRepository;
 import org.uteq.backend.Repository.UsuarioRepository;
 
 import org.uteq.backend.Service.AutoridadAcademicaService;
+import org.uteq.backend.Service.DbRoleSyncService;
 import org.uteq.backend.Service.EmailService;
 
 import org.uteq.backend.dto.AutoridadAcademicaRequestDTO;
@@ -41,6 +42,7 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
     private final IRolAutoridadRepository rolAutoridadRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final DbRoleSyncService dbRoleSyncService;
 
     private static final Logger log =
             LoggerFactory.getLogger(AutoridadAcademicaServiceImpl.class);
@@ -51,7 +53,8 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
             InstitucionRepository institucionRepository,
             IRolAutoridadRepository rolAutoridadRepository,
             PasswordEncoder passwordEncoder,
-            EmailService emailService
+            EmailService emailService,
+            DbRoleSyncService dbRolSyncService
     ) {
         this.autoridadRepository = autoridadRepository;
         this.usuarioRepository = usuarioRepository;
@@ -59,6 +62,7 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         this.rolAutoridadRepository = rolAutoridadRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
+        this.dbRoleSyncService = dbRolSyncService;
     }
 
     // -------------------------
@@ -204,6 +208,14 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         usuario.getRoles().addAll(rolesDerivados);
 
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+        try {
+            dbRoleSyncService.  syncRolesUsuarioBd(usuarioGuardado.getIdUsuario().intValue(), false);
+            // false: en registro normalmente solo agregas; no revocas nada.
+        } catch (Exception ex) {
+            // Recomendación: falla para que haga rollback y no quede usuario sin permisos reales
+            throw new RuntimeException("Falló la asignación de permisos en BD (sp_sync_roles_usuario_bd): " + ex.getMessage(), ex);
+        }
 
         AutoridadAcademica autoridad = new AutoridadAcademica();
         autoridad.setNombres(dto.getNombres());
