@@ -73,9 +73,9 @@ public class AuthService {
         }
 
 
-        //  CAMBIO REAL DE CONEXIÓN BD (DEMO)
+        //  CAMBIO REAL DE CONEXIÓN BD
         dbSwitchService.switchToUser(usuario.getUsuarioBd(), usuario.getClaveBd());
-        // SUCCESS
+
         List<String> roles = usuarioRolRepository.findRoleNamesByUserId(usuario.getIdUsuario());
         safeAuditSuccess(usuarioApp, usuario.getUsuarioBd(), httpRequest);
 
@@ -89,7 +89,6 @@ public class AuthService {
 //                Collections.singleton(usuario.getRol().name()));
     }
 
-    // Para que auditoría NUNCA rompa el login
     private void safeAuditSuccess(String usuarioApp, String usuarioBd, HttpServletRequest httpRequest) {
         try {
             loginAuditService.logSuccess(usuarioApp, usuarioBd, httpRequest);
