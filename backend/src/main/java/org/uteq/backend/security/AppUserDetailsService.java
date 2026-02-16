@@ -4,8 +4,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.uteq.backend.Entity.Usuario;
-import org.uteq.backend.Repository.UsuarioRepository;
+import org.uteq.backend.entity.Usuario;
+import org.uteq.backend.repository.UsuarioRepository;
 
 @Service
 public class AppUserDetailsService implements UserDetailsService {

@@ -8,10 +8,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableAsync
 @SpringBootApplication
 @ComponentScan(basePackages = {
-        "org.uteq.backend.Config",
-        "org.uteq.backend.Controller",
-        "org.uteq.backend.Service",
-        "org.uteq.backend.Repository"
+        "org.uteq.backend.config",
+        "org.uteq.backend.controller",
+        "org.uteq.backend.service",
+        "org.uteq.backend.repository"
 })
 public class BackendApplication {
     public static void main(String[] args) {
