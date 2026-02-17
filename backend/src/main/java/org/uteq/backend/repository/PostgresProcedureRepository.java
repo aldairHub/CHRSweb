@@ -205,10 +205,10 @@ public class PostgresProcedureRepository {
             var rs = ps.executeQuery();
             if (rs.next()) {
                 RegistroSpResultDTO result = new RegistroSpResultDTO();
-                result.setIdUsuario(rs.getLong("id_usuario"));
-                result.setIdAutoridad(rs.getLong("id_autoridad"));
-                result.setUsuarioApp(rs.getString("usuario_app"));
-                result.setUsuarioBd(rs.getString("usuario_bd"));
+                result.setIdUsuario(rs.getLong("out_id_usuario"));       // ✅ out_
+                result.setIdAutoridad(rs.getLong("out_id_autoridad"));   // ✅ out_
+                result.setUsuarioApp(rs.getString("out_usuario_app"));   // ✅ out_
+                result.setUsuarioBd(rs.getString("out_usuario_bd"));     // ✅ out_
                 return result;
             }
             throw new RuntimeException("sp_registrar_autoridad_completo no retornó datos");
@@ -241,9 +241,9 @@ public class PostgresProcedureRepository {
             var rs = ps.executeQuery();
             if (rs.next()) {
                 RegistroSpResultDTO result = new RegistroSpResultDTO();
-                result.setIdUsuario(rs.getLong("id_usuario"));
-                result.setUsuarioApp(rs.getString("usuario_app"));
-                result.setUsuarioBd(rs.getString("usuario_bd"));
+                result.setIdUsuario(rs.getLong("out_id_usuario"));
+                result.setUsuarioApp(rs.getString("out_usuario_app"));
+                result.setUsuarioBd(rs.getString("out_usuario_bd"));
                 return result;
             }
             throw new RuntimeException("sp_registrar_usuario_simple no retornó datos");
@@ -272,9 +272,9 @@ public class PostgresProcedureRepository {
             var rs = ps.executeQuery();
             if (rs.next()) {
                 RegistroSpResultDTO result = new RegistroSpResultDTO();
-                result.setIdUsuario(rs.getLong("id_usuario"));
-                result.setUsuarioApp(rs.getString("usuario_app"));
-                result.setUsuarioBd(rs.getString("usuario_bd"));
+                result.setIdUsuario(rs.getLong("out_id_usuario"));
+                result.setUsuarioApp(rs.getString("out_usuario_app"));
+                result.setUsuarioBd(rs.getString("out_usuario_bd"));
                 return result;
             }
             throw new RuntimeException("sp_registrar_postulante no retornó datos");

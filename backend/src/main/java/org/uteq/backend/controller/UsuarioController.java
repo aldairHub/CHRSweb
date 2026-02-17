@@ -86,21 +86,50 @@ public class UsuarioController {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
-    @GetMapping("/migrar-claves-bd")  // ← Eliminar después de usar
-    public void migrarClavesBd() {
+    // ✅ TEMPORAL - Eliminar después de usar UNA SOLA VEZ
+    @GetMapping("/migrar-claves-bd")
+    public ResponseEntity<String> migrarClavesBd() {
         List<Usuario> usuarios = usuarioRepository.findAll();
+        int migrados = 0;
+        int errores = 0;
+
         for (Usuario u : usuarios) {
             try {
-                // Decodificar Base64 antiguo
-                String claveAntigua = new String(Base64.getDecoder().decode(u.getClaveBd()));
-                // Cifrar con AES nuevo
-                String claveCifrada = aesCipherService.cifrar(claveAntigua);
+                String claveActual = u.getClaveBd();
+                String claveEnTextoPlano;
+
+                // ✅ Verificar si es Base64 válido antes de decodificar
+                if (esBase64Valido(claveActual)) {
+                    claveEnTextoPlano = new String(java.util.Base64.getDecoder().decode(claveActual));
+                    System.out.println("📦 " + u.getUsuarioApp() + " → era Base64 → " + claveEnTextoPlano);
+                } else {
+                    // Ya está en texto plano
+                    claveEnTextoPlano = claveActual;
+                    System.out.println("📝 " + u.getUsuarioApp() + " → era texto plano → " + claveEnTextoPlano);
+                }
+
+                // Cifrar con AES
+                String claveCifrada = aesCipherService.cifrar(claveEnTextoPlano);
                 u.setClaveBd(claveCifrada);
-                usuarioRepository.save(u);
-                log.info("✅ Migrado: {}", u.getUsuarioApp());
+                usuarioRepository.saveAndFlush(u);
+                migrados++;
+                System.out.println("✅ Migrado: " + u.getUsuarioApp());
+
             } catch (Exception e) {
-                log.error("❌ Error migrando {}: {}", u.getUsuarioApp(), e.getMessage());
+                errores++;
+                System.err.println("❌ Error migrando " + u.getUsuarioApp() + ": " + e.getMessage());
             }
         }
+
+        return ResponseEntity.ok(
+                "Migración completa. Migrados: " + migrados + " | Errores: " + errores
+        );
+    }
+
+    // ✅ Método helper para verificar si un string es Base64 válido
+    private boolean esBase64Valido(String valor) {
+        if (valor == null || valor.isBlank()) return false;
+        // Base64 válido solo contiene estos caracteres y su longitud es múltiplo de 4
+        return valor.matches("^[A-Za-z0-9+/]*={0,2}$") && valor.length() % 4 == 0;
     }
 }
