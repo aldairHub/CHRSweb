@@ -7,8 +7,14 @@ import org.springframework.web.bind.annotation.*;
 import org.uteq.backend.dto.UsuarioCreateDTO;
 import org.uteq.backend.dto.UsuarioDTO;
 import org.uteq.backend.dto.UsuarioUpdateDTO;
+import org.uteq.backend.entity.Usuario;
 import org.uteq.backend.service.UsuarioService;
+import org.uteq.backend.repository.UsuarioRepository;
+import org.uteq.backend.service.AesCipherService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Base64;
 import java.util.List;
 
 @RestController
@@ -18,7 +24,13 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private AesCipherService aesCipherService;
+
+    private static final Logger log = LoggerFactory.getLogger(UsuarioController.class);
     // Crear usuario (solo ADMIN o EVALUATOR)
     @PostMapping
     public ResponseEntity<?> crear(@RequestBody UsuarioCreateDTO dto) {
@@ -72,6 +84,23 @@ public class UsuarioController {
             return ResponseEntity.ok(usuario);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+    @GetMapping("/migrar-claves-bd")  // ← Eliminar después de usar
+    public void migrarClavesBd() {
+        List<Usuario> usuarios = usuarioRepository.findAll();
+        for (Usuario u : usuarios) {
+            try {
+                // Decodificar Base64 antiguo
+                String claveAntigua = new String(Base64.getDecoder().decode(u.getClaveBd()));
+                // Cifrar con AES nuevo
+                String claveCifrada = aesCipherService.cifrar(claveAntigua);
+                u.setClaveBd(claveCifrada);
+                usuarioRepository.save(u);
+                log.info("✅ Migrado: {}", u.getUsuarioApp());
+            } catch (Exception e) {
+                log.error("❌ Error migrando {}: {}", u.getUsuarioApp(), e.getMessage());
+            }
         }
     }
 }

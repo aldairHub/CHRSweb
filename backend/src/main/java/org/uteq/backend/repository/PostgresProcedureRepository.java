@@ -2,6 +2,7 @@ package org.uteq.backend.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.uteq.backend.dto.RegistroSpResultDTO;
 
 import java.sql.Array;
 import java.util.List;
@@ -171,5 +172,112 @@ public class PostgresProcedureRepository {
     public List<Map<String, Object>> listarRolesApp() {
         String sql = "SELECT * FROM sp_listar_roles_app()";
         return jdbcTemplate.queryForList(sql);
+    }
+
+    /**
+     * Registra autoridad académica completa
+     * SP: sp_registrar_autoridad_completo
+     */
+    public RegistroSpResultDTO registrarAutoridadCompleto(
+            String usuarioApp, String claveApp, String correo,
+            String usuarioBd, String claveBdHash, String claveBdReal,
+            String nombres, String apellidos, java.time.LocalDate fechaNac,
+            Long idInstitucion, List<String> rolesApp) {  // ✅ List<String> en vez de String
+
+        String sql = "SELECT * FROM sp_registrar_autoridad_completo(?,?,?,?,?,?,?,?,?,?,?)";
+
+        return jdbcTemplate.execute((java.sql.Connection conn) -> {
+            var ps = conn.prepareStatement(sql);
+            ps.setString(1, usuarioApp);
+            ps.setString(2, claveApp);
+            ps.setString(3, correo);
+            ps.setString(4, usuarioBd);
+            ps.setString(5, claveBdHash);
+            ps.setString(6, claveBdReal);
+            ps.setString(7, nombres);
+            ps.setString(8, apellidos);
+            ps.setObject(9, fechaNac);
+            ps.setLong(10, idInstitucion);
+            // ✅ Convertir List a Array SQL
+            Array rolesArray = conn.createArrayOf("VARCHAR", rolesApp.toArray());
+            ps.setArray(11, rolesArray);
+
+            var rs = ps.executeQuery();
+            if (rs.next()) {
+                RegistroSpResultDTO result = new RegistroSpResultDTO();
+                result.setIdUsuario(rs.getLong("id_usuario"));
+                result.setIdAutoridad(rs.getLong("id_autoridad"));
+                result.setUsuarioApp(rs.getString("usuario_app"));
+                result.setUsuarioBd(rs.getString("usuario_bd"));
+                return result;
+            }
+            throw new RuntimeException("sp_registrar_autoridad_completo no retornó datos");
+        });
+    }
+
+    /**
+     * Registra usuario simple
+     * SP: sp_registrar_usuario_simple
+     */
+    public RegistroSpResultDTO registrarUsuarioSimple(
+            String usuarioApp, String claveApp, String correo,
+            String usuarioBd, String claveBdHash, String claveBdReal,
+            List<String> rolesApp) {  // ✅ List<String> en vez de String
+
+        String sql = "SELECT * FROM sp_registrar_usuario_simple(?,?,?,?,?,?,?)";
+
+        return jdbcTemplate.execute((java.sql.Connection conn) -> {
+            var ps = conn.prepareStatement(sql);
+            ps.setString(1, usuarioApp);
+            ps.setString(2, claveApp);
+            ps.setString(3, correo);
+            ps.setString(4, usuarioBd);
+            ps.setString(5, claveBdHash);
+            ps.setString(6, claveBdReal);
+            // ✅ Convertir List a Array SQL
+            Array rolesArray = conn.createArrayOf("VARCHAR", rolesApp.toArray());
+            ps.setArray(7, rolesArray);
+
+            var rs = ps.executeQuery();
+            if (rs.next()) {
+                RegistroSpResultDTO result = new RegistroSpResultDTO();
+                result.setIdUsuario(rs.getLong("id_usuario"));
+                result.setUsuarioApp(rs.getString("usuario_app"));
+                result.setUsuarioBd(rs.getString("usuario_bd"));
+                return result;
+            }
+            throw new RuntimeException("sp_registrar_usuario_simple no retornó datos");
+        });
+    }
+
+    /**
+     * Registra postulante aprobado
+     * SP: sp_registrar_postulante
+     */
+    public RegistroSpResultDTO registrarPostulante(
+            String usuarioApp, String claveApp, String correo,
+            String usuarioBd, String claveBdHash, String claveBdReal) {
+
+        String sql = "SELECT * FROM sp_registrar_postulante(?,?,?,?,?,?)";
+
+        return jdbcTemplate.execute((java.sql.Connection conn) -> {
+            var ps = conn.prepareStatement(sql);
+            ps.setString(1, usuarioApp);
+            ps.setString(2, claveApp);
+            ps.setString(3, correo);
+            ps.setString(4, usuarioBd);
+            ps.setString(5, claveBdHash);
+            ps.setString(6, claveBdReal);
+
+            var rs = ps.executeQuery();
+            if (rs.next()) {
+                RegistroSpResultDTO result = new RegistroSpResultDTO();
+                result.setIdUsuario(rs.getLong("id_usuario"));
+                result.setUsuarioApp(rs.getString("usuario_app"));
+                result.setUsuarioBd(rs.getString("usuario_bd"));
+                return result;
+            }
+            throw new RuntimeException("sp_registrar_postulante no retornó datos");
+        });
     }
 }

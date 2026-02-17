@@ -4,10 +4,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.uteq.backend.entity.Usuario;
 import org.uteq.backend.service.DbSwitchService;
 import org.uteq.backend.dto.LoginRequest;
 import org.uteq.backend.dto.LoginResponse;
 import org.uteq.backend.service.AuthService;
+
+import java.util.Base64;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -35,4 +39,6 @@ public class AuthController {
 
         return ResponseEntity.ok("Logout OK (conexión reseteada)");
     }
+
+
 }

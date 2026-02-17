@@ -5,6 +5,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.uteq.backend.dto.RegistroSpResultDTO;
 import org.uteq.backend.entity.*;
 //import org.uteq.backend.entity.RolApp;
 import org.uteq.backend.repository.RolAppRepository;
@@ -12,7 +13,9 @@ import org.uteq.backend.repository.PostgresProcedureRepository;
 import org.uteq.backend.repository.PrepostulacionRepository;
 import org.uteq.backend.repository.UsuarioRepository;
 import org.uteq.backend.dto.PrepostulacionResponseDTO;
-
+import org.uteq.backend.repository.PostgresProcedureRepository;
+import org.uteq.backend.service.AesCipherService;
+import org.uteq.backend.dto.RegistroSpResultDTO;
 //import org.springframework.transaction.support.TransactionSynchronization;
 //import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -35,7 +38,7 @@ public class PrepostulacionService {
 //    private final IRolUsuarioRepository rolUsuarioRepository;
     private final RolAppRepository rolAppRepository;
     private final PostgresProcedureRepository postgresProcedureRepository;
-
+    private final AesCipherService aesCipherService;
 
     public PrepostulacionService(
             PrepostulacionRepository prepostulacionRepository,
@@ -50,7 +53,8 @@ public class PrepostulacionService {
             // IRolUsuarioRepository rolUsuarioRepository
             //  AGREGAR ESTOS 2:
             RolAppRepository rolAppRepository,
-            PostgresProcedureRepository postgresProcedureRepository
+            PostgresProcedureRepository postgresProcedureRepository,
+            AesCipherService aesCipherService
     ) {
         this.prepostulacionRepository = prepostulacionRepository;
         this.supabaseService = supabaseService;
@@ -65,6 +69,7 @@ public class PrepostulacionService {
         //  AGREGAR:
         this.rolAppRepository = rolAppRepository;
         this.postgresProcedureRepository = postgresProcedureRepository;
+        this.aesCipherService = aesCipherService;
     }
     @Transactional
     public PrepostulacionResponseDTO procesarPrepostulacion(
@@ -226,77 +231,23 @@ public class PrepostulacionService {
                 System.out.println("✅ usuarioBd: " + usuarioBd);
 
                 // 3. Generar clave temporal
-                String caracteres = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%";
-                StringBuilder clave = new StringBuilder();
-                java.security.SecureRandom random = new java.security.SecureRandom();
-                for (int i = 0; i < 12; i++) {
-                    clave.append(caracteres.charAt(random.nextInt(caracteres.length())));
-                }
-                String claveTemporal = clave.toString();
+                String claveTemporal = generarClaveTemporal(12);
                 System.out.println("✅ Clave temporal generada");
 
-                // 4. Crear usuario
-                Usuario usuario = new Usuario();
-                usuario.setUsuarioApp(usuarioApp);
-                usuario.setClaveApp(passwordEncoder.encode(claveTemporal));
-                usuario.setCorreo(correo);
-                usuario.setUsuarioBd(usuarioBd);
-                usuario.setClaveBd("MTIzNA==");
-                usuario.setActivo(true);
+                // ✅ 4. SP hace todo: INSERT usuario + CREATE USER + GRANT roles
+                String claveBdReal    = generarClaveTemporal(16);
+                String claveBdCifrada = aesCipherService.cifrar(claveBdReal);
 
-//                System.out.println("💾 Guardando usuario en BD...");
-//                Usuario usuarioGuardado = usuarioRepository.save(usuario);
-//                RolUsuario rolPostulante = rolUsuarioRepository.findByNombre("ROLE_POSTULANTE")
-//                        .orElseThrow(() -> new RuntimeException("Rol ROLE_POSTULANTE no existe"));
-//
-//                UsuarioRolId usuarioRolId = new UsuarioRolId();
-//                usuarioRolId.setIdUsuario(usuarioGuardado.getIdUsuario());
-//                usuarioRolId.setIdRolUsuario(rolPostulante.getIdRolUsuario());
-//
-//                UsuarioRol usuarioRol = new UsuarioRol();
-//                usuarioRol.setId(usuarioRolId);  // ← OJO: usuarioRolId no id
-////                usuarioRol.setUsuario(usuarioGuardado);  // ← OJO: usuarioGuardado
-////                usuarioRol.setRol(rolPostulante);
-//
-//                usuarioRolRepository.save(usuarioRol);
-//                System.out.println("✅ Rol ROLE_POSTULANTE asignado");
-//                System.out.println("✅✅✅ USUARIO GUARDADO CON ID: " + usuarioGuardado.getIdUsuario());
-//                //Long idUsuario = usuarioGuardado.getIdUsuario();
-//                TransactionSynchronizationManager.registerSynchronization(
-//                        new TransactionSynchronization() {
-//                            @Override
-//                            public void afterCommit() {
-//                                try {
-//                                    System.out.println("🔄 Sincronizando roles en BD después del commit...");
-//                                    dbRoleSyncService.syncRolesUsuarioBd(usuarioGuardado.getIdUsuario().intValue(), false);
-//                                    System.out.println("✅ Roles sincronizados en BD");
-//                                } catch (Exception ex) {
-//                                    System.err.println("⚠️ Error al sincronizar roles en BD: " + ex.getMessage());
-//                                    ex.printStackTrace();
-//                                    // No lanzamos excepción aquí porque ya se hizo commit
-//                                }
-//                            }
-//                        }
-//                );
-
-                // ✅ NUEVO CÓDIGO SIMPLIFICADO
-                System.out.println("💾 Guardando usuario en BD...");
-                Usuario usuarioGuardado = usuarioRepository.save(usuario);
-                System.out.println("✅ Usuario guardado con ID: " + usuarioGuardado.getIdUsuario());
-
-            // Asignar rol de aplicación POSTULANTE
-                try {
-                    System.out.println("🔄 Asignando rol POSTULANTE al usuario...");
-                    postgresProcedureRepository.asignarRolAppAUsuario(
-                            usuarioGuardado.getIdUsuario(),
-                            "POSTULANTE"
-                    );
-                    System.out.println("✅ Rol POSTULANTE asignado correctamente");
-                } catch (Exception ex) {
-                    System.err.println("❌ Error al asignar rol POSTULANTE: " + ex.getMessage());
-                    ex.printStackTrace();
-                    throw new RuntimeException("Error al asignar rol al usuario");
-                }
+                System.out.println("💾 Registrando postulante con SP...");
+                RegistroSpResultDTO resultado = postgresProcedureRepository.registrarPostulante(
+                        usuarioApp,
+                        passwordEncoder.encode(claveTemporal),
+                        correo,
+                        usuarioBd,
+                        claveBdCifrada,
+                        claveBdReal
+                );
+                System.out.println("✅✅✅ POSTULANTE REGISTRADO CON ID: " + resultado.getIdUsuario());
 
                 // 5. Enviar correo con credenciales
                 System.out.println("📧 Enviando correo con credenciales...");
@@ -327,8 +278,6 @@ public class PrepostulacionService {
                 e.printStackTrace();
             }
         }
-
-
 
         System.out.println("FIN DE actualizarEstado");
     }

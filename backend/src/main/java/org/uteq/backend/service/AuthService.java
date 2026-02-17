@@ -35,21 +35,27 @@ public class AuthService {
     @Autowired
     private DbSwitchService dbSwitchService;
 
-    // ✅ NUEVO: Repository para stored procedures
+    // Repository para stored procedures
     @Autowired
     private PostgresProcedureRepository postgresProcedureRepository;
+
+    @Autowired private AesCipherService aesCipherService; // ✅ NUEVO
+
 
     public AuthService(UsuarioRepository usuarioRepository,
                        JwtService jwtService,
                        PasswordEncoder passwordEncoder,
                        DbSwitchService dbSwitchService,
-                       PostgresProcedureRepository postgresProcedureRepository) {
+                       PostgresProcedureRepository postgresProcedureRepository,
+                       AesCipherService aesCipherService) {
 
         this.usuarioRepository = usuarioRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.dbSwitchService = dbSwitchService;
         this.postgresProcedureRepository = postgresProcedureRepository;
+        this.aesCipherService = aesCipherService;
+
     }
 
     public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
@@ -75,11 +81,12 @@ public class AuthService {
             safeAuditFail(usuarioApp, usuario.getUsuarioBd(), AuditLoginMotivo.BAD_CREDENTIALS, httpRequest);
             throw new RuntimeException("Contraseña incorrecta");
         }
-
-        // ✅ 4) CAMBIO REAL DE CONEXIÓN BD
+        // ✅ 4) Descifrar clave BD con AES antes del switch
+        String claveBdReal = aesCipherService.descifrar(usuario.getClaveBd());
+        // ✅ 5) CAMBIO REAL DE CONEXIÓN BD
         dbSwitchService.switchToUser(usuario.getUsuarioBd(), usuario.getClaveBd());
 
-        // ✅ 5) OBTENER ROLES desde PostgreSQL usando stored procedure
+        // ✅ 6) OBTENER ROLES desde PostgreSQL usando stored procedure
         //    Este procedure consulta pg_auth_members y mapea a roles de aplicación
         List<String> roles = postgresProcedureRepository.obtenerRolesAppUsuario();
 
@@ -92,7 +99,7 @@ public class AuthService {
 
         safeAuditSuccess(usuarioApp, usuario.getUsuarioBd(), httpRequest);
 
-        // 6) Generar JWT con roles de aplicación
+        // 7) Generar JWT con roles de aplicación
         String token = jwtService.generateToken(usuario.getUsuarioApp(), roles);
 
         return new LoginResponse(token, usuario.getUsuarioApp(), new HashSet<>(roles));
