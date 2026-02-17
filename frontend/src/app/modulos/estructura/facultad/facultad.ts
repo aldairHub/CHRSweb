@@ -5,6 +5,7 @@ import { FooterComponent } from '../../../component/footer.component';
 import { NavbarComponent } from '../../../component/navbar';
 import { FacultadService } from '../../../services/facultad.service';
 import { Facultad } from '../../../models/facultad.model';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-facultad',
@@ -32,9 +33,12 @@ export class FacultadComponent implements OnInit {
     estado: true
   };
 
-  constructor(private facultadService: FacultadService) {}
+  constructor(
+    private facultadService: FacultadService,
+    private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
+    console.log('FacultadComponent INIT -> cargando...');
     this.cargarFacultades();
   }
 
@@ -50,6 +54,7 @@ export class FacultadComponent implements OnInit {
           estado: x.estado
         }));
         console.log('Facultades cargadas (mapeadas):', this.facultades);
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Error al cargar:', err)
     });

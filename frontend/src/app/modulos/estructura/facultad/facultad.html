@@ -73,6 +73,7 @@
     </div>
 
     <!-- Tabla de Facultades -->
+    <p>facultades: {{ facultades.length }}</p>
     <div class="table-container">
       <table class="table">
         <thead>
@@ -160,9 +161,9 @@
 
       <div class="form-group">
         <label>Nombre de la Facultad <span class="required">*</span></label>
-        <input 
-          type="text" 
-          class="form-input" 
+        <input
+          type="text"
+          class="form-input"
           [(ngModel)]="form.nombreFacultad"
           name="nombreFacultad"
           placeholder="Ej: Facultad de Ciencias de la Ingeniería"
@@ -171,7 +172,7 @@
 
       <div class="form-group">
         <label class="checkbox-item">
-          <input 
+          <input
             type="checkbox"
             [(ngModel)]="form.estado"
             name="estado"
