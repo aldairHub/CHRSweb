@@ -91,12 +91,21 @@ import { Routes } from '@angular/router';
       data: { rol: 'admin', isHome: true }
     },
     {
-      path: 'roles-autoridad',
-      loadComponent: () => import('./modulos/Admin/roles-autoridad/roles-autoridad')
-        .then(m => m.RolesAutoridadComponent),
+      path: 'gestion-roles',
+      loadComponent: () => import('./modulos/Admin/gestion-roles/gestion-roles')
+        .then(m => m.GestionRolesComponent),
       canActivate: [AuthGuard],
       data: { rol: 'admin' }
     },
+
+    // ✅ RUTA LEGACY — redirige por si algún enlace viejo apunta a 'roles-autoridad'
+    {
+      path: 'roles-autoridad',
+      redirectTo: 'gestion-roles',
+      pathMatch: 'full'
+    },
+
+    // ✅ Gestión de Usuarios (ruta mantenida, componente reescrito)
     {
       path: 'gestion-usuarios',
       loadComponent: () => import('./modulos/gestion-usuarios/gestion-usuarios')
@@ -104,6 +113,7 @@ import { Routes } from '@angular/router';
       canActivate: [AuthGuard],
       data: { rol: 'admin' }
     },
+
     {
       path: 'facultad',
       loadComponent: () => import('./modulos/estructura/facultad/facultad').then(m => m.FacultadComponent),

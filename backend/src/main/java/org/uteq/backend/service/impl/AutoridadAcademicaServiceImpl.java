@@ -24,7 +24,10 @@ import org.uteq.backend.service.EmailService;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
-
+import org.uteq.backend.dto.RolAppDTO;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uteq.backend.util.CredencialesGenerator;
@@ -383,18 +386,26 @@ public RegistroResponseDTO registrarUsuario(RegistroUsuarioDTO dto) {
         dto.setIdUsuario(autoridad.getUsuario().getIdUsuario());
         dto.setIdInstitucion(autoridad.getIdInstitucion());
 
-        // cargos (rol_autoridad)
-//        List<RolAutoridadDTO> cargos = autoridad.getRolesAutoridad() == null
-//                ? Collections.emptyList()
-//                : autoridad.getRolesAutoridad().stream().map(r -> {
-//                    RolAutoridadDTO rdto = new RolAutoridadDTO();
-//                    rdto.setIdRolAutoridad(r.getIdRolAutoridad());
-//                    rdto.setNombre(r.getNombre());
-//                    return rdto;
-//                }).sorted(Comparator.comparing(RolAutoridadDTO::getNombre, String.CASE_INSENSITIVE_ORDER))
-//                .collect(Collectors.toList());
-
-        dto.setRolesAutoridad(null);
+        // ya no existe setRolesAutoridad() → usamos setRolesApp()
+        // Mapeamos los roles_app del usuario asociado a la autoridad
+        if (autoridad.getUsuario() != null && autoridad.getUsuario().getRolesApp() != null) {
+            List<RolAppDTO> rolesApp = autoridad.getUsuario().getRolesApp().stream()
+                    .map(r -> {
+                        RolAppDTO rdto = new RolAppDTO();
+                        rdto.setIdRolApp(r.getIdRolApp());
+                        rdto.setNombre(r.getNombre());
+                        rdto.setDescripcion(r.getDescripcion());
+                        rdto.setActivo(r.getActivo());
+                        rdto.setFechaCreacion(r.getFechaCreacion());
+                        return rdto;
+                    })
+                    .sorted(java.util.Comparator.comparing(
+                            RolAppDTO::getNombre, String.CASE_INSENSITIVE_ORDER))
+                    .collect(java.util.stream.Collectors.toList());
+            dto.setRolesApp(rolesApp);
+        } else {
+            dto.setRolesApp(java.util.Collections.emptyList());
+        }
 
         return dto;
     }

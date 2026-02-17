@@ -1,6 +1,5 @@
-// gestion-usuarios.component.scss
+// gestion-roles.component.scss
 // Diseño unificado con carrera.component.scss
-// Añadidos: .tabs/.tab-btn, .badge-rol-app, .roles-app-list/.rol-app-item
 
 $primary: #00A63E;
 $dark: #016630;
@@ -35,38 +34,17 @@ $error: #dc2626;
   align-items: center;
   margin-bottom: 2rem;
 
-  h2 { font-size: 1.75rem; color: $dark; font-weight: 700; margin: 0; }
-  .page-subtitle { font-size: 0.95rem; color: $text-gray; margin: 0.25rem 0 0 0; }
-}
-
-// ==========================================
-// PESTAÑAS
-// ==========================================
-.tabs {
-  display: flex;
-  border-bottom: 2px solid $border;
-  margin-bottom: 2rem;
-  overflow-x: auto;
-}
-
-.tab-btn {
-  padding: 0.75rem 1.5rem;
-  background: none;
-  border: none;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: $text-gray;
-  cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
-  white-space: nowrap;
-
-  &:hover { color: $primary; }
-
-  &.active {
+  h2 {
+    font-size: 1.75rem;
     color: $dark;
-    border-bottom-color: $primary;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .page-subtitle {
+    font-size: 0.95rem;
+    color: $text-gray;
+    margin: 0.25rem 0 0 0;
   }
 }
 
@@ -126,7 +104,12 @@ $error: #dc2626;
       letter-spacing: 0.5px;
     }
 
-    .stat-value { font-size: 2rem; font-weight: 700; color: $dark; line-height: 1; }
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: $dark;
+      line-height: 1;
+    }
   }
 }
 
@@ -277,7 +260,34 @@ $error: #dc2626;
   gap: 0.375rem;
 }
 
-// Badge verde para roles_app asignados
+// Badge genérico de roles_app en tabla
+.role-badge {
+  display: inline-block;
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background: $light-card-bg;
+  color: $dark;
+  border: 1px solid rgba($primary, 0.25);
+}
+
+// Badge azul monospace para roles BD (pg_roles)
+.role-bd-badge {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+// Badge verde para roles_app asignados a usuario/autoridad
 .badge-rol-app {
   display: inline-block;
   padding: 0.25rem 0.625rem;
@@ -304,7 +314,12 @@ $error: #dc2626;
   &.success { background: #dcfce7; color: #166534; }
   &.danger  { background: #fee2e2; color: #991b1b; }
 
-  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
 }
 
 .text-muted { color: #94a3b8; font-style: italic; }
@@ -364,6 +379,7 @@ $error: #dc2626;
   color: $text-gray;
 
   svg { width: 18px; height: 18px; }
+
   &:hover { background: rgba($primary, 0.1); color: $primary; }
 }
 
@@ -411,7 +427,7 @@ $error: #dc2626;
 }
 
 // ==========================================
-// PAGINATION (page-btn, igual que carrera)
+// PAGINATION (igual que carrera: page-btn)
 // ==========================================
 .pagination {
   display: flex;
@@ -422,8 +438,15 @@ $error: #dc2626;
   border-radius: 12px;
   border: 1px solid $border;
 
-  .pagination-info { font-size: 0.875rem; color: $text-gray; }
-  .pagination-controls { display: flex; gap: 0.5rem; }
+  .pagination-info {
+    font-size: 0.875rem;
+    color: $text-gray;
+  }
+
+  .pagination-controls {
+    display: flex;
+    gap: 0.5rem;
+  }
 
   .page-btn {
     width: 36px;
@@ -449,7 +472,12 @@ $error: #dc2626;
       svg { stroke: $primary; }
     }
 
-    &.active { background: $primary; border-color: $primary; color: white; }
+    &.active {
+      background: $primary;
+      border-color: $primary;
+      color: white;
+    }
+
     &:disabled { opacity: 0.4; cursor: not-allowed; }
   }
 }
@@ -528,6 +556,23 @@ $error: #dc2626;
     .section-title { font-size: 1.05rem; font-weight: 700; color: $dark; margin-bottom: 0.375rem; }
     .section-description { font-size: 0.875rem; color: $text-gray; }
   }
+
+  .form-group {
+    margin-bottom: 1.25rem;
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: $dark;
+      margin-bottom: 0.5rem;
+
+      .required { color: $error; margin-left: 0.25rem; }
+    }
+
+    .help-text { font-size: 0.8125rem; color: $text-gray; margin-top: 0.375rem; }
+    .error-message { font-size: 0.8125rem; color: $error; margin-top: 0.375rem; }
+  }
 }
 
 .modal-footer {
@@ -539,7 +584,75 @@ $error: #dc2626;
 }
 
 // ==========================================
-// ALERTS (modal info)
+// FORM INPUTS (modal)
+// ==========================================
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid $border;
+  border-radius: 8px;
+  background: $bg-white;
+  font-size: 0.9rem;
+  color: $text-dark;
+  transition: all 0.2s;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.1);
+  }
+
+  &::placeholder { color: #9ca3af; }
+}
+
+textarea.form-input { resize: vertical; }
+
+// ==========================================
+// CHECKBOXES (roles BD)
+// ==========================================
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  padding: 0.875rem 1rem;
+  border: 1.5px solid $border;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: $bg-white;
+
+  &:hover { background: rgba($primary, 0.05); border-color: $primary; }
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-right: 0.75rem;
+    cursor: pointer;
+    accent-color: $primary;
+  }
+
+  span { font-size: 0.875rem; font-weight: 500; color: $text-dark; user-select: none; }
+}
+
+// Checkbox inline (activo)
+.field-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  label { margin-bottom: 0 !important; }
+  input[type="checkbox"] { width: 18px; height: 18px; accent-color: $primary; cursor: pointer; }
+}
+
+// ==========================================
+// ALERTS
 // ==========================================
 .alert {
   display: flex;
@@ -558,47 +671,6 @@ $error: #dc2626;
     svg { stroke: #2563eb; }
     strong { color: #1e40af; }
     p { color: #1e3a8a; font-size: 0.875rem; margin: 0.25rem 0 0 0; }
-  }
-}
-
-// ==========================================
-// ROLES_APP LIST (modal edición de roles)
-// ==========================================
-.roles-app-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  max-height: 300px;
-  overflow-y: auto;
-  margin-top: 0.75rem;
-}
-
-.rol-app-item {
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  padding: 0.875rem 1rem;
-  background: $bg-white;
-  border-radius: 8px;
-  border: 1.5px solid $border;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover { background: rgba($primary, 0.04); border-color: $primary; }
-
-  input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: $primary;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-
-  .rol-app-info {
-    flex: 1;
-
-    .rol-app-nombre { font-weight: 600; font-size: 0.875rem; color: $dark; }
-    .rol-app-desc   { font-size: 0.8rem; color: $text-gray; margin-top: 0.125rem; }
   }
 }
 
@@ -635,9 +707,12 @@ $error: #dc2626;
   }
 
   .table-container { overflow-x: auto; }
+
   .page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+
   .modal-content { max-width: 100%; margin: 0; border-radius: 16px 16px 0 0; }
-  .tab-btn { padding: 0.625rem 1rem; font-size: 0.85rem; }
+
+  .checkbox-grid { grid-template-columns: 1fr; }
 
   .pagination {
     flex-direction: column;

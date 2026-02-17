@@ -1,0 +1,256 @@
+<!-- src/app/modulos/Admin/gestion-roles/gestion-roles.html -->
+<app-navbar></app-navbar>
+
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h2>Gestión de Roles</h2>
+        <p class="page-subtitle">Administra los roles de aplicación y su mapeo con roles de base de datos</p>
+      </div>
+      <button class="btn btn-primary" (click)="openCreateModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Nuevo Rol
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>Total Roles</h3>
+          <div class="stat-value">{{ roles.length }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon success">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>Activos</h3>
+          <div class="stat-value">{{ rolesActivos }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon blue">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7M4 7c0-2 1-3 3-3h10c2 0 3 1 3 3M4 7h16"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>Con Roles BD</h3>
+          <div class="stat-value">{{ rolesConBd }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-section">
+      <div class="search-box">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" class="form-input"
+               placeholder="Buscar por nombre o descripción..."
+               [(ngModel)]="searchTerm" (input)="applyFilters()" />
+      </div>
+
+      <select class="form-select" [(ngModel)]="filterActivo" (change)="applyFilters()">
+        <option value="">Todos los estados</option>
+        <option value="true">Activos</option>
+        <option value="false">Inactivos</option>
+      </select>
+    </div>
+
+    <!-- Tabla -->
+    <div class="table-container">
+      <table class="table">
+        <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Roles de BD</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let rol of rolesPaginados">
+          <td><strong>{{ rol.nombre }}</strong></td>
+          <td>{{ rol.descripcion || '—' }}</td>
+          <td>
+            <div class="roles-container">
+              <span class="role-bd-badge" *ngFor="let rb of rol.rolesBd">{{ rb }}</span>
+              <span class="text-muted" *ngIf="!rol.rolesBd?.length">Sin mapeo</span>
+            </div>
+          </td>
+          <td>
+              <span class="badge" [ngClass]="rol.activo ? 'success' : 'danger'">
+                <span class="status-dot"></span>
+                {{ rol.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <label class="toggle-switch" [title]="rol.activo ? 'Desactivar' : 'Activar'">
+                <input type="checkbox" [checked]="rol.activo" (change)="toggleEstado(rol)">
+                <span class="toggle-slider"></span>
+              </label>
+
+              <button class="btn-icon" (click)="openEditModal(rol)" title="Editar">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <tr *ngIf="rolesPaginados.length === 0">
+          <td colspan="5" class="empty-state">
+            <div class="empty-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <p>No se encontraron roles</p>
+            <small>Intenta ajustar los filtros o crear un nuevo rol</small>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="pagination" *ngIf="rolesFiltrados.length > 0">
+      <div class="pagination-info">
+        Mostrando {{ (currentPage - 1) * pageSize + 1 }} -
+        {{ Math.min(currentPage * pageSize, rolesFiltrados.length) }}
+        de {{ rolesFiltrados.length }} roles
+      </div>
+      <div class="pagination-controls">
+        <button class="page-btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+
+        <button *ngFor="let page of getPageNumbers()"
+                class="page-btn"
+                [class.active]="page === currentPage"
+                (click)="changePage(page)">
+          {{ page }}
+        </button>
+
+        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════ MODAL CREAR / EDITAR ════════════════════ -->
+<div class="modal-overlay" *ngIf="showFormModal" (click)="closeFormModal()">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h3>{{ editando ? 'Editar Rol' : 'Nuevo Rol de Aplicación' }}</h3>
+      <button class="close-btn" (click)="closeFormModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="form-section">
+        <div class="section-title">Datos del Rol</div>
+        <div class="section-description">Información básica del rol de aplicación</div>
+      </div>
+
+      <div class="form-group" [formGroup]="form">
+        <label>Nombre <span class="required">*</span></label>
+        <input type="text" class="form-input" formControlName="nombre"
+               placeholder="Ej: ADMIN, EVALUADOR..." />
+        <div class="error-message"
+             *ngIf="form.get('nombre')?.invalid && form.get('nombre')?.touched">
+          El nombre es obligatorio (mín. 2 caracteres).
+        </div>
+      </div>
+
+      <div class="form-group" [formGroup]="form">
+        <label>Descripción</label>
+        <textarea class="form-input" formControlName="descripcion"
+                  rows="2" placeholder="Descripción opcional del rol"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="checkbox-item field-inline" [formGroup]="form">
+          <input type="checkbox" formControlName="activo" />
+          <span>Rol activo</span>
+        </label>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title">Roles de Base de Datos</div>
+        <div class="section-description">
+          Selecciona los roles de PostgreSQL (<code>pg_roles</code>, prefijo <code>role_*</code>) asociados:
+        </div>
+      </div>
+
+      <div class="checkbox-grid" *ngIf="rolesBdDisponibles.length > 0; else noRolesBd">
+        <label class="checkbox-item" *ngFor="let rb of rolesBdDisponibles">
+          <input type="checkbox"
+                 [checked]="isRolBdSelected(rb)"
+                 (change)="toggleRolBd(rb, $event)" />
+          <span>{{ rb }}</span>
+        </label>
+      </div>
+
+      <ng-template #noRolesBd>
+        <div class="empty-state-sm">
+          No hay roles de BD disponibles en <code>pg_roles</code>.
+        </div>
+      </ng-template>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeFormModal()">Cancelar</button>
+      <button class="btn btn-primary" (click)="save()" [disabled]="isSaving">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        {{ isSaving ? 'Guardando...' : 'Guardar Rol' }}
+      </button>
+    </div>
+
+  </div>
+</div>
