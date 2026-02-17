@@ -117,21 +117,52 @@ public class EmailService {
 
     private String construirEmailCredenciales(String usuario, String clave) {
         return """
-            <!DOCTYPE html>
-            <html>
-            <body style="font-family: Arial;">
-                <h2>Bienvenido al Sistema UTEQ</h2>
-                <p>Estas son tus credenciales de acceso:</p>
-
-                <p><strong>Usuario:</strong> %s</p>
-                <p><strong>Contraseña:</strong> %s</p>
-
-                <p>Ingresa en:</p>
-                <p><strong>http://localhost:4200/login</strong></p>
-
-                <p style="color:#777;">Correo automático, no responder.</p>
-            </body>
-            </html>
+                <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta charset="UTF-8">
+                            <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&display=swap" rel="stylesheet">
+                        </head>
+                        <body style="font-family: Arial; margin: 0; padding: 0; background: #f0f2f5;">
+                            <div style="max-width: 480px; margin: 40px auto; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.12);">
+                
+                                <div style="background: linear-gradient(135deg, #1a1a2e 0%%, #16213e 100%%); padding: 28px 32px 24px; text-align: center;">
+                                    <div style="font-size: 32px; margin-bottom: 8px;">🎓</div>
+                                    <h2 style="color: #fff; font-family: 'Sora', Arial, sans-serif; font-size: 18px; margin: 0; font-weight: 700;">
+                                        Bienvenido al Sistema UTEQ
+                                    </h2>
+                                </div>
+                
+                                <div style="background: #ffffff; padding: 32px;">
+                                    <p style="color: #555; font-size: 14px; text-align: center; margin: 0 0 20px;">
+                                        Estas son tus credenciales de acceso:
+                                    </p>
+                
+                                    <div style="background: #f2faf4; border: 1px solid #c8e6c9; border-radius: 10px; overflow: hidden;">
+                                        <div style="display: flex; align-items: center; padding: 14px 20px; gap: 14px;">
+                                            <span style="font-size: 20px;">👤</span>
+                                            <div>
+                                                <div style="font-size: 11px; color: #5a9e6f; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Usuario</div>
+                                                <div style="font-family: 'Sora', Arial, sans-serif; font-size: 15px; font-weight: 600; color: #1a1a2e;">%s</div>
+                                            </div>
+                                        </div>
+                                        <div style="border-top: 1px solid #c8e6c9; display: flex; align-items: center; padding: 14px 20px; gap: 14px;">
+                                            <span style="font-size: 20px;">🔑</span>
+                                            <div>
+                                                <div style="font-size: 11px; color: #5a9e6f; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Contraseña</div>
+                                                <div style="font-family: 'Sora', Arial, sans-serif; font-size: 15px; font-weight: 600; color: #1a1a2e;">%s</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                
+                                <div style="background: #ffffff; padding: 0 32px 24px; text-align: center;">
+                                    <p style="color: #aaa; font-size: 12px; margin: 0;">Correo automático, no responder.</p>
+                                </div>
+                
+                            </div>
+                        </body>
+                        </html>
             """.formatted(usuario, clave);
     }
 

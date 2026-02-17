@@ -42,7 +42,6 @@ public class VicerrectoradoController {
     @GetMapping("/prepostulaciones/{id}/documentos")
     public ResponseEntity<Map<String, String>> obtenerDocumentos(@PathVariable Long id) {
         Prepostulacion p = prepostulacionService.obtenerPorId(id);
-
         return ResponseEntity.ok(Map.of(
                 "cedula", p.getUrlCedula() != null ? p.getUrlCedula() : "",
                 "foto", p.getUrlFoto() != null ? p.getUrlFoto() : "",

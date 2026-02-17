@@ -18,7 +18,7 @@ public class AdminPrepostulacionController {
     private final PrepostulacionService prepostulacionService;
 
     /**
-     * Listar todas las prepostulaciones con URLs de documentos
+     * Listar todas las prepostulaciones con URL de documentos
      * GET http://localhost:8080/api/admin/prepostulaciones
      */
     @GetMapping
