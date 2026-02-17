@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit,ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -63,7 +63,8 @@ export class SolicitarDocenteComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private solicitudService: SolicitudDocenteService
+    private solicitudService: SolicitudDocenteService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -100,11 +101,11 @@ export class SolicitarDocenteComponent implements OnInit {
   }
 
   cargarCatalogos(): void {
+    this.cdr.detectChanges();
     this.solicitudService.obtenerCarreras().subscribe({
       next: c => this.carreras = c,
       error: () => this.mostrarToast('error','Error','No se pudieron cargar las carreras.')
     });
-
     this.solicitudService.obtenerAreasConocimiento().subscribe({
       next: a => this.areas = a
     });
@@ -128,6 +129,8 @@ export class SolicitarDocenteComponent implements OnInit {
           console.log("MATERIAS RECIBIDAS 👉", m);
           this.materias = m;
           this.loadingMaterias = false;
+          this.cdr.detectChanges();
+
         },
         error: () => {
           this.mostrarToast('error','Error','No se pudieron cargar las materias.');
