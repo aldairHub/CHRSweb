@@ -6,121 +6,248 @@
     <header class="page-header">
       <div class="page-header__info">
         <h2 class="page-header__title">Nueva Solicitud de Personal</h2>
-        <p class="page-header__description">Complete el formulario para requerir un nuevo docente.</p>
+        <p class="page-header__description">
+          Complete el formulario para requerir un nuevo docente.
+        </p>
       </div>
-      <button class="btn btn--outline-back" (click)="cancelar()">
-        <i class="pi pi-arrow-left"></i> Volver
+
+      <button class="btn btn--outline-back" type="button" (click)="cancelar()">
+        Volver
       </button>
     </header>
 
-    <form class="form-card" (ngSubmit)="guardarSolicitud()" #formSolicitud="ngForm">
+    <!-- ⭐ FORM -->
+    <form
+      class="form-card"
+      #formSolicitud="ngForm"
+      (ngSubmit)="guardarSolicitud(formSolicitud)"
+    >
 
+      <!-- ======================= -->
+      <!-- INFO ACADÉMICA -->
+      <!-- ======================= -->
       <section class="form-section">
-        <div class="form-section__header">
-          <div class="form-section__icon">
-            <i class="pi pi-book"></i>
-          </div>
-          <h3 class="form-section__title">Información Académica</h3>
-        </div>
+
+        <h3>Información Académica</h3>
 
         <div class="form-grid form-grid--3">
+
+          <!-- Carrera -->
           <div class="form-group">
-            <label class="form-label">Carrera <span class="required">*</span></label>
-            <div class="select-wrapper">
-              <select class="form-input" [(ngModel)]="solicitud.id_carrera" name="id_carrera" required>
-                <option value="" disabled selected>Seleccione una carrera</option>
-                <option value="1">Ingeniería de Software</option>
-                <option value="2">Telemática</option>
-                <option value="3">Alimentos</option>
-              </select>
-            </div>
+            <label>Carrera *</label>
+            <select
+              class="form-input"
+              [(ngModel)]="solicitud.id_carrera"
+              name="id_carrera"
+              required
+              (change)="onCarreraChange()"
+            >
+              <option [ngValue]="null">Seleccione</option>
+              <option *ngFor="let c of carreras" [ngValue]="c.idCarrera">
+                {{ c.nombreCarrera }}
+              </option>
+            </select>
           </div>
 
+          <!-- Área -->
           <div class="form-group">
-            <label class="form-label">Área de Conocimiento <span class="required">*</span></label>
-            <div class="select-wrapper">
-              <select class="form-input" [(ngModel)]="solicitud.id_area" name="id_area" required>
-                <option value="" disabled selected>Seleccione el área</option>
-                <option value="1">Programación e Ingeniería</option>
-                <option value="2">Redes y Seguridad</option>
-              </select>
-            </div>
+            <label>Área *</label>
+            <select
+              class="form-input"
+              [(ngModel)]="solicitud.id_area"
+              name="id_area"
+              required
+            >
+              <option [ngValue]="null">Seleccione</option>
+              <option *ngFor="let a of areas" [ngValue]="a.idArea">
+                {{ a.nombreArea }}
+              </option>
+            </select>
           </div>
 
+          <!-- Materia -->
           <div class="form-group">
-            <label class="form-label">Materia / Asignatura <span class="required">*</span></label>
-            <div class="select-wrapper">
-              <select class="form-input" [(ngModel)]="solicitud.id_materia" name="id_materia" required>
-                <option value="" disabled selected>Seleccione la materia</option>
-                <option value="1">Desarrollo Web</option>
-                <option value="2">Aplicaciones Móviles</option>
-              </select>
-            </div>
+            <label>Materia *</label>
+            <select
+              class="form-input"
+              [(ngModel)]="solicitud.id_materia"
+              name="id_materia"
+              required
+            >
+              <option [ngValue]="null">Seleccione</option>
+              <option *ngFor="let m of materias" [ngValue]="m.idMateria">
+                {{ m.nombre }}
+              </option>
+            </select>
           </div>
 
+          <!-- Nivel -->
           <div class="form-group">
-            <label class="form-label">Nivel Académico <span class="required">*</span></label>
-            <div class="select-wrapper">
-              <select class="form-input" [(ngModel)]="solicitud.nivel_academico" name="nivel_academico" required>
-                <option value="" disabled selected>Seleccione nivel</option>
-                <option value="Tercer Nivel">Tercer Nivel (Ingeniería)</option>
-                <option value="Cuarto Nivel">Cuarto Nivel (Maestría/PhD)</option>
-              </select>
-            </div>
+            <label>Nivel Académico *</label>
+            <select
+              class="form-input"
+              [(ngModel)]="solicitud.nivel_academico"
+              name="nivel_academico"
+              required
+            >
+              <option value="">Seleccione</option>
+              <option *ngFor="let n of nivelesAcademicos" [value]="n.value">
+                {{ n.label }}
+              </option>
+            </select>
           </div>
+
         </div>
       </section>
 
-      <div class="divider"></div>
+      <hr>
 
+      <!-- ======================= -->
+      <!-- DETALLES -->
+      <!-- ======================= -->
       <section class="form-section">
-        <div class="form-section__header">
-          <div class="form-section__icon">
-            <i class="pi pi-briefcase"></i>
-          </div>
-          <h3 class="form-section__title">Detalles de la Vacante</h3>
-        </div>
+
+        <h3>Detalles</h3>
 
         <div class="form-grid form-grid--3">
+
           <div class="form-group">
-            <label class="form-label">Cantidad <span class="required">*</span></label>
-            <input type="number" class="form-input" [(ngModel)]="solicitud.cantidad_docentes" name="cantidad_docentes" min="1" placeholder="Ej. 1" required>
+            <label>Cantidad *</label>
+            <input
+              type="number"
+              class="form-input"
+              [(ngModel)]="solicitud.cantidad_docentes"
+              name="cantidad_docentes"
+              min="1"
+              required
+            >
           </div>
 
           <div class="form-group">
-            <label class="form-label">Exp. Profesional (Años) <span class="required">*</span></label>
-            <input type="number" class="form-input" [(ngModel)]="solicitud.experiencia_profesional_min" name="experiencia_profesional_min" min="0" placeholder="0" required>
+            <label>Exp Profesional *</label>
+            <input
+              type="number"
+              class="form-input"
+              [(ngModel)]="solicitud.experiencia_profesional_min"
+              name="experiencia_profesional_min"
+              required
+            >
           </div>
 
           <div class="form-group">
-            <label class="form-label">Exp. Docente (Años) <span class="required">*</span></label>
-            <input type="number" class="form-input" [(ngModel)]="solicitud.experiencia_docente_min" name="experiencia_docente_min" min="0" placeholder="0" required>
+            <label>Exp Docente *</label>
+            <input
+              type="number"
+              class="form-input"
+              [(ngModel)]="solicitud.experiencia_docente_min"
+              name="experiencia_docente_min"
+              required
+            >
           </div>
+
         </div>
 
-        <div class="form-grid form-grid--1">
+        <div class="form-grid">
+
+          <!-- ✅ JUSTIFICACIÓN PRO -->
           <div class="form-group">
-            <label class="form-label">Justificación <span class="required">*</span></label>
-            <textarea class="form-input" rows="3" [(ngModel)]="solicitud.justificacion" name="justificacion" placeholder="Explique la necesidad de esta contratación..." required></textarea>
+
+            <div class="label-row">
+              <label>Justificación *</label>
+
+              <span
+                class="char-counter"
+                [ngClass]="{
+                  'ok': (solicitud.justificacion || '').trim().length >= 20,
+                  'warn': (solicitud.justificacion || '').trim().length > 0 &&
+                          (solicitud.justificacion || '').trim().length < 20
+                }"
+              >
+                {{ (solicitud.justificacion || '').trim().length }}/20
+              </span>
+            </div>
+
+            <textarea
+              rows="3"
+              class="form-input textarea-modern"
+              [(ngModel)]="solicitud.justificacion"
+              name="justificacion"
+              required
+            ></textarea>
+
+            <div
+              class="field-hint"
+              *ngIf="
+                solicitud.justificacion &&
+                (solicitud.justificacion || '').trim().length < 20
+              "
+            >
+              Mínimo 20 caracteres requeridos.
+            </div>
+
           </div>
 
+          <!-- Observaciones -->
           <div class="form-group">
-            <label class="form-label">Observaciones</label>
-            <textarea class="form-input" rows="2" [(ngModel)]="solicitud.observaciones" name="observaciones" placeholder="Detalles extra (horarios, requisitos específicos, etc.)"></textarea>
+            <label>Observaciones</label>
+            <textarea
+              rows="2"
+              class="form-input"
+              [(ngModel)]="solicitud.observaciones"
+              name="observaciones"
+            ></textarea>
           </div>
+
         </div>
+
       </section>
 
+      <!-- ======================= -->
+      <!-- BOTONES -->
+      <!-- ======================= -->
       <div class="form-actions">
+
         <button type="button" class="btn btn--cancel" (click)="cancelar()">
           Cancelar
         </button>
-        <button type="submit" class="btn btn--primary" [disabled]="!formSolicitud.form.valid">
-          <i class="pi pi-save"></i> Guardar Solicitud
+
+        <button
+          type="submit"
+          class="btn btn--primary"
+          [disabled]="!formSolicitud.form.valid"
+        >
+          Guardar Solicitud
         </button>
+
       </div>
 
     </form>
+
+  </div>
+</div>
+
+<!-- ======================= -->
+<!-- TOAST -->
+<!-- ======================= -->
+<div
+  class="toast-container"
+  *ngIf="showToast"
+  [ngClass]="toastType"
+>
+  <div class="toast-content">
+
+    <div class="toast-icon">
+      <span *ngIf="toastType === 'success'">✔</span>
+      <span *ngIf="toastType === 'error'">✖</span>
+    </div>
+
+    <div class="toast-text">
+      <strong>{{ toastTitle }}</strong>
+      <p>{{ toastMessage }}</p>
+    </div>
+
+    <button class="toast-close" (click)="cerrarToast()">✕</button>
+
   </div>
 </div>
 

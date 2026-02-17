@@ -1,4 +1,10 @@
 // VARIABLES DE COLOR (Tema UTEQ)
+$error: #dc2626;
+$primary: #00A63E;
+$dark: #016630;
+$border: #B9F8CF;
+$text-gray: #536b50;
+
 $uteq-green: #16a34a;
 $uteq-green-dark: #0d5e2f;
 $uteq-green-light: #dcfce7;
@@ -166,3 +172,168 @@ $border-color: #e5e7eb;
     &:hover { background: $uteq-green-light; }
   }
 }
+/* ======================= */
+/* TOAST */
+/* ======================= */
+
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  min-width: 320px;
+  max-width: 420px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  animation: toastSlideIn 0.35s ease;
+  font-family: inherit;
+}
+
+.toast-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+/* SUCCESS */
+.toast-container.success {
+  background: #e8f7ee;
+  border-left: 5px solid #22c55e;
+  color: #166534;
+}
+
+/* ERROR */
+.toast-container.error {
+  background: #fdecec;
+  border-left: 5px solid #ef4444;
+  color: #7f1d1d;
+}
+
+.toast-icon {
+  font-size: 18px;
+  margin-top: 2px;
+}
+
+.toast-text strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.toast-text p {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.toast-close {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.toast-close:hover {
+  opacity: 1;
+}
+
+/* ANIMACIÓN */
+@keyframes toastSlideIn {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+// ==========================================
+// TEXTAREA MODERNO
+// ==========================================
+
+.textarea-modern {
+  resize: vertical;
+  min-height: 90px;
+  font-family: inherit;
+  line-height: 1.45;
+}
+
+// ==========================================
+// LABEL ROW
+// ==========================================
+
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+// ==========================================
+// CHAR COUNTER
+// ==========================================
+
+.char-counter {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  transition: all 0.25s ease;
+
+  &.warn {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  &.ok {
+    background: #dcfce7;
+    color: #166534;
+  }
+}
+
+// ==========================================
+// FIELD HINT
+// ==========================================
+
+.field-hint {
+  font-size: 0.78rem;
+  color: $error;
+  margin-top: 0.35rem;
+  font-weight: 500;
+  animation: fadeInSoft 0.2s ease;
+}
+
+// ==========================================
+// INPUT FOCUS IMPROVEMENT
+// ==========================================
+
+.form-input {
+  transition: all 0.18s ease;
+
+  &:focus {
+    transform: translateY(-1px);
+  }
+}
+
+// ==========================================
+// SOFT ANIMATION
+// ==========================================
+
+@keyframes fadeInSoft {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

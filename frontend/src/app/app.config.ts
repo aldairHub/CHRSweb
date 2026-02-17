@@ -1,15 +1,20 @@
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import {provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
+import {provideHttpClient, withInterceptorsFromDi,withInterceptors } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
 import { routes } from './app.routes';
+import {authInterceptor} from './services/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
-    provideHttpClient(),
-    importProvidersFrom(FormsModule), // 👈 ESTA ES LA LÍNEA CORRECTA
-    provideHttpClient(withInterceptorsFromDi())
+
+    provideHttpClient(
+      withInterceptors([authInterceptor])
+    ),
+
+    importProvidersFrom(FormsModule)
   ]
 };
+

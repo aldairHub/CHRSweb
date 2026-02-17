@@ -2,72 +2,71 @@
 
 <div class="main-container">
 
+  <!-- ================= HEADER ================= -->
   <div class="page-header">
     <div>
       <h1>Panel de Reportes e Indicadores</h1>
-      <p>Resumen estadístico del proceso de selección docente</p>
+      <p>Resumen de solicitudes de docentes</p>
     </div>
-    <button class="btn-print" (click)="imprimir()">🖨️ Imprimir Resumen</button>
+
+    <button class="btn-print" (click)="imprimir()">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6v-7z"
+              stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Imprimir Resumen
+    </button>
   </div>
 
-  <div class="kpi-grid">
-    <div class="kpi-card" *ngFor="let kpi of kpis" [ngClass]="kpi.color">
-      <div class="kpi-info">
-        <h3>{{ kpi.valor }}</h3>
-        <span>{{ kpi.titulo }}</span>
-      </div>
-      <div class="kpi-icon">{{ kpi.icono }}</div>
+  <!-- ================= SOLICITUDES ================= -->
+  <div class="card-box reports-section">
+    <div class="card-header">
+      <h2>Solicitudes de Docentes</h2>
     </div>
-  </div>
 
-  <div class="content-grid">
+    <div class="file-list">
 
-    <div class="card-box reports-section">
-      <div class="card-header">
-        <h2>📂 Documentos Generados</h2>
-        <button class="btn-link">Ver todos</button>
-      </div>
+      <div class="file-item" *ngFor="let rep of reportesRecientes">
 
-      <div class="file-list">
-        <div class="file-item" *ngFor="let rep of reportesRecientes">
-          <div class="file-icon" [ngClass]="rep.tipo">
-            {{ rep.tipo === 'pdf' ? 'PDF' : 'XLS' }}
-          </div>
-          <div class="file-details">
-            <span class="file-name">{{ rep.nombre }}</span>
-            <span class="file-meta">{{ rep.fecha }} • {{ rep.peso }}</span>
-          </div>
-          <button class="btn-download" (click)="descargar(rep.nombre)">⬇️</button>
+        <div class="file-icon pdf">DOC</div>
+
+        <div class="file-details">
+          <span class="file-name">{{ rep.nombre }}</span>
+          <span class="file-meta">{{ rep.fecha }}</span>
         </div>
-      </div>
-    </div>
 
-    <div class="card-box stats-section">
-      <div class="card-header">
-        <h2>📊 Promedio por Área</h2>
-      </div>
+        <div class="file-actions">
 
-      <div class="chart-container">
-        <div class="chart-row" *ngFor="let item of rendimientoPorArea">
-          <div class="chart-label">
-            <span>{{ item.area }}</span>
-            <span>{{ item.puntaje }}%</span>
-          </div>
-          <div class="progress-bg">
-            <div class="progress-bar"
-                 [style.width.%]="item.puntaje"
-                 [style.background-color]="item.color">
-            </div>
-          </div>
+          <!-- VER -->
+          <button class="btn-action" (click)="ver(rep.id)" title="Ver">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"
+                    stroke-width="1.8"/>
+              <circle cx="12" cy="12" r="3" stroke-width="1.8"/>
+            </svg>
+          </button>
+
+          <!-- DESCARGAR -->
+          <button class="btn-action" (click)="descargar(rep.id)" title="Descargar">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 3v12M7 10l5 5 5-5M5 21h14"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"/>
+            </svg>
+          </button>
+
         </div>
       </div>
 
-      <div class="alert-box">
-        ℹ️ El área de <strong>Inteligencia Artificial</strong> tiene el promedio más bajo.
+      <!-- vacío -->
+      <div *ngIf="reportesRecientes.length === 0" class="empty">
+        No hay solicitudes registradas.
       </div>
-    </div>
 
+    </div>
   </div>
+
 </div>
 
 <app-footer></app-footer>

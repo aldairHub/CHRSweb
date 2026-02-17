@@ -185,3 +185,45 @@
   align-items: center;
   gap: 8px;
 }
+/* ===== SVG FIX ===== */
+svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+}
+
+/* ===== acciones archivos ===== */
+.file-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-action {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: #f3f4f6;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .2s;
+
+  &:hover {
+    background: #e5e7eb;
+    transform: translateY(-1px);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* ===== botón print ===== */
+.btn-print svg {
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+}

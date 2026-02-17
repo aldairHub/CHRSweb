@@ -368,4 +368,21 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         a.setEstado(estado);
         autoridadRepository.save(a);
     }
+
+    @Override
+    public Long obtenerIdAutoridadPorUsuarioApp(String usuarioApp) {
+
+        if (usuarioApp == null || usuarioApp.isBlank()) {
+            throw new RuntimeException("usuarioApp es obligatorio");
+        }
+
+        AutoridadAcademica autoridad = autoridadRepository
+                .findByUsuario_UsuarioApp(usuarioApp)
+                .orElseThrow(() ->
+                        new RuntimeException("No existe autoridad para usuarioApp: " + usuarioApp)
+                );
+
+        return autoridad.getIdAutoridad();
+    }
+
 }

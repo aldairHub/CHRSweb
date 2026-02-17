@@ -1,54 +1,90 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common'; // <--- OBLIGATORIO para que funcione *ngFor
-import { NavbarComponent } from '../../../component/navbar'; // Ajusta la ruta si es necesario
-import { FooterComponent } from '../../../component/footer'; // Ajusta la ruta si es necesario
+import { Component, OnInit,ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { NavbarComponent } from '../../../component/navbar';
+import { FooterComponent } from '../../../component/footer';
+import { HttpClient } from '@angular/common/http';
+
+interface SolicitudDto {
+  idSolicitud: number;
+  estadoSolicitud: string;
+  fechaSolicitud: string;
+  cantidadDocentes: number;
+}
+
+interface ReporteView {
+  id: number;
+  nombre: string;
+  fecha: string;
+  tipo: string;
+}
 
 @Component({
   selector: 'app-reportes',
   standalone: true,
-  imports: [
-    CommonModule,      // Sin esto, el *ngFor da error
-    NavbarComponent,   // Para <app-navbar>
-    FooterComponent    // Para <app-footer>
-  ],
-  templateUrl: './reportes.html', // Asegúrate que tu archivo HTML se llame así
+  imports: [CommonModule, NavbarComponent, FooterComponent],
+  templateUrl: './reportes.html',
   styleUrls: ['./reportes.scss']
 })
-export class ReportesComponent {
+export class ReportesComponent implements OnInit {
 
-  // 1. Datos para los cuadros de arriba (KPIs)
-  kpis = [
-    { titulo: 'Total Postulantes', valor: 45, icono: '👥', color: 'blue' },
-    { titulo: 'Aprobados', valor: 28, icono: '✅', color: 'green' },
-    { titulo: 'Rechazados', valor: 12, icono: '❌', color: 'red' },
-    { titulo: 'Pendientes', valor: 5, icono: '⏳', color: 'orange' }
-  ];
+  reportesRecientes: ReporteView[] = [];
 
-  // 2. Datos para la lista de archivos (PDF/Excel)
-  reportesRecientes = [
-    { nombre: 'Consolidado_2025.pdf', fecha: '08/02/2025', peso: '2.4 MB', tipo: 'pdf' },
-    { nombre: 'Nomina_Sistemas.xlsx', fecha: '07/02/2025', peso: '1.1 MB', tipo: 'excel' },
-    { nombre: 'Acta_Fase1.pdf', fecha: '05/02/2025', peso: '850 KB', tipo: 'pdf' },
-    { nombre: 'Asistencia.xlsx', fecha: '01/02/2025', peso: '500 KB', tipo: 'excel' },
-  ];
+  // ✅ BASE API CORRECTA
+  private apiUrl = 'http://localhost:8080/api';
 
-  // 3. Datos para las gráficas de barras (Lo que te daba error en la foto)
-  rendimientoPorArea = [
-    { area: 'Ingeniería de Software', puntaje: 85, color: '#1B5E20' }, // Verde oscuro
-    { area: 'Redes y Telecom.', puntaje: 60, color: '#43a047' },       // Verde medio
-    { area: 'Base de Datos', puntaje: 75, color: '#2e7d32' },          // Verde normal
-    { area: 'Inteligencia Art.', puntaje: 40, color: '#66bb6a' }       // Verde claro
-  ];
+  constructor(private http: HttpClient,private cdr: ChangeDetectorRef) {}
 
-  constructor() {}
+  ngOnInit(): void {
+    this.cargarSolicitudes();
+  }
 
-  // Función para el botón de imprimir
+  // 🔥 CARGAR DESDE BD (FIXED)
+  cargarSolicitudes() {
+    this.http.get<SolicitudDto[]>(`${this.apiUrl}/solicitudes-docente`)
+      .subscribe({
+        next: (data: SolicitudDto[]) => {
+
+          this.reportesRecientes = data.map(s => ({
+            id: s.idSolicitud,
+            nombre: `Solicitud #${s.idSolicitud}`,
+            fecha: new Date(s.fechaSolicitud).toLocaleDateString(),
+            tipo: 'pdf'
+          }));
+          this.cdr.detectChanges();
+          console.log('Solicitudes:', this.reportesRecientes);
+        },
+        error: (err: any) => {
+          console.error('Error cargando solicitudes', err);
+        }
+      });
+  }
+
   imprimir() {
     window.print();
   }
 
-  // Función simulada de descarga
-  descargar(archivo: string) {
-    alert('Descargando: ' + archivo);
+  // 👁 VER PDF EN NUEVA PESTAÑA
+  ver(id: number) {
+    window.open(`${this.apiUrl}/solicitudes-docente/${id}/reporte-pdf`, '_blank');
   }
+
+
+
+
+  // ⬇️ DESCARGAR PDF (MISMO ENDPOINT)
+  descargar(id: number) {
+    this.http.get(
+      `${this.apiUrl}/solicitudes-docente/${id}/reporte-pdf`,
+      { responseType: 'blob' }
+    ).subscribe(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `solicitud-${id}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
+  }
+
+
 }

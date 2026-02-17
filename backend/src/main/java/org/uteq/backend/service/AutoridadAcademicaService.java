@@ -21,4 +21,5 @@ public interface AutoridadAcademicaService {
     AutoridadRegistroResponseDTO registrarAutoridad(AutoridadRegistroRequestDTO dto);
 
     void cambiarEstado(Long idAutoridad, Boolean estado);
+    Long obtenerIdAutoridadPorUsuarioApp(String usuarioApp);
 }

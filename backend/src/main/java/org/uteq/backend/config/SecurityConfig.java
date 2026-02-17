@@ -32,11 +32,14 @@ public class SecurityConfig {
                                 "/api/auth/login",
                                 "/api/registro/**",
                                 "/api/prepostulacion/**",
+                                "/api/carreras",
                                 "/api/carreras/**",
                                 "/api/facultades/**",
                                 "/api/facultades",
                                 "/api/materias/**",
                                 "/api/materias",
+                                "/api/areas-conocimiento",
+                                "/api/areas-conocimiento/**",
                                 "/uploads/**",
                                 "/api/verificacion/enviar",
                                 "/api/verificacion/validar",
@@ -51,8 +54,10 @@ public class SecurityConfig {
                                 "/api/roles-usuario",
                                 "/api/roles-usuario/**",
                                 "/api/vicerrectorado/",
-                                "/api/vicerrectorado/**"
-                                ).permitAll()
+                                "/api/vicerrectorado/**",
+                                "/api/solicitudes-docente/",
+                                "/api/solicitudes-docente/**"
+                        ).permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/demo/**").permitAll()
                         .anyRequest().authenticated()
