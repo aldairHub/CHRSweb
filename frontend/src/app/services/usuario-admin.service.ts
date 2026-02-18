@@ -1,7 +1,4 @@
 // src/app/services/usuario-admin.service.ts
-//
-// Nuevo servicio para la pantalla "Gestión de Usuarios" (pestañas Usuarios / Autoridades).
-// Reemplaza el uso de autoridad-academica.service.ts en gestion-usuarios.
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -32,41 +29,94 @@ export interface AutoridadConRolesDTO {
   rolesApp: RolAppDTO[];
 }
 
+// Payload exacto que acepta AutoridadRegistroRequestDTO del backend
+export interface AutoridadCreatePayload {
+  nombres: string;
+  apellidos: string;
+  correo: string;
+  fechaNacimiento: string | null;
+  idInstitucion: number | null;
+  rolesApp: string[];        // nombres de roles, no IDs
+  idsRolAutoridad: number[];
+}
+
+// Payload para POST /api/admin/usuarios → sp_registrar_usuario_simple
+// Genera credenciales automáticamente y envía correo
+export interface UsuarioCreatePayload {
+  correo: string;
+  nombres: string;
+  apellidos: string;
+  rolesApp: string[];        // nombres de roles, no IDs
+}
+
 @Injectable({ providedIn: 'root' })
 export class UsuarioAdminService {
-  private readonly api = 'http://localhost:8080/api/admin';
+
+  private readonly api            = 'http://localhost:8080/api/admin';
+  private readonly apiAutoridades = 'http://localhost:8080/api/autoridades-academicas';
 
   constructor(private http: HttpClient) {}
 
-  // ─── Usuarios ───────────────────────────────────────────────
+  // --- USUARIOS: /api/admin/usuarios --------------------------
 
   listarUsuarios(): Observable<UsuarioConRolesDTO[]> {
     return this.http.get<UsuarioConRolesDTO[]>(`${this.api}/usuarios`);
   }
 
+  /**
+   * POST /api/admin/usuarios
+   * Usa sp_registrar_usuario_simple: genera credenciales, crea user en PG,
+   * asigna roles BD y envia correo automaticamente.
+   */
+  crearUsuario(payload: UsuarioCreatePayload): Observable<any> {
+    return this.http.post(`${this.api}/usuarios`, payload);
+  }
+
+  /** PATCH /api/admin/usuarios/{id}/estado?activo=true|false */
   cambiarEstadoUsuario(id: number, activo: boolean): Observable<void> {
-    return this.http.patch<void>(`${this.api}/usuarios/${id}/estado`, null, {
-      params: { activo: String(activo) }
-    });
+    return this.http.patch<void>(
+      `${this.api}/usuarios/${id}/estado`,
+      null,
+      { params: { activo: String(activo) } }
+    );
   }
 
+  /** PUT /api/admin/usuarios/{id}/roles — body: { idsRolApp: [...] } */
   actualizarRolesUsuario(id: number, idsRolApp: number[]): Observable<UsuarioConRolesDTO> {
-    return this.http.put<UsuarioConRolesDTO>(`${this.api}/usuarios/${id}/roles`, { idsRolApp });
+    return this.http.put<UsuarioConRolesDTO>(
+      `${this.api}/usuarios/${id}/roles`,
+      { idsRolApp }
+    );
   }
 
-  // ─── Autoridades ────────────────────────────────────────────
+  // --- AUTORIDADES: /api/admin/autoridades --------------------
 
   listarAutoridades(): Observable<AutoridadConRolesDTO[]> {
     return this.http.get<AutoridadConRolesDTO[]>(`${this.api}/autoridades`);
   }
 
-  cambiarEstadoAutoridad(id: number, estado: boolean): Observable<void> {
-    return this.http.patch<void>(`${this.api}/autoridades/${id}/estado`, null, {
-      params: { estado: String(estado) }
-    });
+  /**
+   * POST /api/autoridades-academicas/registro
+   * Genera usuario, crea credenciales y envia correo.
+   */
+  crearAutoridad(payload: AutoridadCreatePayload): Observable<any> {
+    return this.http.post(`${this.apiAutoridades}/registro`, payload);
   }
 
+  /** PATCH /api/admin/autoridades/{id}/estado?estado=true|false */
+  cambiarEstadoAutoridad(id: number, estado: boolean): Observable<void> {
+    return this.http.patch<void>(
+      `${this.api}/autoridades/${id}/estado`,
+      null,
+      { params: { estado: String(estado) } }
+    );
+  }
+
+  /** PUT /api/admin/autoridades/{id}/roles — body: { idsRolApp: [...] } */
   actualizarRolesAutoridad(id: number, idsRolApp: number[]): Observable<AutoridadConRolesDTO> {
-    return this.http.put<AutoridadConRolesDTO>(`${this.api}/autoridades/${id}/roles`, { idsRolApp });
+    return this.http.put<AutoridadConRolesDTO>(
+      `${this.api}/autoridades/${id}/roles`,
+      { idsRolApp }
+    );
   }
 }

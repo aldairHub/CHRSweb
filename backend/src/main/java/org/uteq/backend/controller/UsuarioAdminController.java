@@ -1,10 +1,13 @@
 package org.uteq.backend.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.uteq.backend.dto.ActualizarRolesAppDTO;
 import org.uteq.backend.dto.AutoridadConRolesDTO;
+import org.uteq.backend.dto.RegistroUsuarioDTO;
 import org.uteq.backend.dto.UsuarioConRolesDTO;
+import org.uteq.backend.service.AutoridadAcademicaService;
 import org.uteq.backend.service.UsuarioAdminService;
 
 import java.util.List;
@@ -32,9 +35,12 @@ import java.util.List;
 public class UsuarioAdminController {
 
     private final UsuarioAdminService usuarioAdminService;
+    private final AutoridadAcademicaService autoridadAcademicaService;
 
-    public UsuarioAdminController(UsuarioAdminService usuarioAdminService) {
+    public UsuarioAdminController(UsuarioAdminService usuarioAdminService,
+                                  AutoridadAcademicaService autoridadAcademicaService) {
         this.usuarioAdminService = usuarioAdminService;
+        this.autoridadAcademicaService = autoridadAcademicaService;
     }
 
     // ─── Pestaña USUARIOS ──────────────────────────────────────
@@ -43,6 +49,24 @@ public class UsuarioAdminController {
     @GetMapping("/usuarios")
     public List<UsuarioConRolesDTO> listarUsuarios() {
         return usuarioAdminService.listarUsuariosConRoles();
+    }
+
+    /**
+     * Crea un usuario simple desde el panel de administración.
+     * Delega a AutoridadAcademicaService.registrarUsuario() que usa
+     * sp_registrar_usuario_simple: genera credenciales automáticamente,
+     * crea el usuario en PostgreSQL, asigna roles BD y envía correo.
+     *
+     * Body: { correo, cedula, nombres, apellidos, rolesApp: string[] }
+     */
+    @PostMapping("/usuarios")
+    public ResponseEntity<?> crearUsuario(@RequestBody RegistroUsuarioDTO dto) {
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(autoridadAcademicaService.registrarUsuario(dto));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     /** Activa / desactiva un usuario. */

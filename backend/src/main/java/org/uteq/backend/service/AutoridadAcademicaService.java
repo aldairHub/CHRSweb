@@ -5,6 +5,8 @@ import org.uteq.backend.dto.AutoridadAcademicaRequestDTO;
 import org.uteq.backend.dto.AutoridadAcademicaResponseDTO;
 import org.uteq.backend.dto.AutoridadRegistroRequestDTO;
 import org.uteq.backend.dto.AutoridadRegistroResponseDTO;
+import org.uteq.backend.dto.RegistroResponseDTO;
+import org.uteq.backend.dto.RegistroUsuarioDTO;
 
 public interface AutoridadAcademicaService {
 
@@ -19,6 +21,9 @@ public interface AutoridadAcademicaService {
     void eliminar(Long id);
 
     AutoridadRegistroResponseDTO registrarAutoridad(AutoridadRegistroRequestDTO dto);
+
+    /** Crea un usuario simple via SP: genera credenciales, crea user en PG, asigna roles BD, envía correo. */
+    RegistroResponseDTO registrarUsuario(RegistroUsuarioDTO dto);
 
     void cambiarEstado(Long idAutoridad, Boolean estado);
     Long obtenerIdAutoridadPorUsuarioApp(String usuarioApp);

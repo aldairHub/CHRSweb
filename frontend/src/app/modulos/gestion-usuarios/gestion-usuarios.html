@@ -10,9 +10,15 @@
         <h2>Gestión de Usuarios</h2>
         <p class="page-subtitle">Administra autoridades académicas y usuarios del sistema</p>
       </div>
+      <button class="btn btn-primary" (click)="openCreate()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        {{ activeTab === 'autoridades' ? 'Nueva Autoridad' : 'Nuevo Usuario' }}
+      </button>
     </div>
 
-    <!-- ── PESTAÑAS ─────────────────────────────────────────── -->
+    <!-- PESTAÑAS -->
     <div class="tabs">
       <button class="tab-btn" [class.active]="activeTab === 'autoridades'"
               (click)="activeTab = 'autoridades'; applyFiltersAutoridades()">
@@ -24,12 +30,8 @@
       </button>
     </div>
 
-    <!-- ════════════════════════════════════════════════════════ -->
-    <!-- PESTAÑA AUTORIDADES                                      -->
-    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- ═══════════ PESTAÑA AUTORIDADES ═══════════ -->
     <ng-container *ngIf="activeTab === 'autoridades'">
-
-      <!-- Stats -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-icon">
@@ -43,12 +45,10 @@
             <div class="stat-value">{{ autoridades.length }}</div>
           </div>
         </div>
-
         <div class="stat-card">
           <div class="stat-icon success">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
           </div>
           <div class="stat-content">
@@ -58,38 +58,27 @@
         </div>
       </div>
 
-      <!-- Filtros -->
       <div class="filters-section">
         <div class="search-box">
-          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none"
-               viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
-          <input type="text" class="form-input"
-                 placeholder="Buscar por nombre, apellido o correo..."
+          <input type="text" class="form-input" placeholder="Buscar por nombre, apellido o correo..."
                  [(ngModel)]="searchAutoridad" (input)="applyFiltersAutoridades()" />
         </div>
-
-        <select class="form-select" [(ngModel)]="filterEstadoAutoridad"
-                (change)="applyFiltersAutoridades()">
+        <select class="form-select" [(ngModel)]="filterEstadoAutoridad" (change)="applyFiltersAutoridades()">
           <option value="">Todos los estados</option>
           <option value="true">Activas</option>
           <option value="false">Inactivas</option>
         </select>
       </div>
 
-      <!-- Tabla autoridades -->
       <div class="table-container">
         <table class="table">
           <thead>
           <tr>
-            <th>Autoridad</th>
-            <th>Correo</th>
-            <th>Usuario App</th>
-            <th>Roles de Aplicación</th>
-            <th>Estado</th>
-            <th>Acciones</th>
+            <th>Autoridad</th><th>Correo</th><th>Usuario App</th>
+            <th>Roles de Aplicación</th><th>Estado</th><th>Acciones</th>
           </tr>
           </thead>
           <tbody>
@@ -105,8 +94,7 @@
             </td>
             <td>
                 <span class="badge" [ngClass]="a.estado ? 'success' : 'danger'">
-                  <span class="status-dot"></span>
-                  {{ a.estado ? 'Activa' : 'Inactiva' }}
+                  <span class="status-dot"></span>{{ a.estado ? 'Activa' : 'Inactiva' }}
                 </span>
             </td>
             <td>
@@ -115,7 +103,6 @@
                   <input type="checkbox" [checked]="a.estado" (change)="toggleEstadoAutoridad(a)">
                   <span class="toggle-slider"></span>
                 </label>
-
                 <button class="btn-icon" title="Editar roles" (click)="openRolesAutoridadModal(a)">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -125,7 +112,6 @@
               </div>
             </td>
           </tr>
-
           <tr *ngIf="autoridadesPaginadas.length === 0">
             <td colspan="6" class="empty-state">
               <div class="empty-icon">
@@ -142,43 +128,26 @@
         </table>
       </div>
 
-      <!-- Paginación autoridades -->
       <div class="pagination" *ngIf="autoridadesFiltradas.length > 0">
         <div class="pagination-info">
-          Mostrando {{ (pageAutoridad - 1) * pageSize + 1 }} -
-          {{ Math.min(pageAutoridad * pageSize, autoridadesFiltradas.length) }}
+          Mostrando {{ (pageAutoridad-1)*pageSize+1 }} - {{ Math.min(pageAutoridad*pageSize, autoridadesFiltradas.length) }}
           de {{ autoridadesFiltradas.length }} autoridades
         </div>
         <div class="pagination-controls">
-          <button class="page-btn" [disabled]="pageAutoridad === 1"
-                  (click)="pageAutoridad = pageAutoridad - 1">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
+          <button class="page-btn" [disabled]="pageAutoridad===1" (click)="pageAutoridad=pageAutoridad-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
           </button>
-
-          <button *ngFor="let p of getPageNums(totalPagesAutoridad)"
-                  class="page-btn"
-                  [class.active]="p === pageAutoridad"
-                  (click)="pageAutoridad = p">{{ p }}</button>
-
-          <button class="page-btn" [disabled]="pageAutoridad === totalPagesAutoridad"
-                  (click)="pageAutoridad = pageAutoridad + 1">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-            </svg>
+          <button *ngFor="let p of getPageNums(totalPagesAutoridad)" class="page-btn"
+                  [class.active]="p===pageAutoridad" (click)="pageAutoridad=p">{{ p }}</button>
+          <button class="page-btn" [disabled]="pageAutoridad===totalPagesAutoridad" (click)="pageAutoridad=pageAutoridad+1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
           </button>
         </div>
       </div>
-
     </ng-container>
 
-    <!-- ════════════════════════════════════════════════════════ -->
-    <!-- PESTAÑA USUARIOS                                         -->
-    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- ═══════════ PESTAÑA USUARIOS ═══════════ -->
     <ng-container *ngIf="activeTab === 'usuarios'">
-
-      <!-- Stats -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-icon">
@@ -192,12 +161,10 @@
             <div class="stat-value">{{ usuarios.length }}</div>
           </div>
         </div>
-
         <div class="stat-card">
           <div class="stat-icon success">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
           </div>
           <div class="stat-content">
@@ -207,38 +174,27 @@
         </div>
       </div>
 
-      <!-- Filtros -->
       <div class="filters-section">
         <div class="search-box">
-          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none"
-               viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
-          <input type="text" class="form-input"
-                 placeholder="Buscar por usuario o correo..."
+          <input type="text" class="form-input" placeholder="Buscar por usuario o correo..."
                  [(ngModel)]="searchUsuario" (input)="applyFiltersUsuarios()" />
         </div>
-
-        <select class="form-select" [(ngModel)]="filterEstadoUsuario"
-                (change)="applyFiltersUsuarios()">
+        <select class="form-select" [(ngModel)]="filterEstadoUsuario" (change)="applyFiltersUsuarios()">
           <option value="">Todos los estados</option>
           <option value="true">Activos</option>
           <option value="false">Inactivos</option>
         </select>
       </div>
 
-      <!-- Tabla usuarios -->
       <div class="table-container">
         <table class="table">
           <thead>
           <tr>
-            <th>Usuario App</th>
-            <th>Usuario BD</th>
-            <th>Correo</th>
-            <th>Roles de Aplicación</th>
-            <th>Estado</th>
-            <th>Acciones</th>
+            <th>Usuario App</th><th>Usuario BD</th><th>Correo</th>
+            <th>Roles de Aplicación</th><th>Estado</th><th>Acciones</th>
           </tr>
           </thead>
           <tbody>
@@ -254,8 +210,7 @@
             </td>
             <td>
                 <span class="badge" [ngClass]="u.activo ? 'success' : 'danger'">
-                  <span class="status-dot"></span>
-                  {{ u.activo ? 'Activo' : 'Inactivo' }}
+                  <span class="status-dot"></span>{{ u.activo ? 'Activo' : 'Inactivo' }}
                 </span>
             </td>
             <td>
@@ -264,7 +219,6 @@
                   <input type="checkbox" [checked]="u.activo" (change)="toggleEstadoUsuario(u)">
                   <span class="toggle-slider"></span>
                 </label>
-
                 <button class="btn-icon" title="Editar roles" (click)="openRolesUsuarioModal(u)">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -274,7 +228,6 @@
               </div>
             </td>
           </tr>
-
           <tr *ngIf="usuariosPaginados.length === 0">
             <td colspan="6" class="empty-state">
               <div class="empty-icon">
@@ -291,41 +244,30 @@
         </table>
       </div>
 
-      <!-- Paginación usuarios -->
       <div class="pagination" *ngIf="usuariosFiltrados.length > 0">
         <div class="pagination-info">
-          Mostrando {{ (pageUsuario - 1) * pageSize + 1 }} -
-          {{ Math.min(pageUsuario * pageSize, usuariosFiltrados.length) }}
+          Mostrando {{ (pageUsuario-1)*pageSize+1 }} - {{ Math.min(pageUsuario*pageSize, usuariosFiltrados.length) }}
           de {{ usuariosFiltrados.length }} usuarios
         </div>
         <div class="pagination-controls">
-          <button class="page-btn" [disabled]="pageUsuario === 1"
-                  (click)="pageUsuario = pageUsuario - 1">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
+          <button class="page-btn" [disabled]="pageUsuario===1" (click)="pageUsuario=pageUsuario-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
           </button>
-
-          <button *ngFor="let p of getPageNums(totalPagesUsuario)"
-                  class="page-btn"
-                  [class.active]="p === pageUsuario"
-                  (click)="pageUsuario = p">{{ p }}</button>
-
-          <button class="page-btn" [disabled]="pageUsuario === totalPagesUsuario"
-                  (click)="pageUsuario = pageUsuario + 1">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-            </svg>
+          <button *ngFor="let p of getPageNums(totalPagesUsuario)" class="page-btn"
+                  [class.active]="p===pageUsuario" (click)="pageUsuario=p">{{ p }}</button>
+          <button class="page-btn" [disabled]="pageUsuario===totalPagesUsuario" (click)="pageUsuario=pageUsuario+1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
           </button>
         </div>
       </div>
-
     </ng-container>
 
   </div>
 </div>
 
-<!-- ════════════════ MODAL EDICIÓN DE ROLES_APP ════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- MODAL EDICIÓN DE ROLES  (independiente, al nivel del body)  -->
+<!-- ═══════════════════════════════════════════════════════════ -->
 <div class="modal-overlay" *ngIf="showRolesModal" (click)="closeRolesModal()">
   <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
 
@@ -339,23 +281,18 @@
     </div>
 
     <div class="modal-body">
-
-      <!-- Info del sujeto -->
-      <div class="alert info" *ngIf="rolesModalTipo === 'autoridad' && selectedAutoridad">
+      <div class="alert info" *ngIf="rolesModalTipo==='autoridad' && selectedAutoridad">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
         <div>
           <strong>{{ selectedAutoridad.nombres }} {{ selectedAutoridad.apellidos }}</strong>
           <p>{{ selectedAutoridad.usuarioApp }} · {{ selectedAutoridad.correo }}</p>
         </div>
       </div>
-
-      <div class="alert info" *ngIf="rolesModalTipo === 'usuario' && selectedUsuario">
+      <div class="alert info" *ngIf="rolesModalTipo==='usuario' && selectedUsuario">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
         <div>
           <strong>{{ selectedUsuario.usuarioApp }}</strong>
@@ -363,38 +300,154 @@
         </div>
       </div>
 
-      <!-- Roles disponibles -->
       <div class="form-section">
         <div class="section-title">Roles Disponibles</div>
         <div class="section-description">Selecciona los roles de aplicación a asignar:</div>
       </div>
 
-      <div class="roles-app-list" *ngIf="rolesAppDisponibles.length > 0; else sinRoles">
+      <div class="roles-app-list" *ngIf="rolesAppDisponibles.length > 0; else sinRolesEdit">
         <label class="rol-app-item" *ngFor="let r of rolesAppDisponibles">
-          <input type="checkbox"
-                 [checked]="isRolSelected(r.idRolApp)"
-                 (change)="toggleRolApp(r.idRolApp, $event)" />
+          <input type="checkbox" [checked]="isRolSelected(r.idRolApp)" (change)="toggleRolApp(r.idRolApp, $event)" />
           <div class="rol-app-info">
             <div class="rol-app-nombre">{{ r.nombre }}</div>
             <div class="rol-app-desc" *ngIf="r.descripcion">{{ r.descripcion }}</div>
           </div>
         </label>
       </div>
-
-      <ng-template #sinRoles>
+      <ng-template #sinRolesEdit>
         <div class="empty-state-sm">No hay roles de aplicación configurados.</div>
       </ng-template>
-
     </div>
 
     <div class="modal-footer">
       <button class="btn btn-outline" (click)="closeRolesModal()">Cancelar</button>
       <button class="btn btn-primary" (click)="saveRoles()" [disabled]="isSaving">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-             stroke="currentColor" width="20" height="20">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
         </svg>
         {{ isSaving ? 'Guardando...' : 'Guardar Roles' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- MODAL CREAR (independiente — FUERA del modal de roles)          -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h3>{{ createModalTipo === 'autoridad' ? 'Nueva Autoridad Académica' : 'Nuevo Usuario' }}</h3>
+      <button class="close-btn" (click)="closeCreateModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- ── Formulario AUTORIDAD ─────────────────────────────── -->
+      <ng-container *ngIf="createModalTipo === 'autoridad'">
+
+        <div class="form-group">
+          <label>Nombres <span class="required">*</span></label>
+          <input type="text" class="form-input" [(ngModel)]="formAutoridad.nombres" placeholder="Ej: Juan Carlos" />
+        </div>
+        <div class="form-group">
+          <label>Apellidos <span class="required">*</span></label>
+          <input type="text" class="form-input" [(ngModel)]="formAutoridad.apellidos" placeholder="Ej: Pérez López" />
+        </div>
+        <div class="form-group">
+          <label>Correo electrónico <span class="required">*</span></label>
+          <input type="email" class="form-input" [(ngModel)]="formAutoridad.correo" placeholder="correo@universidad.edu.ec" />
+        </div>
+        <div class="form-group">
+          <label>Fecha de nacimiento</label>
+          <input type="date" class="form-input" [(ngModel)]="formAutoridad.fechaNacimiento" />
+        </div>
+        <div class="form-group">
+          <label>Institución <span class="required">*</span></label>
+          <select class="form-input" [(ngModel)]="formAutoridad.idInstitucion">
+            <option [ngValue]="null" disabled>— Seleccione una institución —</option>
+            <option *ngFor="let inst of instituciones" [ngValue]="inst.idInstitucion">
+              {{ inst.nombreInstitucion }}
+            </option>
+          </select>
+          <small class="text-muted" *ngIf="!instituciones.length">Cargando instituciones…</small>
+        </div>
+        <div class="form-group">
+          <label>Roles de Aplicación <span class="required">*</span></label>
+          <p class="field-hint">Las credenciales se generarán automáticamente y se enviarán al correo.</p>
+          <div class="roles-app-list" *ngIf="rolesAppDisponibles.length > 0; else sinRolesA">
+            <label class="rol-app-item" *ngFor="let r of rolesAppDisponibles">
+              <input type="checkbox" [checked]="isCreateRolSelected(r.idRolApp)" (change)="toggleCreateRol(r.idRolApp, $event)" />
+              <div class="rol-app-info">
+                <div class="rol-app-nombre">{{ r.nombre }}</div>
+                <div class="rol-app-desc" *ngIf="r.descripcion">{{ r.descripcion }}</div>
+              </div>
+            </label>
+          </div>
+          <ng-template #sinRolesA><div class="empty-state-sm">No hay roles configurados.</div></ng-template>
+          <div class="permisos-bd-preview" *ngIf="permisosBdDeSeleccionados.length > 0">
+            <small class="permisos-bd-label">Permisos BD que se otorgarán:</small>
+            <div class="permisos-bd-chips">
+              <span class="permiso-chip" *ngFor="let bd of permisosBdDeSeleccionados">{{ bd }}</span>
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+
+      <!-- ── Formulario USUARIO ───────────────────────────────── -->
+      <ng-container *ngIf="createModalTipo === 'usuario'">
+
+        <div class="form-group">
+          <label>Nombres <span class="required">*</span></label>
+          <input type="text" class="form-input" [(ngModel)]="formUsuario.nombres" placeholder="Ej: María" />
+        </div>
+        <div class="form-group">
+          <label>Apellidos <span class="required">*</span></label>
+          <input type="text" class="form-input" [(ngModel)]="formUsuario.apellidos" placeholder="Ej: González" />
+        </div>
+        <div class="form-group">
+          <label>Correo electrónico <span class="required">*</span></label>
+          <input type="email" class="form-input" [(ngModel)]="formUsuario.correo" placeholder="correo@universidad.edu.ec" />
+        </div>
+        <div class="form-group">
+          <label>Roles de Aplicación <span class="required">*</span></label>
+          <p class="field-hint">El usuario_app se generará a partir del correo (ej: <em>jperez</em> de jperez@uteq.edu.ec). Las credenciales se enviarán al correo automáticamente.</p>
+          <div class="roles-app-list" *ngIf="rolesAppDisponibles.length > 0; else sinRolesU">
+            <label class="rol-app-item" *ngFor="let r of rolesAppDisponibles">
+              <input type="checkbox" [checked]="isCreateRolSelected(r.idRolApp)" (change)="toggleCreateRol(r.idRolApp, $event)" />
+              <div class="rol-app-info">
+                <div class="rol-app-nombre">{{ r.nombre }}</div>
+                <div class="rol-app-desc" *ngIf="r.descripcion">{{ r.descripcion }}</div>
+              </div>
+            </label>
+          </div>
+          <ng-template #sinRolesU><div class="empty-state-sm">No hay roles configurados.</div></ng-template>
+          <div class="permisos-bd-preview" *ngIf="permisosBdDeSeleccionados.length > 0">
+            <small class="permisos-bd-label">Permisos BD que se otorgarán:</small>
+            <div class="permisos-bd-chips">
+              <span class="permiso-chip" *ngFor="let bd of permisosBdDeSeleccionados">{{ bd }}</span>
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeCreateModal()" [disabled]="isCreating">Cancelar</button>
+      <button class="btn btn-primary" (click)="saveCreate()" [disabled]="isCreating">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        {{ isCreating ? 'Creando...' : (createModalTipo === 'autoridad' ? 'Crear Autoridad' : 'Crear Usuario') }}
       </button>
     </div>
 

@@ -6,8 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import org.uteq.backend.dto.*;
 import org.uteq.backend.entity.AutoridadAcademica;
-//import org.uteq.backend.entity.RolAutoridad;
-//import org.uteq.backend.entity.RolUsuario;
 import org.uteq.backend.entity.Usuario;
 
 import org.uteq.backend.repository.AutoridadAcademicaRepository;
@@ -39,7 +37,7 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
     private final AutoridadAcademicaRepository autoridadRepository;
     private final UsuarioRepository usuarioRepository;
     private final InstitucionRepository institucionRepository;
-//    private final IRolAutoridadRepository rolAutoridadRepository;
+    //    private final IRolAutoridadRepository rolAutoridadRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final DbRoleSyncService dbRoleSyncService;
@@ -166,212 +164,86 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         autoridadRepository.deleteById(id);
     }
 
-    // -------------------------
-    // Registro (crea Usuario + Autoridad)
-    // -------------------------
-//    @Override
-//    public AutoridadRegistroResponseDTO registrarAutoridad(AutoridadRegistroRequestDTO dto) {
-//        if (dto.getIdInstitucion() == null) {
-//            throw new RuntimeException("idInstitucion es obligatorio");
-//        }
-//        if (dto.getIdsRolAutoridad() == null || dto.getIdsRolAutoridad().isEmpty()) {
-//            throw new RuntimeException("Debe seleccionar al menos un cargo (idsRolAutoridad)");
-//        }
-//        if (dto.getIdsRolAutoridad().stream().anyMatch(Objects::isNull)) {
-//            throw new RuntimeException("idsRolAutoridad contiene valores nulos");
-//        }
-//        institucionRepository.findById(dto.getIdInstitucion())
-//                .orElseThrow(() -> new RuntimeException("Institución no encontrada"));
-//
-////        Set<RolAutoridad> cargos = cargarCargos(dto.getIdsRolAutoridad());
-//
-//        // generar usuarioApp (a partir del correo)
-//        String usuarioApp = generarUsuarioAppDesdeCorreo(dto.getCorreo());
-//
-//        // generar usuarioBd (a partir de nombres+apellidos, único)
-//        String baseBd = generarUsuarioBdBase(dto.getNombres(), dto.getApellidos());
-//        String usuarioBd = generarUsuarioBdUnico(baseBd);
-//
-//        // clave temporal (solo email), hash en BD
-//        String claveTemporal = generarClaveTemporal(12);
-//        String claveHash = passwordEncoder.encode(claveTemporal);
-//
-//        Usuario usuario = new Usuario();
-//        usuario.setUsuarioApp(usuarioApp);
-//        usuario.setClaveApp(claveHash);
-//        usuario.setCorreo(dto.getCorreo());
-//        usuario.setUsuarioBd(usuarioBd);
-//
-//        // Cambiar
-//        usuario.setClaveBd("MTIzNA==");
-//        usuario.setActivo(true);
-//
-//        //  Asignar roles_usuario desde todos los cargos
-////        Set<RolUsuario> rolesDerivados = unirRolesUsuarioDesdeCargos(cargos);
-////        usuario.getRoles().addAll(rolesDerivados);
-//
-//        Usuario usuarioGuardado = usuarioRepository.save(usuario);
-//
-//        try {
-//            dbRoleSyncService.  syncRolesUsuarioBd(usuarioGuardado.getIdUsuario().intValue(), false);
-//            // false: en registro normalmente solo agregas; no revocas nada.
-//        } catch (Exception ex) {
-//            // Recomendación: falla para que haga rollback y no quede usuario sin permisos reales
-//            throw new RuntimeException("Falló la asignación de permisos en BD (sp_sync_roles_usuario_bd): " + ex.getMessage(), ex);
-//        }
-//
-//        AutoridadAcademica autoridad = new AutoridadAcademica();
-//        autoridad.setNombres(dto.getNombres());
-//        autoridad.setApellidos(dto.getApellidos());
-//        autoridad.setCorreo(dto.getCorreo());
-//        autoridad.setFechaNacimiento(dto.getFechaNacimiento());
-//        autoridad.setEstado(true);
-//        autoridad.setIdInstitucion(dto.getIdInstitucion());
-//        autoridad.setUsuario(usuarioGuardado);
-//
-//        // MULTI CARGOS
-////        autoridad.setRolesAutoridad(cargos);
-//
-//        AutoridadAcademica autoridadGuardada = autoridadRepository.save(autoridad);
-//
-//        // correo con credenciales
-//        try {
-//            emailService.enviarCredenciales(dto.getCorreo(), usuarioApp, claveTemporal);
-//        } catch (Exception ex) {
-//            log.warn("No se pudo enviar correo a {}", dto.getCorreo(), ex);
-//        }
-//        AutoridadRegistroResponseDTO resp = new AutoridadRegistroResponseDTO();
-//        resp.setIdUsuario(usuarioGuardado.getIdUsuario());
-//        resp.setIdAutoridad(autoridadGuardada.getIdAutoridad());
-//        resp.setUsuarioApp(usuarioGuardado.getUsuarioApp());
-//        resp.setUsuarioBd(usuarioGuardado.getUsuarioBd());
-//        return resp;
-//    }
-@Override
-@Transactional
-public AutoridadRegistroResponseDTO registrarAutoridad(AutoridadRegistroRequestDTO dto) {
 
-    if (dto.getIdInstitucion() == null)
-        throw new RuntimeException("idInstitucion es obligatorio");
-    if (dto.getRolesApp() == null || dto.getRolesApp().isEmpty())
-        throw new RuntimeException("Debe especificar al menos un rolApp");
+    @Override
+    @Transactional
+    public AutoridadRegistroResponseDTO registrarAutoridad(AutoridadRegistroRequestDTO dto) {
 
-    institucionRepository.findById(dto.getIdInstitucion())
-            .orElseThrow(() -> new RuntimeException("Institución no encontrada"));
+        if (dto.getIdInstitucion() == null)
+            throw new RuntimeException("idInstitucion es obligatorio");
+        if (dto.getRolesApp() == null || dto.getRolesApp().isEmpty())
+            throw new RuntimeException("Debe especificar al menos un rolApp");
 
-    // Generar credenciales
-    String usuarioApp    = generarUsuarioAppDesdeCorreo(dto.getCorreo());
-    String usuarioBd     = generarUsuarioBdUnico(generarUsuarioBdBase(dto.getNombres(), dto.getApellidos()));
-    String claveTemporal = generarClaveTemporal(12);
-    String claveAppHash  = passwordEncoder.encode(claveTemporal);
-    String claveBdReal   = generarClaveTemporal(16);           // ✅ Clave BD dinámica
-    String claveBdCifrada = aesCipherService.cifrar(claveBdReal); // ✅ Cifrada con AES
+        institucionRepository.findById(dto.getIdInstitucion())
+                .orElseThrow(() -> new RuntimeException("Institución no encontrada"));
 
-    // ✅ SP hace todo: INSERT usuario + CREATE USER + GRANT roles + INSERT autoridad
-    RegistroSpResultDTO resultado = postgresProcedureRepository.registrarAutoridadCompleto(
-            usuarioApp, claveAppHash, dto.getCorreo(),
-            usuarioBd, claveBdCifrada, claveBdReal,
-            dto.getNombres(), dto.getApellidos(), dto.getFechaNacimiento(),
-            dto.getIdInstitucion(),
-            dto.getRolesApp()  // ✅ Lista de roles
-    );
-    log.info("✅ Autoridad registrada: {}", usuarioApp);
+        // Generar credenciales
+        String usuarioApp    = generarUsuarioAppDesdeCorreo(dto.getCorreo());
+        String usuarioBd     = generarUsuarioBdUnico(generarUsuarioBdBase(dto.getNombres(), dto.getApellidos()));
+        String claveTemporal = generarClaveTemporal(12);
+        String claveAppHash  = passwordEncoder.encode(claveTemporal);
+        String claveBdReal   = generarClaveTemporal(16);           // ✅ Clave BD dinámica
+        String claveBdCifrada = aesCipherService.cifrar(claveBdReal); // ✅ Cifrada con AES
 
-    // Enviar correo (Spring Boot lo maneja)
-    try {
-        emailService.enviarCredenciales(dto.getCorreo(), usuarioApp, claveTemporal);
-    } catch (Exception ex) {
-        log.warn("⚠️ No se pudo enviar correo a {}", dto.getCorreo(), ex);
+        // ✅ SP hace todo: INSERT usuario + CREATE USER + GRANT roles + INSERT autoridad
+        RegistroSpResultDTO resultado = postgresProcedureRepository.registrarAutoridadCompleto(
+                usuarioApp, claveAppHash, dto.getCorreo(),
+                usuarioBd, claveBdCifrada, claveBdReal,
+                dto.getNombres(), dto.getApellidos(), dto.getFechaNacimiento(),
+                dto.getIdInstitucion(),
+                dto.getRolesApp()  // ✅ Lista de roles
+        );
+        log.info("✅ Autoridad registrada: {}", usuarioApp);
+
+        // Enviar correo (Spring Boot lo maneja)
+        try {
+            emailService.enviarCredenciales(dto.getCorreo(), usuarioApp, claveTemporal);
+        } catch (Exception ex) {
+            log.warn("⚠️ No se pudo enviar correo a {}", dto.getCorreo(), ex);
+        }
+
+        AutoridadRegistroResponseDTO resp = new AutoridadRegistroResponseDTO();
+        resp.setIdUsuario(resultado.getIdUsuario());
+        resp.setIdAutoridad(resultado.getIdAutoridad());
+        resp.setUsuarioApp(resultado.getUsuarioApp());
+        resp.setUsuarioBd(resultado.getUsuarioBd());
+        return resp;
     }
 
-    AutoridadRegistroResponseDTO resp = new AutoridadRegistroResponseDTO();
-    resp.setIdUsuario(resultado.getIdUsuario());
-    resp.setIdAutoridad(resultado.getIdAutoridad());
-    resp.setUsuarioApp(resultado.getUsuarioApp());
-    resp.setUsuarioBd(resultado.getUsuarioBd());
-    return resp;
-}
+    @Transactional
+    public RegistroResponseDTO registrarUsuario(RegistroUsuarioDTO dto) {
 
-//    @Transactional
-//    public RegistroResponseDTO registrarUsuario(RegistroUsuarioDTO dto) {
-//
-//        if (usuarioRepository.existsByCorreo(dto.getCorreo()))
-//            throw new RuntimeException("El correo ya está registrado");
-//
-//        // Generar credenciales
-//        String usuarioApp    = CredencialesGenerator.generarUsuario(dto.getCedula());
-//        String claveAppPlain = CredencialesGenerator.generarClaveApp();
-//        String claveBdReal   = CredencialesGenerator.generarClaveBd();      // ✅ Clave BD dinámica
-//        String claveBdCifrada = aesCipherService.cifrar(claveBdReal);        // ✅ Cifrada con AES
-//        String usuarioBd     = "usuario" + dto.getCedula().substring(dto.getCedula().length() - 6);
-//
-//        // Unicidad usuarioApp
-//        String base = usuarioApp;
-//        int n = 1;
-//        while (usuarioRepository.existsByUsuarioApp(usuarioApp)) {
-//            usuarioApp = base + (n++);
-//        }
-//
-//        // ✅ SP hace todo
-//        RegistroSpResultDTO resultado = postgresProcedureRepository.registrarUsuarioSimple(
-//                usuarioApp, passwordEncoder.encode(claveAppPlain), dto.getCorreo(),
-//                usuarioBd, claveBdCifrada, claveBdReal,
-//                dto.getRolApp().toUpperCase()
-//        );
-//        log.info("✅ Usuario simple registrado: {}", usuarioApp);
-//
-//        // Enviar correo
-//        try {
-//            emailService.enviarCredenciales(dto.getCorreo(), usuarioApp, claveAppPlain);
-//        } catch (Exception e) {
-//            log.warn("⚠️ Error enviando correo: {}", e.getMessage());
-//        }
-//
-//        return new RegistroResponseDTO(
-//                "Registro exitoso. Credenciales enviadas a tu correo.",
-//                dto.getCorreo(), true
-//        );
-//    }
-@Transactional
-public RegistroResponseDTO registrarUsuario(RegistroUsuarioDTO dto) {
+        if (usuarioRepository.existsByCorreo(dto.getCorreo()))
+            throw new RuntimeException("El correo ya está registrado");
 
-    if (usuarioRepository.existsByCorreo(dto.getCorreo()))
-        throw new RuntimeException("El correo ya está registrado");
+        // usuario_app: parte antes del @ del correo (igual que autoridades)
+        // usuario_bd:  misma base normalizada, garantiza unicidad
+        String usuarioApp    = generarUsuarioAppDesdeCorreo(dto.getCorreo());
+        String usuarioBd     = generarUsuarioBdUnico(usuarioApp); // base = el mismo usuarioApp
+        String claveAppPlain = generarClaveTemporal(12);
+        String claveBdReal   = generarClaveTemporal(16);
+        String claveBdCifrada = aesCipherService.cifrar(claveBdReal);
 
-    // Generar credenciales
-    String usuarioApp    = CredencialesGenerator.generarUsuario(dto.getCedula());
-    String claveAppPlain = CredencialesGenerator.generarClaveApp();
-    String claveBdReal   = CredencialesGenerator.generarClaveBd();      // ✅ Clave BD dinámica
-    String claveBdCifrada = aesCipherService.cifrar(claveBdReal);        // ✅ Cifrada con AES
-    String usuarioBd     = "usuario" + dto.getCedula().substring(dto.getCedula().length() - 6);
+        // ✅ SP hace todo
+        RegistroSpResultDTO resultado = postgresProcedureRepository.registrarUsuarioSimple(
+                usuarioApp, passwordEncoder.encode(claveAppPlain), dto.getCorreo(),
+                usuarioBd, claveBdCifrada, claveBdReal,
+                dto.getRolesApp()  // ✅ Lista de roles
+        );
+        log.info("✅ Usuario simple registrado: {}", usuarioApp);
 
-    // Unicidad usuarioApp
-    String base = usuarioApp;
-    int n = 1;
-    while (usuarioRepository.existsByUsuarioApp(usuarioApp)) {
-        usuarioApp = base + (n++);
+        // Enviar correo
+        try {
+            emailService.enviarCredenciales(dto.getCorreo(), usuarioApp, claveAppPlain);
+        } catch (Exception e) {
+            log.warn("⚠️ Error enviando correo: {}", e.getMessage());
+        }
+
+        return new RegistroResponseDTO(
+                "Registro exitoso. Credenciales enviadas a tu correo.",
+                dto.getCorreo(), true
+        );
     }
-
-    // ✅ SP hace todo
-    RegistroSpResultDTO resultado = postgresProcedureRepository.registrarUsuarioSimple(
-            usuarioApp, passwordEncoder.encode(claveAppPlain), dto.getCorreo(),
-            usuarioBd, claveBdCifrada, claveBdReal,
-            dto.getRolesApp()  // ✅ Lista de roles
-    );
-    log.info("✅ Usuario simple registrado: {}", usuarioApp);
-
-    // Enviar correo
-    try {
-        emailService.enviarCredenciales(dto.getCorreo(), usuarioApp, claveAppPlain);
-    } catch (Exception e) {
-        log.warn("⚠️ Error enviando correo: {}", e.getMessage());
-    }
-
-    return new RegistroResponseDTO(
-            "Registro exitoso. Credenciales enviadas a tu correo.",
-            dto.getCorreo(), true
-    );
-}
     // -------------------------
     // Mapper (incluye cargos)
     // -------------------------
@@ -409,37 +281,6 @@ public RegistroResponseDTO registrarUsuario(RegistroUsuarioDTO dto) {
 
         return dto;
     }
-
-    // -------------------------
-    // Helpers multi-cargos
-    // -------------------------
-//    private Set<RolAutoridad> cargarCargos(List<Long> idsRolAutoridad) {
-//        if (idsRolAutoridad == null || idsRolAutoridad.isEmpty()) {
-//            throw new RuntimeException("Debe seleccionar al menos un cargo (rol_autoridad)");
-//        }
-//
-//        List<RolAutoridad> encontrados = rolAutoridadRepository.findAllById(idsRolAutoridad);
-//
-//        Set<Long> esperados = new HashSet<>(idsRolAutoridad);
-//        Set<Long> encontradosIds = encontrados.stream()
-//                .map(RolAutoridad::getIdRolAutoridad)
-//                .collect(Collectors.toSet());
-//
-//        if (encontradosIds.size() != esperados.size()) {
-//            esperados.removeAll(encontradosIds);
-//            throw new RuntimeException("Cargos (rol_autoridad) no encontrados: " + esperados);
-//        }
-//
-//        return new HashSet<>(encontrados);
-//    }
-//
-//    private Set<RolUsuario> unirRolesUsuarioDesdeCargos(Set<RolAutoridad> cargos) {
-//        return cargos.stream()
-//                .filter(Objects::nonNull)
-//                .flatMap(c -> c.getRolesUsuario().stream())
-//                .collect(Collectors.toSet());
-//    }
-
     // -------------------------
     // Helpers generación usuarios
     // -------------------------

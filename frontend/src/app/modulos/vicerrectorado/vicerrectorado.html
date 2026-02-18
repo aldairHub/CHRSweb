@@ -1,0 +1,78 @@
+<!-- src/app/modulos/vicerrectorado/vicerrectorado.html -->
+<app-navbar></app-navbar>
+
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <header class="dashboard-header">
+      <h1>Sistema de Selección Docente</h1>
+      <p class="dashboard-subtitle">Vicerrectorado Académico — Panel de Revisión</p>
+    </header>
+
+    <!-- Estadísticas rápidas -->
+    <div class="stats-row" *ngIf="!cargando">
+      <div class="stat-pill total">
+        <span class="stat-num">{{ estadisticas.total }}</span>
+        <span class="stat-label">Total</span>
+      </div>
+      <div class="stat-pill pendiente">
+        <span class="stat-num">{{ estadisticas.pendientes }}</span>
+        <span class="stat-label">Pendientes</span>
+      </div>
+      <div class="stat-pill aprobado">
+        <span class="stat-num">{{ estadisticas.aprobadas }}</span>
+        <span class="stat-label">Aprobadas</span>
+      </div>
+      <div class="stat-pill rechazado">
+        <span class="stat-num">{{ estadisticas.rechazadas }}</span>
+        <span class="stat-label">Rechazadas</span>
+      </div>
+    </div>
+
+    <!-- Cards de navegación -->
+    <section class="cards-grid">
+
+      <!-- Pre-postulaciones -->
+      <article class="card" (click)="navegarA('prepostulaciones')">
+        <div class="card-icon">
+          <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M26.6667 28V25.3333C26.6667 23.9188 26.1048 22.5623 25.1046 21.5621C24.1044 20.5619 22.7479 20 21.3334 20H10.6667C9.25222 20 7.89567 20.5619 6.89547 21.5621C5.89528 22.5623 5.33337 23.9188 5.33337 25.3333V28"
+                  stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 14.6667C18.9455 14.6667 21.3333 12.2789 21.3333 9.33333C21.3333 6.38781 18.9455 4 16 4C13.0545 4 10.6667 6.38781 10.6667 9.33333C10.6667 12.2789 13.0545 14.6667 16 14.6667Z"
+                  stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21.3333 29.3333L24 32L29.3333 26.6667"
+                  stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>Pre-postulaciones</h3>
+        <span>Revisar y aprobar candidatos</span>
+        <div class="card-badge pending" *ngIf="estadisticas.pendientes > 0">
+          {{ estadisticas.pendientes }} pendiente{{ estadisticas.pendientes !== 1 ? 's' : '' }}
+        </div>
+      </article>
+
+      <!-- Solicitudes de docente -->
+      <article class="card" (click)="navegarA('solicitudes')">
+        <div class="card-icon">
+          <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18.6667 2.66666H8.00008C7.29284 2.66666 6.61456 2.94761 6.11446 3.44771C5.61437 3.9478 5.33341 4.62609 5.33341 5.33333V26.6667C5.33341 27.3739 5.61437 28.0522 6.11446 28.5523C6.61456 29.0524 7.29284 29.3333 8.00008 29.3333H24.0001C24.7073 29.3333 25.3856 29.0524 25.8857 28.5523C26.3858 28.0522 26.6667 27.3739 26.6667 26.6667V10.6667L18.6667 2.66666Z"
+                  stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18.6667 2.66666V10.6667H26.6667"
+                  stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21.3333 17.3333H10.6667"
+                  stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21.3333 22.6667H10.6667"
+                  stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.3333 12H10.6667"
+                  stroke="#43963C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>Solicitudes de Docente</h3>
+        <span>Revisar requisiciones de plazas</span>
+      </article>
+
+    </section>
+
+  </div>
+  <app-footer></app-footer>
+</div>

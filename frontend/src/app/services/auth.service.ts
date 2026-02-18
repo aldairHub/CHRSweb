@@ -29,16 +29,10 @@ export class AuthService {
   /** 1) SOLO backend: llama endpoint logout y RETORNA observable */
   logoutBackend(): Observable<any> {
     const token = localStorage.getItem('token');
-
-    // Si no hay token, no tiene sentido pegarle al backend
     if (!token) return of(null);
 
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`
-    });
-
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     return this.http.post(`${this.apiUrl}/logout`, {}, { headers }).pipe(
-      // si el backend falla igual dejamos salir al usuario
       catchError(() => of(null))
     );
   }
@@ -49,13 +43,12 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  /** 3) Helper opcional: backend + local */
+  /** 3) Helper: backend + local */
   logoutYSalir(): void {
     this.logoutBackend()
       .pipe(finalize(() => this.cerrarSesionLocal()))
       .subscribe();
   }
-  //un cambio
 
   isLoggedIn(): boolean {
     return !!localStorage.getItem('token');
@@ -89,18 +82,34 @@ export class AuthService {
         this.router.navigate(['/postulante'], { replaceUrl: true });
         break;
 
+      // ✅ NUEVO: rol REVISOR → módulo vicerrectorado
+      case 'revisor':
+        this.router.navigate(['/revisor'], { replaceUrl: true });
+        break;
+
       default:
-        this.router.navigate(['/login'], { replaceUrl: true });
+        // Rol desconocido → pantalla de acceso no configurado
+        this.router.navigate(['/sin-acceso'], { replaceUrl: true });
         break;
     }
   }
 
-
-  private calcularRolPrincipal(roles: string[]): 'admin' | 'evaluador' | 'postulante' | null {
+  /**
+   * Mapea los roles del backend (strings en mayúsculas) al rol local
+   * que usa el frontend para rutas y guards.
+   *
+   * PRIORIDAD: admin > revisor > evaluador > postulante
+   */
+  private calcularRolPrincipal(
+    roles: string[]
+  ): 'admin' | 'evaluador' | 'postulante' | 'revisor' | null {
     const r = (roles ?? []).map(x => (x || '').toUpperCase());
+
     if (r.some(role => role.includes('ADMIN'))) return 'admin';
+    if (r.some(role => role.includes('REVISOR'))) return 'revisor';
     if (r.some(role => role.includes('EVALUADOR') || role.includes('EVALUATOR'))) return 'evaluador';
-    if (r.includes('ROLE_POSTULANTE')) return 'postulante';
+    if (r.includes('ROLE_POSTULANTE') || r.includes('POSTULANTE')) return 'postulante';
+
     return null;
   }
 }
