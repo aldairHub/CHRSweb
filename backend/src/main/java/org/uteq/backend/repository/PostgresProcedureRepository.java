@@ -280,4 +280,22 @@ public class PostgresProcedureRepository {
             throw new RuntimeException("sp_registrar_postulante no retornó datos");
         });
     }
+
+    /**
+     * Procedure: sp_cambiar_clave_app(usuario_app, clave_app_hash)
+     * Actualiza clave_app y marca primer_login = false
+     */
+    public void cambiarClaveApp(String usuarioApp, String claveAppHash) {
+        String sql = "CALL public.sp_cambiar_clave_app(?, ?)";
+        jdbcTemplate.update(sql, usuarioApp, claveAppHash);
+    }
+
+    /**
+     * Procedure: sp_recuperar_clave_app(usuario_app, clave_app_hash)
+     * Actualiza clave_app y marca primer_login = true
+     */
+    public void recuperarClaveApp(String usuarioApp, String claveAppHash) {
+        String sql = "CALL public.sp_recuperar_clave_app(?, ?)";
+        jdbcTemplate.update(sql, usuarioApp, claveAppHash);
+    }
 }

@@ -7,14 +7,14 @@
     <!-- Header -->
     <div class="page-header">
       <div>
-        <h2>Gestión de Usuarios</h2>
+        <h2>Gestión de usuarios</h2>
         <p class="page-subtitle">Administra autoridades académicas y usuarios del sistema</p>
       </div>
       <button class="btn btn-primary" (click)="openCreate()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        {{ activeTab === 'autoridades' ? 'Nueva Autoridad' : 'Nuevo Usuario' }}
+        {{ activeTab === 'autoridades' ? 'Nueva autoridad' : 'Nuevo usuario' }}
       </button>
     </div>
 
@@ -22,11 +22,11 @@
     <div class="tabs">
       <button class="tab-btn" [class.active]="activeTab === 'autoridades'"
               (click)="activeTab = 'autoridades'; applyFiltersAutoridades()">
-        Autoridades Académicas
+        Autoridades académicas
       </button>
       <button class="tab-btn" [class.active]="activeTab === 'usuarios'"
               (click)="activeTab = 'usuarios'; applyFiltersUsuarios()">
-        Usuarios del Sistema
+        Usuarios del sistema
       </button>
     </div>
 
@@ -418,7 +418,7 @@
         </div>
         <div class="form-group">
           <label>Roles de Aplicación <span class="required">*</span></label>
-          <p class="field-hint">El usuario_app se generará a partir del correo (ej: <em>jperez</em> de jperez@uteq.edu.ec). Las credenciales se enviarán al correo automáticamente.</p>
+          <p class="field-hint">El usuario_app se generará a partir del correo (ej: <em>jperez</em> de jperez&#64;uteq.edu.ec). Las credenciales se enviarán al correo automáticamente.</p>
           <div class="roles-app-list" *ngIf="rolesAppDisponibles.length > 0; else sinRolesU">
             <label class="rol-app-item" *ngFor="let r of rolesAppDisponibles">
               <input type="checkbox" [checked]="isCreateRolSelected(r.idRolApp)" (change)="toggleCreateRol(r.idRolApp, $event)" />

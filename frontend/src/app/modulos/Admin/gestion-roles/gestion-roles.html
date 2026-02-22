@@ -7,7 +7,7 @@
     <!-- Header -->
     <div class="page-header">
       <div>
-        <h2>Gestión de Roles</h2>
+        <h2>Gestión de roles</h2>
         <p class="page-subtitle">Administra los roles de aplicación y su mapeo con roles de base de datos</p>
       </div>
       <button class="btn btn-primary" (click)="openCreateModal()">
@@ -15,7 +15,7 @@
              stroke="currentColor" width="20" height="20">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
-        Nuevo Rol
+        Nuevo rol
       </button>
     </div>
 
@@ -29,7 +29,7 @@
           </svg>
         </div>
         <div class="stat-content">
-          <h3>Total Roles</h3>
+          <h3>Total roles</h3>
           <div class="stat-value">{{ roles.length }}</div>
         </div>
       </div>
@@ -190,7 +190,7 @@
     <div class="modal-body">
 
       <div class="form-section">
-        <div class="section-title">Datos del Rol</div>
+        <div class="section-title">Datos del rol</div>
         <div class="section-description">Información básica del rol de aplicación</div>
       </div>
 
@@ -218,7 +218,7 @@
       </div>
 
       <div class="form-section">
-        <div class="section-title">Roles de Base de Datos</div>
+        <div class="section-title">Roles de base de datos</div>
         <div class="section-description">
           Selecciona los roles de PostgreSQL (<code>pg_roles</code>, prefijo <code>role_*</code>) asociados:
         </div>
@@ -248,7 +248,7 @@
              stroke="currentColor" width="20" height="20">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
         </svg>
-        {{ isSaving ? 'Guardando...' : 'Guardar Rol' }}
+        {{ isSaving ? 'Guardando...' : 'Guardar rol' }}
       </button>
     </div>
 

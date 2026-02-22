@@ -70,7 +70,7 @@ export class PerfilComponent {
     ).subscribe({
       next: () => {
         this.isLoading = false;
-        this.exito = '✅ Contraseña actualizada correctamente.';
+        this.exito = 'Contraseña actualizada correctamente.';
         this.limpiarFormulario();
       },
       error: (err) => {

@@ -65,6 +65,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/usuarios/migrar-claves-bd").permitAll()  // ← TEMPORAL
                         .requestMatchers("/resetear-claves-bd").permitAll() // ← TEMPORAL
                         .anyRequest().authenticated()
+                        .requestMatchers("/api/usuarios/recuperar-clave").permitAll()
+                        .requestMatchers("/api/usuarios/primer-login/cambiar-clave").authenticated()
+                        .requestMatchers("/api/usuarios/cambiar-clave").authenticated()
                 );
 
         return http.build();

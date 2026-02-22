@@ -8,6 +8,7 @@ import org.uteq.backend.dto.UsuarioCreateDTO;
 import org.uteq.backend.dto.UsuarioDTO;
 import org.uteq.backend.dto.UsuarioUpdateDTO;
 import org.uteq.backend.entity.Usuario;
+import org.uteq.backend.repository.PostgresProcedureRepository;
 import org.uteq.backend.repository.UsuarioRepository;
 import org.uteq.backend.dto.CambiarClaveDTO;
 import org.uteq.backend.util.CredencialesGenerator;
@@ -22,23 +23,21 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final PostgresProcedureRepository procedureRepository; // ✅ nuevo
+
 
     public UsuarioService(UsuarioRepository usuarioRepository,
                           PasswordEncoder passwordEncoder,
-                          EmailService emailService) {
+                          EmailService emailService,
+                          PostgresProcedureRepository procedureRepository) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
+        this.procedureRepository = procedureRepository;
+
     }
 
     public UsuarioDTO crear(UsuarioCreateDTO dto) {
-//        if (dto.getRol() == null) {
-//            throw new RuntimeException("Debe especificar un rol");
-//        }
-
-//        if (dto.getRol() == Role.USER) {
-//            throw new RuntimeException("No se permite crear usuarios con rol USER manualmente");
-//        }
 
         if (dto.getUsuarioApp() == null || dto.getUsuarioApp().isBlank()) {
             throw new RuntimeException("usuarioApp es obligatorio");
@@ -130,101 +129,78 @@ public class UsuarioService {
         dto.setIdUsuario(usuario.getIdUsuario());
         dto.setUsuarioBd(usuario.getUsuarioBd());
         dto.setUsuarioApp(usuario.getUsuarioApp());
-        dto.setCorreo(usuario.getCorreo());           // ✅ agregar
+        dto.setCorreo(usuario.getCorreo());           // agregar
         dto.setActivo(usuario.getActivo());
-        dto.setPrimerLogin(usuario.getPrimerLogin()); // ✅ agregar
+        dto.setPrimerLogin(usuario.getPrimerLogin()); //  agregar
         return dto;
     }
-    // ─── Caso 1: Primer login — cambio obligatorio ─────────────
+    // ─── Caso 1: Primer login ───────────────────────────────────
 
     @Transactional
     public void cambiarClavePrimerLogin(String usuarioApp, CambiarClaveDTO dto) {
-
         Usuario usuario = usuarioRepository.findByUsuarioApp(usuarioApp)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // Verificar que realmente es primer login
-        if (!Boolean.TRUE.equals(usuario.getPrimerLogin())) {
+        if (!Boolean.TRUE.equals(usuario.getPrimerLogin()))
             throw new RuntimeException("Este usuario ya realizó su primer cambio de clave");
-        }
 
         validarClaveNueva(dto, usuario);
 
-        usuario.setClaveApp(passwordEncoder.encode(dto.getClaveNueva()));
-        usuario.setPrimerLogin(false); //  marcar que ya no es primer login
-        usuarioRepository.save(usuario);
+        //  SP con SECURITY DEFINER — resuelve problema de permisos
+        String hash = passwordEncoder.encode(dto.getClaveNueva());
+        procedureRepository.cambiarClaveApp(usuarioApp, hash);
     }
 
     // ─── Caso 2: Cambio voluntario ─────────────────────────────
 
     @Transactional
     public void cambiarClave(String usuarioApp, CambiarClaveDTO dto) {
-
         Usuario usuario = usuarioRepository.findByUsuarioApp(usuarioApp)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // Requiere clave actual
-        if (!passwordEncoder.matches(dto.getClaveActual(), usuario.getClaveApp())) {
+        if (!passwordEncoder.matches(dto.getClaveActual(), usuario.getClaveApp()))
             throw new RuntimeException("La contraseña actual es incorrecta");
-        }
 
         validarClaveNueva(dto, usuario);
 
-        usuario.setClaveApp(passwordEncoder.encode(dto.getClaveNueva()));
-        usuario.setPrimerLogin(false);
-        usuarioRepository.save(usuario);
+        //  SP con SECURITY DEFINER
+        String hash = passwordEncoder.encode(dto.getClaveNueva());
+        procedureRepository.cambiarClaveApp(usuarioApp, hash);
     }
 
     // ─── Caso 3: Olvidó contraseña ─────────────────────────────
 
     @Transactional
     public void recuperarClave(String correo) {
-
         Usuario usuario = usuarioRepository.findByCorreo(correo)
-                .orElseThrow(() -> new RuntimeException("No existe una cuenta con ese correo"));
+                .orElseThrow(() -> new RuntimeException("No existe cuenta con ese correo"));
 
-        if (!Boolean.TRUE.equals(usuario.getActivo())) {
+        if (!Boolean.TRUE.equals(usuario.getActivo()))
             throw new RuntimeException("La cuenta está inactiva");
-        }
 
-        // Generar clave temporal nueva
         String claveTemporal = CredencialesGenerator.generarClaveApp();
+        String hash          = passwordEncoder.encode(claveTemporal);
 
-        // Actualizar en BD
-        usuario.setClaveApp(passwordEncoder.encode(claveTemporal));
-        usuario.setPrimerLogin(true); // ✅ forzar cambio al entrar
-        usuarioRepository.save(usuario);
+        // SP con SECURITY DEFINER — setea primer_login = true
+        procedureRepository.recuperarClaveApp(usuario.getUsuarioApp(), hash);
 
-        // Enviar correo con clave temporal
         try {
-            emailService.enviarCredenciales(
-                    correo,
-                    usuario.getUsuarioApp(),
-                    claveTemporal
-            );
+            emailService.enviarCredenciales(correo, usuario.getUsuarioApp(), claveTemporal);
         } catch (Exception e) {
             throw new RuntimeException("No se pudo enviar el correo de recuperación");
         }
     }
 
-    // ─── Validaciones comunes ───────────────────────────────────
+    // ─── Helpers ───────────────────────────────────────────────
 
     private void validarClaveNueva(CambiarClaveDTO dto, Usuario usuario) {
-
-        if (dto.getClaveNueva() == null || dto.getClaveNueva().isBlank()) {
+        if (dto.getClaveNueva() == null || dto.getClaveNueva().isBlank())
             throw new RuntimeException("La nueva contraseña no puede estar vacía");
-        }
-
-        if (dto.getClaveNueva().length() < 8) {
+        if (dto.getClaveNueva().length() < 8)
             throw new RuntimeException("La nueva contraseña debe tener al menos 8 caracteres");
-        }
-
-        if (!dto.getClaveNueva().equals(dto.getClaveNuevaConfirmacion())) {
+        if (!dto.getClaveNueva().equals(dto.getClaveNuevaConfirmacion()))
             throw new RuntimeException("La nueva contraseña y su confirmación no coinciden");
-        }
-
-        if (passwordEncoder.matches(dto.getClaveNueva(), usuario.getClaveApp())) {
+        if (passwordEncoder.matches(dto.getClaveNueva(), usuario.getClaveApp()))
             throw new RuntimeException("La nueva contraseña debe ser diferente a la actual");
-        }
     }
 }

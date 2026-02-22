@@ -1,56 +1,72 @@
-<div class="recuperar-clave-container">
-  <div class="card">
+<div class="login-container">
+  <div class="login-content">
 
-    <!-- ✅ Vista éxito -->
-    <ng-container *ngIf="exito">
-      <div class="card-header success">
-        <div class="icon">📧</div>
-        <h2>Revisa tu correo</h2>
-        <p>Si el correo está registrado, recibirás una contraseña temporal en breve.</p>
+    <div class="login-header">
+      <div class="logo-box">
+        <img src="imgs/logo-uteq.png" alt="Logo UTEQ" class="logo">
       </div>
-      <div class="card-body center">
-        <p class="hint">Usa esa contraseña temporal para ingresar. Al hacerlo, el sistema te pedirá establecer una nueva contraseña.</p>
-        <button class="btn-submit" (click)="volverAlLogin()">
+      <h1 class="title">UTEQ</h1>
+      <p class="subtitle">Sistema de selección docente</p>
+    </div>
+
+    <div class="login-card">
+
+      <!-- Vista éxito -->
+      <ng-container *ngIf="exito">
+        <div class="icon-wrapper">
+          <div class="icon-circle">📧</div>
+        </div>
+        <h3 class="form-title">Revisa tu correo</h3>
+        <p class="form-subtitle">Si el correo está registrado, recibirás una contraseña temporal en breve.</p>
+
+        <div class="exito-box">
+          <p>Usa esa contraseña temporal para ingresar. El sistema te pedirá establecer una nueva contraseña.</p>
+        </div>
+
+        <button class="btn-primary" (click)="volverAlLogin()">
           Volver al login
         </button>
-      </div>
-    </ng-container>
+      </ng-container>
 
-    <!-- Vista formulario -->
-    <ng-container *ngIf="!exito">
-      <div class="card-header">
-        <div class="icon">🔑</div>
-        <h2>Recuperar contraseña</h2>
-        <p>Ingresa tu correo y te enviaremos una contraseña temporal.</p>
-      </div>
+      <!-- Vista formulario -->
+      <ng-container *ngIf="!exito">
+        <div class="icon-wrapper">
+          <div class="icon-circle">🔑</div>
+        </div>
+        <h3 class="form-title">Recuperar contraseña</h3>
+        <p class="form-subtitle">Ingresa tu correo y te enviaremos una contraseña temporal</p>
 
-      <div class="card-body">
-
-        <div *ngIf="error" class="alert alert-error">{{ error }}</div>
+        <div class="alert-error" *ngIf="error">{{ error }}</div>
 
         <div class="form-group">
           <label>Correo electrónico</label>
-          <input
-            type="email"
-            [(ngModel)]="correo"
-            placeholder="tucorreo@ejemplo.com"
-            autocomplete="email"
-          />
+          <div class="input-wrapper">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+            </svg>
+            <input
+              type="email"
+              [(ngModel)]="correo"
+              placeholder="tucorreo@uteq.edu.ec"
+              autocomplete="email"
+            />
+          </div>
         </div>
 
-        <button
-          class="btn-submit"
-          (click)="onSubmit()"
-          [disabled]="isLoading">
+        <button class="btn-primary" (click)="onSubmit()" [disabled]="isLoading">
           {{ isLoading ? 'Enviando...' : 'Enviar contraseña temporal' }}
         </button>
 
-        <button class="btn-volver" (click)="volverAlLogin()">
+        <button class="btn-outline" (click)="volverAlLogin()">
           ← Volver al login
         </button>
+      </ng-container>
 
-      </div>
-    </ng-container>
+    </div>
 
+    <div class="form-footer">
+      © 2026 Universidad Técnica Estatal de Quevedo
+    </div>
   </div>
 </div>
