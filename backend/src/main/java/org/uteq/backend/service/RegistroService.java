@@ -44,14 +44,14 @@ public class RegistroService {
             contador++;
         }
 
-        // ✅ SP hace todo: INSERT usuario + CREATE USER + GRANT roles
+        //  SP hace todo: INSERT usuario + CREATE USER + GRANT roles
         postgresProcedureRepository.registrarUsuarioSimple(
                 usuarioApp, claveAppHash, dto.getCorreo(),
                 usuarioBd, claveBdCifrada, claveBdReal,
                 dto.getRolesApp()
         );
 
-        // Enviar email con credenciales (asíncrono)
+        // Enviar email con credenciales
         try {
             emailService.enviarCredenciales(dto.getCorreo(), usuarioApp, claveAppPlain);
         } catch (Exception e) {
