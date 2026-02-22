@@ -82,8 +82,9 @@ export class NavbarComponent {
   logout(): void {
     this.authService.logoutYSalir();
   }
-  togglePerfilMenu(): void { this.showPerfilMenu = !this.showPerfilMenu; }
-
+  togglePerfilMenu(): void {
+    this.showPerfilMenu = !this.showPerfilMenu;
+  }
   irAlPerfil(): void {
     this.showPerfilMenu = false;
     this.router.navigate(['/perfil']);

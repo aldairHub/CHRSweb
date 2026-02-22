@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './services/auth.guard';
+import { PrimerLoginGuard, NoPrimerLoginGuard } from './services/primer-login.guard'; // ✅ nuevo
 
 export const routes: Routes = [
 
@@ -19,48 +20,37 @@ export const routes: Routes = [
     path: 'registro',
     loadComponent: () => import('./modulos/Registro/registro').then(m => m.RegistroComponent)
   },
+
+  // ✅ nuevo — pública, no requiere token
   {
     path: 'recuperar-clave',
-    loadComponent: () =>
-      import('./modulos/recuperar-clave/recuperar-clave')
-        .then(m => m.RecuperarClaveComponent)
+    loadComponent: () => import('./modulos/recuperar-clave/recuperar-clave')
+      .then(m => m.RecuperarClaveComponent)
   },
+
+  // ✅ nuevo — solo accesible si es primer login
+  {
+    path: 'cambiar-clave-obligatorio',
+    loadComponent: () => import('./modulos/cambiar-clave-obligatorio/cambiar-clave-obligatorio')
+      .then(m => m.CambiarClaveObligatorioComponent),
+    canActivate: [PrimerLoginGuard]
+  },
+
   // ==========================================
-  // RUTA SIN ACCESO (rol no mapeado)
+  // RUTA SIN ACCESO
   // ==========================================
   {
     path: 'sin-acceso',
     loadComponent: () => import('./modulos/sin-acceso/sin-acceso').then(m => m.SinAccesoComponent)
   },
-  {
-    path: 'perfil',
-    loadComponent: () =>
-      import('./modulos/perfil/perfil')
-        .then(m => m.PerfilComponent),
-    canActivate: [AuthGuard]
-  },
 
-  {
-    path: 'cambiar-clave-obligatorio',
-    loadComponent: () =>
-      import('./modulos/cambiar-clave-obligatorio/cambiar-clave-obligatorio')
-        .then(m => m.CambiarClaveObligatorioComponent),
-    canActivate: [AuthGuard]
-  },
-
-// ✅ Alias por si ya lo estabas usando con "cambio-..."
-  {
-    path: 'cambio-clave-obligatorio',
-    redirectTo: 'cambiar-clave-obligatorio',
-    pathMatch: 'full'
-  },
   // ==========================================
   // RUTA DEL POSTULANTE
   // ==========================================
   {
     path: 'postulante',
     loadComponent: () => import('./modulos/Postulante/postulante').then(m => m.PostulanteComponent),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, NoPrimerLoginGuard], // ✅
     data: { rol: 'postulante', isHome: true }
   },
 
@@ -69,7 +59,7 @@ export const routes: Routes = [
   // ==========================================
   {
     path: 'evaluador',
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, NoPrimerLoginGuard], // ✅
     data: { rol: 'evaluador' },
     children: [
       {
@@ -116,14 +106,14 @@ export const routes: Routes = [
   {
     path: 'admin',
     loadComponent: () => import('./modulos/Admin/admin').then(m => m.AdminComponent),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, NoPrimerLoginGuard], // ✅
     data: { rol: 'admin', isHome: true }
   },
   {
     path: 'gestion-roles',
     loadComponent: () => import('./modulos/Admin/gestion-roles/gestion-roles')
       .then(m => m.GestionRolesComponent),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, NoPrimerLoginGuard], // ✅
     data: { rol: 'admin' }
   },
   {
@@ -135,50 +125,50 @@ export const routes: Routes = [
     path: 'gestion-usuarios',
     loadComponent: () => import('./modulos/gestion-usuarios/gestion-usuarios')
       .then(m => m.GestionUsuariosComponent),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, NoPrimerLoginGuard], // ✅
     data: { rol: 'admin' }
   },
   {
     path: 'facultad',
     loadComponent: () => import('./modulos/estructura/facultad/facultad').then(m => m.FacultadComponent),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, NoPrimerLoginGuard], // ✅
     data: { rol: 'admin' }
   },
   {
     path: 'carrera',
     loadComponent: () => import('./modulos/estructura/carrera/carrera')
       .then(m => m.CarreraComponent),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, NoPrimerLoginGuard], // ✅
     data: { rol: 'admin' }
   },
   {
     path: 'materia',
     loadComponent: () => import('./modulos/estructura/materia/materia')
       .then(m => m.MateriaComponent),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, NoPrimerLoginGuard], // ✅
     data: { rol: 'admin' }
   },
   {
     path: 'gestion-postulante',
     loadComponent: () => import('./modulos/estructura/postulante/postulante')
       .then(m => m.PostulanteComponent),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, NoPrimerLoginGuard], // ✅
     data: { rol: 'admin' }
   },
   {
     path: 'gestion-documentos',
     loadComponent: () => import('./modulos/Admin/gestiondocumentos/gestion-documentos')
       .then(m => m.GestionDocumentosComponent),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, NoPrimerLoginGuard], // ✅
     data: { rol: 'admin' }
   },
 
   // ==========================================
-  // ✅ RUTAS DEL REVISOR (Vicerrectorado)
+  // RUTAS DEL REVISOR
   // ==========================================
   {
     path: 'revisor',
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, NoPrimerLoginGuard], // ✅
     data: { rol: 'revisor' },
     children: [
       {
@@ -186,18 +176,18 @@ export const routes: Routes = [
         loadComponent: () => import('./modulos/vicerrectorado/vicerrectorado')
           .then(m => m.VicerrectoradoComponent),
         data: { isHome: true }
-      }//,
-      // {
-      //   path: 'prepostulaciones',
-      //   loadComponent: () => import('./modulos/vicerrectorado/prepostulaciones/prepostulaciones')
-      //     .then(m => m.PrepostulacionesRevisorComponent)
-      // },
-      // {
-      //   path: 'solicitudes',
-      //   loadComponent: () => import('./modulos/vicerrectorado/solicitudes/solicitudes')
-      //     .then(m => m.SolicitudesRevisorComponent)
-      // }
+      }
     ]
+  },
+
+  // ==========================================
+  // PERFIL — cualquier rol autenticado
+  // ==========================================
+  {
+    path: 'perfil',
+    loadComponent: () => import('./modulos/perfil/perfil')
+      .then(m => m.PerfilComponent),
+    canActivate: [AuthGuard, NoPrimerLoginGuard] // ✅
   },
 
   // ==========================================
