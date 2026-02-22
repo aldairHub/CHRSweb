@@ -48,6 +48,8 @@ public class Usuario {
             columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime fechaCreacion;
 
+    @Column(name = "primer_login", nullable = false)
+    private Boolean primerLogin = true;
     // Relación N:N con roles de aplicación
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

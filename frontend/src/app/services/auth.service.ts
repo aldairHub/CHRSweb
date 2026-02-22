@@ -24,6 +24,17 @@ export class AuthService {
     const rolPrincipal = this.calcularRolPrincipal(roles);
     if (rolPrincipal) localStorage.setItem('rol', rolPrincipal);
     else localStorage.removeItem('rol');
+    //  nuevo — guardar primerLogin
+    localStorage.setItem('primerLogin', datos?.primerLogin ? 'true' : 'false');
+  }
+  //  nuevo — leer primerLogin
+  esPrimerLogin(): boolean {
+    return localStorage.getItem('primerLogin') === 'true';
+  }
+
+  //  nuevo — limpiar flag después del cambio
+  limpiarPrimerLogin(): void {
+    localStorage.setItem('primerLogin', 'false');
   }
 
   /** 1) SOLO backend: llama endpoint logout y RETORNA observable */
@@ -67,6 +78,11 @@ export class AuthService {
   }
 
   redirigirPorRol(): void {
+    //  Si es primer login, redirigir a cambio de clave obligatorio
+    if (this.esPrimerLogin()) {
+      this.router.navigate(['/cambiar-clave-obligatorio'], { replaceUrl: true });
+      return;
+    }
     const rol = this.getRol();
 
     switch (rol) {

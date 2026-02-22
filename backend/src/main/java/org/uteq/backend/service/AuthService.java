@@ -83,8 +83,13 @@ public class AuthService {
         // 7) Auditar DESPUÉS de que todo fue exitoso
         safeAuditSuccess(usuarioApp, usuario.getUsuarioBd(),
                 usuario.getIdUsuario(), httpRequest);
-
-        return new LoginResponse(token, usuario.getUsuarioApp(), new HashSet<>(roles));
+        //  8) Retornar con flag de primer login
+        return new LoginResponse(
+                token,
+                usuario.getUsuarioApp(),
+                new HashSet<>(roles),
+                usuario.getPrimerLogin()  //  nuevo
+        );
     }
 
     // ─── Helpers auditoría ─────────────────────────────────────

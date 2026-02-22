@@ -9,7 +9,8 @@
   </div>
 
   <div class="navbar-actions">
-    <!-- ✅ BOTÓN VOLVER (no se muestra en dashboard) -->
+
+    <!-- BOTÓN VOLVER (no se muestra en dashboard) -->
     <button
       *ngIf="!isDashboard"
       class="btn-back"
@@ -22,6 +23,8 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
     </button>
+
+    <!-- NOTIFICACIONES -->
     <div class="notification-wrapper" (click)="toggleNotifications()">
       <div class="bell-icon">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -61,21 +64,25 @@
       </div>
     </div>
 
-    <div class="user-profile">
-      <div class="avatar">
-        {{ iniciales }}
-      </div>
+    <!-- PERFIL CON DROPDOWN -->
+    <div class="user-profile" (click)="togglePerfilMenu()">
+      <div class="avatar">{{ iniciales }}</div>
       <div class="user-info">
         <span class="name">{{ nombreUsuario }}</span>
         <span class="role">{{ rolUsuario }}</span>
       </div>
-    </div>
 
-    <button class="btn-logout" (click)="logout()" title="Cerrar Sesión">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-      </svg>
-    </button>
+      <!-- Dropdown perfil -->
+      <div class="perfil-dropdown" *ngIf="showPerfilMenu" (click)="$event.stopPropagation()">
+        <button class="perfil-item" (click)="irAlPerfil()">
+          🔒 Cambiar contraseña
+        </button>
+        <hr class="perfil-divider"/>
+        <button class="perfil-item danger" (click)="logout()">
+          🚪 Cerrar sesión
+        </button>
+      </div>
+    </div>
 
   </div>
 </nav>

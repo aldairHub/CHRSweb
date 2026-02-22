@@ -5,8 +5,10 @@ import lombok.Data;
 @Data
 public class UsuarioDTO {
     private Long idUsuario;
-    private String usuarioBd;
     private String usuarioApp;
+    private String usuarioBd;
+    private String correo;
     private Boolean activo;
-    //private Role rol;
+    private Boolean primerLogin;
+
 }

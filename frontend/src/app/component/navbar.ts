@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { Location } from '@angular/common';
 import { ActivatedRoute, NavigationEnd } from '@angular/router';
@@ -10,7 +10,7 @@ import { filter } from 'rxjs/operators';
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './navbar.html',
   styleUrls: ['./navbar.scss']
 })
@@ -52,6 +52,7 @@ export class NavbarComponent {
   iniciales = '';
 
   isDashboard = false;
+  showPerfilMenu = false;
   constructor(
     private router: Router,
     private authService: AuthService,
@@ -81,7 +82,12 @@ export class NavbarComponent {
   logout(): void {
     this.authService.logoutYSalir();
   }
+  togglePerfilMenu(): void { this.showPerfilMenu = !this.showPerfilMenu; }
 
+  irAlPerfil(): void {
+    this.showPerfilMenu = false;
+    this.router.navigate(['/perfil']);
+  }
 
   cargarDatosUsuario(): void {
     this.nombreUsuario = localStorage.getItem('usuario') || 'Usuario';

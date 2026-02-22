@@ -1,0 +1,56 @@
+<div class="recuperar-clave-container">
+  <div class="card">
+
+    <!-- ✅ Vista éxito -->
+    <ng-container *ngIf="exito">
+      <div class="card-header success">
+        <div class="icon">📧</div>
+        <h2>Revisa tu correo</h2>
+        <p>Si el correo está registrado, recibirás una contraseña temporal en breve.</p>
+      </div>
+      <div class="card-body center">
+        <p class="hint">Usa esa contraseña temporal para ingresar. Al hacerlo, el sistema te pedirá establecer una nueva contraseña.</p>
+        <button class="btn-submit" (click)="volverAlLogin()">
+          Volver al login
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- Vista formulario -->
+    <ng-container *ngIf="!exito">
+      <div class="card-header">
+        <div class="icon">🔑</div>
+        <h2>Recuperar contraseña</h2>
+        <p>Ingresa tu correo y te enviaremos una contraseña temporal.</p>
+      </div>
+
+      <div class="card-body">
+
+        <div *ngIf="error" class="alert alert-error">{{ error }}</div>
+
+        <div class="form-group">
+          <label>Correo electrónico</label>
+          <input
+            type="email"
+            [(ngModel)]="correo"
+            placeholder="tucorreo@ejemplo.com"
+            autocomplete="email"
+          />
+        </div>
+
+        <button
+          class="btn-submit"
+          (click)="onSubmit()"
+          [disabled]="isLoading">
+          {{ isLoading ? 'Enviando...' : 'Enviar contraseña temporal' }}
+        </button>
+
+        <button class="btn-volver" (click)="volverAlLogin()">
+          ← Volver al login
+        </button>
+
+      </div>
+    </ng-container>
+
+  </div>
+</div>

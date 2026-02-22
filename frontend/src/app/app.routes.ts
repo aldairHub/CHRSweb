@@ -19,7 +19,12 @@ export const routes: Routes = [
     path: 'registro',
     loadComponent: () => import('./modulos/Registro/registro').then(m => m.RegistroComponent)
   },
-
+  {
+    path: 'recuperar-clave',
+    loadComponent: () =>
+      import('./modulos/recuperar-clave/recuperar-clave')
+        .then(m => m.RecuperarClaveComponent)
+  },
   // ==========================================
   // RUTA SIN ACCESO (rol no mapeado)
   // ==========================================
@@ -27,7 +32,28 @@ export const routes: Routes = [
     path: 'sin-acceso',
     loadComponent: () => import('./modulos/sin-acceso/sin-acceso').then(m => m.SinAccesoComponent)
   },
+  {
+    path: 'perfil',
+    loadComponent: () =>
+      import('./modulos/perfil/perfil')
+        .then(m => m.PerfilComponent),
+    canActivate: [AuthGuard]
+  },
 
+  {
+    path: 'cambiar-clave-obligatorio',
+    loadComponent: () =>
+      import('./modulos/cambiar-clave-obligatorio/cambiar-clave-obligatorio')
+        .then(m => m.CambiarClaveObligatorioComponent),
+    canActivate: [AuthGuard]
+  },
+
+// ✅ Alias por si ya lo estabas usando con "cambio-..."
+  {
+    path: 'cambio-clave-obligatorio',
+    redirectTo: 'cambiar-clave-obligatorio',
+    pathMatch: 'full'
+  },
   // ==========================================
   // RUTA DEL POSTULANTE
   // ==========================================

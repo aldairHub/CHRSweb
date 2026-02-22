@@ -68,7 +68,12 @@
         </div>
 
         <div class="form-actions">
-          <a class="forgot" style="cursor: pointer;">¿Olvidaste tu contraseña?</a>
+          <a
+            class="forgot"
+            style="cursor: pointer;"
+            (click)="irARecuperarClave()">
+            ¿Olvidaste tu contraseña?
+          </a>
         </div>
 
         <button type="submit" class="btn-submit" [disabled]="isLoading">

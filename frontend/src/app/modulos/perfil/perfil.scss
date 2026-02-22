@@ -1,0 +1,144 @@
+.perfil-container {
+  min-height: calc(100vh - 64px);
+  background: #f0f4f8;
+  padding: 32px 16px;
+
+  .perfil-wrapper {
+    max-width: 480px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    padding: 24px;
+  }
+
+  // ─── Info card ───────────────────────────────────────────
+  .info-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    .avatar-grande {
+      width: 64px;
+      height: 64px;
+      background: #1a3c6e;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .user-data {
+      h2 {
+        margin: 0 0 6px;
+        font-size: 1.1rem;
+        color: #111827;
+      }
+
+      .badge-rol {
+        background: #e0e7ff;
+        color: #3730a3;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+    }
+  }
+
+  // ─── Clave card ──────────────────────────────────────────
+  .clave-card {
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+
+      h3 {
+        margin: 0;
+        font-size: 1rem;
+        color: #111827;
+      }
+    }
+  }
+
+  .alert {
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 0.875rem;
+
+    &.alert-error   { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    &.alert-success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+  }
+
+  .input-wrapper {
+    position: relative;
+
+    input {
+      width: 100%;
+      padding: 10px 40px 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+
+      &:focus {
+        outline: none;
+        border-color: #1a3c6e;
+      }
+    }
+
+    .toggle-eye {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0;
+    }
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 12px;
+    background: #1a3c6e;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 4px;
+
+    &:hover:not(:disabled) { background: #15325c; }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+}

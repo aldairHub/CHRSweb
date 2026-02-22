@@ -1,0 +1,56 @@
+<div class="cambiar-clave-container">
+  <div class="card">
+
+    <div class="card-header">
+      <div class="lock-icon">🔐</div>
+      <h2>Cambio de contraseña obligatorio</h2>
+      <p>Es tu primer acceso al sistema. Debes establecer una contraseña personal antes de continuar.</p>
+    </div>
+
+    <div class="card-body">
+
+      <div *ngIf="error" class="alert alert-error">{{ error }}</div>
+      <div *ngIf="exito" class="alert alert-success">{{ exito }}</div>
+
+      <!-- Nueva contraseña -->
+      <div class="form-group">
+        <label>Nueva contraseña</label>
+        <div class="input-wrapper">
+          <input
+            [type]="showClave ? 'text' : 'password'"
+            [(ngModel)]="claveNueva"
+            placeholder="Mínimo 8 caracteres"
+            autocomplete="new-password"
+          />
+          <button type="button" class="toggle-eye" (click)="toggleClave()">
+            {{ showClave ? '🙈' : '👁️' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Confirmar contraseña -->
+      <div class="form-group">
+        <label>Confirmar contraseña</label>
+        <div class="input-wrapper">
+          <input
+            [type]="showClaveConfirm ? 'text' : 'password'"
+            [(ngModel)]="claveNuevaConfirmacion"
+            placeholder="Repite la contraseña"
+            autocomplete="new-password"
+          />
+          <button type="button" class="toggle-eye" (click)="toggleClaveConfirm()">
+            {{ showClaveConfirm ? '🙈' : '👁️' }}
+          </button>
+        </div>
+      </div>
+
+      <button
+        class="btn-submit"
+        (click)="onSubmit()"
+        [disabled]="isLoading">
+        {{ isLoading ? 'Guardando...' : 'Establecer contraseña' }}
+      </button>
+
+    </div>
+  </div>
+</div>

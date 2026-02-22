@@ -1,0 +1,84 @@
+<app-navbar></app-navbar>
+
+<div class="perfil-container">
+  <div class="perfil-wrapper">
+
+    <!-- Tarjeta de info del usuario -->
+    <div class="card info-card">
+      <div class="avatar-grande">
+        {{ nombreUsuario.substring(0, 2).toUpperCase() }}
+      </div>
+      <div class="user-data">
+        <h2>{{ nombreUsuario }}</h2>
+        <span class="badge-rol">{{ rolUsuario | uppercase }}</span>
+      </div>
+    </div>
+
+    <!-- Tarjeta cambio de contraseña -->
+    <div class="card clave-card">
+      <div class="card-title">
+        <span>🔒</span>
+        <h3>Cambiar contraseña</h3>
+      </div>
+
+      <div *ngIf="error" class="alert alert-error">{{ error }}</div>
+      <div *ngIf="exito" class="alert alert-success">{{ exito }}</div>
+
+      <!-- Clave actual -->
+      <div class="form-group">
+        <label>Contraseña actual</label>
+        <div class="input-wrapper">
+          <input
+            [type]="showClaveActual ? 'text' : 'password'"
+            [(ngModel)]="claveActual"
+            placeholder="Tu contraseña actual"
+            autocomplete="current-password"
+          />
+          <button type="button" class="toggle-eye" (click)="toggleClaveActual()">
+            {{ showClaveActual ? '🙈' : '👁️' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Nueva clave -->
+      <div class="form-group">
+        <label>Nueva contraseña</label>
+        <div class="input-wrapper">
+          <input
+            [type]="showClaveNueva ? 'text' : 'password'"
+            [(ngModel)]="claveNueva"
+            placeholder="Mínimo 8 caracteres"
+            autocomplete="new-password"
+          />
+          <button type="button" class="toggle-eye" (click)="toggleClaveNueva()">
+            {{ showClaveNueva ? '🙈' : '👁️' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Confirmar nueva clave -->
+      <div class="form-group">
+        <label>Confirmar nueva contraseña</label>
+        <div class="input-wrapper">
+          <input
+            [type]="showClaveConfirm ? 'text' : 'password'"
+            [(ngModel)]="claveNuevaConfirmacion"
+            placeholder="Repite la nueva contraseña"
+            autocomplete="new-password"
+          />
+          <button type="button" class="toggle-eye" (click)="toggleClaveConfirm()">
+            {{ showClaveConfirm ? '🙈' : '👁️' }}
+          </button>
+        </div>
+      </div>
+
+      <button
+        class="btn-submit"
+        (click)="onSubmit()"
+        [disabled]="isLoading">
+        {{ isLoading ? 'Guardando...' : 'Actualizar contraseña' }}
+      </button>
+    </div>
+
+  </div>
+</div>

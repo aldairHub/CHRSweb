@@ -3,11 +3,15 @@ package org.uteq.backend.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.uteq.backend.dto.UsuarioCreateDTO;
 import org.uteq.backend.dto.UsuarioDTO;
 import org.uteq.backend.dto.UsuarioUpdateDTO;
 import org.uteq.backend.entity.Usuario;
 import org.uteq.backend.repository.UsuarioRepository;
+import org.uteq.backend.dto.CambiarClaveDTO;
+import org.uteq.backend.util.CredencialesGenerator;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,11 +19,17 @@ import java.util.stream.Collectors;
 @Service
 public class UsuarioService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public UsuarioService(UsuarioRepository usuarioRepository,
+                          PasswordEncoder passwordEncoder,
+                          EmailService emailService) {
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+    }
 
     public UsuarioDTO crear(UsuarioCreateDTO dto) {
 //        if (dto.getRol() == null) {
@@ -75,12 +85,6 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
-//    public List<UsuarioDTO> listarAutoridades() {
-//        return usuarioRepository.findAll().stream()
-//                .filter(u -> u.getRol() == Role.ADMIN || u.getRol() == Role.EVALUATOR)
-//                .map(this::convertirADTO)
-//                .collect(Collectors.toList());
-//    }
 
     public UsuarioDTO obtenerPorId(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
@@ -92,9 +96,6 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-//        if (dto.getRol() == Role.USER) {
-//            throw new RuntimeException("No se permite cambiar el rol a USER manualmente");
-//        }
 
         if (dto.getUsuarioBd() != null) {
             usuario.setUsuarioBd(dto.getUsuarioBd());
@@ -111,9 +112,6 @@ public class UsuarioService {
         if (dto.getActivo() != null) {
             usuario.setActivo(dto.getActivo());
         }
-//        if (dto.getRol() != null) {
-//            usuario.setRol(dto.getRol());
-//        }
 
         Usuario actualizado = usuarioRepository.save(usuario);
         return convertirADTO(actualizado);
@@ -132,8 +130,101 @@ public class UsuarioService {
         dto.setIdUsuario(usuario.getIdUsuario());
         dto.setUsuarioBd(usuario.getUsuarioBd());
         dto.setUsuarioApp(usuario.getUsuarioApp());
+        dto.setCorreo(usuario.getCorreo());           // ✅ agregar
         dto.setActivo(usuario.getActivo());
-        //dto.setRol(usuario.getRol());
+        dto.setPrimerLogin(usuario.getPrimerLogin()); // ✅ agregar
         return dto;
+    }
+    // ─── Caso 1: Primer login — cambio obligatorio ─────────────
+
+    @Transactional
+    public void cambiarClavePrimerLogin(String usuarioApp, CambiarClaveDTO dto) {
+
+        Usuario usuario = usuarioRepository.findByUsuarioApp(usuarioApp)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Verificar que realmente es primer login
+        if (!Boolean.TRUE.equals(usuario.getPrimerLogin())) {
+            throw new RuntimeException("Este usuario ya realizó su primer cambio de clave");
+        }
+
+        validarClaveNueva(dto, usuario);
+
+        usuario.setClaveApp(passwordEncoder.encode(dto.getClaveNueva()));
+        usuario.setPrimerLogin(false); //  marcar que ya no es primer login
+        usuarioRepository.save(usuario);
+    }
+
+    // ─── Caso 2: Cambio voluntario ─────────────────────────────
+
+    @Transactional
+    public void cambiarClave(String usuarioApp, CambiarClaveDTO dto) {
+
+        Usuario usuario = usuarioRepository.findByUsuarioApp(usuarioApp)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Requiere clave actual
+        if (!passwordEncoder.matches(dto.getClaveActual(), usuario.getClaveApp())) {
+            throw new RuntimeException("La contraseña actual es incorrecta");
+        }
+
+        validarClaveNueva(dto, usuario);
+
+        usuario.setClaveApp(passwordEncoder.encode(dto.getClaveNueva()));
+        usuario.setPrimerLogin(false);
+        usuarioRepository.save(usuario);
+    }
+
+    // ─── Caso 3: Olvidó contraseña ─────────────────────────────
+
+    @Transactional
+    public void recuperarClave(String correo) {
+
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+                .orElseThrow(() -> new RuntimeException("No existe una cuenta con ese correo"));
+
+        if (!Boolean.TRUE.equals(usuario.getActivo())) {
+            throw new RuntimeException("La cuenta está inactiva");
+        }
+
+        // Generar clave temporal nueva
+        String claveTemporal = CredencialesGenerator.generarClaveApp();
+
+        // Actualizar en BD
+        usuario.setClaveApp(passwordEncoder.encode(claveTemporal));
+        usuario.setPrimerLogin(true); // ✅ forzar cambio al entrar
+        usuarioRepository.save(usuario);
+
+        // Enviar correo con clave temporal
+        try {
+            emailService.enviarCredenciales(
+                    correo,
+                    usuario.getUsuarioApp(),
+                    claveTemporal
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("No se pudo enviar el correo de recuperación");
+        }
+    }
+
+    // ─── Validaciones comunes ───────────────────────────────────
+
+    private void validarClaveNueva(CambiarClaveDTO dto, Usuario usuario) {
+
+        if (dto.getClaveNueva() == null || dto.getClaveNueva().isBlank()) {
+            throw new RuntimeException("La nueva contraseña no puede estar vacía");
+        }
+
+        if (dto.getClaveNueva().length() < 8) {
+            throw new RuntimeException("La nueva contraseña debe tener al menos 8 caracteres");
+        }
+
+        if (!dto.getClaveNueva().equals(dto.getClaveNuevaConfirmacion())) {
+            throw new RuntimeException("La nueva contraseña y su confirmación no coinciden");
+        }
+
+        if (passwordEncoder.matches(dto.getClaveNueva(), usuario.getClaveApp())) {
+            throw new RuntimeException("La nueva contraseña debe ser diferente a la actual");
+        }
     }
 }

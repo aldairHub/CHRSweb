@@ -85,10 +85,15 @@ export class LoginComponent  implements OnInit{
     if (token) {
       this.router.navigate(['/'], { replaceUrl: true });
     }
+
   }
 
-
   irARegistro() {
-    this.router.navigate(['/registro'], {replaceUrl: true});
+    this.router.navigate(['/registro'], { replaceUrl: true });
+  }
+
+  // ✅ nuevo
+  irARecuperarClave() {
+    this.router.navigate(['/recuperar-clave']);
   }
 }
