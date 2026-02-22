@@ -63,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/demo/**").permitAll()
                         .requestMatchers("/api/usuarios/migrar-claves-bd").permitAll()  // ← TEMPORAL
+                        .requestMatchers("/resetear-claves-bd").permitAll() // ← TEMPORAL
                         .anyRequest().authenticated()
                 );
 

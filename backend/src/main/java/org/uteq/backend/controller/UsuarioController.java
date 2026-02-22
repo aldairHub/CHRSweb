@@ -1,20 +1,21 @@
 package org.uteq.backend.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.uteq.backend.dto.UsuarioCreateDTO;
 import org.uteq.backend.dto.UsuarioDTO;
 import org.uteq.backend.dto.UsuarioUpdateDTO;
 import org.uteq.backend.entity.Usuario;
-import org.uteq.backend.service.UsuarioService;
 import org.uteq.backend.repository.UsuarioRepository;
 import org.uteq.backend.service.AesCipherService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.uteq.backend.service.UsuarioService;
 
-import java.util.Base64;
+import java.security.SecureRandom;
 import java.util.List;
 
 @RestController
@@ -132,4 +133,6 @@ public class UsuarioController {
         // Base64 válido solo contiene estos caracteres y su longitud es múltiplo de 4
         return valor.matches("^[A-Za-z0-9+/]*={0,2}$") && valor.length() % 4 == 0;
     }
+
+
 }

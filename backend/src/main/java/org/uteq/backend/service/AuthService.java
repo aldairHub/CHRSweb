@@ -84,7 +84,7 @@ public class AuthService {
         // ✅ 4) Descifrar clave BD con AES antes del switch
         String claveBdReal = aesCipherService.descifrar(usuario.getClaveBd());
         // ✅ 5) CAMBIO REAL DE CONEXIÓN BD
-        dbSwitchService.switchToUser(usuario.getUsuarioBd(), usuario.getClaveBd());
+        dbSwitchService.switchToUser(usuario.getUsuarioBd(), claveBdReal);
 
         // ✅ 6) OBTENER ROLES desde PostgreSQL usando stored procedure
         //    Este procedure consulta pg_auth_members y mapea a roles de aplicación
