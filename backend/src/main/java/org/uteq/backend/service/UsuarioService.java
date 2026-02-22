@@ -137,18 +137,14 @@ public class UsuarioService {
     // ─── Caso 1: Primer login ───────────────────────────────────
 
     @Transactional
-    public void cambiarClavePrimerLogin(String usuarioApp, CambiarClaveDTO dto) {
-        Usuario usuario = usuarioRepository.findByUsuarioApp(usuarioApp)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    public void cambiarClavePrimerLogin(CambiarClaveDTO dto) {
 
-        if (!Boolean.TRUE.equals(usuario.getPrimerLogin()))
-            throw new RuntimeException("Este usuario ya realizó su primer cambio de clave");
+        validarClaveNuevaPrimerLogin(dto);
 
-        validarClaveNueva(dto, usuario);
 
-        //  SP con SECURITY DEFINER — resuelve problema de permisos
+        // Cambia clave por SP (SECURITY DEFINER)
         String hash = passwordEncoder.encode(dto.getClaveNueva());
-        procedureRepository.cambiarClaveApp(usuarioApp, hash);
+        procedureRepository.primerLoginCambiarClaveApp(hash);
     }
 
     // ─── Caso 2: Cambio voluntario ─────────────────────────────
@@ -202,5 +198,13 @@ public class UsuarioService {
             throw new RuntimeException("La nueva contraseña y su confirmación no coinciden");
         if (passwordEncoder.matches(dto.getClaveNueva(), usuario.getClaveApp()))
             throw new RuntimeException("La nueva contraseña debe ser diferente a la actual");
+    }
+    private void validarClaveNuevaPrimerLogin(CambiarClaveDTO dto) {
+        if (dto.getClaveNueva() == null || dto.getClaveNueva().isBlank())
+            throw new RuntimeException("La nueva contraseña no puede estar vacía");
+        if (dto.getClaveNueva().length() < 8)
+            throw new RuntimeException("La nueva contraseña debe tener al menos 8 caracteres");
+        if (!dto.getClaveNueva().equals(dto.getClaveNuevaConfirmacion()))
+            throw new RuntimeException("La nueva contraseña y su confirmación no coinciden");
     }
 }

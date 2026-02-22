@@ -5,10 +5,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
@@ -24,9 +24,11 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(withDefaults()) // aquí: habilita CORS usando tu CorsConfigurationSource
+                .cors(withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // Públicos
                         .requestMatchers(
                                 "/api/usuarios",
                                 "/api/auth/login",
@@ -60,19 +62,25 @@ public class SecurityConfig {
                                 "/api/solicitudes-docente/",
                                 "/api/solicitudes-docente/**"
                         ).permitAll()
+
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/demo/**").permitAll()
-                        .requestMatchers("/api/usuarios/migrar-claves-bd").permitAll()  // ← TEMPORAL
-                        .requestMatchers("/resetear-claves-bd").permitAll() // ← TEMPORAL
-                        .anyRequest().authenticated()
+
+                        // TEMPORALES (siempre mejor quitarlos luego)
+                        .requestMatchers("/api/usuarios/migrar-claves-bd").permitAll()
+                        .requestMatchers("/resetear-claves-bd").permitAll()
+
+                        // Estos estaban MAL ubicados (después de anyRequest)
                         .requestMatchers("/api/usuarios/recuperar-clave").permitAll()
-                        .requestMatchers("/api/usuarios/primer-login/cambiar-clave").authenticated()
-                        .requestMatchers("/api/usuarios/cambiar-clave").authenticated()
+                        .requestMatchers("/api/usuarios/primer-login/cambiar-clave").permitAll()
+                        .requestMatchers("/api/usuarios/cambiar-clave").permitAll()
+
+                        // SIEMPRE al final
+                        .anyRequest().authenticated()
                 );
 
         return http.build();
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -83,7 +91,6 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(false);
-
         config.setAllowedOriginPatterns(List.of(
                 "http://localhost:8080",
                 "http://localhost:4200"

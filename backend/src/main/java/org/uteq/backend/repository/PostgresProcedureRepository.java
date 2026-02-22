@@ -298,4 +298,15 @@ public class PostgresProcedureRepository {
         String sql = "CALL public.sp_recuperar_clave_app(?, ?)";
         jdbcTemplate.update(sql, usuarioApp, claveAppHash);
     }
+    public void primerLoginCambiarClaveApp(String claveAppHash) {
+        String sql = "CALL public.sp_primer_login_cambiar_clave_app(?)";
+        try {
+            jdbcTemplate.update(sql, claveAppHash);
+        } catch (org.springframework.dao.DataAccessException ex) {
+            Throwable root = org.springframework.core.NestedExceptionUtils.getMostSpecificCause(ex);
+            System.err.println("ERROR SP primer login: " + (root != null ? root.getMessage() : ex.getMessage()));
+            throw ex; // para que siga fallando, pero con mensaje real en consola
+        }
+    }
+
 }
