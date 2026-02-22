@@ -32,7 +32,7 @@ public class PrepostulacionService {
     private final UsuarioRepository usuarioRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
-    private final UsuarioCreadorService usuarioCreadorService;
+//    private final UsuarioCreadorService usuarioCreadorService;
 //    private final DbRoleSyncService dbRoleSyncService;
 //    private final IUsuarioRolRepository usuarioRolRepository;
 //    private final IRolUsuarioRepository rolUsuarioRepository;
@@ -46,7 +46,7 @@ public class PrepostulacionService {
             UsuarioRepository usuarioRepository,
             EmailService emailService,
             PasswordEncoder passwordEncoder,
-            UsuarioCreadorService usuarioCreadorService,
+            // UsuarioCreadorService usuarioCreadorService,
             //  ELIMINAR ESTOS 3:
             // DbRoleSyncService dbRoleSyncService,
             // IUsuarioRolRepository usuarioRolRepository,
@@ -61,7 +61,7 @@ public class PrepostulacionService {
         this.usuarioRepository = usuarioRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
-        this.usuarioCreadorService = usuarioCreadorService;
+        //this.usuarioCreadorService = usuarioCreadorService;
         // ELIMINAR:
         // this.dbRoleSyncService = dbRoleSyncService;
         // this.usuarioRolRepository = usuarioRolRepository;

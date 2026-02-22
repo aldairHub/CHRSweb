@@ -66,13 +66,8 @@ public class UsuarioAdminService {
         u.setRolesApp(nuevosRoles);
         usuarioRepository.save(u);
 
-        // Sincroniza permisos en BD (llama al SP)
-        try {
-            dbRoleSyncService.syncRolesUsuarioBd(idUsuario.intValue(), true);
-        } catch (Exception ex) {
-            // log pero no falla la transacción de roles de app
-            System.err.println("⚠️ sync BD fallido para usuario " + idUsuario + ": " + ex.getMessage());
-        }
+        //  Sin try/catch — si falla, que falle la transacción completa
+        dbRoleSyncService.syncRolesUsuarioBd(idUsuario.intValue(), true);
 
         return toUsuarioConRoles(u);
     }
@@ -102,11 +97,8 @@ public class UsuarioAdminService {
         u.setRolesApp(nuevosRoles);
         usuarioRepository.save(u);
 
-        try {
-            dbRoleSyncService.syncRolesUsuarioBd(u.getIdUsuario().intValue(), true);
-        } catch (Exception ex) {
-            System.err.println("⚠️ sync BD fallido para usuario " + u.getIdUsuario() + ": " + ex.getMessage());
-        }
+        //  Sin try/catch
+        dbRoleSyncService.syncRolesUsuarioBd(u.getIdUsuario().intValue(), true);
 
         return toAutoridadConRoles(autoridadRepository.findById(idAutoridad).get());
     }

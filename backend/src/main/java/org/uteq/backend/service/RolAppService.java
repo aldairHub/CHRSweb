@@ -6,6 +6,7 @@ import org.uteq.backend.dto.RolAppConRolesBdDTO;
 import org.uteq.backend.dto.RolAppSaveDTO;
 import org.uteq.backend.entity.RolApp;
 import org.uteq.backend.entity.RolAppBd;
+import org.uteq.backend.repository.PostgresProcedureRepository;
 import org.uteq.backend.repository.RolAppBdRepository;
 import org.uteq.backend.repository.RolAppRepository;
 
@@ -25,14 +26,17 @@ public class RolAppService {
 
     private final RolAppRepository rolAppRepository;
     private final RolAppBdRepository rolAppBdRepository;
+    private final PostgresProcedureRepository procedureRepository;
 
     public RolAppService(RolAppRepository rolAppRepository,
-                         RolAppBdRepository rolAppBdRepository) {
+                         RolAppBdRepository rolAppBdRepository,
+                         PostgresProcedureRepository procedureRepository) {
         this.rolAppRepository = rolAppRepository;
         this.rolAppBdRepository = rolAppBdRepository;
+        this.procedureRepository = procedureRepository;
     }
 
-    // ─── Lecturas ──────────────────────────────────────────────
+    // ─── Lecturas —────────────────────────────────
 
     public List<RolAppConRolesBdDTO> listarConRolesBd() {
         return rolAppRepository.findAll()
@@ -47,39 +51,43 @@ public class RolAppService {
         return toConRolesBd(rol);
     }
 
-    /** Devuelve lista de roles BD disponibles en pg_roles (prefijo role_*, NOLOGIN). */
     public List<String> listarRolesBdDisponibles() {
         return rolAppBdRepository.findRolesBdDisponibles();
     }
 
-    // ─── Escritura ─────────────────────────────────────────────
+    // ─── Escritura —con SPs ────────────────────────────
 
     public RolAppConRolesBdDTO crear(RolAppSaveDTO dto) {
-        if (rolAppRepository.existsByNombre(dto.getNombre())) {
+        if (rolAppRepository.existsByNombre(dto.getNombre()))
             throw new RuntimeException("Ya existe un rol con ese nombre: " + dto.getNombre());
-        }
 
-        RolApp rol = new RolApp();
-        rol.setNombre(dto.getNombre());
-        rol.setDescripcion(dto.getDescripcion());
-        rol.setActivo(dto.getActivo() != null ? dto.getActivo() : true);
-        RolApp guardado = rolAppRepository.save(rol);
+        //  SP hace INSERT en roles_app + valida y asigna roles_bd en roles_app_bd
+        Integer idCreado = procedureRepository.crearRolApp(
+                dto.getNombre(),
+                dto.getDescripcion(),
+                dto.getRolesBd()
+        );
 
-        sincronizarRolesBd(guardado, dto.getRolesBd());
-        return toConRolesBd(guardado);
+        return obtenerPorId(idCreado);
     }
 
     public RolAppConRolesBdDTO actualizar(Integer id, RolAppSaveDTO dto) {
-        RolApp rol = rolAppRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("RolApp no encontrado: " + id));
+        if (!rolAppRepository.existsById(id))
+            throw new RuntimeException("RolApp no encontrado: " + id);
 
-        if (dto.getNombre() != null) rol.setNombre(dto.getNombre());
-        if (dto.getDescripcion() != null) rol.setDescripcion(dto.getDescripcion());
-        if (dto.getActivo() != null) rol.setActivo(dto.getActivo());
+        // SP hace UPDATE en roles_app + DELETE/INSERT en roles_app_bd + valida pg_roles
+        procedureRepository.actualizarRolApp(
+                id,
+                dto.getNombre(),
+                dto.getDescripcion(),
+                dto.getRolesBd()
+        );
 
-        RolApp guardado = rolAppRepository.save(rol);
-        sincronizarRolesBd(guardado, dto.getRolesBd());
-        return toConRolesBd(guardado);
+        // activo no tiene SP — sigue en JPA
+        if (dto.getActivo() != null)
+            cambiarEstado(id, dto.getActivo());
+
+        return obtenerPorId(id);
     }
 
     public void cambiarEstado(Integer id, Boolean activo) {
@@ -89,26 +97,7 @@ public class RolAppService {
         rolAppRepository.save(rol);
     }
 
-    // ─── Helpers ───────────────────────────────────────────────
-
-    /**
-     * Reemplaza los mapeos de roles_bd para un rol_app dado.
-     * Si rolesBd es null, no modifica los mapeos existentes.
-     */
-    private void sincronizarRolesBd(RolApp rol, List<String> rolesBd) {
-        if (rolesBd == null) return;
-
-        rolAppBdRepository.deleteByRolAppId(rol.getIdRolApp());
-
-        for (String nombreRolBd : rolesBd) {
-            if (nombreRolBd != null && !nombreRolBd.isBlank()) {
-                RolAppBd mapeo = new RolAppBd();
-                mapeo.setRolApp(rol);
-                mapeo.setNombreRolBd(nombreRolBd.trim().toLowerCase());
-                rolAppBdRepository.save(mapeo);
-            }
-        }
-    }
+    // ─── Helpers —────────────
 
     private RolAppConRolesBdDTO toConRolesBd(RolApp rol) {
         RolAppConRolesBdDTO dto = new RolAppConRolesBdDTO();
@@ -127,4 +116,5 @@ public class RolAppService {
         dto.setRolesBd(rolesBd);
         return dto;
     }
+
 }

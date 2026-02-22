@@ -6,7 +6,7 @@ import org.uteq.backend.dto.AuditLoginMotivo;
 import org.uteq.backend.dto.AuditLoginResultado;
 
 @Repository
-public class AuditLoginRepositoryImpl implements IAuditLoginRepository {
+public class AuditLoginRepositoryImpl implements AuditLoginRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -21,24 +21,20 @@ public class AuditLoginRepositoryImpl implements IAuditLoginRepository {
             AuditLoginResultado resultado,
             AuditLoginMotivo motivo,
             String ipCliente,
-            String userAgent
+            String userAgent,
+            Long idUsuario  // ✅ nuevo
     ) {
         jdbcTemplate.queryForObject(
-                "SELECT public.fn_auditar_login_app(?, ?, ?, ?, ?::inet, ?)",
+                "SELECT public.fn_auditar_login_app(?, ?, ?, ?, ?::inet, ?, ?)",
                 Object.class,
                 usuarioApp,
                 usuarioBd,
                 resultado.name(),
                 (motivo == null ? null : motivo.name()),
                 ipCliente,
-                userAgent
+                userAgent,
+                idUsuario
         );
     }
-//    public String whoAmI() {
-//        return jdbcTemplate.queryForObject(
-//                "select current_database() || ' | ' || current_schema() || ' | ' || current_user",
-//                String.class
-//        );
-//    }
 
 }

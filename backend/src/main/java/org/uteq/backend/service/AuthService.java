@@ -1,11 +1,9 @@
 package org.uteq.backend.service;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-// ❌ ELIMINADO: import org.uteq.backend.repository.IUsuarioRolRepository;
-import org.uteq.backend.repository.PostgresProcedureRepository;  // ✅ NUEVO
+import org.uteq.backend.repository.PostgresProcedureRepository;
 import org.uteq.backend.dto.AuditLoginMotivo;
 import org.uteq.backend.dto.LoginRequest;
 import org.uteq.backend.dto.LoginResponse;
@@ -18,44 +16,28 @@ import java.util.List;
 @Service
 public class AuthService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    // ❌ ELIMINADO: private IUsuarioRolRepository usuarioRolRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JwtService jwtService;
-
-    @Autowired
-    private ILoginAuditService loginAuditService;
-
-    @Autowired
-    private DbSwitchService dbSwitchService;
-
-    // Repository para stored procedures
-    @Autowired
-    private PostgresProcedureRepository postgresProcedureRepository;
-
-    @Autowired private AesCipherService aesCipherService; // ✅ NUEVO
-
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final LoginAuditService loginAuditService;
+    private final DbSwitchService dbSwitchService;
+    private final PostgresProcedureRepository postgresProcedureRepository;
+    private final AesCipherService aesCipherService;
 
     public AuthService(UsuarioRepository usuarioRepository,
                        JwtService jwtService,
                        PasswordEncoder passwordEncoder,
                        DbSwitchService dbSwitchService,
                        PostgresProcedureRepository postgresProcedureRepository,
-                       AesCipherService aesCipherService) {
-
+                       AesCipherService aesCipherService,
+                       LoginAuditService loginAuditService) {
         this.usuarioRepository = usuarioRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.dbSwitchService = dbSwitchService;
         this.postgresProcedureRepository = postgresProcedureRepository;
         this.aesCipherService = aesCipherService;
-
+        this.loginAuditService = loginAuditService;
     }
 
     public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
@@ -64,56 +46,61 @@ public class AuthService {
 
         // 1) Buscar usuario
         Usuario usuario = usuarioRepository.findByUsuarioApp(usuarioApp).orElse(null);
-
         if (usuario == null) {
-            safeAuditFail(usuarioApp, null, AuditLoginMotivo.USER_NOT_FOUND, httpRequest);
+            safeAuditFail(usuarioApp, null, null,
+                    AuditLoginMotivo.USER_NOT_FOUND, httpRequest);
             throw new RuntimeException("Usuario no encontrado");
         }
 
         // 2) Inactivo
         if (Boolean.FALSE.equals(usuario.getActivo())) {
-            safeAuditFail(usuarioApp, usuario.getUsuarioBd(), AuditLoginMotivo.USER_DISABLED, httpRequest);
+            safeAuditFail(usuarioApp, usuario.getUsuarioBd(), usuario.getIdUsuario(),
+                    AuditLoginMotivo.USER_DISABLED, httpRequest);
             throw new RuntimeException("Usuario inactivo");
         }
 
         // 3) Password incorrecta
         if (!passwordEncoder.matches(request.getClaveApp(), usuario.getClaveApp())) {
-            safeAuditFail(usuarioApp, usuario.getUsuarioBd(), AuditLoginMotivo.BAD_CREDENTIALS, httpRequest);
+            safeAuditFail(usuarioApp, usuario.getUsuarioBd(), usuario.getIdUsuario(),
+                    AuditLoginMotivo.BAD_CREDENTIALS, httpRequest);
             throw new RuntimeException("Contraseña incorrecta");
         }
-        // ✅ 4) Descifrar clave BD con AES antes del switch
+
+        // 4) Switch de conexión
         String claveBdReal = aesCipherService.descifrar(usuario.getClaveBd());
-        // ✅ 5) CAMBIO REAL DE CONEXIÓN BD
         dbSwitchService.switchToUser(usuario.getUsuarioBd(), claveBdReal);
 
-        // ✅ 6) OBTENER ROLES desde PostgreSQL usando stored procedure
-        //    Este procedure consulta pg_auth_members y mapea a roles de aplicación
+        // 5) Obtener roles
         List<String> roles = postgresProcedureRepository.obtenerRolesAppUsuario();
-
-        // Validar que tenga al menos un rol
         if (roles == null || roles.isEmpty()) {
-            // Revertir conexión si no tiene roles
             dbSwitchService.resetToDefault();
             throw new RuntimeException("El usuario no tiene roles asignados en PostgreSQL");
         }
 
-        safeAuditSuccess(usuarioApp, usuario.getUsuarioBd(), httpRequest);
-
-        // 7) Generar JWT con roles de aplicación
+        // 6) Generar JWT
         String token = jwtService.generateToken(usuario.getUsuarioApp(), roles);
+
+        // 7) Auditar DESPUÉS de que todo fue exitoso
+        safeAuditSuccess(usuarioApp, usuario.getUsuarioBd(),
+                usuario.getIdUsuario(), httpRequest);
 
         return new LoginResponse(token, usuario.getUsuarioApp(), new HashSet<>(roles));
     }
 
-    private void safeAuditSuccess(String usuarioApp, String usuarioBd, HttpServletRequest httpRequest) {
+    // ─── Helpers auditoría ─────────────────────────────────────
+
+    private void safeAuditSuccess(String usuarioApp, String usuarioBd,
+                                  Long idUsuario, HttpServletRequest request) {
         try {
-            loginAuditService.logSuccess(usuarioApp, usuarioBd, httpRequest);
+            loginAuditService.logSuccess(usuarioApp, usuarioBd, idUsuario, request);
         } catch (Exception ignored) {}
     }
 
-    private void safeAuditFail(String usuarioApp, String usuarioBdOrNull, AuditLoginMotivo motivo, HttpServletRequest httpRequest) {
+    private void safeAuditFail(String usuarioApp, String usuarioBd,
+                               Long idUsuario, AuditLoginMotivo motivo,
+                               HttpServletRequest request) {
         try {
-            loginAuditService.logFail(usuarioApp, usuarioBdOrNull, motivo, httpRequest);
+            loginAuditService.logFail(usuarioApp, usuarioBd, idUsuario, motivo, request);
         } catch (Exception ignored) {}
     }
 }

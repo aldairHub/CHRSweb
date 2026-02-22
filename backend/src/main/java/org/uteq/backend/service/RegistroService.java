@@ -4,6 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.uteq.backend.entity.Usuario;
+import org.uteq.backend.repository.PostgresProcedureRepository;
 import org.uteq.backend.repository.UsuarioRepository;
 import org.uteq.backend.dto.RegistroResponseDTO;
 import org.uteq.backend.dto.RegistroUsuarioDTO;
@@ -16,6 +17,8 @@ public class RegistroService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final AesCipherService aesCipherService;
+    private final PostgresProcedureRepository postgresProcedureRepository;
 
     @Transactional
     public RegistroResponseDTO registrarUsuario(RegistroUsuarioDTO dto) {
@@ -27,8 +30,11 @@ public class RegistroService {
         // Generar credenciales automáticas
         String usuarioApp = CredencialesGenerator.generarUsuario(dto.getCedula());
         String claveAppPlain = CredencialesGenerator.generarClaveApp();
-        String claveBd = CredencialesGenerator.generarClaveBd();
+        String claveAppHash  = passwordEncoder.encode(claveAppPlain);
+        //String claveBd = CredencialesGenerator.generarClaveBd();
         String usuarioBd = "usuario" + dto.getCedula().substring(dto.getCedula().length() - 6);
+        String claveBdReal   = generarClaveTemporal(16);
+        String claveBdCifrada = aesCipherService.cifrar(claveBdReal); // ✅ AES
 
         // Verificar si el usuario generado ya existe (muy raro, pero por si acaso)
         int contador = 1;
@@ -38,17 +44,12 @@ public class RegistroService {
             contador++;
         }
 
-        // Crear entidad Usuario
-        Usuario usuario = new Usuario();
-        usuario.setUsuarioBd(usuarioBd);
-        usuario.setClaveBd(claveBd);
-        usuario.setUsuarioApp(usuarioApp);
-        usuario.setClaveApp(passwordEncoder.encode(claveAppPlain)); // Encriptar con BCrypt
-        usuario.setCorreo(dto.getCorreo());
-        usuario.setActivo(true);
-
-        // Guardar en base de datos
-        usuarioRepository.save(usuario);
+        // ✅ SP hace todo: INSERT usuario + CREATE USER + GRANT roles
+        postgresProcedureRepository.registrarUsuarioSimple(
+                usuarioApp, claveAppHash, dto.getCorreo(),
+                usuarioBd, claveBdCifrada, claveBdReal,
+                dto.getRolesApp()
+        );
 
         // Enviar email con credenciales (asíncrono)
         try {
@@ -63,5 +64,14 @@ public class RegistroService {
                 dto.getCorreo(),
                 true
         );
+    }
+    private String generarClaveTemporal(int length) {
+        final String ABC = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%";
+        java.security.SecureRandom r = new java.security.SecureRandom();
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            sb.append(ABC.charAt(r.nextInt(ABC.length())));
+        }
+        return sb.toString();
     }
 }
