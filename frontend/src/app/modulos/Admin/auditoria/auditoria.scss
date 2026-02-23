@@ -1,3 +1,4 @@
+@use "sass:color";
 $primary:    #00A63E;
 $dark:       #016630;
 $border:     #B9F8CF;
@@ -217,7 +218,7 @@ table {
   }
 
   tbody tr {
-    border-bottom: 1px solid lighten($border, 5%);
+    border-bottom: 1px solid color.scale($border, $lightness: 33%);
     transition: background 0.15s;
 
     &:hover { background: #f9fdf9; }

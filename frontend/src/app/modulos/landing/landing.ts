@@ -15,3 +15,4 @@ export class LandingComponent {
   irAConvocatorias(): void { this.router.navigate(['/convocatorias']); }
   irALogin():         void { this.router.navigate(['/login']); }
 }
+

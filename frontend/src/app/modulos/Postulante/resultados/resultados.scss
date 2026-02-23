@@ -1,0 +1,275 @@
+$green: #16a34a;
+$green-dark: #0d5e2f;
+$green-light: #dcfce7;
+$text-dark: #111827;
+$text-gray: #4b5563;
+$border: #e5e7eb;
+$white: #ffffff;
+$red: #dc2626;
+$orange: #d97706;
+$blue: #1d4ed8;
+
+.main-container {
+  padding: 24px;
+  min-height: calc(100vh - 140px);
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
+
+.content-wrapper { max-width: 900px; margin: 0 auto; }
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+
+  &__title { font-size: 1.6rem; font-weight: 700; color: $green-dark; margin: 0; }
+  &__description { color: $text-gray; margin: 4px 0 0; font-size: 0.88rem; }
+}
+
+// ESTADO CARD
+.estado-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 2px solid transparent;
+
+  &--verde   { background: $green-light; border-color: $green; }
+  &--amarillo{ background: #fef3c7; border-color: $orange; }
+  &--rojo    { background: #fee2e2; border-color: $red; }
+}
+
+.estado-icon {
+  font-size: 2.5rem;
+  .pi-check-circle { color: $green; }
+  .pi-times-circle { color: $red; }
+  .pi-clock        { color: $orange; }
+}
+
+.estado-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.estado-label { font-size: 0.75rem; color: $text-gray; text-transform: uppercase; font-weight: 600; }
+.estado-valor { font-size: 1.2rem; font-weight: 800; color: $text-dark; }
+.estado-fecha { font-size: 0.78rem; color: $text-gray; }
+
+.estado-posicion { text-align: center; }
+.posicion-num { display: block; font-size: 2.5rem; font-weight: 800; color: $green-dark; }
+.posicion-label { font-size: 0.78rem; color: $text-gray; }
+
+// PUNTAJE BANNER
+.puntaje-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: $white;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  border: 1px solid $border;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.puntaje-bloque {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  min-width: 90px;
+}
+
+.pb-num { font-size: 2rem; font-weight: 800; color: $green-dark; }
+.pb-max { font-size: 0.8rem; color: $text-gray; }
+.pb-label { font-size: 0.75rem; color: $text-gray; font-weight: 600; text-transform: uppercase; }
+.pb-pct { font-size: 0.8rem; color: $green; font-weight: 700; }
+
+.puntaje-total .pb-num { color: $green; font-size: 2.4rem; }
+
+.puntaje-sep {
+  font-size: 1.5rem;
+  color: $text-gray;
+  font-weight: 300;
+  padding: 0 4px;
+}
+
+// TABS
+.tabs-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  background: $white;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid $border;
+  width: fit-content;
+}
+
+.tab {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: $text-gray;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &--active {
+    background: $green;
+    color: $white;
+  }
+
+  &:hover:not(.tab--active) { background: $green-light; color: $green-dark; }
+}
+
+// CARD GENERAL
+.form-card {
+  background: $white;
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid $border;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.seccion-titulo { margin: 0 0 20px; font-size: 1.1rem; font-weight: 700; color: $green-dark; }
+
+// BARRAS RESUMEN
+.resumen-barras { display: flex; flex-direction: column; gap: 16px; }
+
+.barra-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 80px;
+  align-items: center;
+  gap: 12px;
+}
+
+.barra-label { font-size: 0.85rem; color: $text-dark; font-weight: 600; }
+.barra-label-total { font-weight: 800; color: $green-dark; }
+
+.barra-track {
+  height: 12px;
+  background: #f3f4f6;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.barra-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+.barra-meritos    { background: $green; }
+.barra-experiencia{ background: $blue; }
+.barra-afirmativa { background: $orange; }
+.barra-total-fill { background: linear-gradient(90deg, $green-dark, $green); }
+
+.barra-row.barra-total-row { border-top: 1px solid $border; padding-top: 12px; }
+.barra-score { font-size: 0.85rem; font-weight: 700; color: $text-dark; text-align: right; }
+.barra-score-total { font-size: 0.95rem; font-weight: 800; color: $green; }
+
+// DETALLE SECCIONES
+.detalle-list { display: flex; flex-direction: column; gap: 20px; }
+
+.detalle-seccion {
+  border: 1px solid $border;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.detalle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f9fafb;
+  border-bottom: 1px solid $border;
+}
+
+.det-nombre { font-weight: 700; font-size: 0.9rem; color: $text-dark; }
+
+.det-score {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: $text-gray;
+
+  &.det-score-max { color: $green; }
+}
+
+.detalle-barra-track {
+  height: 6px;
+  background: #f3f4f6;
+  .detalle-barra-fill {
+    height: 100%;
+    background: $green;
+    transition: width 0.5s ease;
+  }
+}
+
+.detalle-items { padding: 12px 16px; display: flex; flex-direction: column; gap: 6px; }
+
+.detalle-item-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  padding: 4px 0;
+  border-bottom: 1px solid #f3f4f6;
+
+  &:last-child { border-bottom: none; }
+}
+
+.di-criterio { color: $text-gray; }
+.di-puntaje  { font-weight: 600; color: $text-dark; }
+
+// OBSERVACIONES
+.obs-box {
+  display: flex;
+  gap: 16px;
+  background: $green-light;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.obs-icon { font-size: 1.8rem; color: $green-dark; flex-shrink: 0; }
+.obs-text { font-size: 0.9rem; color: $green-dark; line-height: 1.6; margin: 0; }
+
+.info-aviso {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 0.82rem;
+  color: #1e40af;
+  i { color: $blue; }
+}
+
+// BOTONES
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  font-family: inherit;
+
+  &--outline-back {
+    background: transparent;
+    border: 1px solid $green;
+    color: $green;
+    &:hover { background: $green-light; }
+  }
+}

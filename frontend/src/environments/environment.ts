@@ -2,4 +2,5 @@
 export const environment = {
   production: false,
   builderApiKey: '038505e112014274a6801f9694b1c941',
+  apiUrl: 'http://localhost:8080/api'
 };

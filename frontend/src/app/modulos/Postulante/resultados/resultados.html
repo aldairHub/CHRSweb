@@ -1,0 +1,170 @@
+<app-navbar></app-navbar>
+
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <header class="page-header">
+      <div>
+        <h2 class="page-header__title">Mis Resultados</h2>
+        <p class="page-header__description">{{ postulante.proceso }}</p>
+      </div>
+    </header>
+
+    <!-- =========== ESTADO GENERAL =========== -->
+    <div class="estado-card" [class]="'estado-card--' + colorEstado">
+      <div class="estado-icon">
+        <i class="pi"
+           [class.pi-check-circle]="estado === 'aprobado'"
+           [class.pi-times-circle]="estado === 'rechazado'"
+           [class.pi-clock]="estado === 'en_proceso'"></i>
+      </div>
+      <div class="estado-info">
+        <span class="estado-label">Estado del proceso</span>
+        <strong class="estado-valor">
+          {{ estado === 'aprobado' ? 'Proceso Completado' :
+             estado === 'rechazado' ? 'No Seleccionado' : 'En Proceso' }}
+        </strong>
+        <span class="estado-fecha">Evaluado el {{ postulante.fecha }}</span>
+      </div>
+      <div class="estado-posicion">
+        <span class="posicion-num">{{ resultados.posicion }}°</span>
+        <span class="posicion-label">de {{ resultados.totalCandidatos }}</span>
+      </div>
+    </div>
+
+    <!-- =========== RESUMEN PUNTAJE =========== -->
+    <div class="puntaje-banner">
+      <div class="puntaje-bloque">
+        <span class="pb-num">{{ resultados.totalMeritos }}</span>
+        <span class="pb-max">/50</span>
+        <span class="pb-label">Méritos</span>
+      </div>
+      <div class="puntaje-sep">+</div>
+      <div class="puntaje-bloque">
+        <span class="pb-num">{{ resultados.totalExperiencia }}</span>
+        <span class="pb-max">/50</span>
+        <span class="pb-label">Exp + Entrevista</span>
+      </div>
+      <div class="puntaje-sep">+</div>
+      <div class="puntaje-bloque">
+        <span class="pb-num">{{ resultados.totalAccionAfirmativa }}</span>
+        <span class="pb-max">/4</span>
+        <span class="pb-label">Acción Afirmativa</span>
+      </div>
+      <div class="puntaje-sep">=</div>
+      <div class="puntaje-bloque puntaje-total">
+        <span class="pb-num">{{ resultados.total }}</span>
+        <span class="pb-max">/104</span>
+        <span class="pb-label">TOTAL</span>
+        <span class="pb-pct">{{ porcentajeTotal }}%</span>
+      </div>
+    </div>
+
+    <!-- =========== TABS =========== -->
+    <div class="tabs-bar">
+      <button class="tab" [class.tab--active]="tabActiva === 'resumen'"   (click)="tabActiva = 'resumen'">Resumen</button>
+      <button class="tab" [class.tab--active]="tabActiva === 'meritos'"   (click)="tabActiva = 'meritos'">Méritos</button>
+      <button class="tab" [class.tab--active]="tabActiva === 'entrevista'" (click)="tabActiva = 'entrevista'">Entrevista</button>
+      <button class="tab" [class.tab--active]="tabActiva === 'observaciones'" (click)="tabActiva = 'observaciones'">Observaciones</button>
+    </div>
+
+    <!-- =========== TAB: RESUMEN =========== -->
+    <div class="form-card" *ngIf="tabActiva === 'resumen'">
+      <h3 class="seccion-titulo">Resumen de Puntajes</h3>
+      <div class="resumen-barras">
+        <div class="barra-row">
+          <span class="barra-label">Méritos (A-E)</span>
+          <div class="barra-track">
+            <div class="barra-fill barra-meritos" [style.width.%]="getBarWidth(resultados.totalMeritos, 50)"></div>
+          </div>
+          <span class="barra-score">{{ resultados.totalMeritos }}/50</span>
+        </div>
+        <div class="barra-row">
+          <span class="barra-label">Exp + Entrevista</span>
+          <div class="barra-track">
+            <div class="barra-fill barra-experiencia" [style.width.%]="getBarWidth(resultados.totalExperiencia, 50)"></div>
+          </div>
+          <span class="barra-score">{{ resultados.totalExperiencia }}/50</span>
+        </div>
+        <div class="barra-row">
+          <span class="barra-label">Acción Afirmativa</span>
+          <div class="barra-track">
+            <div class="barra-fill barra-afirmativa" [style.width.%]="getBarWidth(resultados.totalAccionAfirmativa, 4)"></div>
+          </div>
+          <span class="barra-score">{{ resultados.totalAccionAfirmativa }}/4</span>
+        </div>
+        <div class="barra-row barra-total-row">
+          <span class="barra-label barra-label-total">PUNTAJE TOTAL</span>
+          <div class="barra-track">
+            <div class="barra-fill barra-total-fill" [style.width.%]="porcentajeTotal"></div>
+          </div>
+          <span class="barra-score barra-score-total">{{ resultados.total }}/104</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========== TAB: MÉRITOS =========== -->
+    <div class="form-card" *ngIf="tabActiva === 'meritos'">
+      <h3 class="seccion-titulo">Detalle — Etapa de Merecimientos</h3>
+      <div class="detalle-list">
+        <div *ngFor="let s of seccionesMeritos" class="detalle-seccion">
+          <div class="detalle-header">
+            <span class="det-nombre">{{ s.nombre }}</span>
+            <span class="det-score" [class.det-score-max]="s.puntaje === s.maximo">
+              {{ s.puntaje }}/{{ s.maximo }}
+            </span>
+          </div>
+          <div class="detalle-barra-track">
+            <div class="detalle-barra-fill" [style.width.%]="getBarWidth(s.puntaje, s.maximo)"></div>
+          </div>
+          <div class="detalle-items">
+            <div *ngFor="let d of s.detalle" class="detalle-item-row">
+              <span class="di-criterio">{{ d.criterio }}</span>
+              <span class="di-puntaje">{{ d.puntaje }}/{{ d.maximo }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========== TAB: ENTREVISTA =========== -->
+    <div class="form-card" *ngIf="tabActiva === 'entrevista'">
+      <h3 class="seccion-titulo">Detalle — Experiencia y Entrevista</h3>
+      <div class="detalle-list">
+        <div *ngFor="let s of seccionesExperiencia" class="detalle-seccion">
+          <div class="detalle-header">
+            <span class="det-nombre">{{ s.nombre }}</span>
+            <span class="det-score" [class.det-score-max]="s.puntaje === s.maximo">
+              {{ s.puntaje }}/{{ s.maximo }}
+            </span>
+          </div>
+          <div class="detalle-barra-track">
+            <div class="detalle-barra-fill" [style.width.%]="getBarWidth(s.puntaje, s.maximo)"></div>
+          </div>
+          <div class="detalle-items">
+            <div *ngFor="let d of s.detalle" class="detalle-item-row">
+              <span class="di-criterio">{{ d.criterio }}</span>
+              <span class="di-puntaje">{{ d.puntaje }}/{{ d.maximo }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========== TAB: OBSERVACIONES =========== -->
+    <div class="form-card" *ngIf="tabActiva === 'observaciones'">
+      <h3 class="seccion-titulo">Observaciones del Evaluador</h3>
+      <div class="obs-box">
+        <i class="pi pi-comments obs-icon"></i>
+        <p class="obs-text">{{ observaciones }}</p>
+      </div>
+      <div class="info-aviso">
+        <i class="pi pi-info-circle"></i>
+        Para consultar detalles adicionales, contacte a la Coordinación de Carrera o al Decanato de la Facultad.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<app-footer></app-footer>

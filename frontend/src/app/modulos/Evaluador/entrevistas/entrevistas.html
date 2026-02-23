@@ -1,89 +1,310 @@
 <app-navbar></app-navbar>
 
 <div class="main-container">
-
   <div class="layout-grid">
 
-    <div class="sidebar-list">
+    <!-- ======================== SIDEBAR ======================== -->
+    <aside class="sidebar-list">
+
       <div class="sidebar-header">
-        <h3>Programación Hoy</h3>
-        <span>3 Agendados</span>
+        <h3>Entrevistas</h3>
+        <button class="btn-agendar" (click)="abrirModalAgenda()">
+          <i class="pi pi-plus"></i> Agendar
+        </button>
       </div>
+
+      <p class="sidebar-sub">{{ candidatos.length }} candidatos en la terna</p>
 
       <div class="candidate-list">
         <div *ngFor="let c of candidatos"
              class="candidate-card"
              [class.active]="candidatoSeleccionado === c"
+             [class.completado]="c.estado === 'completado'"
              (click)="seleccionar(c)">
 
-          <img [src]="c.foto" class="avatar">
+          <img [src]="c.foto" class="avatar" [alt]="c.apellido">
 
           <div class="info">
-            <span class="name">{{ c.nombre }}</span>
-            <span class="time">🕒 {{ c.hora }}</span>
+            <span class="name">{{ c.apellido }}</span>
+            <span class="subname">{{ c.nombre }}</span>
+            <span class="time">
+              <i class="pi pi-clock"></i> {{ c.hora }}
+              <span class="mod-badge" [class.virtual]="c.modalidad === 'virtual'">
+                {{ c.modalidad | titlecase }}
+              </span>
+            </span>
           </div>
 
-          <span class="status-badge" [ngClass]="c.estado === 'Completado' ? 'done' : 'pending'">
-            {{ c.estado === 'Completado' ? '✔' : '⏳' }}
-          </span>
+          <div class="side-right">
+            <span class="status-dot" [class]="c.estado"></span>
+            <span class="score-mini" *ngIf="c.estado === 'completado'">
+              {{ c.totalEntrevista }}/25
+            </span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="evaluation-panel">
+    </aside>
 
+    <!-- ======================== PANEL DERECHO ======================== -->
+    <main class="evaluation-panel">
+
+      <!-- EMPTY STATE -->
       <div *ngIf="!candidatoSeleccionado" class="empty-state">
-        <i class="pi pi-user" style="font-size: 3rem; color: #ccc;"></i>
-        <h2>Seleccione un postulante</h2>
-        <p>Haga clic en la lista de la izquierda para iniciar la evaluación.</p>
+        <div class="empty-icon">📋</div>
+        <h2>Seleccione un candidato</h2>
+        <p>Haga clic en la lista de la izquierda para iniciar la evaluación de entrevista y clase demostrativa.</p>
       </div>
 
+      <!-- PANEL EVALUACIÓN -->
       <div *ngIf="candidatoSeleccionado" class="form-content">
 
+        <!-- HEADER CANDIDATO -->
         <div class="panel-header">
-          <div>
-            <h2>Evaluación de Clase Demostrativa</h2>
-            <p class="subtitle">{{ candidatoSeleccionado.nombre }}</p>
+          <div class="panel-header__info">
+            <img [src]="candidatoSeleccionado.foto" class="avatar-lg" [alt]="candidatoSeleccionado.apellido">
+            <div>
+              <h2>{{ candidatoSeleccionado.apellido }} {{ candidatoSeleccionado.nombre }}</h2>
+              <div class="panel-meta">
+                <span class="meta-badge" [class]="candidatoSeleccionado.estado">
+                  {{ estadoLabel(candidatoSeleccionado.estado) }}
+                </span>
+                <span class="meta-badge virtual" *ngIf="candidatoSeleccionado.modalidad === 'virtual'">
+                  🎥 Virtual
+                </span>
+                <span class="meta-badge presencial" *ngIf="candidatoSeleccionado.modalidad === 'presencial'">
+                  🏢 Presencial
+                </span>
+                <button *ngIf="candidatoSeleccionado.enlace" class="btn-unirse"
+                        (click)="unirseEntrevista(candidatoSeleccionado)">
+                  <i class="pi pi-video"></i> Unirse a Entrevista
+                </button>
+              </div>
+            </div>
           </div>
-          <div class="total-score">
-            <span>TOTAL</span>
-            <strong>{{ calcularTotal() }} / 30</strong>
+          <div class="panel-total">
+            <span class="total-label">TOTAL</span>
+            <strong class="total-value">{{ candidatoSeleccionado.totalEntrevista }}</strong>
+            <span class="total-max">/ 25 pts</span>
           </div>
         </div>
 
-        <div class="criteria-section">
-
-          <div class="input-group">
-            <label>1. Dominio Científico del Tema (Max 10)</label>
-            <input type="number" min="0" max="10" [(ngModel)]="candidatoSeleccionado.puntajes.dominio">
+        <!-- ============================= -->
+        <!-- BLOQUE 1: PERSONALIDAD (15 pts) -->
+        <!-- ============================= -->
+        <div class="criteria-block">
+          <div class="block-header">
+            <div class="block-title">
+              <span class="block-icon">🧠</span>
+              <div>
+                <h3>Elementos de Personalidad</h3>
+                <p>Evaluación cualitativa del candidato durante la entrevista</p>
+              </div>
+            </div>
+            <div class="block-score">
+              <span>{{ candidatoSeleccionado.totalPersonalidad }}</span>
+              <small>/ {{ maxPersonalidad() }} pts</small>
+            </div>
           </div>
 
-          <div class="input-group">
-            <label>2. Didáctica y Metodología (Max 10)</label>
-            <input type="number" min="0" max="10" [(ngModel)]="candidatoSeleccionado.puntajes.didactica">
-          </div>
-
-          <div class="input-group">
-            <label>3. Uso de Recursos Didácticos (Max 10)</label>
-            <input type="number" min="0" max="10" [(ngModel)]="candidatoSeleccionado.puntajes.recursos">
-          </div>
-
-          <div class="input-group full-width">
-            <label>Observaciones / Comentarios</label>
-            <textarea rows="4" [(ngModel)]="candidatoSeleccionado.notas" placeholder="Escriba aquí sus observaciones..."></textarea>
+          <div class="criteria-grid">
+            <div class="criteria-item" *ngFor="let cr of criteriosPersonalidad">
+              <div class="criteria-header">
+                <label class="criteria-label">{{ cr.label }}</label>
+                <span class="criteria-max">máx. {{ cr.max }}</span>
+              </div>
+              <div class="criteria-input-row">
+                <input
+                  type="number"
+                  min="0"
+                  [max]="cr.max"
+                  step="0.5"
+                  [(ngModel)]="candidatoSeleccionado!.puntajes[cr.id]"
+                  (ngModelChange)="recalcular(candidatoSeleccionado!)"
+                  class="score-input"
+                  [class.max-val]="candidatoSeleccionado!.puntajes[cr.id] >= cr.max">
+                <div class="progress-bar">
+                  <div class="progress-fill"
+                       [style.width.%]="porcentaje(candidatoSeleccionado!.puntajes[cr.id], cr.max)">
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
         </div>
 
+        <!-- ============================= -->
+        <!-- BLOQUE 2: CLASE DEMOSTRATIVA (10 pts) -->
+        <!-- ============================= -->
+        <div class="criteria-block">
+          <div class="block-header">
+            <div class="block-title">
+              <span class="block-icon">🎓</span>
+              <div>
+                <h3>Evaluación de la Clase Demostrativa</h3>
+                <p>Desempeño pedagógico y dominio del contenido</p>
+              </div>
+            </div>
+            <div class="block-score">
+              <span>{{ candidatoSeleccionado.totalClase }}</span>
+              <small>/ {{ maxClase() }} pts</small>
+            </div>
+          </div>
+
+          <div class="criteria-grid">
+            <div class="criteria-item" *ngFor="let cr of criteriosClase">
+              <div class="criteria-header">
+                <label class="criteria-label">{{ cr.label }}</label>
+                <span class="criteria-max">máx. {{ cr.max }}</span>
+              </div>
+              <div class="criteria-input-row">
+                <input
+                  type="number"
+                  min="0"
+                  [max]="cr.max"
+                  step="0.5"
+                  [(ngModel)]="candidatoSeleccionado!.puntajes[cr.id]"
+                  (ngModelChange)="recalcular(candidatoSeleccionado!)"
+                  class="score-input"
+                  [class.max-val]="candidatoSeleccionado!.puntajes[cr.id] >= cr.max">
+                <div class="progress-bar">
+                  <div class="progress-fill"
+                       [style.width.%]="porcentaje(candidatoSeleccionado!.puntajes[cr.id], cr.max)">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ============================= -->
+        <!-- OBSERVACIONES -->
+        <!-- ============================= -->
+        <div class="criteria-block">
+          <div class="block-header-simple">
+            <span class="block-icon">📝</span>
+            <h3>Observaciones y Comentarios</h3>
+          </div>
+          <textarea
+            rows="4"
+            class="obs-textarea"
+            [(ngModel)]="candidatoSeleccionado!.observaciones"
+            placeholder="Escriba aquí sus observaciones sobre el candidato...">
+          </textarea>
+        </div>
+
+        <!-- ============================= -->
+        <!-- RESUMEN TOTAL -->
+        <!-- ============================= -->
+        <div class="summary-bar">
+          <div class="summary-item">
+            <span class="summary-label">Personalidad</span>
+            <strong>{{ candidatoSeleccionado.totalPersonalidad }} / {{ maxPersonalidad() }}</strong>
+          </div>
+          <div class="summary-divider">+</div>
+          <div class="summary-item">
+            <span class="summary-label">Clase Demostrativa</span>
+            <strong>{{ candidatoSeleccionado.totalClase }} / {{ maxClase() }}</strong>
+          </div>
+          <div class="summary-divider">=</div>
+          <div class="summary-item summary-total">
+            <span class="summary-label">TOTAL ENTREVISTA</span>
+            <strong class="summary-big">{{ candidatoSeleccionado.totalEntrevista }} / 25</strong>
+          </div>
+        </div>
+
+        <!-- ACCIONES -->
         <div class="actions">
           <button class="btn-cancel" (click)="candidatoSeleccionado = null">Cancelar</button>
-          <button class="btn-save" (click)="guardarEntrevista()">Guardar Evaluación</button>
+          <button class="btn-save" (click)="guardarEntrevista()" [disabled]="guardando">
+            <i class="pi pi-save"></i>
+            {{ guardando ? 'Guardando...' : 'Guardar Evaluación' }}
+          </button>
         </div>
 
       </div>
 
+    </main>
+
+  </div>
+</div>
+
+<!-- ======================== MODAL CONFIRMACIÓN ======================== -->
+<div class="modal-overlay" *ngIf="mostrarModalConfirm" (click)="cerrarModalConfirm()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+
+    <div class="modal-icon-wrap">
+      <div class="check-circle"><i class="pi pi-check"></i></div>
     </div>
 
+    <h2 class="modal-title">¡Entrevista Guardada!</h2>
+
+    <div class="modal-steps" *ngIf="candidatoSeleccionado">
+      <div class="step-item">
+        <div class="step-icon"><i class="pi pi-user"></i></div>
+        <div class="step-text">
+          <strong>{{ candidatoSeleccionado.apellido }} {{ candidatoSeleccionado.nombre }}</strong>
+          <span>Evaluación completada correctamente</span>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-icon" style="background:#1d4ed8">📊</div>
+        <div class="step-text">
+          <strong>Puntaje de Entrevista</strong>
+          <span class="score-big">{{ candidatoSeleccionado.totalEntrevista }} / 25 puntos</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-info">
+      El puntaje será consolidado automáticamente en el informe final de selección.
+    </div>
+
+    <button class="btn btn--primary btn--block" (click)="cerrarModalConfirm()">
+      ENTENDIDO
+    </button>
+  </div>
+</div>
+
+<!-- ======================== MODAL AGENDAR ======================== -->
+<div class="modal-overlay" *ngIf="mostrarModalAgenda" (click)="mostrarModalAgenda = false">
+  <div class="modal-card modal-card--form" (click)="$event.stopPropagation()">
+    <h3>Agendar Nueva Entrevista</h3>
+
+    <div class="form-group">
+      <label class="form-label">Candidato</label>
+      <input type="text" class="form-input" [(ngModel)]="nuevaEntrevista.nombre"
+             placeholder="Nombre del candidato">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Fecha</label>
+        <input type="date" class="form-input" [(ngModel)]="nuevaEntrevista.fecha">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Hora</label>
+        <input type="time" class="form-input" [(ngModel)]="nuevaEntrevista.hora">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Modalidad</label>
+      <select class="form-input" [(ngModel)]="nuevaEntrevista.modalidad">
+        <option value="virtual">Virtual (Videoconferencia)</option>
+        <option value="presencial">Presencial</option>
+      </select>
+    </div>
+    <div class="form-group" *ngIf="nuevaEntrevista.modalidad === 'virtual'">
+      <label class="form-label">Enlace de Videoconferencia</label>
+      <input type="url" class="form-input" [(ngModel)]="nuevaEntrevista.enlace"
+             placeholder="https://meet.google.com/...">
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn--outline-back" (click)="mostrarModalAgenda = false">Cancelar</button>
+      <button class="btn btn--primary" (click)="guardarAgenda()">Guardar Agenda</button>
+    </div>
   </div>
 </div>
 

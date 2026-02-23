@@ -66,7 +66,9 @@ public class SecurityConfig {
                                 "/api/prepostulacion/verificar-estado/**",
                                 "/api/prepostulacion/repostular",
                                 "/api/admin/auditoria",
-                                "/api/admin/auditoria/**"
+                                "/api/admin/auditoria/**",
+                                "/api/documentos",
+                                "/api/documentos/**"
                         ).permitAll()
 
                         .requestMatchers("/api/auth/**").permitAll()

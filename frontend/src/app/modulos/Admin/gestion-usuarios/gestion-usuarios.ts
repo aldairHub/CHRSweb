@@ -4,7 +4,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { NavbarComponent } from '../../component/navbar';
+import { NavbarComponent } from '../../../component/navbar';
 
 import {
   UsuarioAdminService,
@@ -12,9 +12,9 @@ import {
   AutoridadConRolesDTO,
   AutoridadCreatePayload,
   UsuarioCreatePayload
-} from '../../services/usuario-admin.service';
+} from '../../../services/usuario-admin.service';
 
-import { RolesAppService, RolAppConRolesBdDTO } from '../../services/roles-app.service';
+import { RolesAppService, RolAppConRolesBdDTO } from '../../../services/roles-app.service';
 
 interface InstitucionDTO {
   idInstitucion: number;

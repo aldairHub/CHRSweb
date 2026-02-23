@@ -1,0 +1,129 @@
+<app-navbar></app-navbar>
+
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <header class="page-header">
+      <div>
+        <h2 class="page-header__title">Mi Entrevista</h2>
+        <p class="page-header__description">{{ postulante.proceso }}</p>
+      </div>
+    </header>
+
+    <!-- =========== ESTADO ENTREVISTA =========== -->
+    <div class="estado-banner" [class]="'estado-banner--' + colorEstado">
+      <i class="pi"
+         [class.pi-calendar]="entrevista.estado === 'programada'"
+         [class.pi-video]="entrevista.estado === 'en_curso'"
+         [class.pi-check-circle]="entrevista.estado === 'completada'"></i>
+      <div>
+        <strong>
+          {{ entrevista.estado === 'programada' ? 'Entrevista Programada' :
+             entrevista.estado === 'en_curso'   ? '¡Entrevista en Curso!' :
+             'Entrevista Completada' }}
+        </strong>
+        <span>{{ entrevista.fecha }} a las {{ entrevista.hora }}</span>
+      </div>
+    </div>
+
+    <!-- =========== INFO CARD =========== -->
+    <div class="info-grid">
+
+      <div class="form-card info-card">
+        <h3 class="card-title"><i class="pi pi-info-circle"></i> Detalles de la Entrevista</h3>
+
+        <div class="info-row">
+          <span class="info-label"><i class="pi pi-calendar"></i> Fecha</span>
+          <span class="info-valor">{{ entrevista.fecha }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label"><i class="pi pi-clock"></i> Hora</span>
+          <span class="info-valor">{{ entrevista.hora }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label"><i class="pi pi-desktop"></i> Modalidad</span>
+          <span class="info-valor info-valor--badge"
+                [class.badge-virtual]="esVirtual"
+                [class.badge-presencial]="!esVirtual">
+            <i class="pi" [class.pi-video]="esVirtual" [class.pi-map-marker]="!esVirtual"></i>
+            {{ entrevista.modalidad | titlecase }}
+          </span>
+        </div>
+        <div class="info-row" *ngIf="!esVirtual && entrevista.lugar">
+          <span class="info-label"><i class="pi pi-map-marker"></i> Lugar</span>
+          <span class="info-valor">{{ entrevista.lugar }}</span>
+        </div>
+
+        <div class="evaluadores-section">
+          <h4 class="eval-titulo">Comisión Evaluadora</h4>
+          <div class="evaluador-item" *ngFor="let e of entrevista.evaluadores">
+            <i class="pi pi-user"></i>
+            <span>{{ e }}</span>
+          </div>
+        </div>
+
+        <!-- Botón unirse (solo si es virtual) -->
+        <div class="unirse-section" *ngIf="esVirtual">
+          <button class="btn btn--videoconf" (click)="abrirModalVideoconf()"
+                  [disabled]="entrevista.estado === 'completada'">
+            <i class="pi pi-video"></i>
+            {{ entrevista.estado === 'completada' ? 'Entrevista Finalizada' : 'Unirse a la Videoconferencia' }}
+          </button>
+          <p class="enlace-info" *ngIf="entrevista.estado !== 'completada'">
+            <i class="pi pi-link"></i> {{ entrevista.enlace }}
+          </p>
+        </div>
+      </div>
+
+      <div class="form-card instrucciones-card">
+        <h3 class="card-title"><i class="pi pi-list"></i> Instrucciones Importantes</h3>
+        <ul class="instrucciones-list">
+          <li *ngFor="let inst of entrevista.instrucciones; let i = index">
+            <div class="inst-num">{{ i + 1 }}</div>
+            <span>{{ inst }}</span>
+          </li>
+        </ul>
+
+        <div class="criterios-info">
+          <h4><i class="pi pi-star"></i> Aspectos a Evaluar (25 puntos)</h4>
+          <div class="criterio-badge">Vocación Docente — 5 pts</div>
+          <div class="criterio-badge">Actitud y Habilidades — 10 pts</div>
+          <div class="criterio-badge">Clase Demostrativa — 10 pts</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- =========== MODAL VIDEOCONFERENCIA =========== -->
+<div class="modal-overlay" *ngIf="mostrarModalVideoconf">
+  <div class="modal-card">
+    <div class="modal-icon">
+      <i class="pi pi-video"></i>
+    </div>
+    <h2 class="modal-title">¿Listo para unirse?</h2>
+    <p class="modal-desc">
+      Se abrirá la sala de videoconferencia en una nueva pestaña.<br>
+      Asegúrese de tener cámara y micrófono disponibles.
+    </p>
+    <div class="modal-link-box">
+      <i class="pi pi-link"></i>
+      <span>{{ entrevista.enlace }}</span>
+    </div>
+    <div class="modal-checklist">
+      <div class="check-item"><i class="pi pi-check"></i> Conexión a internet estable</div>
+      <div class="check-item"><i class="pi pi-check"></i> Cámara y micrófono funcionando</div>
+      <div class="check-item"><i class="pi pi-check"></i> Documentos de soporte a la mano</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn--outline-back" (click)="mostrarModalVideoconf = false">Cancelar</button>
+      <button class="btn btn--primary" (click)="confirmarUnirse()">
+        <i class="pi pi-external-link"></i> Entrar a la Sala
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>
