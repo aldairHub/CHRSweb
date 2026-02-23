@@ -91,12 +91,8 @@ public class RolAppService {
     }
 
     public void cambiarEstado(Integer id, Boolean activo) {
-        RolApp rol = rolAppRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("RolApp no encontrado: " + id));
-        rol.setActivo(activo);
-        rolAppRepository.save(rol);
+        procedureRepository.cambiarEstadoRolApp(id, activo);
     }
-
     // ─── Helpers —────────────
 
     private RolAppConRolesBdDTO toConRolesBd(RolApp rol) {

@@ -309,4 +309,9 @@ public class PostgresProcedureRepository {
         }
     }
 
+    public void cambiarEstadoRolApp(Integer idRolApp, Boolean activo) {
+        String sql = "CALL public.sp_cambiar_estado_rol_app(?, ?)";
+        jdbcTemplate.update(sql, idRolApp, activo);
+    }
+
 }

@@ -5,36 +5,27 @@ import org.springframework.jdbc.datasource.AbstractDataSource;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MutableDataSource extends AbstractDataSource {
 
-    // ─── Un DataSource por hilo, no uno global ─────────────────
-    private final ThreadLocal<DataSource> threadLocal = new ThreadLocal<>();
-    private final DataSource defaultDataSource;
+    private final AtomicReference<DataSource> current = new AtomicReference<>();
 
-    public MutableDataSource(DataSource defaultDataSource) {
-        this.defaultDataSource = defaultDataSource;
+    public MutableDataSource(DataSource initial) {
+        this.current.set(initial);
     }
 
-    /** Asigna el datasource solo para el hilo actual. */
-    public void switchTo(DataSource ds) {
-        threadLocal.set(ds);
-    }
-
-    /** Elimina el override del hilo actual — vuelve al default. */
-    public void reset() {
-        threadLocal.remove();
+    public void switchTo(DataSource newDataSource) {
+        this.current.set(newDataSource);
     }
 
     @Override
     public Connection getConnection() throws SQLException {
-        DataSource ds = threadLocal.get();
-        return (ds != null ? ds : defaultDataSource).getConnection();
+        return current.get().getConnection();
     }
 
     @Override
     public Connection getConnection(String username, String password) throws SQLException {
-        DataSource ds = threadLocal.get();
-        return (ds != null ? ds : defaultDataSource).getConnection(username, password);
+        return current.get().getConnection(username, password);
     }
 }
