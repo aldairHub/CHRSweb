@@ -9,19 +9,19 @@ public interface LoginAuditService {
     void logSuccess(
             String usuarioApp,
             String usuarioBd,
-            Long idUsuario,         // ✅ nuevo
+            Long idUsuario,         //  nuevo
             HttpServletRequest request
     );
 
     void logFail(
             String usuarioApp,
             String usuarioBdOrNull,
-            Long idUsuarioOrNull,   // ✅ nuevo
+            Long idUsuarioOrNull,   //  nuevo
             AuditLoginMotivo motivo,
             HttpServletRequest request
     );
 
-    void logLogout(             // ✅ nuevo método
+    void logLogout(             //  nuevo metodo
                                 String usuarioApp,
                                 String usuarioBd,
                                 Long idUsuario,

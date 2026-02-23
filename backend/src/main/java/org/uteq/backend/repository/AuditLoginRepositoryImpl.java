@@ -22,7 +22,7 @@ public class AuditLoginRepositoryImpl implements AuditLoginRepository {
             AuditLoginMotivo motivo,
             String ipCliente,
             String userAgent,
-            Long idUsuario  // ✅ nuevo
+            Long idUsuario  //  nuevo
     ) {
         jdbcTemplate.queryForObject(
                 "SELECT public.fn_auditar_login_app(?, ?, ?, ?, ?::inet, ?, ?)",

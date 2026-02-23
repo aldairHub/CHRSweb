@@ -11,6 +11,6 @@ public interface AuditLoginRepository {
             AuditLoginMotivo motivo,
             String ipCliente,
             String userAgent,
-            Long idUsuario  // ✅ nuevo
+            Long idUsuario  //  nuevo
     );
 }
