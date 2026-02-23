@@ -8,6 +8,7 @@ import org.uteq.backend.dto.AutoridadConRolesDTO;
 import org.uteq.backend.dto.RegistroUsuarioDTO;
 import org.uteq.backend.dto.UsuarioConRolesDTO;
 import org.uteq.backend.service.AutoridadAcademicaService;
+import org.uteq.backend.service.DbRoleSyncService;
 import org.uteq.backend.service.UsuarioAdminService;
 
 import java.util.List;
@@ -36,11 +37,14 @@ public class UsuarioAdminController {
 
     private final UsuarioAdminService usuarioAdminService;
     private final AutoridadAcademicaService autoridadAcademicaService;
+    private final DbRoleSyncService dbRoleSyncService;
 
     public UsuarioAdminController(UsuarioAdminService usuarioAdminService,
-                                  AutoridadAcademicaService autoridadAcademicaService) {
+                                  AutoridadAcademicaService autoridadAcademicaService,
+                                  DbRoleSyncService dbRoleSyncService) {
         this.usuarioAdminService = usuarioAdminService;
         this.autoridadAcademicaService = autoridadAcademicaService;
+        this.dbRoleSyncService = dbRoleSyncService;
     }
 
     // ─── Pestaña USUARIOS ──────────────────────────────────────
@@ -83,7 +87,10 @@ public class UsuarioAdminController {
     public ResponseEntity<UsuarioConRolesDTO> actualizarRolesUsuario(
             @PathVariable Long id,
             @RequestBody ActualizarRolesAppDTO dto) {
-        return ResponseEntity.ok(usuarioAdminService.actualizarRolesUsuario(id, dto.getIdsRolApp()));
+        UsuarioConRolesDTO resultado = usuarioAdminService.actualizarRolesUsuario(id, dto.getIdsRolApp());
+        // El @Transactional del service ya hizo commit aquí — el SP lee datos correctos
+        dbRoleSyncService.syncRolesUsuarioBd(id.intValue(), true);
+        return ResponseEntity.ok(resultado);
     }
 
     // ─── Pestaña AUTORIDADES ───────────────────────────────────
@@ -108,6 +115,9 @@ public class UsuarioAdminController {
     public ResponseEntity<AutoridadConRolesDTO> actualizarRolesAutoridad(
             @PathVariable Long id,
             @RequestBody ActualizarRolesAppDTO dto) {
-        return ResponseEntity.ok(usuarioAdminService.actualizarRolesAutoridad(id, dto.getIdsRolApp()));
+        AutoridadConRolesDTO resultado = usuarioAdminService.actualizarRolesAutoridad(id, dto.getIdsRolApp());
+        // resultado.getIdUsuario() viene del DTO — es el id_usuario de la tabla usuario
+        dbRoleSyncService.syncRolesUsuarioBd(resultado.getIdUsuario().intValue(), true);
+        return ResponseEntity.ok(resultado);
     }
 }

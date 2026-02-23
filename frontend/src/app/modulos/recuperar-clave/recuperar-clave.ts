@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -20,7 +20,8 @@ export class RecuperarClaveComponent {
 
   constructor(
     private usuarioSvc: UsuarioService,
-    private router:     Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   onSubmit(): void {
@@ -32,16 +33,18 @@ export class RecuperarClaveComponent {
     }
 
     this.isLoading = true;
+    this.cdr.detectChanges();
 
     this.usuarioSvc.recuperarClave(this.correo).subscribe({
       next: () => {
         this.isLoading = false;
-        this.exito = true; // mostrar pantalla de confirmación
+        this.exito = true;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.isLoading = false;
-        // ✅ Mismo mensaje siempre — no revelar si el correo existe
         this.exito = true;
+        this.cdr.detectChanges();
       }
     });
   }

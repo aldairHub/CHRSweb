@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../component/navbar';
@@ -30,8 +30,10 @@ export class PerfilComponent {
   error     = '';
   exito     = '';
 
-  constructor(private usuarioSvc: UsuarioService) {}
-
+  constructor(
+    private usuarioSvc: UsuarioService,
+    private cdr: ChangeDetectorRef
+  ) {}
   toggleClaveActual():  void { this.showClaveActual  = !this.showClaveActual; }
   toggleClaveNueva():   void { this.showClaveNueva   = !this.showClaveNueva; }
   toggleClaveConfirm(): void { this.showClaveConfirm = !this.showClaveConfirm; }
@@ -62,6 +64,7 @@ export class PerfilComponent {
     }
 
     this.isLoading = true;
+    this.cdr.detectChanges();
 
     this.usuarioSvc.cambiarClave(
       this.claveActual,
@@ -72,10 +75,16 @@ export class PerfilComponent {
         this.isLoading = false;
         this.exito = 'Contraseña actualizada correctamente.';
         this.limpiarFormulario();
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.isLoading = false;
-        this.error = err?.error || 'No se pudo actualizar la contraseña.';
+        if (typeof err?.error === 'string' && err.error.length < 200) {
+          this.error = err.error;
+        } else {
+          this.error = 'No se pudo actualizar la contraseña. Intenta de nuevo.';
+        }
+        this.cdr.detectChanges();
       }
     });
   }

@@ -66,9 +66,6 @@ public class UsuarioAdminService {
         u.setRolesApp(nuevosRoles);
         usuarioRepository.save(u);
 
-        //  Sin try/catch — si falla, que falle la transacción completa
-        dbRoleSyncService.syncRolesUsuarioBd(idUsuario.intValue(), true);
-
         return toUsuarioConRoles(u);
     }
 
@@ -96,9 +93,6 @@ public class UsuarioAdminService {
         Set<RolApp> nuevosRoles = resolverRoles(idsRolApp);
         u.setRolesApp(nuevosRoles);
         usuarioRepository.save(u);
-
-        //  Sin try/catch
-        dbRoleSyncService.syncRolesUsuarioBd(u.getIdUsuario().intValue(), true);
 
         return toAutoridadConRoles(autoridadRepository.findById(idAutoridad).get());
     }
