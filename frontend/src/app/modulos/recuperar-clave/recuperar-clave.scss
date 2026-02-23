@@ -102,7 +102,9 @@ $shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 15px rgba(0,166,62,0.3);
-    font-size: 2rem;
+    color: $white;
+
+    svg { width: 32px; height: 32px; }
   }
 }
 

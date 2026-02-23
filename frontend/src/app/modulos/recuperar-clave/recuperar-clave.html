@@ -14,7 +14,11 @@
       <!-- Vista éxito -->
       <ng-container *ngIf="exito">
         <div class="icon-wrapper">
-          <div class="icon-circle">📧</div>
+          <div class="icon-circle">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="32" height="32" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+          </div>
         </div>
         <h3 class="form-title">Revisa tu correo</h3>
         <p class="form-subtitle">Si el correo está registrado, recibirás una contraseña temporal en breve.</p>
@@ -31,7 +35,11 @@
       <!-- Vista formulario -->
       <ng-container *ngIf="!exito">
         <div class="icon-wrapper">
-          <div class="icon-circle">🔑</div>
+          <div class="icon-circle">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="32" height="32" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+            </svg>
+          </div>
         </div>
         <h3 class="form-title">Recuperar contraseña</h3>
         <p class="form-subtitle">Ingresa tu correo y te enviaremos una contraseña temporal</p>

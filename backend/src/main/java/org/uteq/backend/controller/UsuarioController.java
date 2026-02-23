@@ -141,7 +141,7 @@ public class UsuarioController {
             HttpServletRequest request) {
         try {
             String usuarioApp = extraerUsuarioApp(request);
-            usuarioService.cambiarClavePrimerLogin(dto);
+            usuarioService.cambiarClavePrimerLogin(usuarioApp, dto);
             return ResponseEntity.ok("Contraseña actualizada. Ya puedes acceder al sistema.");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

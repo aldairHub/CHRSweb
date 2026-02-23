@@ -137,14 +137,10 @@ public class UsuarioService {
     // ─── Caso 1: Primer login ───────────────────────────────────
 
     @Transactional
-    public void cambiarClavePrimerLogin(CambiarClaveDTO dto) {
-
+    public void cambiarClavePrimerLogin(String usuarioApp, CambiarClaveDTO dto) {
         validarClaveNuevaPrimerLogin(dto);
-
-
-        // Cambia clave por SP (SECURITY DEFINER)
         String hash = passwordEncoder.encode(dto.getClaveNueva());
-        procedureRepository.primerLoginCambiarClaveApp(hash);
+        procedureRepository.primerLoginCambiarClaveApp(usuarioApp, hash);
     }
 
     // ─── Caso 2: Cambio voluntario ─────────────────────────────
