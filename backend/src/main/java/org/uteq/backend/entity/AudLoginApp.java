@@ -1,8 +1,10 @@
 package org.uteq.backend.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import lombok.Data;
 
+import java.time.LocalDateTime;
+@Data
 @Entity
 @Table(name = "aud_login_app", schema = "public")
 public class AudLoginApp {
@@ -27,35 +29,9 @@ public class AudLoginApp {
     @Column(name = "motivo", length = 50)
     private String motivo; // USER_NOT_FOUND / BAD_CREDENTIALS / USER_DISABLED / ERROR
 
-    @Column(name = "ip_cliente")
-    private String ipCliente; // si tu columna es inet, lo tratamos como String desde app
+    @Column(name = "ip_cliente", length = 100)
+    private String ipCliente;
 
     @Column(name = "user_agent")
     private String userAgent;
-
-    // getters/setters
-
-    public Long getIdAud() { return idAud; }
-    public void setIdAud(Long idAud) { this.idAud = idAud; }
-
-    public LocalDateTime getFecha() { return fecha; }
-    public void setFecha(LocalDateTime fecha) { this.fecha = fecha; }
-
-    public String getUsuarioApp() { return usuarioApp; }
-    public void setUsuarioApp(String usuarioApp) { this.usuarioApp = usuarioApp; }
-
-    public String getUsuarioBd() { return usuarioBd; }
-    public void setUsuarioBd(String usuarioBd) { this.usuarioBd = usuarioBd; }
-
-    public String getResultado() { return resultado; }
-    public void setResultado(String resultado) { this.resultado = resultado; }
-
-    public String getMotivo() { return motivo; }
-    public void setMotivo(String motivo) { this.motivo = motivo; }
-
-    public String getIpCliente() { return ipCliente; }
-    public void setIpCliente(String ipCliente) { this.ipCliente = ipCliente; }
-
-    public String getUserAgent() { return userAgent; }
-    public void setUserAgent(String userAgent) { this.userAgent = userAgent; }
 }

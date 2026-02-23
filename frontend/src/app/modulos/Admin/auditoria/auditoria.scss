@@ -1,0 +1,389 @@
+$primary:    #00A63E;
+$dark:       #016630;
+$border:     #B9F8CF;
+$card-bg:    #EEF9EC;
+$text-dark:  #1a1a1a;
+$text-gray:  #536b50;
+$bg:         #f5f7f5;
+$white:      #ffffff;
+$error:      #dc2626;
+$error-bg:   #fef2f2;
+$error-border: #fecaca;
+
+// ─── Layout ────────────────────────────────────────────────────
+.main-container {
+  min-height: 100vh;
+  background: $bg;
+  padding: 2rem 1rem;
+}
+.content-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// ─── Header ────────────────────────────────────────────────────
+.page-header {
+  margin-bottom: 2rem;
+  h2 { font-size: 1.75rem; color: $dark; font-weight: 700; margin: 0; }
+  .page-subtitle { font-size: 0.95rem; color: $text-gray; margin: 0.25rem 0 0 0; }
+}
+
+// ─── Stats ─────────────────────────────────────────────────────
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.stat-card {
+  background: $card-bg;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: all 0.25s;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0,166,62,0.12);
+    background: $white;
+  }
+
+  .stat-icon {
+    width: 52px; height: 52px;
+    border-radius: 12px;
+    background: rgba($primary, 0.1);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    svg { width: 26px; height: 26px; stroke: $primary; }
+
+    &.success  { background: rgba(22,163,74,0.1);  svg { stroke: #16a34a; } }
+    &.danger   { background: rgba(220,38,38,0.1);  svg { stroke: $error;  } }
+    &.blue     { background: rgba(37,99,235,0.1);  svg { stroke: #2563eb; } }
+  }
+
+  .stat-content {
+    h3 { font-size: 0.8rem; color: $text-gray; margin: 0 0 4px 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-size: 1.8rem; font-weight: 700; color: $dark; line-height: 1; }
+  }
+}
+
+// ─── Filtros ───────────────────────────────────────────────────
+.filters-card {
+  background: $white;
+  border: 1px solid $border;
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filter-group {
+  label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: $dark;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+.input-wrapper {
+  position: relative;
+  .input-icon {
+    position: absolute;
+    left: 10px; top: 50%; transform: translateY(-50%);
+    width: 16px; height: 16px;
+    stroke: $primary; pointer-events: none;
+  }
+  .form-input { padding-left: 34px; }
+}
+
+.form-input, .form-select {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1.5px solid $border;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: $text-dark;
+  background: #f8fafc;
+  outline: none;
+  transition: all 0.2s;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: $primary;
+    background: $white;
+    box-shadow: 0 0 0 3px rgba($primary, 0.1);
+  }
+}
+
+.filters-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+// ─── Botones ───────────────────────────────────────────────────
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  height: 38px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+
+  &.btn-primary {
+    background: $primary;
+    color: $white;
+    &:hover { background: $dark; }
+  }
+
+  &.btn-outline {
+    background: transparent;
+    border: 1.5px solid $border;
+    color: $dark;
+    &:hover { background: $card-bg; border-color: $primary; }
+  }
+}
+
+.btn-icon {
+  width: 32px; height: 32px;
+  border-radius: 7px;
+  border: 1px solid $border;
+  background: $white;
+  color: $text-gray;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  svg { width: 16px; height: 16px; }
+
+  &:hover { background: $card-bg; color: $dark; border-color: $primary; }
+}
+
+// ─── Tabla ─────────────────────────────────────────────────────
+.table-card {
+  background: $white;
+  border: 1px solid $border;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.table-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid $border;
+  .table-count { font-size: 0.875rem; color: $text-gray; font-weight: 500; }
+}
+
+.table-wrapper { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  thead tr {
+    background: $card-bg;
+    th {
+      padding: 0.875rem 1rem;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: $text-gray;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+  }
+
+  tbody tr {
+    border-bottom: 1px solid lighten($border, 5%);
+    transition: background 0.15s;
+
+    &:hover { background: #f9fdf9; }
+    &:last-child { border-bottom: none; }
+    &.row-fail { background: #fff8f8; &:hover { background: #fff0f0; } }
+  }
+
+  td {
+    padding: 0.75rem 1rem;
+    color: $text-dark;
+    vertical-align: middle;
+
+    &.col-id      { color: $text-gray; font-size: 0.8rem; width: 60px; }
+    &.col-fecha   { white-space: nowrap; font-size: 0.83rem; }
+    &.col-usuario { font-weight: 600; }
+    &.col-usuariobd { font-size: 0.83rem; color: $text-gray; }
+    &.col-ip      { font-size: 0.8rem; color: $text-gray; font-family: monospace; }
+    &.col-actions { width: 50px; text-align: center; }
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+
+  &.badge-success { background: rgba(22,163,74,0.1); color: #15803d; }
+  &.badge-fail    { background: rgba(220,38,38,0.1); color: $error;  }
+}
+
+// ─── Loading / Empty ───────────────────────────────────────────
+.loading-state {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; padding: 3rem;
+  color: $text-gray;
+  .spinner { width: 24px; height: 24px; animation: spin 1s linear infinite; stroke: $primary; }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+
+  .empty-icon {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: $card-bg;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem;
+    svg { width: 28px; height: 28px; stroke: $primary; }
+  }
+
+  p     { font-weight: 600; color: $dark; margin: 0 0 4px 0; }
+  small { color: $text-gray; font-size: 0.85rem; }
+}
+
+// ─── Paginación ────────────────────────────────────────────────
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 1.25rem;
+  border-top: 1px solid $border;
+}
+
+.page-btn {
+  min-width: 34px; height: 34px;
+  border-radius: 8px;
+  border: 1.5px solid $border;
+  background: $white;
+  color: $dark;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0 8px;
+
+  &:hover:not(:disabled) { background: $card-bg; border-color: $primary; }
+  &.active               { background: $primary; color: $white; border-color: $primary; }
+  &:disabled             { opacity: 0.4; cursor: default; }
+}
+
+.page-info {
+  margin-left: 8px;
+  font-size: 0.85rem;
+  color: $text-gray;
+}
+
+// ─── Modal ─────────────────────────────────────────────────────
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.15s ease;
+}
+
+.modal-box {
+  background: $white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  margin: 1rem;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: slideUp 0.2s ease;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid $border;
+
+  h3 { margin: 0; font-size: 1.1rem; color: $dark; font-weight: 700; }
+}
+
+.modal-close {
+  background: none; border: none; cursor: pointer;
+  color: $text-gray; padding: 4px; border-radius: 6px;
+  display: flex; align-items: center;
+  &:hover { background: $card-bg; color: $dark; }
+}
+
+.modal-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.detail-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+
+  .detail-label {
+    min-width: 110px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: $text-gray;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding-top: 2px;
+  }
+
+  .detail-value {
+    font-size: 0.9rem;
+    color: $text-dark;
+    font-weight: 500;
+    word-break: break-all;
+
+    &.detail-ua {
+      font-size: 0.78rem;
+      color: $text-gray;
+      font-family: monospace;
+    }
+  }
+}
+
+// ─── Keyframes ─────────────────────────────────────────────────
+@keyframes spin    { to { transform: rotate(360deg); } }
+@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
