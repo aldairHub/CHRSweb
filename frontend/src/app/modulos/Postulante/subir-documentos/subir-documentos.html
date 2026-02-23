@@ -1,7 +1,3 @@
-<!-- ============================================================
-     subir-documentos.html — actualizado con datos reales del backend
-     Solo cambian los bindings del header. El resto del HTML queda igual.
-     ============================================================ -->
 <app-navbar></app-navbar>
 
 <div class="main-container">
@@ -9,31 +5,29 @@
 
     <!-- Spinner carga inicial -->
     <div *ngIf="cargandoPagina" class="loading-state">
-      <i class="pi pi-spin pi-spinner" style="font-size: 2rem;"></i>
+      <div class="spinner"></div>
       <p>Cargando información...</p>
     </div>
 
     <ng-container *ngIf="!cargandoPagina">
 
-      <!-- =========== HEADER =========== -->
+      <!-- HEADER -->
       <header class="page-header">
         <div class="page-header__info">
           <h2 class="page-header__title">Carga de Documentos</h2>
-          <!-- ANTES: postulante.proceso | AHORA: procesoLabel (getter) -->
           <p class="page-header__description">{{ procesoLabel }}</p>
           <div class="postulante-tags">
-            <!-- ANTES: postulante.nombre | AHORA: nombreCompleto (getter) -->
-            <span class="tag"><i class="pi pi-user"></i> {{ nombreCompleto }}</span>
-            <!-- ANTES: postulante.cedula | AHORA: postulante?.identificacion -->
-            <span class="tag"><i class="pi pi-id-card"></i> {{ postulante?.identificacion }}</span>
+            <span class="tag">
+              <i class="pi pi-user"></i> {{ nombreCompleto }}
+            </span>
+            <span class="tag">
+              <i class="pi pi-id-card"></i> {{ postulante?.identificacion }}
+            </span>
           </div>
         </div>
-        <button class="btn btn--outline-back" (click)="volver()">
-          <i class="pi pi-arrow-left"></i> Volver
-        </button>
       </header>
 
-      <!-- =========== PROGRESO GENERAL =========== -->
+      <!-- PROGRESO GENERAL -->
       <div class="progreso-card">
         <div class="progreso-info">
           <span class="progreso-label">Progreso de carga</span>
@@ -45,47 +39,66 @@
         <span class="progreso-pct">{{ porcentajeCompletado }}%</span>
       </div>
 
-      <!-- =========== AVISO =========== -->
+      <!-- AVISO -->
       <div class="aviso-card">
         <i class="pi pi-info-circle"></i>
         <div>
           <strong>Requisitos de documentos:</strong>
-          Solo se aceptan archivos en formato <strong>PDF</strong>, con un tamaño máximo de <strong>10 MB</strong> por archivo.
+          Solo se aceptan archivos en formato <strong>PDF</strong>, con un tamaño máximo de
+          <strong>10 MB</strong> por archivo.
           Los documentos marcados con <span class="req-mark">*</span> son obligatorios.
         </div>
       </div>
 
-      <!-- =========== LISTA DE DOCUMENTOS =========== -->
+      <!-- LISTA DE DOCUMENTOS -->
       <div class="form-card">
         <div class="doc-list">
 
-          <div *ngFor="let doc of documentos" class="doc-item"
-               [class.doc-subido]="doc.estado === 'subido' || doc.estado === 'validado'"
-               [class.doc-rechazado]="doc.estado === 'rechazado'">
+          <div
+            *ngFor="let doc of documentos"
+            class="doc-item"
+            [class.doc-subido]="doc.estado === 'subido'"
+            [class.doc-validado]="doc.estado === 'validado'"
+            [class.doc-rechazado]="doc.estado === 'rechazado'"
+          >
 
             <!-- Ícono estado -->
             <div class="doc-estado-icon">
-              <i class="pi"
-                 [class.pi-check-circle]="doc.estado === 'subido' || doc.estado === 'validado'"
-                 [class.pi-times-circle]="doc.estado === 'rechazado'"
-                 [class.pi-file]="doc.estado === 'pendiente'"
-                 [class.text-green]="doc.estado === 'subido' || doc.estado === 'validado'"
-                 [class.text-red]="doc.estado === 'rechazado'"
-                 [class.text-gray]="doc.estado === 'pendiente'">
-              </i>
+              <i class="pi pi-check-circle text-green"
+                 *ngIf="doc.estado === 'subido' || doc.estado === 'validado'"></i>
+              <i class="pi pi-times-circle text-red"
+                 *ngIf="doc.estado === 'rechazado'"></i>
+              <i class="pi pi-file text-gray"
+                 *ngIf="doc.estado === 'pendiente'"></i>
             </div>
 
             <!-- Info del documento -->
             <div class="doc-info">
-              <div class="doc-nombre">
-                {{ doc.nombre }}
-                <span class="req-mark" *ngIf="doc.obligatorio">*</span>
-                <span class="badge-opcional" *ngIf="!doc.obligatorio">Opcional</span>
+
+              <!-- Nombre + badge estado -->
+              <div class="doc-nombre-wrap">
+                <span class="doc-nombre">
+                  {{ doc.nombre }}
+                  <span class="req-mark" *ngIf="doc.obligatorio">*</span>
+                  <span class="badge-opcional" *ngIf="!doc.obligatorio">Opcional</span>
+                </span>
+                <span
+                  *ngIf="doc.estado !== 'pendiente'"
+                  class="estado-badge"
+                  [ngClass]="{
+                    'estado-subido':    doc.estado === 'subido',
+                    'estado-validado':  doc.estado === 'validado',
+                    'estado-rechazado': doc.estado === 'rechazado'
+                  }"
+                >
+                  {{ doc.estado === 'subido'    ? 'Enviado'   :
+                  doc.estado === 'validado'  ? 'Validado'  : 'Rechazado' }}
+                </span>
               </div>
+
               <div class="doc-descripcion">{{ doc.descripcion }}</div>
 
-              <!-- Barra de progreso al subir -->
-              <!-- CAMBIO: antes era doc.id, ahora doc.idTipoDocumento -->
+              <!-- Barra de progreso mientras sube -->
               <div class="upload-progress" *ngIf="documentoSubiendoId === doc.idTipoDocumento">
                 <div class="upload-barra">
                   <div class="upload-fill" [style.width.%]="doc.progreso"></div>
@@ -93,71 +106,80 @@
                 <span class="upload-pct">{{ doc.progreso }}%</span>
               </div>
 
-              <!-- Archivo subido -->
-              <div class="archivo-info" *ngIf="doc.nombreArchivo">
+              <!-- Archivo cargado -->
+              <div class="archivo-info"
+                   *ngIf="doc.nombreArchivo && documentoSubiendoId !== doc.idTipoDocumento">
                 <i class="pi pi-file-pdf text-red"></i>
                 <span class="archivo-nombre">{{ doc.nombreArchivo }}</span>
-                <button class="btn-eliminar" (click)="eliminarArchivo(doc)" title="Eliminar">
+                <!-- Botón eliminar: solo si NO está validado -->
+                <button
+                  class="btn-eliminar"
+                  (click)="eliminarArchivo(doc)"
+                  [disabled]="
+    postulante?.estadoPostulacion !== 'pendiente' ||
+    doc.estado !== 'pendiente'
+  "
+                  title="Eliminar documento"
+                >
                   <i class="pi pi-times"></i>
                 </button>
               </div>
 
-              <!-- Observación de rechazo (ahora viene de IA) -->
-              <div class="observacion-rechazo" *ngIf="doc.estado === 'rechazado' && doc.observacion">
+              <!-- Observación de rechazo -->
+              <div class="observacion-rechazo"
+                   *ngIf="doc.estado === 'rechazado' && doc.observacion">
                 <i class="pi pi-exclamation-triangle"></i>
                 {{ doc.observacion }}
               </div>
+
             </div>
 
-            <!-- Acción subir -->
+            <!-- Botón subir/cambiar/resubir -->
             <div class="doc-action">
-              <!-- CAMBIO: id usa idTipoDocumento en vez de id -->
               <input
                 type="file"
                 [id]="'file-input-' + doc.idTipoDocumento"
                 accept="application/pdf"
                 style="display:none"
-                (change)="onFileSelected($event, doc)">
-
+                (change)="onFileSelected($event, doc)"
+              >
               <button
                 class="btn-upload"
-                [class.btn-upload--subido]="doc.estado === 'subido' || doc.estado === 'validado'"
+                [class.btn-upload--subido]="doc.estado === 'subido'"
+                [class.btn-upload--validado]="doc.estado === 'validado'"
                 [class.btn-upload--rechazado]="doc.estado === 'rechazado'"
-                [disabled]="documentoSubiendoId === doc.idTipoDocumento"
-                (click)="triggerInput(doc.idTipoDocumento)">
-                <i class="pi"
-                   [class.pi-upload]="doc.estado === 'pendiente'"
-                   [class.pi-refresh]="doc.estado === 'subido' || doc.estado === 'rechazado'"
-                   [class.pi-check]="doc.estado === 'validado'"></i>
+                [disabled]="documentoSubiendoId === doc.idTipoDocumento || doc.estado === 'validado'"
+                (click)="triggerInput(doc.idTipoDocumento)"
+              >
+                <i class="pi pi-upload"   *ngIf="doc.estado === 'pendiente'"></i>
+                <i class="pi pi-refresh"  *ngIf="doc.estado === 'subido' || doc.estado === 'rechazado'"></i>
+                <i class="pi pi-check"    *ngIf="doc.estado === 'validado'"></i>
                 <span>
-                  {{ doc.estado === 'pendiente' ? 'Subir PDF' :
-                  doc.estado === 'validado'  ? 'Validado' :
-                    doc.estado === 'rechazado' ? 'Resubir' : 'Cambiar' }}
+                  {{ doc.estado === 'pendiente'  ? 'Subir PDF'  :
+                  doc.estado === 'validado'   ? 'Validado'   :
+                    doc.estado === 'rechazado'  ? 'Resubir'    : 'Cambiar' }}
                 </span>
               </button>
             </div>
 
           </div>
-
         </div>
       </div>
 
-      <!-- =========== ACCIONES =========== -->
+      <!-- ACCIONES -->
       <div class="form-actions-bar">
         <p class="obligatorio-hint" *ngIf="!obligatoriosCompletos">
           <i class="pi pi-exclamation-triangle"></i>
           Debe completar todos los documentos obligatorios (*) para finalizar.
         </p>
-        <button class="btn btn--primary" (click)="guardarYFinalizar()" [disabled]="!obligatoriosCompletos">
-          <i class="pi pi-check"></i> Finalizar Carga de Documentos
-        </button>
+
       </div>
 
     </ng-container>
   </div>
 </div>
 
-<!-- =========== MODAL ÉXITO (sin cambios) =========== -->
+<!-- MODAL ÉXITO -->
 <div class="modal-overlay" *ngIf="mostrarModalExito">
   <div class="modal-card">
     <div class="modal-icon-success">
@@ -198,14 +220,17 @@
   </div>
 </div>
 
-<!-- =========== TOAST (sin cambios) =========== -->
+<!-- TOAST -->
 <div class="toast-container" *ngIf="showToast">
-  <div class="toast"
-       [class.toast--success]="toastType === 'success'"
-       [class.toast--error]="toastType === 'error'">
-    <i class="pi"
-       [class.pi-check-circle]="toastType === 'success'"
-       [class.pi-times-circle]="toastType === 'error'"></i>
+  <div
+    class="toast"
+    [class.toast--success]="toastType === 'success'"
+    [class.toast--error]="toastType === 'error'"
+    [class.toast--info]="toastType === 'info'"
+  >
+    <i class="pi pi-check-circle"         *ngIf="toastType === 'success'"></i>
+    <i class="pi pi-times-circle"         *ngIf="toastType === 'error'"></i>
+    <i class="pi pi-info-circle"          *ngIf="toastType === 'info'"></i>
     <div>
       <strong>{{ toastTitle }}</strong>
       <p>{{ toastMessage }}</p>

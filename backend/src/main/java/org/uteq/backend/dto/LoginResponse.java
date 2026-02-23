@@ -12,4 +12,5 @@ public class LoginResponse {
     private String usuarioApp;
     private Set<String> roles;
     private Boolean primerLogin;
+    private Long idUsuario;
 }

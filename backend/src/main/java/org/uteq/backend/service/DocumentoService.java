@@ -76,7 +76,7 @@ public class DocumentoService {
         String subCarpeta  = "postulacion_" + idPostulacion;
         Path ruta = Paths.get(uploadDir, subCarpeta, nombreUnico);
         Files.createDirectories(ruta.getParent());
-        archivo.transferTo(ruta.toFile());
+        Files.copy(archivo.getInputStream(), ruta, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
         // Ruta relativa que se guarda en BD
         String rutaBD = subCarpeta + "/" + nombreUnico;

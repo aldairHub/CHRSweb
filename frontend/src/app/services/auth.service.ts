@@ -17,6 +17,7 @@ export class AuthService {
   guardarSesion(datos: any, recordarme: boolean): void {
     if (datos?.token) localStorage.setItem('token', datos.token);
     if (datos?.usuarioApp) localStorage.setItem('usuario', datos.usuarioApp);
+    if (datos?.idUsuario) localStorage.setItem('idUsuario', String(datos.idUsuario)); // ← esto
 
     const roles: string[] = Array.isArray(datos?.roles) ? datos.roles : [];
     localStorage.setItem('roles', JSON.stringify(roles));

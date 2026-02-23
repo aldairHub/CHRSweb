@@ -88,7 +88,8 @@ public class AuthService {
                 token,
                 usuario.getUsuarioApp(),
                 new HashSet<>(roles),
-                usuario.getPrimerLogin()  //  nuevo
+                usuario.getPrimerLogin(),
+                usuario.getIdUsuario()  // ← agregar
         );
     }
 

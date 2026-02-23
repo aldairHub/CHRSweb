@@ -1,19 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpRequest, HttpEventType, HttpResponse } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 // ============================================================
-// Interfaces que reflejan los DTOs del backend
+// Interfaces
 // ============================================================
 export interface DocumentoBackend {
   idTipoDocumento:  number;
   nombreTipo:       string;
   obligatorio:      boolean;
   idDocumento:      number | null;
-  estadoValidacion: 'pendiente' | 'validado' | 'rechazado' | null;
-  descripcionTipo:  string;
+  estadoValidacion: string | null;  // viene como 'pendiente','subido','validado','rechazado' o null
+  descripcionTipo:  string | null;
   rutaArchivo:      string | null;
   fechaCarga:       string | null;
   observacionesIa:  string | null;
@@ -42,42 +41,26 @@ export interface SubirDocumentoResponse {
 export interface OperacionResponse {
   exitoso:  boolean;
   mensaje:  string;
-  descripcionTipo:  string;
 }
 
 // ============================================================
 // DocumentoService
 // ============================================================
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class DocumentoService {
 
   private readonly API = `${environment.apiUrl}/documentos`;
 
   constructor(private http: HttpClient) {}
 
-  // ----------------------------------------------------------
-  // GET /api/documentos/postulante/{idUsuario}
-  // Carga info del postulante y su postulación activa
-  // ----------------------------------------------------------
   obtenerInfoPostulante(idUsuario: number): Observable<PostulanteInfo> {
     return this.http.get<PostulanteInfo>(`${this.API}/postulante/${idUsuario}`);
   }
 
-  // ----------------------------------------------------------
-  // GET /api/documentos/postulacion/{idPostulacion}
-  // Lista tipos de doc + estado actual para una postulación
-  // ----------------------------------------------------------
   obtenerDocumentos(idPostulacion: number): Observable<DocumentoBackend[]> {
     return this.http.get<DocumentoBackend[]>(`${this.API}/postulacion/${idPostulacion}`);
   }
 
-  // ----------------------------------------------------------
-  // POST /api/documentos/subir  (multipart/form-data)
-  // Devuelve Observable<number> con el progreso (0-100)
-  // y emite el resultado final como SubirDocumentoResponse
-  // ----------------------------------------------------------
   subirDocumento(
     idPostulacion:   number,
     idTipoDocumento: number,
@@ -97,35 +80,24 @@ export class DocumentoService {
       this.http.request(req).subscribe({
         next: event => {
           if (event.type === HttpEventType.UploadProgress && event.total) {
-            const pct = Math.round(100 * event.loaded / event.total);
-            progreso$.next(pct);
+            progreso$.next(Math.round(100 * event.loaded / event.total));
           } else if (event instanceof HttpResponse) {
             observer.next(event.body as SubirDocumentoResponse);
             observer.complete();
           }
         },
-        error: err => {
-          observer.error(err);
-        }
+        error: err => observer.error(err)
       });
     });
   }
 
-  // ----------------------------------------------------------
-  // DELETE /api/documentos/{idDocumento}/postulacion/{idPostulacion}
-  // ----------------------------------------------------------
   eliminarDocumento(idDocumento: number, idPostulacion: number): Observable<OperacionResponse> {
     return this.http.delete<OperacionResponse>(
       `${this.API}/${idDocumento}/postulacion/${idPostulacion}`
     );
   }
 
-  // ----------------------------------------------------------
-  // POST /api/documentos/finalizar/{idPostulacion}
-  // ----------------------------------------------------------
   finalizarCarga(idPostulacion: number): Observable<OperacionResponse> {
-    return this.http.post<OperacionResponse>(
-      `${this.API}/finalizar/${idPostulacion}`, {}
-    );
+    return this.http.post<OperacionResponse>(`${this.API}/finalizar/${idPostulacion}`, {});
   }
 }

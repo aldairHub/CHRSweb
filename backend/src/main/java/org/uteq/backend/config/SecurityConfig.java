@@ -11,15 +11,18 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.List;
 
 import static org.springframework.security.config.Customizer.withDefaults;
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
+    private final JwtAuthFilter jwtAuthFilter;
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {  // ← constructor
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -68,7 +71,9 @@ public class SecurityConfig {
                                 "/api/admin/auditoria",
                                 "/api/admin/auditoria/**",
                                 "/api/documentos",
-                                "/api/documentos/**"
+                                "/api/documentos/**",
+                                "/api/tipos-documento",
+                                "/api/tipos-documento/**"
                         ).permitAll()
 
                         .requestMatchers("/api/auth/**").permitAll()
@@ -86,6 +91,7 @@ public class SecurityConfig {
                         // SIEMPRE al final
                         .anyRequest().authenticated()
                 );
+        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

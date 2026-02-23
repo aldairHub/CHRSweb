@@ -52,16 +52,14 @@ public class DocumentoController {
     public ResponseEntity<Map<String, Object>> subirDocumento(
             @RequestParam("idPostulacion")    Long idPostulacion,
             @RequestParam("idTipoDocumento")  Long idTipoDocumento,
-            @RequestParam("archivo")          MultipartFile archivo
+            @RequestPart("archivo")           MultipartFile archivo   // ← cambiar @RequestParam por @RequestPart
     ) {
         try {
             Map<String, Object> resultado = documentoService.subirDocumento(
                     idPostulacion, idTipoDocumento, archivo
             );
             boolean exitoso = Boolean.TRUE.equals(resultado.get("exitoso"));
-            return exitoso
-                    ? ResponseEntity.ok(resultado)
-                    : ResponseEntity.badRequest().body(resultado);
+            return ResponseEntity.ok(resultado);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("exitoso", false, "mensaje", "Error al guardar el archivo: " + e.getMessage()));

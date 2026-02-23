@@ -101,7 +101,7 @@ public class DocumentoRepositoryCustomImpl {
     public Map<String, Object> finalizarCargaDocumentos(Long idPostulacion) {
         Map<String, Object> result = new HashMap<>();
         jdbcTemplate.query(
-                "SELECT v_exitoso, v_mensaje FROM sp_finalizar_carga_documentos(?)",
+                "SELECT * FROM sp_finalizar_carga_documentos(?)",
                 new Object[]{idPostulacion},
                 rs -> {
                     result.put("exitoso", rs.getBoolean("v_exitoso"));
