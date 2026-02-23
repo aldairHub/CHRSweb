@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -38,7 +38,8 @@ export class RepostulacionComponent implements OnInit {
     private router:             Router,
     private route:              ActivatedRoute,
     private http:               HttpClient,
-    private convocatoriaService: ConvocatoriaService
+    private convocatoriaService: ConvocatoriaService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -58,19 +59,18 @@ export class RepostulacionComponent implements OnInit {
     this.verificando = true;
     this.error = '';
 
-    this.http.get<{ estado: string }>(`${this.apiUrl}/verificar-estado/${this.cedula}`)
+    this.http.get<any>(`${this.apiUrl}/verificar-estado/${this.cedula}`)
       .subscribe({
         next: (res) => {
-          this.verificando = false;
-          if (res.estado === 'NO_EXISTE') {
-            this.error = 'No se encontró ninguna solicitud con esta cédula. ' +
-              'Si es su primera vez, use el formulario de registro.';
-          } else if (res.estado.toLowerCase() === 'rechazada') {
+          this.verificando = false;  // ← ¿está antes del if?
+          if (!res.encontrado) {
+            this.error = 'No se encontró ninguna solicitud con esta cédula.';
+          } else if (res.estado?.toUpperCase() === 'RECHAZADO') {
             this.cedulaVerificada = true;
           } else {
-            this.error = `Su solicitud tiene estado "${res.estado}". ` +
-              'Solo puede re-postular si fue rechazada.';
+            this.error = `Su solicitud tiene estado "${res.estado}". Solo puede re-postular si fue rechazada.`;
           }
+          this.cdr.detectChanges();
         },
         error: () => {
           this.verificando = false;
@@ -113,10 +113,17 @@ export class RepostulacionComponent implements OnInit {
     if (this.convocatoriaId) fd.append('idConvocatoria', String(this.convocatoriaId));
 
     this.http.post<any>(`${this.apiUrl}/repostular`, fd).subscribe({
-      next:  (res) => { this.enviando = false; this.exito = true;
-        this.mensajeExito = res.mensaje || 'Re-postulación enviada exitosamente.'; },
-      error: (err) => { this.enviando = false;
-        this.error = err.error?.mensaje || 'Error al enviar. Intente más tarde.'; }
+      next: (res) => {
+        this.enviando = false;
+        this.exito = true;
+        this.mensajeExito = res.mensaje || 'Re-postulación enviada exitosamente.';
+        this.cdr.detectChanges();  // ← agrega esto
+      },
+      error: (err) => {
+        this.enviando = false;
+        this.error = err.error?.mensaje || 'Error al enviar. Intente más tarde.';
+        this.cdr.detectChanges();  // ← y esto
+      }
     });
   }
 

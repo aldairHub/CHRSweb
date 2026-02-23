@@ -71,4 +71,42 @@ public class PrepostulacionController {
             ));
         }
     }
+
+    @GetMapping("/verificar-estado/{cedula}")
+    public ResponseEntity<?> verificarEstado(@PathVariable String cedula) {
+        try {
+            String estado = prepostulacionService.obtenerEstadoPorCedula(cedula);
+            return ResponseEntity.ok().body(java.util.Map.of(
+                    "encontrado", true,
+                    "estado", estado
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.ok().body(java.util.Map.of(
+                    "encontrado", false,
+                    "mensaje", e.getMessage()
+            ));
+        }
+    }
+
+    @PostMapping(value = "/repostular", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> repostular(
+            @RequestParam("cedula") String cedula,
+            @RequestParam("archivoCedula") MultipartFile archivoCedula,
+            @RequestParam("archivoFoto") MultipartFile archivoFoto,
+            @RequestParam("archivoPrerrequisitos") MultipartFile archivoPrerrequisitos,
+            @RequestParam(value = "idConvocatoria", required = false) Long idConvocatoria
+    ) {
+        try {
+            PrepostulacionResponseDTO response = prepostulacionService.repostular(
+                    cedula, archivoCedula, archivoFoto, archivoPrerrequisitos, idConvocatoria
+            );
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("mensaje", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Map.of("mensaje", "Error interno: " + e.getMessage()));
+        }
+    }
+
 }

@@ -17,6 +17,7 @@ import org.uteq.backend.service.AesCipherService;
 import org.uteq.backend.dto.RegistroSpResultDTO;
 //import org.springframework.transaction.support.TransactionSynchronization;
 //import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.uteq.backend.repository.ConvocatoriaSolicitudRepository;
 import java.lang.Long;
 
 import java.time.LocalDateTime;
@@ -40,6 +41,7 @@ public class PrepostulacionService {
     private final PostgresProcedureRepository postgresProcedureRepository;
     private final AesCipherService aesCipherService;
     private final PrepostulacionSolicitudRepository prepostulacionSolicitudRepository;
+    private final ConvocatoriaSolicitudRepository convocatoriaSolicitudRepository;
 
 
     @PersistenceContext
@@ -60,7 +62,8 @@ public class PrepostulacionService {
             RolAppRepository rolAppRepository,
             PostgresProcedureRepository postgresProcedureRepository,
             AesCipherService aesCipherService,
-            PrepostulacionSolicitudRepository prepostulacionSolicitudRepository
+            PrepostulacionSolicitudRepository prepostulacionSolicitudRepository,
+            ConvocatoriaSolicitudRepository convocatoriaSolicitudRepository
     ) {
         this.prepostulacionRepository = prepostulacionRepository;
         this.supabaseService = supabaseService;
@@ -77,6 +80,7 @@ public class PrepostulacionService {
         this.postgresProcedureRepository = postgresProcedureRepository;
         this.aesCipherService = aesCipherService;
         this.prepostulacionSolicitudRepository = prepostulacionSolicitudRepository;
+        this.convocatoriaSolicitudRepository = convocatoriaSolicitudRepository;
     }
     @Transactional
     public PrepostulacionResponseDTO procesarPrepostulacion(
@@ -536,7 +540,7 @@ public class PrepostulacionService {
                 ));
 
         // 2. Solo puede re-postular si fue rechazada
-        if (!"rechazada".equalsIgnoreCase(p.getEstadoRevision())) {
+        if (!"RECHAZADO".equalsIgnoreCase(p.getEstadoRevision())) {
             throw new RuntimeException(
                     "Su solicitud tiene estado '" + p.getEstadoRevision() + "'. " +
                             "Solo puede re-postular si fue rechazada."
@@ -554,7 +558,7 @@ public class PrepostulacionService {
         }
 
         // 4. Resetear estado — la fila prepostulacion NO se elimina
-        p.setEstadoRevision("pendiente");
+        p.setEstadoRevision("PENDIENTE");
         p.setFechaEnvio(LocalDateTime.now());
         p.setFechaRevision(null);
         p.setObservacionesRevision(null);
@@ -562,21 +566,20 @@ public class PrepostulacionService {
 
         Prepostulacion guardado = prepostulacionRepository.save(p);
 
-        // 5. Historial: nueva fila en prepostulacion_solicitud (la anterior queda intacta)
-        if (idConvocatoria != null) {
-            List<Long> solicitudes = obtenerSolicitudesDeConvocatoria(idConvocatoria);
-            for (Long idSolicitud : solicitudes) {
-                if (!prepostulacionSolicitudRepository
-                        .existsByIdIdPrepostulacionAndIdIdSolicitud(
-                                guardado.getIdPrepostulacion(), idSolicitud)) {
-                    prepostulacionSolicitudRepository.save(
-                            new PrepostulacionSolicitud(guardado.getIdPrepostulacion(), idSolicitud)
-                    );
-                    System.out.println("📋 Historial: " + guardado.getIdPrepostulacion()
-                            + " → solicitud " + idSolicitud);
-                }
-            }
-        }
+//        if (idConvocatoria != null) {
+//            List<Long> solicitudes = obtenerSolicitudesDeConvocatoria(idConvocatoria);
+//            for (Long idSolicitud : solicitudes) {
+//                if (!prepostulacionSolicitudRepository
+//                        .existsByIdIdPrepostulacionAndIdIdSolicitud(
+//                                guardado.getIdPrepostulacion(), idSolicitud)) {
+//                    prepostulacionSolicitudRepository.save(
+//                            new PrepostulacionSolicitud(guardado.getIdPrepostulacion(), idSolicitud)
+//                    );
+//                    System.out.println("📋 Historial: " + guardado.getIdPrepostulacion()
+//                            + " → solicitud " + idSolicitud);
+//                }
+//            }
+//        }
 
         return new PrepostulacionResponseDTO(
                 "Re-postulacion enviada. Su solicitud está nuevamente en revisión.",
@@ -593,16 +596,11 @@ public class PrepostulacionService {
         return p.getEstadoRevision();
     }
 
-    @SuppressWarnings("unchecked")
     private List<Long> obtenerSolicitudesDeConvocatoria(Long idConvocatoria) {
-        List<Object> resultados = entityManager.createNativeQuery(
-                        "SELECT id_solicitud FROM convocatoria_solicitud WHERE id_convocatoria = ?1"
-                )
-                .setParameter(1, idConvocatoria)  // int, no String
-                .getResultList();
-
-        return resultados.stream()
-                .map(r -> ((Number) r).longValue())
-                .collect(java.util.stream.Collectors.toList());
+        return convocatoriaSolicitudRepository
+                .findByIdConvocatoria(idConvocatoria)
+                .stream()
+                .map(ConvocatoriaSolicitud::getIdSolicitud)
+                .collect(Collectors.toList());
     }
 }
