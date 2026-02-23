@@ -1,0 +1,157 @@
+<div class="page-container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-top">
+      <button class="btn-back" (click)="volver()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Volver
+      </button>
+      <button class="btn-login" (click)="irALogin()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor" width="18" height="18">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+        </svg>
+        Iniciar sesión
+      </button>
+    </div>
+    <div class="logo-box">
+      <img src="imgs/logo-uteq.png" alt="UTEQ" class="logo">
+    </div>
+    <h1>Convocatorias Activas</h1>
+    <p>Plazas docentes disponibles — Universidad Técnica Estatal de Quevedo</p>
+  </div>
+
+  <!-- Loader -->
+  <div class="loader" *ngIf="cargando">
+    <div class="spinner"></div>
+    <p>Cargando convocatorias...</p>
+  </div>
+
+  <!-- Sin convocatorias -->
+  <div class="empty-state" *ngIf="!cargando && convocatorias.length === 0">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+         stroke="currentColor" width="64" height="64">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293
+           l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+    </svg>
+    <h3>No hay convocatorias activas</h3>
+    <p>No existen plazas disponibles en este momento. Vuelve pronto.</p>
+  </div>
+
+  <!-- Grid de cards -->
+  <div class="cards-grid" *ngIf="!cargando && convocatorias.length > 0">
+    <div class="card" *ngFor="let conv of convocatorias">
+
+      <div class="card-badge">{{ conv.estadoConvocatoria | uppercase }}</div>
+
+      <div class="card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 14l9-5-9-5-9 5 9 5z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112
+               20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+        </svg>
+      </div>
+
+      <h3>{{ conv.titulo }}</h3>
+
+      <div class="card-meta">
+        <span class="meta-item" *ngIf="conv.fechaInicio">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8"  y1="2" x2="8"  y2="6"/>
+            <line x1="3"  y1="10" x2="21" y2="10"/>
+          </svg>
+          Inicio: {{ conv.fechaInicio | date:'dd/MM/yyyy' }}
+        </span>
+        <span class="meta-item" *ngIf="conv.fechaFin">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8"  y1="2" x2="8"  y2="6"/>
+            <line x1="3"  y1="10" x2="21" y2="10"/>
+          </svg>
+          Cierre: {{ conv.fechaFin | date:'dd/MM/yyyy' }}
+        </span>
+      </div>
+
+      <p class="card-desc" *ngIf="conv.descripcion">{{ conv.descripcion }}</p>
+
+      <button class="btn-postular" (click)="abrirModalPostular(conv)">
+        Postular
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal: ¿Primera vez o ya postulaste? -->
+  <div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+
+      <button class="modal-close" (click)="cerrarModal()">✕</button>
+
+      <div class="modal-header">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor" width="40" height="40">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278
+               2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0
+               11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <h3>¿Cómo deseas postular?</h3>
+        <p>
+          Convocatoria seleccionada:<br>
+          <strong>{{ convocatoriaSeleccionada?.titulo }}</strong>
+        </p>
+      </div>
+
+      <div class="modal-options">
+
+        <div class="option-card" (click)="irARegistro()">
+          <div class="option-icon new">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" width="28" height="28">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018
+                   0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+            </svg>
+          </div>
+          <div class="option-content">
+            <h4>Es mi primera vez</h4>
+            <p>No tengo cuenta. Quiero registrarme para postular.</p>
+          </div>
+          <span class="option-arrow">→</span>
+        </div>
+
+        <div class="option-card" (click)="irARepostulacion()">
+          <div class="option-icon returning">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" width="28" height="28">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581
+                   m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </div>
+          <div class="option-content">
+            <h4>Ya postulé antes</h4>
+            <p>Fui rechazado y quiero postular a esta convocatoria con nuevos documentos.</p>
+          </div>
+          <span class="option-arrow">→</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">© 2026 Universidad Técnica Estatal de Quevedo</div>
+
+</div>

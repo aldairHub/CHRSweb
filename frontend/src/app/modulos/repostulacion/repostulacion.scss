@@ -1,0 +1,65 @@
+$primary:   #00A63E;
+$dark:      #016630;
+$border:    #B9F8CF;
+$text-gray: #64748b;
+
+.conv-banner {
+  display: flex; align-items: center; gap: 8px;
+  background: #dcfce7; border: 1px solid $border;
+  border-radius: 8px; padding: 10px 14px;
+  margin: 0 auto 1rem; max-width: 540px;
+  font-size: .875rem; color: $dark;
+  svg { flex-shrink: 0; }
+}
+.info-alert {
+  display: flex; gap: 10px; background: #eff6ff;
+  border: 1px solid #bfdbfe; border-radius: 8px;
+  padding: 12px; margin-bottom: 1.25rem;
+  font-size: .85rem; color: #1e40af;
+  svg { stroke: #3b82f6; flex-shrink: 0; margin-top: 2px; }
+  p   { margin: 0; }
+}
+.server-error {
+  background: #fee2e2; border: 1px solid #fecaca; color: #991b1b;
+  border-radius: 8px; padding: 10px 14px; font-size: .875rem; margin-bottom: 1rem;
+}
+.success-msg {
+  background: #dcfce7; border: 1px solid $border; color: $dark;
+  border-radius: 8px; padding: 14px; font-size: .9rem;
+  margin-bottom: 1rem; text-align: center;
+}
+.verified-badge {
+  display: flex; align-items: center; gap: 8px;
+  background: #dcfce7; color: $dark; font-weight: 600;
+  font-size: .875rem; padding: 10px 14px;
+  border-radius: 8px; border: 1px solid $border;
+  svg { stroke: $primary; }
+}
+.btn-submit {
+  width: 100%; padding: 13px; background: $primary; color: white;
+  border: none; border-radius: 8px; font-size: 1rem; font-weight: 700;
+  cursor: pointer; transition: all .2s; margin-top: .5rem;
+  &:hover:not(:disabled) { background: $dark; transform: translateY(-2px); }
+  &:disabled             { opacity: .6; cursor: not-allowed; }
+}
+.btn-ir-inicio {
+  display: block; margin: 10px auto 0; padding: 8px 20px;
+  background: $primary; color: white; border: none; border-radius: 6px;
+  font-size: .875rem; font-weight: 600; cursor: pointer;
+  &:hover { background: $dark; }
+}
+.btn-back-link {
+  display: block; text-align: center; margin-top: .75rem;
+  background: none; border: none; color: $text-gray;
+  font-size: .875rem; cursor: pointer;
+  &:hover { color: $dark; }
+}
+.file-upload-box {
+  border: 2px dashed $border; border-radius: 8px; transition: all .2s;
+  &.has-file { border-color: $primary; background: #f0fdf4; }
+  .file-label {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px; cursor: pointer; font-size: .875rem; color: $text-gray;
+    svg { flex-shrink: 0; }
+  }
+}

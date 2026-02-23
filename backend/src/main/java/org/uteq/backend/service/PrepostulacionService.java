@@ -1,6 +1,8 @@
 package org.uteq.backend.service;
 
 //import lombok.RequiredArgsConstructor;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,16 +10,14 @@ import org.springframework.web.multipart.MultipartFile;
 import org.uteq.backend.dto.RegistroSpResultDTO;
 import org.uteq.backend.entity.*;
 //import org.uteq.backend.entity.RolApp;
-import org.uteq.backend.repository.RolAppRepository;
-import org.uteq.backend.repository.PostgresProcedureRepository;
-import org.uteq.backend.repository.PrepostulacionRepository;
-import org.uteq.backend.repository.UsuarioRepository;
+import org.uteq.backend.repository.*;
 import org.uteq.backend.dto.PrepostulacionResponseDTO;
 import org.uteq.backend.repository.PostgresProcedureRepository;
 import org.uteq.backend.service.AesCipherService;
 import org.uteq.backend.dto.RegistroSpResultDTO;
 //import org.springframework.transaction.support.TransactionSynchronization;
 //import org.springframework.transaction.support.TransactionSynchronizationManager;
+import java.lang.Long;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,6 +39,11 @@ public class PrepostulacionService {
     private final RolAppRepository rolAppRepository;
     private final PostgresProcedureRepository postgresProcedureRepository;
     private final AesCipherService aesCipherService;
+    private final PrepostulacionSolicitudRepository prepostulacionSolicitudRepository;
+
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public PrepostulacionService(
             PrepostulacionRepository prepostulacionRepository,
@@ -54,7 +59,8 @@ public class PrepostulacionService {
             //  AGREGAR ESTOS 2:
             RolAppRepository rolAppRepository,
             PostgresProcedureRepository postgresProcedureRepository,
-            AesCipherService aesCipherService
+            AesCipherService aesCipherService,
+            PrepostulacionSolicitudRepository prepostulacionSolicitudRepository
     ) {
         this.prepostulacionRepository = prepostulacionRepository;
         this.supabaseService = supabaseService;
@@ -70,6 +76,7 @@ public class PrepostulacionService {
         this.rolAppRepository = rolAppRepository;
         this.postgresProcedureRepository = postgresProcedureRepository;
         this.aesCipherService = aesCipherService;
+        this.prepostulacionSolicitudRepository = prepostulacionSolicitudRepository;
     }
     @Transactional
     public PrepostulacionResponseDTO procesarPrepostulacion(
@@ -79,7 +86,8 @@ public class PrepostulacionService {
             String apellidos,
             MultipartFile archivoCedula,
             MultipartFile archivoFoto,
-            MultipartFile archivoPrerrequisitos
+            MultipartFile archivoPrerrequisitos,
+            Long idConvocatoria
     ) {
         System.out.println("🔄 Procesando prepostulación para identificación: " + cedula);
 
@@ -134,6 +142,22 @@ public class PrepostulacionService {
         // Guardar en BD
         Prepostulacion guardado = prepostulacionRepository.save(prepostulacion);
         System.out.println("💾 Prepostulación guardada en BD con ID: " + guardado.getIdPrepostulacion());
+
+        // ─── Amarre prepostulacion ↔ solicitud ───────────────────────────────────
+        if (idConvocatoria != null) {
+            List<Long> solicitudes = obtenerSolicitudesDeConvocatoria(idConvocatoria);
+            for (Long idSolicitud : solicitudes) {
+                if (!prepostulacionSolicitudRepository
+                        .existsByIdIdPrepostulacionAndIdIdSolicitud(
+                                guardado.getIdPrepostulacion(), idSolicitud)) {
+                    prepostulacionSolicitudRepository.save(
+                            new PrepostulacionSolicitud(guardado.getIdPrepostulacion(), idSolicitud)
+                    );
+                }
+            }
+            System.out.println("✅ Prepostulacion " + guardado.getIdPrepostulacion()
+                    + " amarrada a convocatoria " + idConvocatoria);
+        }
 
         return new PrepostulacionResponseDTO(
                 "Solicitud registrada exitosamente",
@@ -493,5 +517,92 @@ public class PrepostulacionService {
             sb.append(ABC.charAt(r.nextInt(ABC.length())));
         }
         return sb.toString();
+    }
+
+
+    @Transactional
+    public PrepostulacionResponseDTO repostular(
+            String        cedula,
+            MultipartFile archivoCedula,
+            MultipartFile archivoFoto,
+            MultipartFile archivoPrerrequisitos,
+            Long          idConvocatoria
+    ) {
+        // 1. Buscar registro existente
+        Prepostulacion p = prepostulacionRepository.findByIdentificacion(cedula)
+                .orElseThrow(() -> new RuntimeException(
+                        "No se encontró ninguna solicitud con esta cédula. " +
+                                "Si es la primera vez, use el formulario de registro."
+                ));
+
+        // 2. Solo puede re-postular si fue rechazada
+        if (!"rechazada".equalsIgnoreCase(p.getEstadoRevision())) {
+            throw new RuntimeException(
+                    "Su solicitud tiene estado '" + p.getEstadoRevision() + "'. " +
+                            "Solo puede re-postular si fue rechazada."
+            );
+        }
+
+        // 3. Subir nuevos documentos a Supabase
+        try {
+            String tag = cedula + "_repost_" + System.currentTimeMillis();
+            p.setUrlCedula(supabaseService.subirArchivo(archivoCedula,          "cedulas",         tag));
+            p.setUrlFoto(supabaseService.subirArchivo(archivoFoto,              "fotos",           tag));
+            p.setUrlPrerrequisitos(supabaseService.subirArchivo(archivoPrerrequisitos, "prerrequisitos", tag));
+        } catch (Exception e) {
+            throw new RuntimeException("Error al subir documentos: " + e.getMessage());
+        }
+
+        // 4. Resetear estado — la fila prepostulacion NO se elimina
+        p.setEstadoRevision("pendiente");
+        p.setFechaEnvio(LocalDateTime.now());
+        p.setFechaRevision(null);
+        p.setObservacionesRevision(null);
+        p.setIdRevisor(null);
+
+        Prepostulacion guardado = prepostulacionRepository.save(p);
+
+        // 5. Historial: nueva fila en prepostulacion_solicitud (la anterior queda intacta)
+        if (idConvocatoria != null) {
+            List<Long> solicitudes = obtenerSolicitudesDeConvocatoria(idConvocatoria);
+            for (Long idSolicitud : solicitudes) {
+                if (!prepostulacionSolicitudRepository
+                        .existsByIdIdPrepostulacionAndIdIdSolicitud(
+                                guardado.getIdPrepostulacion(), idSolicitud)) {
+                    prepostulacionSolicitudRepository.save(
+                            new PrepostulacionSolicitud(guardado.getIdPrepostulacion(), idSolicitud)
+                    );
+                    System.out.println("📋 Historial: " + guardado.getIdPrepostulacion()
+                            + " → solicitud " + idSolicitud);
+                }
+            }
+        }
+
+        return new PrepostulacionResponseDTO(
+                "Re-postulacion enviada. Su solicitud está nuevamente en revisión.",
+                guardado.getCorreo(),
+                guardado.getIdPrepostulacion(),
+                true,
+                guardado.getFechaEnvio()
+        );
+    }
+
+    public String obtenerEstadoPorCedula(String cedula) {
+        Prepostulacion p = prepostulacionRepository.findByIdentificacion(cedula)
+                .orElseThrow(() -> new RuntimeException("No existe"));
+        return p.getEstadoRevision();
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Long> obtenerSolicitudesDeConvocatoria(Long idConvocatoria) {
+        List<Object> resultados = entityManager.createNativeQuery(
+                        "SELECT id_solicitud FROM convocatoria_solicitud WHERE id_convocatoria = ?1"
+                )
+                .setParameter(1, idConvocatoria)  // int, no String
+                .getResultList();
+
+        return resultados.stream()
+                .map(r -> ((Number) r).longValue())
+                .collect(java.util.stream.Collectors.toList());
     }
 }

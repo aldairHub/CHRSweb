@@ -88,8 +88,8 @@ export class LoginComponent  implements OnInit{
 
   }
 
-  irARegistro() {
-    this.router.navigate(['/registro'], { replaceUrl: true });
+  irAConvocatorias() {
+    this.router.navigate(['/convocatorias']);
   }
 
   // ✅ nuevo

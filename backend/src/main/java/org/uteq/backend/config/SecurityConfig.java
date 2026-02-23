@@ -60,7 +60,11 @@ public class SecurityConfig {
                                 "/api/vicerrectorado/",
                                 "/api/vicerrectorado/**",
                                 "/api/solicitudes-docente/",
-                                "/api/solicitudes-docente/**"
+                                "/api/solicitudes-docente/**",
+                                "/api/convocatorias/activas",
+                                "/api/convocatorias/**",
+                                "/api/prepostulacion/verificar-estado/**",
+                                "/api/prepostulacion/repostular"
                         ).permitAll()
 
                         .requestMatchers("/api/auth/**").permitAll()

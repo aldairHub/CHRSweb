@@ -1,0 +1,106 @@
+$primary: #00A63E;
+$dark:    #016630;
+$border:  #B9F8CF;
+$text-gray: #64748b;
+
+.landing-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.landing-header {
+  text-align: center;
+  margin-bottom: 3rem;
+
+  .logo-box {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    .logo {
+      width: 90px; height: 90px;
+      background: $primary;
+      border-radius: 50%;
+      padding: 10px;
+      object-fit: contain;
+      box-shadow: 0 8px 20px rgba(0,166,62,.3);
+    }
+  }
+  .title      { font-size: 2rem; font-weight: 800; color: $dark; margin-bottom: .5rem; }
+  .university { font-size: 1rem; color: $dark; font-weight: 500; margin-bottom: .25rem; }
+  .subtitle   { font-size: .9rem; color: $primary; }
+}
+
+.main-cards {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 800px;
+}
+
+.main-card {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 360px;
+  cursor: pointer;
+  transition: all .3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,.08);
+
+  &:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(0,166,62,.2); }
+
+  .card-icon {
+    flex-shrink: 0;
+    width: 60px; height: 60px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    svg { width: 32px; height: 32px; }
+  }
+  .card-content { flex: 1;
+    h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: .3rem; }
+    p  { font-size: .85rem; line-height: 1.4; }
+  }
+  .card-arrow { font-size: 1.5rem; flex-shrink: 0; }
+}
+
+.primary-card {
+  background: white;
+  border: 2px solid $border;
+  &:hover { border-color: $primary; }
+  .card-icon  { background: #DCFCE7; svg { stroke: $primary; } }
+  .card-content h3 { color: $dark; }
+  .card-content p  { color: $text-gray; }
+  .card-arrow      { color: $primary; }
+}
+
+.secondary-card {
+  background: $primary;
+  border: 2px solid transparent;
+  &:hover { background: $dark; }
+  .card-icon  { background: rgba(255,255,255,.2); svg { stroke: white; } }
+  .card-content h3 { color: white; }
+  .card-content p  { color: rgba(255,255,255,.85); }
+  .card-arrow      { color: white; }
+}
+
+.landing-footer {
+  margin-top: 3rem;
+  font-size: .8rem;
+  color: $text-gray;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .landing-header .title { font-size: 1.5rem; }
+  .main-card { max-width: 100%; }
+}

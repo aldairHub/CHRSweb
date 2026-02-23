@@ -25,12 +25,13 @@ public class PrepostulacionController {
             @RequestParam("apellidos") String apellidos,
             @RequestParam("archivoCedula") MultipartFile archivoCedula,
             @RequestParam("archivoFoto") MultipartFile archivoFoto,
-            @RequestParam("archivoPrerrequisitos") MultipartFile archivoPrerrequisitos
+            @RequestParam("archivoPrerrequisitos") MultipartFile archivoPrerrequisitos,
+            @RequestParam(value = "idConvocatoria", required = false) Long idConvocatoria
     ) {
         try {
             PrepostulacionResponseDTO response = prepostulacionService.procesarPrepostulacion(
                     correo, cedula, nombres, apellidos,
-                    archivoCedula, archivoFoto, archivoPrerrequisitos
+                    archivoCedula, archivoFoto, archivoPrerrequisitos, idConvocatoria
             );
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
