@@ -40,3 +40,5 @@ public class DocumentoResponseDTO {
     public String  getObservacionesIa()              { return observacionesIa; }
     public void    setObservacionesIa(String v)      { this.observacionesIa = v; }
 }
+
+
