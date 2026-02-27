@@ -21,7 +21,6 @@ public class AppUserDetailsService implements UserDetailsService {
         Usuario u = usuarioRepository.findByUsuarioApp(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
-        // OJO: authorities reales vienen del JWT, aquí basta con username/password
         return org.springframework.security.core.userdetails.User
                 .withUsername(u.getUsuarioApp())
                 .password(u.getClaveApp())

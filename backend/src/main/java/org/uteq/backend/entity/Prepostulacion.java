@@ -45,7 +45,7 @@ public class Prepostulacion {
     @Column(name = "observaciones_revision", length = 1000)
     private String observacionesRevision;
 
-    // ✅ Nuevas columnas para las URLs de Supabase
+    // Nuevas columnas para las URLs de Supabase
     @Column(name = "url_cedula", length = 500)
     private String urlCedula;
 

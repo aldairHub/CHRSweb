@@ -25,7 +25,6 @@ export class CarreraService {
   }): Observable<Carrera> {
     return this.http.post<Carrera>(this.apiUrl, carrera);
   }
-
   update(id: number, carrera: {
     id: number;
     idFacultad: number | null;

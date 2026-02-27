@@ -79,16 +79,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/demo/**").permitAll()
 
-                        // TEMPORALES (siempre mejor quitarlos luego)
-                        .requestMatchers("/api/usuarios/migrar-claves-bd").permitAll()
-                        .requestMatchers("/resetear-claves-bd").permitAll()
-
-                        // Estos estaban MAL ubicados (después de anyRequest)
                         .requestMatchers("/api/usuarios/recuperar-clave").permitAll()
                         .requestMatchers("/api/usuarios/primer-login/cambiar-clave").permitAll()
                         .requestMatchers("/api/usuarios/cambiar-clave").permitAll()
 
-                        // SIEMPRE al final
                         .anyRequest().authenticated()
                 );
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
