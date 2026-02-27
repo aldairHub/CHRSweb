@@ -10,7 +10,6 @@ import java.util.Map;
 
 /**
  * Repository para ejecutar stored procedures de PostgreSQL
- * Maneja toda la interacción con roles de BD nativos de PostgreSQL
  */
 @Repository
 public class PostgresProcedureRepository {
@@ -23,7 +22,6 @@ public class PostgresProcedureRepository {
 
     /**
      * Valida login y obtiene credenciales BD del usuario
-     * Procedure: sp_login_validar(usuario_app, clave_app)
      */
     public Map<String, Object> loginValidar(String usuarioApp) {
         String sql = "SELECT * FROM sp_login_validar(?, '')";
@@ -33,8 +31,7 @@ public class PostgresProcedureRepository {
 
     /**
      * Obtiene roles de aplicación del usuario conectado
-     * ⚠️ EJECUTAR DESPUÉS DEL SWITCH DE CONEXIÓN
-     * Procedure: sp_obtener_roles_app_usuario()
+     * EJECUTAR DESPUÉS DEL SWITCH DE CONEXIÓN
      */
     public List<String> obtenerRolesAppUsuario() {
         String sql = "SELECT * FROM sp_obtener_roles_app_usuario()";
@@ -43,7 +40,6 @@ public class PostgresProcedureRepository {
 
     /**
      * Lista todos los roles BD (ROLE_*) disponibles en PostgreSQL
-     * Procedure: sp_listar_roles_bd_disponibles()
      */
     public List<Map<String, Object>> listarRolesBdDisponibles() {
         String sql = "SELECT * FROM sp_listar_roles_bd_disponibles()";
@@ -60,7 +56,6 @@ public class PostgresProcedureRepository {
 
     /**
      * Asigna un rol BD a un rol de aplicación
-     * Procedure: sp_asignar_rol_bd_a_rol_app(nombre_rol_app, nombre_rol_bd)
      */
     public void asignarRolBdARolApp(String nombreRolApp, String nombreRolBd) {
         String sql = "SELECT sp_asignar_rol_bd_a_rol_app(?, ?)";
@@ -75,7 +70,6 @@ public class PostgresProcedureRepository {
 
     /**
      * Remueve un rol BD de un rol de aplicación
-     * Procedure: sp_remover_rol_bd_de_rol_app(nombre_rol_app, nombre_rol_bd)
      */
     public void removerRolBdDeRolApp(String nombreRolApp, String nombreRolBd) {
         String sql = "SELECT sp_remover_rol_bd_de_rol_app(?, ?)";
@@ -90,8 +84,6 @@ public class PostgresProcedureRepository {
 
     /**
      * Crea un rol de aplicación con sus roles BD asociados
-     * Procedure: sp_crear_rol_app(nombre, descripcion, roles_bd[])
-     * @return ID del rol creado
      */
     public Integer crearRolApp(String nombre, String descripcion, List<String> rolesBd) {
         String sql = "SELECT sp_crear_rol_app(?, ?, ?)";
@@ -118,7 +110,6 @@ public class PostgresProcedureRepository {
 
     /**
      * Actualiza un rol de aplicación y sus roles BD
-     * Procedure: sp_actualizar_rol_app(id_rol_app, nombre, descripcion, roles_bd[])
      */
     public void actualizarRolApp(Integer idRolApp, String nombre, String descripcion, List<String> rolesBd) {
         String sql = "SELECT sp_actualizar_rol_app(?, ?, ?, ?)";
@@ -167,7 +158,6 @@ public class PostgresProcedureRepository {
 
     /**
      * Lista todos los roles de aplicación
-     * Procedure: sp_listar_roles_app()
      */
     public List<Map<String, Object>> listarRolesApp() {
         String sql = "SELECT * FROM sp_listar_roles_app()";
@@ -176,13 +166,12 @@ public class PostgresProcedureRepository {
 
     /**
      * Registra autoridad académica completa
-     * SP: sp_registrar_autoridad_completo
      */
     public RegistroSpResultDTO registrarAutoridadCompleto(
             String usuarioApp, String claveApp, String correo,
             String usuarioBd, String claveBdHash, String claveBdReal,
             String nombres, String apellidos, java.time.LocalDate fechaNac,
-            Long idInstitucion, List<String> rolesApp) {  // ✅ List<String> en vez de String
+            Long idInstitucion, List<String> rolesApp) {  // List<String> en vez de String
 
         String sql = "SELECT * FROM sp_registrar_autoridad_completo(?,?,?,?,?,?,?,?,?,?,?)";
 
@@ -198,7 +187,7 @@ public class PostgresProcedureRepository {
             ps.setString(8, apellidos);
             ps.setObject(9, fechaNac);
             ps.setLong(10, idInstitucion);
-            // ✅ Convertir List a Array SQL
+            // Convertir List a Array SQL
             Array rolesArray = conn.createArrayOf("VARCHAR", rolesApp.toArray());
             ps.setArray(11, rolesArray);
 
@@ -217,7 +206,6 @@ public class PostgresProcedureRepository {
 
     /**
      * Registra usuario simple
-     * SP: sp_registrar_usuario_simple
      */
     public RegistroSpResultDTO registrarUsuarioSimple(
             String usuarioApp, String claveApp, String correo,
@@ -234,7 +222,7 @@ public class PostgresProcedureRepository {
             ps.setString(4, usuarioBd);
             ps.setString(5, claveBdHash);
             ps.setString(6, claveBdReal);
-            // ✅ Convertir List a Array SQL
+            // Convertir List a Array SQL
             Array rolesArray = conn.createArrayOf("VARCHAR", rolesApp.toArray());
             ps.setArray(7, rolesArray);
 
@@ -252,7 +240,6 @@ public class PostgresProcedureRepository {
 
     /**
      * Registra postulante aprobado
-     * SP: sp_registrar_postulante
      */
     public RegistroSpResultDTO registrarPostulante(
             String usuarioApp, String claveApp, String correo,
@@ -282,7 +269,6 @@ public class PostgresProcedureRepository {
     }
 
     /**
-     * Procedure: sp_cambiar_clave_app(usuario_app, clave_app_hash)
      * Actualiza clave_app y marca primer_login = false
      */
     public void cambiarClaveApp(String usuarioApp, String claveAppHash) {
@@ -291,7 +277,6 @@ public class PostgresProcedureRepository {
     }
 
     /**
-     * Procedure: sp_recuperar_clave_app(usuario_app, clave_app_hash)
      * Actualiza clave_app y marca primer_login = true
      */
     public void recuperarClaveApp(String usuarioApp, String claveAppHash) {
@@ -305,7 +290,7 @@ public class PostgresProcedureRepository {
         } catch (org.springframework.dao.DataAccessException ex) {
             Throwable root = org.springframework.core.NestedExceptionUtils.getMostSpecificCause(ex);
             System.err.println("ERROR SP primer login: " + (root != null ? root.getMessage() : ex.getMessage()));
-            throw ex; // para que siga fallando, pero con mensaje real en consola
+            throw ex;
         }
     }
 

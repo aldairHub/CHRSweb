@@ -7,6 +7,6 @@ import java.util.Optional;
 
 public interface AutoridadAcademicaRepository extends JpaRepository<AutoridadAcademica, Long> {
 
-    // ⭐ CLAVE: buscar por usuario_app
+    // buscar por usuario_app
     Optional<AutoridadAcademica> findByUsuario_UsuarioApp(String usuarioApp);
 }

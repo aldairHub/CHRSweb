@@ -50,30 +50,6 @@ public class CredencialesGenerator {
     }
 
     /**
-     * Genera una clave para la base de datos
-     * Formato similar a la imagen: combinación de letras y números
-     */
-//    public static String generarClaveBd() {
-//        StringBuilder clave = new StringBuilder(50);
-//
-//        for (int i = 0; i < 50; i++) {
-//            if (RANDOM.nextBoolean()) {
-//                // Letra mayúscula o minúscula
-//                if (RANDOM.nextBoolean()) {
-//                    clave.append((char) ('A' + RANDOM.nextInt(26)));
-//                } else {
-//                    clave.append((char) ('a' + RANDOM.nextInt(26)));
-//                }
-//            } else {
-//                // Número
-//                clave.append(RANDOM.nextInt(10));
-//            }
-//        }
-//
-//        return clave.toString();
-//    }
-
-    /**
      * Mezcla aleatoriamente los caracteres de un string
      */
     private static String mezclarString(String input) {

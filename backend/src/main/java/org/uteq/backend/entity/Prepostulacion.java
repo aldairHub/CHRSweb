@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 
 /**
  * Entidad Prepostulacion
- * Mapea la tabla "prepostulacion" de Supabase
  */
 @Entity
 @Table(name = "prepostulacion")
@@ -45,7 +44,6 @@ public class Prepostulacion {
     @Column(name = "observaciones_revision", length = 1000)
     private String observacionesRevision;
 
-    // Nuevas columnas para las URLs de Supabase
     @Column(name = "url_cedula", length = 500)
     private String urlCedula;
 

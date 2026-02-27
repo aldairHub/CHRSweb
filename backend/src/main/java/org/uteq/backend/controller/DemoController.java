@@ -55,7 +55,7 @@ public class DemoController {
 
             } catch (Exception e) {
                 errores++;
-                System.err.println("❌ Error en " + u.getUsuarioApp() + ": " + e.getMessage());
+                System.err.println("Error en " + u.getUsuarioApp() + ": " + e.getMessage());
             }
         }
 

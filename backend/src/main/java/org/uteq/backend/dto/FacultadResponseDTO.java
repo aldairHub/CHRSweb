@@ -1,26 +1,13 @@
 package org.uteq.backend.dto;
 
+import lombok.Data;
+
+@Data
 public class FacultadResponseDTO {
 
     private Long idFacultad;
     private String nombreFacultad;
     private boolean estado;
-
-    public Long getIdFacultad() {
-        return idFacultad;
-    }
-
-    public void setIdFacultad(Long idFacultad) {
-        this.idFacultad = idFacultad;
-    }
-
-    public String getNombreFacultad() {
-        return nombreFacultad;
-    }
-
-    public void setNombreFacultad(String nombreFacultad) {
-        this.nombreFacultad = nombreFacultad;
-    }
 
     public boolean isEstado() {
         return estado;

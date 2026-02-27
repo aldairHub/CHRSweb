@@ -2,8 +2,10 @@ package org.uteq.backend.entity;
 
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import lombok.Data;
 
+import java.time.LocalDateTime;
+@Data
 @Entity
 @Table(
         name = "postulacion",
@@ -39,22 +41,4 @@ public class Postulacion {
     @Column(name = "preseleccion")
     private Boolean preseleccion;
 
-    // Getters y Setters
-    public Long getIdPostulacion() { return idPostulacion; }
-    public void setIdPostulacion(Long v) { this.idPostulacion = v; }
-
-    public Postulante getPostulante() { return postulante; }
-    public void setPostulante(Postulante v) { this.postulante = v; }
-
-    public SolicitudDocente getSolicitudDocente() { return solicitudDocente; }
-    public void setSolicitudDocente(SolicitudDocente v) { this.solicitudDocente = v; }
-
-    public LocalDateTime getFecha() { return fecha; }
-    public void setFecha(LocalDateTime v) { this.fecha = v; }
-
-    public String getEstadoPostulacion() { return estadoPostulacion; }
-    public void setEstadoPostulacion(String v) { this.estadoPostulacion = v; }
-
-    public Boolean getPreseleccion() { return preseleccion; }
-    public void setPreseleccion(Boolean v) { this.preseleccion = v; }
 }

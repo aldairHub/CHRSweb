@@ -16,19 +16,8 @@ import java.util.List;
 /**
  * Controlador de administración de usuarios (y autoridades con sus roles_app).
  *
- * Agrupa los endpoints que la nueva pantalla "Gestión de Usuarios" necesita:
- *   - Pestaña Usuarios:    GET /api/admin/usuarios
- *   - Pestaña Autoridades: GET /api/admin/autoridades
- *   - Cambiar estado y roles para ambos tipos
- *
- * WHY 403 antes: Las rutas /api/roles-autoridad y /api/roles-usuario apuntaban
- * a controladores comentados/eliminados → Spring no los registraba → 403/404.
- * Al tener estos endpoints nuevos en SecurityConfig bajo .permitAll() (o con
- * hasAuthority("ADMIN") cuando añadas JWT), el problema desaparece.
- *
- * NOTA PREFIJO ROLE_: Spring Security por defecto antepone "ROLE_" a las
- * authorities si usas .hasRole("ADMIN"). Para evitar eso y poder usar el nombre
- * tal cual (p.ej. "ADMIN"), usa siempre .hasAuthority("ADMIN") en SecurityConfig.
+ * PREFIJO ROLE_: Spring Security por defecto antepone "ROLE_" a las
+ * authorities
  */
 @RestController
 @RequestMapping("/api/admin")
@@ -57,11 +46,6 @@ public class UsuarioAdminController {
 
     /**
      * Crea un usuario simple desde el panel de administración.
-     * Delega a AutoridadAcademicaService.registrarUsuario() que usa
-     * sp_registrar_usuario_simple: genera credenciales automáticamente,
-     * crea el usuario en PostgreSQL, asigna roles BD y envía correo.
-     *
-     * Body: { correo, cedula, nombres, apellidos, rolesApp: string[] }
      */
     @PostMapping("/usuarios")
     public ResponseEntity<?> crearUsuario(@RequestBody RegistroUsuarioDTO dto) {

@@ -39,7 +39,6 @@ public class DbSwitchService {
 
         mutable.switchTo(ds);
         System.out.println("Backend conectado ahora como usuario BD: " + usuarioBd);
-
     }
 
     public void resetToDefault() {

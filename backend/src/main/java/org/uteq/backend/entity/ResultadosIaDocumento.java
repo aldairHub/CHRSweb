@@ -1,8 +1,10 @@
 package org.uteq.backend.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import lombok.Data;
 
+import java.time.LocalDateTime;
+@Data
 @Entity
 @Table(name = "resultados_ia_documento")
 public class ResultadosIaDocumento {
@@ -26,19 +28,4 @@ public class ResultadosIaDocumento {
     @Column(name = "fecha_revision", nullable = false)
     private LocalDateTime fechaRevision;
 
-    // Getters y Setters
-    public Long getIdResultadoIaDocumento() { return idResultadoIaDocumento; }
-    public void setIdResultadoIaDocumento(Long v) { this.idResultadoIaDocumento = v; }
-
-    public Documento getDocumento() { return documento; }
-    public void setDocumento(Documento v) { this.documento = v; }
-
-    public String getResultado() { return resultado; }
-    public void setResultado(String v) { this.resultado = v; }
-
-    public String getObservaciones() { return observaciones; }
-    public void setObservaciones(String v) { this.observaciones = v; }
-
-    public LocalDateTime getFechaRevision() { return fechaRevision; }
-    public void setFechaRevision(LocalDateTime v) { this.fechaRevision = v; }
 }

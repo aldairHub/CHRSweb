@@ -22,7 +22,7 @@ public class SolicitudDocenteController {
     private final SolicitudDocenteService solicitudService;
 
     // =====================================================
-    // 📦 DTOs INTERNOS (DEBEN IR PRIMERO)
+    // DTOs INTERNOS
     // =====================================================
     public static class SolicitudConUsuarioDTO {
         private String usuarioApp;
@@ -38,7 +38,7 @@ public class SolicitudDocenteController {
     public record ErrorResponse(String mensaje, int status) {}
 
     // =====================================================
-    // ⭐ CREAR SOLICITUD
+    // CREAR SOLICITUD
     // =====================================================
     @PostMapping
     public ResponseEntity<?> crearSolicitud(@Valid @RequestBody SolicitudConUsuarioDTO request) {
@@ -55,7 +55,7 @@ public class SolicitudDocenteController {
     }
 
     // =====================================================
-    // 📥 LISTAR TODAS
+    // LISTAR TODAS
     // =====================================================
     @GetMapping
     public ResponseEntity<List<SolicitudDocenteResponseDTO>> obtenerTodasLasSolicitudes() {
@@ -63,7 +63,7 @@ public class SolicitudDocenteController {
     }
 
     // =====================================================
-    // 🔍 POR ID
+    // POR ID
     // =====================================================
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerSolicitudPorId(@PathVariable Long id) {
@@ -77,8 +77,8 @@ public class SolicitudDocenteController {
     }
 
     // =====================================================
-    // 🔥 PDF MEJORADO CON LOGGING DE ERRORES
-    // =====================================================
+    //  PDF MEJORADO CON LOGGING DE ERRORES
+    // ===================================================
     @GetMapping("/{id}/reporte-pdf")
     public ResponseEntity<?> generarReportePdf(@PathVariable Long id) {
         try {
@@ -100,7 +100,7 @@ public class SolicitudDocenteController {
                     .body(pdf);
 
         } catch (Exception e) {
-            // ✅ AHORA SÍ MOSTRAMOS EL ERROR COMPLETO
+            //  AHORA SÍ MOSTRAMOS EL ERROR COMPLETO
             System.err.println("❌ ERROR GENERANDO PDF:");
             e.printStackTrace();
 
@@ -115,7 +115,7 @@ public class SolicitudDocenteController {
     }
 
     // =====================================================
-    // ⚠️ MANEJO DE ERRORES
+    // ⚠MANEJO DE ERRORES
     // =====================================================
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {

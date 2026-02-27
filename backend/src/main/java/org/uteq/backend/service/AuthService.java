@@ -89,7 +89,7 @@ public class AuthService {
                 usuario.getUsuarioApp(),
                 new HashSet<>(roles),
                 usuario.getPrimerLogin(),
-                usuario.getIdUsuario()  // ← agregar
+                usuario.getIdUsuario()
         );
     }
 

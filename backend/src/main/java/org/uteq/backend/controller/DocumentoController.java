@@ -17,22 +17,16 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-// ============================================================
-// DocumentoController
-// Base URL: /api/documentos
-// ============================================================
 @RestController
 @RequestMapping("/api/documentos")
-@CrossOrigin(origins = "http://localhost:4200")  // Ajusta al puerto de tu Angular
+@CrossOrigin(origins = "http://localhost:4200")
 public class DocumentoController {
 
     @Autowired
     private DocumentoService documentoService;
 
     // ----------------------------------------------------------
-    // GET /api/documentos/postulacion/{idPostulacion}
     // Obtiene todos los tipos de doc + estado del postulante
-    // Llama: SP sp_obtener_documentos_postulacion
     // ----------------------------------------------------------
     @GetMapping("/postulacion/{idPostulacion}")
     public ResponseEntity<List<DocumentoResponseDTO>> obtenerDocumentos(
@@ -43,11 +37,8 @@ public class DocumentoController {
         return ResponseEntity.ok(documentos);
     }
 
-    // ----------------------------------------------------------
-    // POST /api/documentos/subir
+
     // Sube un archivo PDF y lo registra en BD
-    // Llama: SP sp_guardar_documento
-    // ----------------------------------------------------------
     @PostMapping(value = "/subir", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, Object>> subirDocumento(
             @RequestParam("idPostulacion")    Long idPostulacion,
@@ -66,11 +57,7 @@ public class DocumentoController {
         }
     }
 
-    // ----------------------------------------------------------
-    // DELETE /api/documentos/{idDocumento}/postulacion/{idPostulacion}
     // Elimina un documento (solo si está en estado 'pendiente')
-    // Llama: SP sp_eliminar_documento
-    // ----------------------------------------------------------
     @DeleteMapping("/{idDocumento}/postulacion/{idPostulacion}")
     public ResponseEntity<Map<String, Object>> eliminarDocumento(
             @PathVariable Long idDocumento,
@@ -83,11 +70,7 @@ public class DocumentoController {
                 : ResponseEntity.badRequest().body(resultado);
     }
 
-    // ----------------------------------------------------------
-    // POST /api/documentos/finalizar/{idPostulacion}
     // Finaliza la carga → cambia estado postulación a 'en_revision'
-    // Llama: SP sp_finalizar_carga_documentos
-    // ----------------------------------------------------------
     @PostMapping("/finalizar/{idPostulacion}")
     public ResponseEntity<Map<String, Object>> finalizarCarga(
             @PathVariable Long idPostulacion
@@ -99,10 +82,8 @@ public class DocumentoController {
                 : ResponseEntity.badRequest().body(resultado);
     }
 
-    // ----------------------------------------------------------
-    // GET /api/documentos/postulante/{idUsuario}
+
     // Obtiene info del postulante y su postulación activa
-    // Llama: SP sp_obtener_info_postulante
     // ----------------------------------------------------------
     @GetMapping("/postulante/{idUsuario}")
     public ResponseEntity<PostulanteInfoDTO> obtenerInfoPostulante(

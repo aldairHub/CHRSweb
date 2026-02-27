@@ -3,8 +3,9 @@ package org.uteq.backend.dto;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
 
-
+@Data
 public class FacultadRequestDTO {
 
     @NotBlank
@@ -13,13 +14,6 @@ public class FacultadRequestDTO {
 
     private Boolean estado; // Boolean para poder defaultear si no viene
 
-    public String getNombreFacultad() {
-        return nombreFacultad;
-    }
-
-    public void setNombreFacultad(String nombreFacultad) {
-        this.nombreFacultad = nombreFacultad;
-    }
 
     public Boolean getEstado() {
         return estado;

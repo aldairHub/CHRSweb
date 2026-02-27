@@ -41,7 +41,6 @@ public class RegistroController {
         // Endpoint para verificar si un email ya está registrado
         // Útil para validación en tiempo real en el frontend
         try {
-            // Aquí podrías inyectar UsuarioRepository si lo necesitas
             return ResponseEntity.ok().body(java.util.Map.of(
                     "disponible", true,
                     "mensaje", "Email disponible"

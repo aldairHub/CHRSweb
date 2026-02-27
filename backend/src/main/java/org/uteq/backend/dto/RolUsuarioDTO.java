@@ -1,5 +1,8 @@
 package org.uteq.backend.dto;
 
+import lombok.Data;
+
+@Data
 public class RolUsuarioDTO {
     private Long idRolUsuario;
     private String nombre;
@@ -10,7 +13,4 @@ public class RolUsuarioDTO {
         this.nombre = nombre;
         this.estado = estado;
     }
-    public Long getIdRolUsuario() { return idRolUsuario; }
-    public String getNombre() { return nombre; }
-    public Boolean getEstado() { return estado; }
 }

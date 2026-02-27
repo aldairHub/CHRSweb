@@ -4,10 +4,7 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * DTO de autoridad académica con datos personales + roles_app.
- * Usado en la pestaña "Autoridades" de Gestión de Usuarios.
- */
+
 @Data
 public class AutoridadConRolesDTO {
     private Long idAutoridad;

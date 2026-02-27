@@ -1,7 +1,9 @@
 package org.uteq.backend.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "materia", schema = "public")
 public class Materia {
@@ -21,15 +23,4 @@ public class Materia {
     @Column(name = "nivel", nullable = false)
     private Long nivel;
 
-    public Materia() {}
-
-    public Long getIdMateria() { return idMateria; }
-    public Carrera getCarrera() { return carrera; }
-    public void setCarrera(Carrera carrera) { this.carrera = carrera; }
-
-    public String getNombreMateria() { return nombreMateria; }
-    public void setNombreMateria(String nombreMateria) { this.nombreMateria = nombreMateria; }
-
-    public Long getNivel() { return nivel; }
-    public void setNivel(Long nivel) { this.nivel = nivel; }
 }

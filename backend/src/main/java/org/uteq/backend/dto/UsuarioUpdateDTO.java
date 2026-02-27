@@ -10,5 +10,4 @@ public class UsuarioUpdateDTO {
     private String claveBd;
     private String correo;
     private Boolean activo;
-    //private Role rol;
 }

@@ -1,7 +1,9 @@
 package org.uteq.backend.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "carrera", schema = "public",
         uniqueConstraints = {
@@ -27,18 +29,4 @@ public class Carrera {
     @Column(name = "estado", nullable = false)
     private boolean estado;
 
-    public Carrera() {}
-
-    public Long getIdCarrera() { return idCarrera; }
-    public Facultad getFacultad() { return facultad; }
-    public void setFacultad(Facultad facultad) { this.facultad = facultad; }
-
-    public String getNombreCarrera() { return nombreCarrera; }
-    public void setNombreCarrera(String nombreCarrera) { this.nombreCarrera = nombreCarrera; }
-
-    public String getModalidad() { return modalidad; }
-    public void setModalidad(String modalidad) { this.modalidad = modalidad; }
-
-    public boolean isEstado() { return estado; }
-    public void setEstado(boolean estado) { this.estado = estado; }
 }

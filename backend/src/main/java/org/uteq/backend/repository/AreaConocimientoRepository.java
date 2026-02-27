@@ -7,6 +7,4 @@ import org.uteq.backend.entity.AreaConocimiento;
 @Repository
 public interface AreaConocimientoRepository
         extends JpaRepository<AreaConocimiento, Long> {
-
-    // Por ahora no necesitas métodos personalizados
 }

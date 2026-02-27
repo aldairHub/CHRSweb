@@ -37,9 +37,6 @@ public class VerificacionController {
     public ResponseEntity<Boolean> validarCodigo(@RequestParam String correo, @RequestParam String codigo) {
         // Aquí llamas a tu servicio
         boolean esValido = emailService.validarCodigo(correo, codigo);
-
-        // IMPORTANTE: Devolvemos 200 OK con true o false.
-        // No uses 'return ResponseEntity.status(403).build()' porque Angular lo ve como error grave.
         return ResponseEntity.ok(esValido);
     }
 }

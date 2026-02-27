@@ -1,5 +1,8 @@
 package org.uteq.backend.dto;
 
+import lombok.Data;
+
+@Data
 public class MateriaResponseDTO {
 
     private Long idMateria;
@@ -8,18 +11,4 @@ public class MateriaResponseDTO {
     private String nombreCarrera;
     private Long nivel;
 
-    public Long getIdMateria() { return idMateria; }
-    public void setIdMateria(Long idMateria) { this.idMateria = idMateria; }
-
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-
-    public Long getIdCarrera() { return idCarrera; }
-    public void setIdCarrera(Long idCarrera) { this.idCarrera = idCarrera; }
-
-    public String getNombreCarrera() { return nombreCarrera; }
-    public void setNombreCarrera(String nombreCarrera) { this.nombreCarrera = nombreCarrera; }
-
-    public Long getNivel() { return nivel; }
-    public void setNivel(Long nivel) { this.nivel = nivel; }
 }

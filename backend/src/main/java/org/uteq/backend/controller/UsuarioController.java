@@ -87,7 +87,7 @@ public class UsuarioController {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
-//    // ✅ TEMPORAL - Eliminar después de usar UNA SOLA VEZ
+//    //  TEMPORAL - Eliminar después de usar UNA SOLA VEZ
 //    @GetMapping("/migrar-claves-bd")
 //    public ResponseEntity<String> migrarClavesBd() {
 //        List<Usuario> usuarios = usuarioRepository.findAll();
@@ -99,7 +99,7 @@ public class UsuarioController {
 //                String claveActual = u.getClaveBd();
 //                String claveEnTextoPlano;
 //
-//                // ✅ Verificar si es Base64 válido antes de decodificar
+//                // Verificar si es Base64 válido antes de decodificar
 //                if (esBase64Valido(claveActual)) {
 //                    claveEnTextoPlano = new String(java.util.Base64.getDecoder().decode(claveActual));
 //                    System.out.println("📦 " + u.getUsuarioApp() + " → era Base64 → " + claveEnTextoPlano);
@@ -114,11 +114,11 @@ public class UsuarioController {
 //                u.setClaveBd(claveCifrada);
 //                usuarioRepository.saveAndFlush(u);
 //                migrados++;
-//                System.out.println("✅ Migrado: " + u.getUsuarioApp());
+//                System.out.println(" Migrado: " + u.getUsuarioApp());
 //
 //            } catch (Exception e) {
 //                errores++;
-//                System.err.println("❌ Error migrando " + u.getUsuarioApp() + ": " + e.getMessage());
+//                System.err.println(" Error migrando " + u.getUsuarioApp() + ": " + e.getMessage());
 //            }
 //        }
 //

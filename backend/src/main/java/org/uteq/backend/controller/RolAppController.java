@@ -9,16 +9,7 @@ import org.uteq.backend.service.RolAppService;
 
 import java.util.List;
 
-/**
- * Controlador para Gestión General de Roles (roles_app ↔ roles_bd).
- *
- * Reemplaza completamente a RolAutoridadController (comentado/eliminado).
- * Ruta: /api/roles-app
- *
- * En SecurityConfig se declara .permitAll() temporalmente en todas las rutas
- * (así estaba para roles-autoridad). Cuando implementes JWT con ADMIN,
- * cambia esas líneas a hasAuthority("ADMIN") - ver nota en SecurityConfig.java.
- */
+ //Controlador para Gestión General de Roles (roles_app ↔ roles_bd).
 @RestController
 @RequestMapping("/api/roles-app")
 @CrossOrigin(origins = "*")
