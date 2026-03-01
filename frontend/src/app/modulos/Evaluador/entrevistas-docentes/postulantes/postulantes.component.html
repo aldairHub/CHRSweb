@@ -1,0 +1,275 @@
+<!-- entrevistas-docentes/postulantes/postulantes.component.html -->
+<app-navbar></app-navbar>
+
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <!-- ═══════════════ LISTA DE POSTULANTES ═══════════════ -->
+    <ng-container *ngIf="!showDetalle">
+
+      <div class="page-header">
+        <div>
+          <h2>Postulantes en Proceso</h2>
+          <p class="page-subtitle">Vista general de todos los postulantes activos</p>
+        </div>
+      </div>
+
+      <div class="alert danger" *ngIf="error">
+        <div><strong>Error</strong><p>{{ error }}</p>
+          <button class="btn btn-outline btn-sm" (click)="cargarListado()">Reintentar</button>
+        </div>
+      </div>
+
+      <div class="loading-state" *ngIf="isLoading">
+        <svg class="spinner-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="32" height="32">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        <p>Cargando postulantes...</p>
+      </div>
+
+      <ng-container *ngIf="!isLoading && !error">
+
+        <!-- FILTROS -->
+        <div class="filters-section">
+          <div class="search-box">
+            <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input class="form-input" type="text" placeholder="Buscar por nombre, cédula o materia..."
+                   [(ngModel)]="searchTerm" (input)="applyFilters()">
+          </div>
+          <select class="form-select" [(ngModel)]="filterEstado" (change)="onEstadoChange()">
+            <option value="">Todos los estados</option>
+            <option value="en_proceso">En Proceso</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="completado">Completado</option>
+            <option value="rechazado">Rechazado</option>
+          </select>
+        </div>
+
+        <div class="card">
+          <div class="table-container">
+            <table class="table">
+              <thead>
+              <tr>
+                <th>ID</th><th>Postulante</th><th>Cédula</th><th>Materia</th>
+                <th>Fase Actual</th><th>Progreso</th><th>Estado</th><th>Acciones</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let p of paginados" (click)="verDetalle(p)" style="cursor:pointer;">
+                <td><strong>{{ p.codigo }}</strong></td>
+                <td>{{ getNombreCompleto(p) }}</td>
+                <td>{{ p.cedula }}</td>
+                <td>{{ p.materia }}</td>
+                <td>{{ p.faseActual }}</td>
+                <td>
+                  <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="p.progreso"></div>
+                  </div>
+                  <small>{{ p.progreso }}%</small>
+                </td>
+                <td>
+                    <span class="badge" [ngClass]="getBadgeClass(p.estadoGeneral)">
+                      {{ getBadgeLabel(p.estadoGeneral) }}
+                    </span>
+                </td>
+                <td>
+                  <button class="btn btn-outline btn-sm"
+                          (click)="verDetalle(p); $event.stopPropagation()">
+                    Ver Detalle
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="paginados.length === 0">
+                <td colspan="8">
+                  <div class="empty-state">
+                    <div class="empty-icon">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      </svg>
+                    </div>
+                    <p>No se encontraron postulantes</p>
+                    <small>Intente modificar los filtros de búsqueda</small>
+                  </div>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PAGINACIÓN -->
+        <div class="pagination" *ngIf="totalPages > 1">
+          <div class="pagination-info">
+            Mostrando {{ (page - 1) * pageSize + 1 }} – {{ Math.min(page * pageSize, postulanteFiltrados.length) }}
+            de {{ postulanteFiltrados.length }} postulantes
+          </div>
+          <div class="pagination-controls">
+            <button class="page-btn" (click)="page = page - 1" [disabled]="page === 1">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <button class="page-btn" *ngFor="let n of getPageNums()"
+                    [class.active]="page === n" (click)="page = n">{{ n }}</button>
+            <button class="page-btn" (click)="page = page + 1" [disabled]="page === totalPages">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </ng-container>
+    </ng-container>
+
+    <!-- ═══════════════ DETALLE DEL POSTULANTE ═══════════════ -->
+    <ng-container *ngIf="showDetalle && postulanteSeleccionado">
+
+      <div class="page-header">
+        <div>
+          <h2>{{ getNombreCompleto(postulanteSeleccionado) }}</h2>
+          <p class="page-subtitle">
+            Cédula: {{ postulanteSeleccionado.cedula }} | Materia: {{ postulanteSeleccionado.materia }}
+          </p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-outline" (click)="volverLista()">← Volver</button>
+          <button class="btn btn-primary"
+                  (click)="programarReunion(postulanteSeleccionado.idProceso)">
+            📅 Programar Reunión
+          </button>
+          <button class="btn btn-outline"
+                  (click)="verResultados(postulanteSeleccionado.idProceso)">
+            📊 Ver Resultados
+          </button>
+        </div>
+      </div>
+
+      <!-- LOADING DETALLE -->
+      <div class="loading-state" *ngIf="isLoadingDetalle">
+        <svg class="spinner-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="32" height="32">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        <p>Cargando detalle del proceso...</p>
+      </div>
+
+      <ng-container *ngIf="!isLoadingDetalle && detalleCompleto">
+
+        <!-- PIPELINE VISUAL -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Pipeline del Proceso</h3>
+            <span class="badge warning">En Proceso – {{ postulanteSeleccionado.progreso }}%</span>
+          </div>
+          <div class="pipeline">
+            <div class="pipeline-step" *ngFor="let f of fasesDetalle" [ngClass]="f.estado">
+              <div class="pipeline-connector" *ngIf="f.orden > 1" [class.done]="f.estado === 'completada'"></div>
+              <div class="pipeline-icon">
+                <svg *ngIf="f.estado === 'completada'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span *ngIf="f.estado !== 'completada'">{{ f.orden }}</span>
+              </div>
+              <div class="pipeline-label">{{ f.nombre }}</div>
+              <div class="pipeline-date">
+                {{ f.fechaCompletada || (f.estado === 'en_curso' ? (f.reunion?.fecha ?? 'Programada') : 'Pendiente') }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FASES DETALLADAS -->
+        <div class="fases-grid">
+          <div class="fase-card" *ngFor="let f of fasesDetalle"
+               [style.border-left-color]="getFaseBorderColor(f.estado)">
+            <div class="fase-card-header">
+              <div>
+                <h4>{{ f.orden }}. {{ f.nombre }}</h4>
+                <small>Peso: {{ f.peso }}%</small>
+              </div>
+              <span class="badge" [ngClass]="getFaseEstadoBadge(f.estado)">
+                {{ getFaseEstadoLabel(f.estado) }}
+              </span>
+            </div>
+
+            <div class="fase-card-body">
+              <!-- COMPLETADA -->
+              <ng-container *ngIf="f.estado === 'completada'">
+                <p><strong>Calificación:</strong> {{ f.calificacion }}/5.0</p>
+                <p><strong>Fecha:</strong> {{ f.fechaCompletada }}</p>
+                <p><strong>Evaluadores:</strong> {{ f.evaluadores?.join(', ') }}</p>
+                <div class="fase-actions">
+                  <button class="btn btn-outline btn-sm"
+                          (click)="verResultados(postulanteSeleccionado!.idProceso)">
+                    👁️ Ver Evaluación
+                  </button>
+                </div>
+              </ng-container>
+
+              <!-- EN CURSO -->
+              <ng-container *ngIf="f.estado === 'en_curso'">
+                <p><strong>Reunión:</strong> {{ f.reunion?.fecha }} {{ f.reunion?.hora }}</p>
+                <p><strong>Evaluadores:</strong> {{ f.evaluadores?.join(', ') }}</p>
+                <p><strong>Plataforma:</strong> {{ f.reunion?.modalidad }}</p>
+                <div class="alert warning-light">⏰ Reunión próxima</div>
+                <div class="fase-actions" *ngIf="f.reunion">
+                  <button class="btn btn-primary btn-sm"
+                          (click)="irEvaluar(f.reunion!.idReunion)">✏️ Evaluar</button>
+                  <button class="btn btn-outline btn-sm"
+                          (click)="programarReunion(postulanteSeleccionado!.idProceso, f.idFase)">
+                    📅 Reprogramar
+                  </button>
+                </div>
+              </ng-container>
+
+              <!-- PENDIENTE -->
+              <ng-container *ngIf="f.estado === 'pendiente'">
+                <p class="text-muted">Esta fase está disponible para programar.</p>
+                <div class="fase-actions">
+                  <button class="btn btn-primary btn-sm"
+                          (click)="programarReunion(postulanteSeleccionado!.idProceso, f.idFase)">
+                    📅 Programar Reunión
+                  </button>
+                </div>
+              </ng-container>
+
+              <!-- BLOQUEADA -->
+              <ng-container *ngIf="f.estado === 'bloqueada'">
+                <p class="text-muted">Esta fase se desbloqueará al completar las fases anteriores.</p>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+
+        <!-- HISTORIAL -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Historial de Acciones</h3>
+          </div>
+          <div class="timeline">
+            <div class="timeline-item" *ngFor="let h of historial">
+              <div class="timeline-dot"></div>
+              <div class="timeline-content">
+                <div class="timeline-date">{{ h.fecha }}</div>
+                <div class="timeline-title">{{ h.titulo }}</div>
+                <p>{{ h.descripcion }}</p>
+                <small *ngIf="h.usuario">Por: {{ h.usuario }}</small>
+              </div>
+            </div>
+            <div class="empty-state-sm" *ngIf="historial.length === 0">
+              No hay acciones registradas aún.
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+    </ng-container>
+
+  </div>
+</div>

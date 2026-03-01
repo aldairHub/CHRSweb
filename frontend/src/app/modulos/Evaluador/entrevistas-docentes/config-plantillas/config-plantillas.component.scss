@@ -1,0 +1,103 @@
+// config-plantillas.scss
+$primary: #00A63E; $dark: #016630; $light-card-bg: #EEF9EC; $border: #B9F8CF;
+$text-dark: #1a1a1a; $text-gray: #536b50; $bg-white: #ffffff; $error: #dc2626;
+
+.main-container { min-height: 100vh; background: #f5f7f5; padding: 2rem 1rem; }
+.content-wrapper { max-width: 1280px; margin: 0 auto; }
+
+.page-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;
+  h2 { font-size: 1.75rem; color: $dark; font-weight: 700; margin: 0; }
+  .page-subtitle { font-size: 0.95rem; color: $text-gray; margin: 0.25rem 0 0 0; }
+}
+
+.card {
+  background: $bg-white; border: 1px solid $border; border-radius: 12px;
+  padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.card-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid $border;
+}
+.card-title { font-size: 1.125rem; font-weight: 700; color: $dark; margin: 0; }
+
+.table-container { overflow-x: auto; border-radius: 8px; border: 1px solid $border; }
+.table {
+  width: 100%; border-collapse: collapse;
+  thead { background: #f8faf9; }
+  th { padding: 1rem 1.25rem; text-align: left; font-size: 0.8125rem; font-weight: 600; color: $text-gray; text-transform: uppercase; border-bottom: 1px solid $border; }
+  td { padding: 1.125rem 1.25rem; font-size: 0.9rem; border-bottom: 1px solid #f0f0f0; vertical-align: middle; strong { color: $dark; } }
+  tr:hover td { background: #fafdfb; }
+  tr:last-child td { border-bottom: none; }
+}
+
+.badge-rol-app {
+  display: inline-block; padding: 0.25rem 0.625rem; border-radius: 6px;
+  font-size: 0.75rem; font-weight: 600; background: $light-card-bg; color: $dark; border: 1px solid rgba($primary,0.25);
+}
+.badge {
+  display: inline-flex; align-items: center; padding: 0.3rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+  &.success { background: #dcfce7; color: #166534; }
+  &.danger  { background: #fee2e2; color: #991b1b; }
+}
+
+.action-buttons { display: flex; gap: 0.5rem; align-items: center; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem;
+  border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s;
+  &.btn-primary { background: $primary; color: white; &:hover { background: $dark; } }
+  &.btn-outline { background: transparent; border-color: $primary; color: $primary; &:hover { background: rgba($primary,0.08); } }
+  &.btn-sm { padding: 0.5rem 1rem; font-size: 0.85rem; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+.btn-icon {
+  width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border: 1.5px solid $border; background: $bg-white; transition: all 0.2s;
+  svg { width: 18px; height: 18px; stroke: $text-gray; }
+  &.btn-outline:hover { background: rgba($primary,0.05); border-color: $primary; svg { stroke: $primary; } }
+}
+
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+  z-index: 9999; padding: 1rem; animation: fadeIn 0.2s ease; overflow-y: auto;
+}
+.modal-content {
+  background: $bg-white; border-radius: 16px; width: 100%; max-width: 640px;
+  display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; margin: 2rem auto;
+  &.modal-sm { max-width: 520px; }
+}
+.modal-header {
+  padding: 1.5rem 2rem; border-bottom: 1px solid $border;
+  display: flex; justify-content: space-between; align-items: center;
+  h3 { font-size: 1.375rem; font-weight: 700; color: $dark; margin: 0; }
+  .close-btn {
+    width: 36px; height: 36px; border-radius: 8px; border: none; background: transparent;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;
+    svg { width: 22px; height: 22px; stroke: $text-gray; }
+    &:hover { background: rgba($error,0.1); svg { stroke: $error; } }
+  }
+}
+.modal-body { padding: 2rem; overflow-y: auto; flex: 1; }
+.modal-footer { padding: 1.25rem 2rem; border-top: 1px solid $border; display: flex; gap: 0.75rem; justify-content: flex-end; }
+
+.form-group {
+  margin-bottom: 1.25rem;
+  label { display: block; font-size: 0.875rem; font-weight: 600; color: $text-dark; margin-bottom: 0.5rem; }
+}
+.form-input, .form-select {
+  width: 100%; padding: 0.75rem 1rem; border: 1.5px solid $border; border-radius: 8px;
+  font-size: 0.9rem; color: $text-dark; transition: all 0.2s;
+  &:focus { outline: none; border-color: $primary; box-shadow: 0 0 0 3px rgba($primary,0.1); }
+}
+.required { color: $error; margin-left: 2px; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 768px) {
+  .page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .table-container { overflow-x: auto; }
+  .modal-content { max-width: 100%; margin: 0; border-radius: 16px 16px 0 0; }
+}

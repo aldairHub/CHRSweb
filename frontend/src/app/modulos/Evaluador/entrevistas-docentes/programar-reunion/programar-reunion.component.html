@@ -1,0 +1,157 @@
+<!-- entrevistas-docentes/programar-reunion/programar-reunion.component.html -->
+<app-navbar></app-navbar>
+
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <div>
+        <h2>Programar Reunión de Evaluación</h2>
+        <p class="page-subtitle">Configure los detalles de la reunión</p>
+      </div>
+    </div>
+
+    <div class="loading-state" *ngIf="isLoading">
+      <svg class="spinner-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="32" height="32">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      <p>Cargando datos...</p>
+    </div>
+
+    <div class="alert danger" *ngIf="error">
+      <div><strong>Error</strong><p>{{ error }}</p>
+        <button class="btn btn-outline btn-sm" (click)="cargarDatos()">Reintentar</button>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="alert success" *ngIf="saved">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <div>
+        <strong>¡Reunión programada exitosamente!</strong>
+        <p>Redirigiendo al expediente del postulante...</p>
+      </div>
+    </div>
+
+    <div class="card" *ngIf="!isLoading && !saved && !error">
+
+      <!-- Postulante + Fase -->
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Postulante <span class="required">*</span></label>
+          <select class="form-select" [(ngModel)]="form.idProceso">
+            <option [value]="0">Seleccionar...</option>
+            <option *ngFor="let p of postulantes" [value]="p.idProceso">
+              {{ p.nombres }} {{ p.apellidos }} – {{ p.materia }}
+            </option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Fase del Proceso <span class="required">*</span></label>
+          <select class="form-select" [(ngModel)]="form.idFase">
+            <option [value]="0">Seleccionar...</option>
+            <option *ngFor="let f of fases" [value]="f.idFase">{{ f.nombre }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Fecha + Hora -->
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Fecha <span class="required">*</span></label>
+          <input class="form-input" type="date" [(ngModel)]="form.fecha">
+        </div>
+        <div class="form-group">
+          <label>Hora <span class="required">*</span></label>
+          <input class="form-input" type="time" [(ngModel)]="form.hora">
+        </div>
+      </div>
+
+      <!-- Duración + Modalidad -->
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Duración Estimada <span class="required">*</span></label>
+          <select class="form-select" [(ngModel)]="form.duracion">
+            <option *ngFor="let d of duraciones" [value]="d.value">{{ d.label }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Modalidad <span class="required">*</span></label>
+          <select class="form-select" [(ngModel)]="form.modalidad">
+            <option *ngFor="let m of modalidades" [value]="m.value">{{ m.label }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Enlace -->
+      <div class="form-group" *ngIf="showEnlace">
+        <label>Enlace de Reunión</label>
+        <input class="form-input" type="url" [(ngModel)]="form.enlace"
+               placeholder="https://zoom.us/j/...">
+        <p class="field-hint">Pegue el enlace de la plataforma de videoconferencia.</p>
+      </div>
+
+      <!-- Evaluadores -->
+      <div class="form-group">
+        <label>Evaluadores Asignados</label>
+        <div class="alert info" *ngIf="evaluadores.length === 0">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div>
+            <strong>Sin evaluadores</strong>
+            <p>Implementa <code>GET /api/usuarios?rol=evaluador</code> en el backend para cargar evaluadores dinámicamente.</p>
+          </div>
+        </div>
+        <div class="evaluadores-list" *ngIf="evaluadores.length > 0">
+          <label class="evaluador-item" *ngFor="let ev of evaluadores" (click)="toggleEvaluador(ev)">
+            <input type="checkbox" [checked]="ev.seleccionado" (click)="$event.stopPropagation()">
+            <div class="evaluador-info">
+              <span class="evaluador-nombre">{{ ev.nombre }}</span>
+              <span class="evaluador-rol">{{ ev.rol }}</span>
+            </div>
+          </label>
+        </div>
+        <div class="evaluadores-seleccionados" *ngIf="evaluadoresSeleccionados.length > 0">
+          <span class="badge-rol-app" *ngFor="let ev of evaluadoresSeleccionados">{{ ev.nombre }}</span>
+        </div>
+      </div>
+
+      <!-- Observaciones -->
+      <div class="form-group">
+        <label>Observaciones</label>
+        <textarea class="form-textarea" [(ngModel)]="form.observaciones"
+                  placeholder="Instrucciones o notas adicionales para la reunión..."></textarea>
+      </div>
+
+      <div class="alert info">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <div>
+          <strong>Recordatorio Automático</strong>
+          <p>Los evaluadores recibirán recordatorio 24 horas antes de la reunión.</p>
+        </div>
+      </div>
+
+      <div class="footer-actions">
+        <button class="btn btn-outline" (click)="cancelar()">Cancelar</button>
+        <button class="btn btn-primary" (click)="save()" [disabled]="isSaving">
+          <svg *ngIf="isSaving" class="spinner-icon" fill="none" stroke="currentColor"
+               viewBox="0 0 24 24" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          {{ isSaving ? 'Guardando...' : '📅 Programar Reunión' }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

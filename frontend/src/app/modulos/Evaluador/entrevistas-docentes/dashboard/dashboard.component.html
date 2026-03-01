@@ -1,0 +1,170 @@
+<!-- entrevistas-docentes/dashboard/dashboard.component.html -->
+<app-navbar></app-navbar>
+
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <div class="page-header">
+      <div>
+        <h2>Dashboard General</h2>
+        <p class="page-subtitle">Resumen del proceso de evaluación docente</p>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="isLoading">
+      <svg class="spinner-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="32" height="32">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      <p>Cargando información...</p>
+    </div>
+
+    <!-- ERROR -->
+    <div class="alert danger" *ngIf="error && !isLoading">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <div>
+        <strong>Error</strong>
+        <p>{{ error }}</p>
+        <button class="btn btn-outline btn-sm" (click)="cargarDatos()">Reintentar</button>
+      </div>
+    </div>
+
+    <ng-container *ngIf="!isLoading && !error">
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <h3>Postulantes Activos</h3>
+            <div class="stat-value">{{ stats.postulantesActivos }}</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon blue">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <h3>Reuniones Programadas</h3>
+            <div class="stat-value">{{ stats.reunionesProgramadas }}</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon success">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <h3>Evaluaciones Completas</h3>
+            <div class="stat-value">{{ stats.evaluacionesCompletas }}</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon purple">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <h3>Pendientes Hoy</h3>
+            <div class="stat-value">{{ stats.pendientesHoy }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POSTULANTES EN PROCESO -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Postulantes en Proceso</h3>
+          <button class="btn btn-primary btn-sm" (click)="navegarPostulantes()">Ver Todos</button>
+        </div>
+
+        <div class="empty-state-sm" *ngIf="postulantesRecientes.length === 0">
+          No hay postulantes activos en este momento.
+        </div>
+
+        <div class="table-container" *ngIf="postulantesRecientes.length > 0">
+          <table class="table">
+            <thead>
+            <tr>
+              <th>Postulante</th><th>Materia</th><th>Fase Actual</th>
+              <th>Progreso</th><th>Estado</th><th>Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let p of postulantesRecientes">
+              <td><strong>{{ getNombreCompleto(p) }}</strong></td>
+              <td>{{ p.materia }}</td>
+              <td>{{ p.faseActual }}</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" [style.width.%]="p.progreso"></div>
+                </div>
+                <small>{{ p.progreso }}%</small>
+              </td>
+              <td>
+                  <span class="badge" [ngClass]="getBadgeClass(p.estadoGeneral)">
+                    {{ getBadgeLabel(p.estadoGeneral) }}
+                  </span>
+              </td>
+              <td>
+                <button class="btn btn-outline btn-sm" (click)="navegarPostulante(p.idProceso)">
+                  Ver Detalle
+                </button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- REUNIONES PRÓXIMAS -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Reuniones Próximas (Siguientes 7 días)</h3>
+        </div>
+
+        <div class="empty-state-sm" *ngIf="reunionesProximas.length === 0">
+          No hay reuniones programadas próximamente.
+        </div>
+
+        <div class="timeline" *ngIf="reunionesProximas.length > 0">
+          <div class="timeline-item" *ngFor="let r of reunionesProximas">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-date">{{ r.fecha }} – {{ r.hora }}</div>
+              <div class="timeline-title">Reunión de evaluación</div>
+              <div class="timeline-meta">
+                <span class="badge info">{{ getModalidadLabel(r.modalidad) }}</span>
+              </div>
+              <div class="timeline-actions" *ngIf="r.enlace">
+                <button class="btn btn-primary btn-sm" (click)="iniciarReunion(r.enlace)">
+                  🎥 Iniciar Reunión
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

@@ -1,9 +1,18 @@
-// entrevistas-docentes/shared/evaluacion.models.ts
-// Interfaces del módulo — alineadas 100% con los DTOs del backend Spring Boot
+// services/entrevistas-models.ts
+// Interfaces compartidas — espejo exacto de los DTO del backend
 
-// ─── FASES ────────────────────────────────────────────────────────────────────
+// ─── FASES ───────────────────────────────────────────────────────────────────
 
-export interface FaseDTO {
+export interface FaseRequest {
+  nombre: string;
+  tipo: 'automatica' | 'reunion' | 'practica' | 'decision';
+  peso: number;
+  orden: number;
+  evaluadoresPermitidos: string[];
+  estado?: boolean;
+}
+
+export interface FaseResponse {
   idFase: number;
   nombre: string;
   tipo: 'automatica' | 'reunion' | 'practica' | 'decision';
@@ -14,38 +23,38 @@ export interface FaseDTO {
   numeroPlantillas: number;
 }
 
-export interface FaseCreateDTO {
+// ─── PLANTILLAS ───────────────────────────────────────────────────────────────
+
+export interface PlantillaRequest {
+  codigo: string;
   nombre: string;
-  tipo: 'automatica' | 'reunion' | 'practica' | 'decision';
-  peso: number;
-  orden: number;
-  evaluadoresPermitidos: string[];
+  idFase: number;
   estado?: boolean;
 }
 
-// ─── PLANTILLAS ───────────────────────────────────────────────────────────────
-
-export interface PlantillaDTO {
+export interface PlantillaResponse {
   idPlantilla: number;
   codigo: string;
   nombre: string;
   idFase: number;
   nombreFase: string;
   numeroCriterios: number;
-  ultimaModificacion: string; // formato dd/MM/yyyy desde el backend
+  ultimaModificacion: string;
   estado: boolean;
-}
-
-export interface PlantillaCreateDTO {
-  codigo: string;
-  nombre: string;
-  idFase: number;
-  estado?: boolean;
 }
 
 // ─── CRITERIOS ────────────────────────────────────────────────────────────────
 
-export interface CriterioDTO {
+export interface CriterioRequest {
+  nombre: string;
+  descripcion: string;
+  peso: number;
+  escala: '1-5' | '1-10' | '0-100';
+  rubrica?: string;
+  idPlantilla: number;
+}
+
+export interface CriterioResponse {
   idCriterio: number;
   nombre: string;
   descripcion: string;
@@ -55,30 +64,17 @@ export interface CriterioDTO {
   idPlantilla: number;
 }
 
-export interface CriterioCreateDTO {
-  nombre: string;
-  descripcion: string;
-  peso: number;
-  escala: '1-5' | '1-10' | '0-100';
-  rubrica?: string;
-  idPlantilla: number;
-}
-
-export interface PesoTotalDTO {
+export interface PesoTotalResponse {
   idPlantilla: number;
   pesoTotal: number;
   valido: boolean;
 }
 
-// ─── PROCESOS / POSTULANTES ───────────────────────────────────────────────────
+// ─── POSTULANTES / PROCESOS ───────────────────────────────────────────────────
 
-/**
- * IMPORTANTE: El backend trabaja con idProceso como identificador principal,
- * no idPostulante. Usar idProceso para navegar y hacer peticiones.
- */
-export interface PostulanteDTO {
-  idProceso: number;      // ID del ProcesoEvaluacionPostulante — usar ESTE para las peticiones
-  idPostulante: number;   // ID del Postulante original
+export interface PostulanteResumen {
+  idProceso: number;
+  idPostulante: number;
   codigo: string;
   nombres: string;
   apellidos: string;
@@ -89,19 +85,7 @@ export interface PostulanteDTO {
   estadoGeneral: 'en_proceso' | 'completado' | 'rechazado' | 'pendiente';
 }
 
-export interface PostulanteDetalleDTO extends PostulanteDTO {
-  fases: FaseProcesoDTO[];
-  historial: HistorialAccionDTO[];
-}
-
-export interface CrearProcesoDTO {
-  idPostulante: number;
-  idSolicitud: number;
-}
-
-// ─── FASES DEL PROCESO ────────────────────────────────────────────────────────
-
-export interface FaseProcesoDTO {
+export interface FaseProcesoDetalle {
   idFase: number;
   orden: number;
   nombre: string;
@@ -109,38 +93,34 @@ export interface FaseProcesoDTO {
   estado: 'completada' | 'en_curso' | 'pendiente' | 'bloqueada';
   calificacion?: number;
   fechaCompletada?: string;
-  reunion?: ReunionDTO;
+  reunion?: ReunionResumen;
   evaluadores?: string[];
 }
 
-export interface HistorialAccionDTO {
+export interface HistorialAccion {
   fecha: string;
   titulo: string;
   descripcion: string;
   usuario?: string;
 }
 
-// ─── REUNIONES ────────────────────────────────────────────────────────────────
-
-export interface ReunionDTO {
-  idReunion: number;
-  idProceso: number;         // Antes era idPostulante — ahora es idProceso
-  idFase: number;
-  fecha: string;             // yyyy-MM-dd
-  hora: string;              // HH:mm
-  duracionMinutos: number;   // Antes era "duracion" — ahora es duracionMinutos
-  modalidad: 'zoom' | 'meet' | 'teams' | 'presencial';
-  enlace?: string;
-  evaluadores: string[];
-  observaciones?: string;
-  estado: 'programada' | 'en_curso' | 'completada' | 'cancelada';
+export interface PostulanteDetalle extends PostulanteResumen {
+  fases: FaseProcesoDetalle[];
+  historial: HistorialAccion[];
 }
 
-export interface ReunionCreateDTO {
+export interface CrearProcesoRequest {
+  idPostulante: number;
+  idSolicitud: number;
+}
+
+// ─── REUNIONES ────────────────────────────────────────────────────────────────
+
+export interface ReunionRequest {
   idProceso: number;
   idFase: number;
-  fecha: string;
-  hora: string;
+  fecha: string;        // yyyy-MM-dd
+  hora: string;         // HH:mm
   duracionMinutos: number;
   modalidad: 'zoom' | 'meet' | 'teams' | 'presencial';
   enlace?: string;
@@ -148,22 +128,36 @@ export interface ReunionCreateDTO {
   observaciones?: string;
 }
 
-// ─── EVALUACIONES ─────────────────────────────────────────────────────────────
-
-export interface EvaluacionDTO {
-  idEvaluacion: number;
+export interface ReunionResumen {
   idReunion: number;
-  idEvaluador: number;
-  nombreEvaluador: string;
-  criterios: CriterioEvaluadoDTO[];
-  observaciones: string;
-  calificacionFinal: number;
-  fechaEvaluacion: string;
-  firmaDigital?: string;
-  confirmada: boolean;
+  idProceso: number;
+  idFase: number;
+  fecha: string;
+  hora: string;
+  duracionMinutos: number;
+  modalidad: 'zoom' | 'meet' | 'teams' | 'presencial';
+  enlace?: string;
+  evaluadores: string[];
+  estado: 'programada' | 'en_curso' | 'completada' | 'cancelada';
 }
 
-export interface CriterioEvaluadoDTO {
+// ─── EVALUACIONES ─────────────────────────────────────────────────────────────
+
+export interface CriterioEvaluadoRequest {
+  idCriterio: number;
+  nota: number;
+  observacion?: string;
+}
+
+export interface EvaluacionRequest {
+  idReunion: number;
+  criterios: CriterioEvaluadoRequest[];
+  observaciones: string;
+  declaroSinConflicto: boolean;
+  firmaDigital: string;
+}
+
+export interface CriterioEvaluadoResponse {
   idCriterio: number;
   nombre: string;
   peso: number;
@@ -171,17 +165,22 @@ export interface CriterioEvaluadoDTO {
   observacion?: string;
 }
 
-export interface EvaluacionCreateDTO {
+export interface EvaluacionResponse {
+  idEvaluacion: number;
   idReunion: number;
-  criterios: { idCriterio: number; nota: number; observacion?: string }[];
+  idEvaluador: number;
+  nombreEvaluador: string;
+  criterios: CriterioEvaluadoResponse[];
   observaciones: string;
-  declaroSinConflicto: boolean;
-  firmaDigital: string;
+  calificacionFinal: number;
+  fechaEvaluacion: string;
+  firmaDigital?: string;
+  confirmada: boolean;
 }
 
 // ─── RESULTADOS ───────────────────────────────────────────────────────────────
 
-export interface ResultadoFaseDTO {
+export interface ResultadoFase {
   idFase: number;
   nombreFase: string;
   peso: number;
@@ -189,29 +188,29 @@ export interface ResultadoFaseDTO {
   ponderado?: number;
   evaluadores: string[];
   estado: 'completada' | 'programada' | 'bloqueada' | 'pendiente';
-  evaluaciones?: EvaluacionDTO[];
+  evaluaciones?: EvaluacionResponse[];
 }
 
-export interface ResultadoProcesoDTO {
+export interface ResultadoProceso {
   idProceso: number;
   idPostulante: number;
   nombreCompleto: string;
   materia: string;
-  fasesResultados: ResultadoFaseDTO[];
+  fasesResultados: ResultadoFase[];
   calificacionTotal: number;
   progreso: number;
   decision?: 'aprobado_contratar' | 'aprobado_espera' | 'no_aprobado' | 'segunda_ronda';
   justificacionDecision?: string;
 }
 
-export interface DecisionFinalDTO {
+export interface DecisionFinalRequest {
   decision: string;
   justificacion: string;
 }
 
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
 
-export interface DashboardStatsDTO {
+export interface DashboardStats {
   postulantesActivos: number;
   reunionesProgramadas: number;
   evaluacionesCompletas: number;
