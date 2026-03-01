@@ -526,74 +526,67 @@ public class PrepostulacionService {
 
     @Transactional
     public PrepostulacionResponseDTO repostular(
-            String        cedula,
+            String cedula,
             MultipartFile archivoCedula,
             MultipartFile archivoFoto,
             MultipartFile archivoPrerrequisitos,
-            Long          idConvocatoria
+            Long idSolicitud
     ) {
-        // 1. Buscar registro existente
-        Prepostulacion p = prepostulacionRepository.findByIdentificacion(cedula)
+        // 1. Buscar la última postulación de esta cédula
+        Prepostulacion ultima = prepostulacionRepository
+                .findTopByIdentificacionOrderByFechaEnvioDesc(cedula)
                 .orElseThrow(() -> new RuntimeException(
                         "No se encontró ninguna solicitud con esta cédula. " +
-                                "Si es la primera vez, use el formulario de registro."
-                ));
+                                "Si es la primera vez, use el formulario de registro."));
 
         // 2. Solo puede re-postular si fue rechazada
-        if (!"RECHAZADO".equalsIgnoreCase(p.getEstadoRevision())) {
+        if (!"RECHAZADO".equalsIgnoreCase(ultima.getEstadoRevision())) {
             throw new RuntimeException(
-                    "Su solicitud tiene estado '" + p.getEstadoRevision() + "'. " +
-                            "Solo puede re-postular si fue rechazada."
-            );
+                    "Su solicitud tiene estado '" + ultima.getEstadoRevision() + "'. " +
+                            "Solo puede re-postular si fue rechazada.");
         }
 
         // 3. Subir nuevos documentos a Supabase
+        String urlCedula, urlFoto, urlPrerrequisitos;
         try {
             String tag = cedula + "_repost_" + System.currentTimeMillis();
-            p.setUrlCedula(supabaseService.subirArchivo(archivoCedula,          "cedulas",         tag));
-            p.setUrlFoto(supabaseService.subirArchivo(archivoFoto,              "fotos",           tag));
-            p.setUrlPrerrequisitos(supabaseService.subirArchivo(archivoPrerrequisitos, "prerrequisitos", tag));
+            urlCedula         = supabaseService.subirArchivo(archivoCedula,          "cedulas",         tag);
+            urlFoto           = supabaseService.subirArchivo(archivoFoto,            "fotos",           tag);
+            urlPrerrequisitos = supabaseService.subirArchivo(archivoPrerrequisitos,  "prerrequisitos",  tag);
         } catch (Exception e) {
             throw new RuntimeException("Error al subir documentos: " + e.getMessage());
         }
 
-        // 4. Resetear estado — la fila prepostulacion NO se elimina
-        p.setEstadoRevision("PENDIENTE");
-        p.setFechaEnvio(LocalDateTime.now());
-        p.setFechaRevision(null);
-        p.setObservacionesRevision(null);
-        p.setIdRevisor(null);
+        // 4. Guardar NUEVA fila via stored procedure (historial completo)
+        Long idNuevaPrepostulacion = postgresProcedureRepository.registrarPrepostulacion(
+                ultima.getNombres(),
+                ultima.getApellidos(),
+                cedula,
+                ultima.getCorreo(),
+                ultima.getTelefono(),
+                ultima.getFechaNacimiento() != null ? ultima.getFechaNacimiento().toLocalDate() : null,
+                urlCedula,
+                urlFoto,
+                urlPrerrequisitos,
+                idSolicitud
+        );
 
-        Prepostulacion guardado = prepostulacionRepository.save(p);
-
-//        if (idConvocatoria != null) {
-//            List<Long> solicitudes = obtenerSolicitudesDeConvocatoria(idConvocatoria);
-//            for (Long idSolicitud : solicitudes) {
-//                if (!prepostulacionSolicitudRepository
-//                        .existsByIdIdPrepostulacionAndIdIdSolicitud(
-//                                guardado.getIdPrepostulacion(), idSolicitud)) {
-//                    prepostulacionSolicitudRepository.save(
-//                            new PrepostulacionSolicitud(guardado.getIdPrepostulacion(), idSolicitud)
-//                    );
-//                    System.out.println("📋 Historial: " + guardado.getIdPrepostulacion()
-//                            + " → solicitud " + idSolicitud);
-//                }
-//            }
-//        }
+        System.out.println("💾 Re-postulación guardada como nueva fila con ID: " + idNuevaPrepostulacion);
 
         return new PrepostulacionResponseDTO(
-                "Re-postulacion enviada. Su solicitud está nuevamente en revisión.",
-                guardado.getCorreo(),
-                guardado.getIdPrepostulacion(),
+                "Re-postulación enviada. Su solicitud está nuevamente en revisión.",
+                ultima.getCorreo(),
+                idNuevaPrepostulacion,
                 true,
-                guardado.getFechaEnvio()
+                LocalDateTime.now()
         );
     }
 
     public String obtenerEstadoPorCedula(String cedula) {
-        Prepostulacion p = prepostulacionRepository.findByIdentificacion(cedula)
-                .orElseThrow(() -> new RuntimeException("No existe"));
-        return p.getEstadoRevision();
+        Prepostulacion ultima = prepostulacionRepository
+                .findTopByIdentificacionOrderByFechaEnvioDesc(cedula)
+                .orElseThrow(() -> new RuntimeException("No existe ninguna solicitud con esta cédula."));
+        return ultima.getEstadoRevision();
     }
 
     private List<Long> obtenerSolicitudesDeConvocatoria(Long idConvocatoria) {

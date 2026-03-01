@@ -10,18 +10,16 @@ import java.util.Optional;
 @Repository
 public interface PrepostulacionRepository extends JpaRepository<Prepostulacion, Long> {
 
-    // Verificar si ya existe una solicitud con esta identificación (cédula/pasaporte)
-    boolean existsByIdentificacion(String identificacion);
+    List<Prepostulacion> findAllByOrderByFechaEnvioDesc();
 
-    // Buscar por identificación
-    Optional<Prepostulacion> findByIdentificacion(String identificacion);
-
-    // Buscar por correo
-    Optional<Prepostulacion> findByCorreo(String correo);
-
-    // Buscar por estado de revisión
     List<Prepostulacion> findByEstadoRevision(String estadoRevision);
 
-    // Listar todas ordenadas por fecha de envío (más recientes primero)
-    List<Prepostulacion> findAllByOrderByFechaEnvioDesc();
+    // Ya no se usa para bloquear duplicados, pero puede servir para buscar todas las de una cédula
+    List<Prepostulacion> findByIdentificacion(String identificacion);
+
+    // Para verificar estado y repostular: trae la más reciente de esa cédula
+    Optional<Prepostulacion> findTopByIdentificacionOrderByFechaEnvioDesc(String identificacion);
+
+    // Sigue siendo útil para contar
+    boolean existsByIdentificacion(String identificacion);
 }

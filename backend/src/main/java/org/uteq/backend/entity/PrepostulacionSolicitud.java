@@ -1,6 +1,8 @@
 package org.uteq.backend.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.EmbeddedId;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

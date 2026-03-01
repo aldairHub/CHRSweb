@@ -5,8 +5,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.uteq.backend.dto.ConvocatoriaDTO;
+import org.uteq.backend.dto.SolicitudDocenteDTO;
 import org.uteq.backend.entity.Convocatoria;
+import org.uteq.backend.entity.ConvocatoriaSolicitud;
+import org.uteq.backend.entity.SolicitudDocente;
 import org.uteq.backend.repository.ConvocatoriaRepository;
+import org.uteq.backend.repository.ConvocatoriaSolicitudRepository;
+import org.uteq.backend.repository.SolicitudDocenteRepository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,6 +23,8 @@ import java.util.stream.Collectors;
 public class ConvocatoriaController {
 
     private final ConvocatoriaRepository convocatoriaRepository;
+    private final ConvocatoriaSolicitudRepository convocatoriaSolicitudRepository;
+    private final SolicitudDocenteRepository solicitudDocenteRepository;
 
     // ─── PÚBLICO ────────────────────────────────────────────────────────────
 
@@ -34,6 +41,31 @@ public class ConvocatoriaController {
         return convocatoriaRepository.findById(id)
                 .map(this::toDTO).map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Retorna las solicitudes_docente asociadas a una convocatoria.
+     * El postulante usa esto para elegir a cuál plaza específica quiere aplicar.
+     */
+    @GetMapping("/api/convocatorias/{id}/solicitudes")
+    public ResponseEntity<List<SolicitudDocenteDTO>> obtenerSolicitudes(@PathVariable Long id) {
+        List<Long> idsSolicitud = convocatoriaSolicitudRepository
+                .findByIdConvocatoria(id)
+                .stream()
+                .map(ConvocatoriaSolicitud::getIdSolicitud)
+                .collect(Collectors.toList());
+
+        if (idsSolicitud.isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+
+        List<SolicitudDocenteDTO> solicitudes = solicitudDocenteRepository
+                .findAllById(idsSolicitud)
+                .stream()
+                .map(this::toSolicitudDTO)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(solicitudes);
     }
 
     // ─── ADMIN ──────────────────────────────────────────────────────────────
@@ -97,5 +129,21 @@ public class ConvocatoriaController {
         c.setEstadoConvocatoria(dto.getEstadoConvocatoria() != null
                 ? dto.getEstadoConvocatoria() : "abierta");
         return c;
+    }
+
+    private SolicitudDocenteDTO toSolicitudDTO(SolicitudDocente s) {
+        SolicitudDocenteDTO dto = new SolicitudDocenteDTO();
+        dto.setIdSolicitud(s.getIdSolicitud());
+        dto.setJustificacion(s.getJustificacion());
+        dto.setCantidadDocentes(s.getCantidadDocentes());
+        dto.setNivelAcademico(s.getNivelAcademico());
+        dto.setEstadoSolicitud(s.getEstadoSolicitud());
+        dto.setIdMateria(s.getMateria().getIdMateria());
+        dto.setNombreMateria(s.getMateria().getNombreMateria());
+        dto.setIdCarrera(s.getCarrera().getIdCarrera());
+        dto.setNombreCarrera(s.getCarrera().getNombreCarrera());
+        dto.setIdArea(s.getArea().getIdArea());
+        dto.setNombreArea(s.getArea().getNombreArea());
+        return dto;
     }
 }

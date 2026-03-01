@@ -7,6 +7,8 @@ import org.uteq.backend.dto.OpcionDTO;
 import org.uteq.backend.dto.RegistroSpResultDTO;
 
 import java.sql.Array;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -394,6 +396,51 @@ public class PostgresProcedureRepository {
     public List<Map<String, Object>> listarModulos() {
         return jdbcTemplate.queryForList(
                 "SELECT * FROM public.sp_listar_modulos()");
+    }
+
+    /**
+     * NUEVO: Registra una prepostulación y la asocia a la solicitud elegida.
+     * Siempre inserta fila nueva (historial de re-postulaciones).
+     *
+     * SP esperado: sp_registrar_prepostulacion(
+     *   p_nombres, p_apellidos, p_identificacion, p_correo, p_telefono,
+     *   p_fecha_nacimiento, p_url_cedula, p_url_foto, p_url_prerrequisitos, p_id_solicitud
+     * )
+     * Retorna: out_id_prepostulacion BIGINT
+     */
+    public Long registrarPrepostulacion(
+            String    nombres,
+            String    apellidos,
+            String    identificacion,
+            String    correo,
+            String    telefono,
+            LocalDate fechaNacimiento,
+            String    urlCedula,
+            String    urlFoto,
+            String    urlPrerrequisitos,
+            Long      idSolicitud
+    ) {
+        String sql = "SELECT * FROM sp_registrar_prepostulacion(?,?,?,?,?,?,?,?,?,?)";
+
+        return jdbcTemplate.execute((java.sql.Connection conn) -> {
+            var ps = conn.prepareStatement(sql);
+            ps.setString(1, nombres);
+            ps.setString(2, apellidos);
+            ps.setString(3, identificacion);
+            ps.setString(4, correo);
+            ps.setString(5, telefono);
+            ps.setObject(6, fechaNacimiento != null ? Date.valueOf(fechaNacimiento) : null);
+            ps.setString(7, urlCedula);
+            ps.setString(8, urlFoto);
+            ps.setString(9, urlPrerrequisitos);
+            ps.setObject(10, idSolicitud);
+
+            var rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getLong("out_id_prepostulacion");
+            }
+            throw new RuntimeException("sp_registrar_prepostulacion no retornó datos");
+        });
     }
 
 }
