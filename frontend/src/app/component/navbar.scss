@@ -282,3 +282,43 @@ $border: #e2e8f0;
   from { opacity: 0; transform: translateY(-10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+// ─── Selector de roles en dropdown perfil ─────────────
+.perfil-divider {
+  margin: 6px 0;
+  border: none;
+  border-top: 1px solid #eee;
+}
+
+.perfil-label {
+  margin: 6px 16px 4px;
+  font-size: 11px;
+  color: #999;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.perfil-item--rol {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.perfil-item--activo {
+  color: #016630 !important;
+  font-weight: 600 !important;
+  background: #f0fdf4;
+}
+
+.rol-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  flex-shrink: 0;
+}
+
+.rol-dot--activo {
+  background: #00A63E;
+}

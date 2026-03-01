@@ -14,4 +14,5 @@ public class RolAppSaveDTO {
 
     /** Nombres de roles BD a asociar (reemplaza lista completa). */
     private List<String> rolesBd;
+    private Integer      idModulo;
 }

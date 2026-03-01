@@ -40,6 +40,11 @@ export class GestionRolesComponent implements OnInit {
   totalPages = 1;
   Math = Math;
 
+  // ─── Módulos ─────────────────────────────────────────────────────
+  modulosDisponibles: any[] = [];
+  moduloSeleccionado: number | null = null;
+
+
   get rolesPaginados(): RolAppConRolesBdDTO[] {
     const start = (this.currentPage - 1) * this.pageSize;
     return this.rolesFiltrados.slice(start, start + this.pageSize);
@@ -72,6 +77,7 @@ export class GestionRolesComponent implements OnInit {
   ngOnInit(): void {
     this.initForm();
     this.loadRolesBd();
+    this.loadModulos();
     this.loadData();
   }
 
@@ -103,6 +109,15 @@ export class GestionRolesComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: err => console.error('Error cargando roles BD:', err)
+    });
+  }
+  loadModulos(): void {
+    this.svc.listarModulos().subscribe({
+      next: data => {
+        this.modulosDisponibles = Array.isArray(data) ? data : [];
+        this.cdr.detectChanges();
+      },
+      error: err => console.error('Error cargando módulos:', err)
     });
   }
 
@@ -140,6 +155,7 @@ export class GestionRolesComponent implements OnInit {
     this.editando = false;
     this.selectedRol = null;
     this.selectedRolesBd = [];
+    this.moduloSeleccionado = null;
     this.form.reset({ nombre: '', descripcion: '', activo: true });
     this.showFormModal = true;
     this.cdr.detectChanges();
@@ -151,6 +167,7 @@ export class GestionRolesComponent implements OnInit {
     this.editando = true;
     this.selectedRol = rol;
     this.selectedRolesBd = [...(rol.rolesBd || [])];
+    this.moduloSeleccionado = rol.idModulo ?? null;
     this.form.reset({ nombre: rol.nombre, descripcion: rol.descripcion, activo: rol.activo });
     this.showFormModal = true;
     this.cdr.detectChanges();
@@ -191,7 +208,8 @@ export class GestionRolesComponent implements OnInit {
       nombre: v.nombre,
       descripcion: v.descripcion,
       activo: v.activo,
-      rolesBd: [...this.selectedRolesBd]
+      rolesBd: [...this.selectedRolesBd],
+      idModulo: this.moduloSeleccionado
     };
 
     this.isSaving = true;
@@ -205,12 +223,12 @@ export class GestionRolesComponent implements OnInit {
         this.isSaving = false;
         this.closeFormModal();
         this.loadData();
-        alert('✅ Rol guardado correctamente.');
+        alert(' Rol guardado correctamente.');
       },
       error: err => {
         this.isSaving = false;
         console.error('Error guardando rol:', err);
-        alert('❌ No se pudo guardar el rol: ' + (err?.error?.message || err?.message || 'Error desconocido'));
+        alert(' No se pudo guardar el rol: ' + (err?.error?.message || err?.message || 'Error desconocido'));
       }
     });
   }
@@ -227,7 +245,7 @@ export class GestionRolesComponent implements OnInit {
       error: err => {
         rol.activo = prev;
         console.error('Error cambiando estado:', err);
-        alert('❌ No se pudo cambiar el estado.');
+        alert(' No se pudo cambiar el estado.');
         this.cdr.detectChanges();
       }
     });

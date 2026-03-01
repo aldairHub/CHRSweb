@@ -90,9 +90,17 @@ export class NavbarComponent {
     this.router.navigate(['/perfil']);
   }
 
+  // cargarDatosUsuario(): void {
+  //   this.nombreUsuario = localStorage.getItem('usuario') || 'Usuario';
+  //   this.rolUsuario = localStorage.getItem('rol') || 'Sin rol';
+  //   this.iniciales = this.obtenerIniciales(this.nombreUsuario);
+  // }
+  rolesDisponibles: any[] = [];
+
   cargarDatosUsuario(): void {
     this.nombreUsuario = localStorage.getItem('usuario') || 'Usuario';
-    this.rolUsuario = localStorage.getItem('rol') || 'Sin rol';
+    this.rolUsuario    = this.authService.getRolNombre() || 'Sin rol';
+    this.rolesDisponibles = this.authService.getRolesDisponibles();
     this.iniciales = this.obtenerIniciales(this.nombreUsuario);
   }
 
@@ -114,6 +122,27 @@ export class NavbarComponent {
     this.router.navigate(['/login']);
   }
 
+  cambiarRolActivo(rol: any): void {
+    this.showPerfilMenu = false;
 
+    // Guardar el nuevo nombre del rol en localStorage
+    localStorage.setItem('rolNombre', rol.nombre);
+    this.rolUsuario = rol.nombre;
+
+    // Hacer fetch del nuevo menú para este rol
+    this.authService.obtenerMenuPorRol(rol.idRolApp).subscribe({
+      next: (modulo: any) => {
+        localStorage.setItem('modulo', JSON.stringify(modulo));
+
+        // Calcular la ruta de navegación desde moduloRuta
+        const ruta = modulo?.moduloRuta?.replace(/^\//, '') ?? null;
+        if (ruta) {
+          localStorage.setItem('rol', ruta);
+          this.router.navigate([`/${ruta}`], { replaceUrl: true });
+        }
+      },
+      error: () => alert('No se pudo cambiar el rol. Intente de nuevo.')
+    });
+  }
 
 }

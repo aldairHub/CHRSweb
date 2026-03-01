@@ -136,6 +136,11 @@ export const routes: Routes = [
     canActivate: [AuthGuard, NoPrimerLoginGuard],
     data: { rol: 'admin' }
   },
+  { path: 'gestion-opciones', loadComponent: () =>
+      import('./modulos/Admin/gestion-opciones/gestion-opciones')
+        .then(m => m.GestionOpcionesComponent),
+    canActivate: [AuthGuard], data: { rol: 'admin' }
+  },
 
   // ── Revisor (Vicerrectorado) ──────────────────────────────────────────────
   { path: 'revisor', canActivate: [AuthGuard], data: { rol: 'revisor' }, children: [

@@ -50,6 +50,10 @@ public class Usuario {
 
     @Column(name = "primer_login", nullable = false)
     private Boolean primerLogin = true;
+
+    @Column(name = "token_version", nullable = false)
+    private Integer tokenVersion = 1;
+
     // Relación N:N con roles de aplicación
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

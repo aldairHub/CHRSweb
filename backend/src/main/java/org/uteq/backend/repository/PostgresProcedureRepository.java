@@ -2,11 +2,14 @@ package org.uteq.backend.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.uteq.backend.dto.ModuloOpcionesDTO;
+import org.uteq.backend.dto.OpcionDTO;
 import org.uteq.backend.dto.RegistroSpResultDTO;
 
 import java.sql.Array;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Repository para ejecutar stored procedures de PostgreSQL
@@ -37,7 +40,10 @@ public class PostgresProcedureRepository {
         String sql = "SELECT * FROM sp_obtener_roles_app_usuario()";
         return jdbcTemplate.queryForList(sql, String.class);
     }
-
+    public List<Map<String, Object>> obtenerRolesAppConIdUsuario(String usuarioApp) {
+        String sql = "SELECT * FROM sp_obtener_roles_app_usuario_con_id(?)";
+        return jdbcTemplate.queryForList(sql, usuarioApp);
+    }
     /**
      * Lista todos los roles BD (ROLE_*) disponibles en PostgreSQL
      */
@@ -210,7 +216,7 @@ public class PostgresProcedureRepository {
     public RegistroSpResultDTO registrarUsuarioSimple(
             String usuarioApp, String claveApp, String correo,
             String usuarioBd, String claveBdHash, String claveBdReal,
-            List<String> rolesApp) {  // ✅ List<String> en vez de String
+            List<String> rolesApp) {  //  List<String> en vez de String
 
         String sql = "SELECT * FROM sp_registrar_usuario_simple(?,?,?,?,?,?,?)";
 
@@ -297,6 +303,97 @@ public class PostgresProcedureRepository {
     public void cambiarEstadoRolApp(Integer idRolApp, Boolean activo) {
         String sql = "CALL public.sp_cambiar_estado_rol_app(?, ?)";
         jdbcTemplate.update(sql, idRolApp, activo);
+    }
+
+    // Llama al SP que incrementa token_version → invalida todos los tokens anteriores
+    public void invalidarTokenUsuario(String usuarioApp) {
+        jdbcTemplate.update(
+                "CALL public.sp_invalidar_token_usuario(?)", usuarioApp);
+    }
+
+    // Lee token_version actual para verificar en JwtAuthFilter
+    public Integer obtenerTokenVersion(String usuarioApp) {
+        try {
+            return jdbcTemplate.queryForObject(
+                    "SELECT token_version FROM usuario WHERE usuario_app = ?",
+                    Integer.class, usuarioApp);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public void cambiarEstadoUsuario(Long idUsuario, Boolean activo) {
+        jdbcTemplate.update(
+                "CALL public.sp_cambiar_estado_usuario(?, ?)", idUsuario, activo);
+    }
+
+    public void cambiarEstadoAutoridad(Long idAutoridad, Boolean estado) {
+        jdbcTemplate.update(
+                "CALL public.sp_cambiar_estado_autoridad(?, ?)", idAutoridad, estado);
+    }
+
+    // Obtener módulo y opciones del usuario (llamar después del switch)
+    public ModuloOpcionesDTO obtenerOpcionesUsuario(Integer idRolApp) {
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+                "SELECT * FROM public.sp_obtener_opciones_usuario(?)", idRolApp);
+
+        if (rows.isEmpty()) return null;
+
+        ModuloOpcionesDTO modulo = new ModuloOpcionesDTO();
+        modulo.setModuloNombre((String) rows.get(0).get("modulo_nombre"));
+        modulo.setModuloRuta((String)   rows.get(0).get("modulo_ruta"));
+
+        List<OpcionDTO> opciones = rows.stream().map(row -> {
+            OpcionDTO op = new OpcionDTO();
+            op.setIdOpcion((Integer)   row.get("opcion_id"));
+            op.setNombre((String)      row.get("opcion_nombre"));
+            op.setDescripcion((String) row.get("opcion_descripcion"));
+            op.setRuta((String)        row.get("opcion_ruta"));
+            op.setOrden((Integer)      row.get("opcion_orden"));
+            op.setSoloLectura((Boolean) row.get("solo_lectura"));
+            return op;
+        }).collect(Collectors.toList());
+
+        modulo.setOpciones(opciones);
+        return modulo;
+    }
+
+    // Opciones de un rol con flags (para la pantalla de gestión)
+    public List<Map<String, Object>> opcionesRolAppConFlag(Integer idRolApp) {
+        return jdbcTemplate.queryForList(
+                "SELECT * FROM public.sp_opciones_rol_app_con_flag(?)", idRolApp);
+    }
+
+    // Asignar opción a rol (con solo_lectura)
+    public void asignarOpcionARol(Integer idRolApp, Integer idOpcion,
+                                  Boolean soloLectura) {
+        jdbcTemplate.update(
+                "CALL public.sp_asignar_opcion_a_rol(?, ?, ?)",
+                idRolApp, idOpcion,
+                soloLectura != null ? soloLectura : false);
+    }
+
+    // Quitar opción de rol
+    public void quitarOpcionDeRol(Integer idRolApp, Integer idOpcion) {
+        jdbcTemplate.update(
+                "CALL public.sp_quitar_opcion_de_rol(?, ?)",
+                idRolApp, idOpcion);
+    }
+
+    // Crear opción nueva
+    public Integer crearOpcion(String nombreModulo, String nombre,
+                               String descripcion, String ruta,
+                               Integer orden) {
+        return jdbcTemplate.queryForObject(
+                "SELECT public.sp_crear_opcion(?,?,?,?,?)",
+                Integer.class,
+                nombreModulo, nombre, descripcion, ruta, orden);
+    }
+
+    // Listar módulos (para el dropdown del formulario de rol)
+    public List<Map<String, Object>> listarModulos() {
+        return jdbcTemplate.queryForList(
+                "SELECT * FROM public.sp_listar_modulos()");
     }
 
 }

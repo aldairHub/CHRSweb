@@ -18,4 +18,8 @@ public class RolAppConRolesBdDTO {
 
     /** Nombres de los roles de BD (p.ej. "role_admin_bd", "role_lecturas"). */
     private List<String> rolesBd;
+
+    private Integer       idModulo;
+    private String        nombreModulo;
+
 }

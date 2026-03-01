@@ -83,16 +83,15 @@ export class LoginComponent  implements OnInit{
   ngOnInit() {
     const token = localStorage.getItem('token');
     if (token) {
-      this.router.navigate(['/'], { replaceUrl: true });
+      this.authService.redirigirPorRol();
     }
-
   }
 
   irAConvocatorias() {
     this.router.navigate(['/convocatorias']);
   }
 
-  // ✅ nuevo
+  // nuevo
   irARecuperarClave() {
     this.router.navigate(['/recuperar-clave']);
   }

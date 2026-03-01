@@ -22,6 +22,8 @@ export interface RolAppConRolesBdDTO {
   activo: boolean;
   fechaCreacion: string;
   rolesBd: string[];  // p.ej. ["role_admin_bd", "role_lecturas"]
+  idModulo: number | null;
+  nombreModulo: string | null;
 }
 
 export interface RolAppSavePayload {
@@ -29,6 +31,7 @@ export interface RolAppSavePayload {
   descripcion?: string;
   activo?: boolean;
   rolesBd: string[];
+  idModulo?: number | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -62,5 +65,8 @@ export class RolesAppService {
     return this.http.patch<void>(`${this.api}/${id}/estado`, null, {
       params: { activo: String(activo) }
     });
+  }
+  listarModulos(): Observable<any[]> {
+    return this.http.get<any[]>('http://localhost:8080/api/admin/opciones/modulos');
   }
 }

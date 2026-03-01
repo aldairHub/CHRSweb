@@ -25,6 +25,11 @@ public class RolApp {
     @Column(name = "activo", nullable = false)
     private Boolean activo = true;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_modulo", nullable = true)
+    private Modulo modulo;
+
+
     @Column(name = "fecha_creacion", nullable = false, updatable = false,
             columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime fechaCreacion;

@@ -87,6 +87,7 @@
         <thead>
         <tr>
           <th>Nombre</th>
+          <th>Módulo</th>
           <th>Descripción</th>
           <th>Roles de BD</th>
           <th>Estado</th>
@@ -96,6 +97,15 @@
         <tbody>
         <tr *ngFor="let rol of rolesPaginados">
           <td><strong>{{ rol.nombre }}</strong></td>
+          <td>
+          <span *ngIf="rol.nombreModulo; else sinModulo">
+                 {{ rol.nombreModulo }}
+          </span>
+            <ng-template #sinModulo>
+              <span class="text-muted">Sin asignar</span>
+            </ng-template>
+          </td>
+
           <td>{{ rol.descripcion || '—' }}</td>
           <td>
             <div class="roles-container">
@@ -215,6 +225,24 @@
           <input type="checkbox" formControlName="activo" />
           <span>Rol activo</span>
         </label>
+      </div>
+      <!-- Módulo principal -->
+      <div class="form-group">
+        <label class="form-label">
+          Módulo principal <span class="required">*</span>
+        </label>
+        <select [(ngModel)]="moduloSeleccionado"
+                [ngModelOptions]="{standalone: true}"
+                class="form-control">
+          <option [ngValue]="null" disabled>-- Seleccionar módulo --</option>
+          <option *ngFor="let m of modulosDisponibles"
+                  [ngValue]="m.idModulo ?? m.id_modulo">
+            {{ m.nombre }} — {{ m.descripcion }}
+          </option>
+        </select>
+        <small class="form-hint">
+          Define a qué dashboard va el usuario al iniciar sesión.
+        </small>
       </div>
 
       <div class="form-section">

@@ -30,43 +30,43 @@ public class DemoController {
         return jdbcTemplate.queryForObject("SELECT current_user", String.class);
     }
 
-    @GetMapping("/resetear-claves-bd")
-    public ResponseEntity<String> resetearClavesBd() {
-        List<Usuario> usuarios = usuarioRepository.findAll();
-        int arreglados = 0;
-        int errores = 0;
-
-        for (Usuario u : usuarios) {
-            if (u.getUsuarioBd() == null || u.getUsuarioBd().isBlank()) continue;
-
-            try {
-                String claveRealNueva = generarClaveTemporal(16);
-                String claveCifrada = aesCipherService.cifrar(claveRealNueva);
-
-                u.setClaveBd(claveCifrada);
-                usuarioRepository.saveAndFlush(u);
-
-                jdbcTemplate.execute(
-                        String.format("ALTER USER \"%s\" WITH PASSWORD '%s'",
-                                u.getUsuarioBd(), claveRealNueva)
-                );
-
-                arreglados++;
-
-            } catch (Exception e) {
-                errores++;
-                System.err.println("Error en " + u.getUsuarioApp() + ": " + e.getMessage());
-            }
-        }
-
-        return ResponseEntity.ok("Arreglados: " + arreglados + " | Errores: " + errores);
-    }
-
-    private String generarClaveTemporal(int length) {
-        final String ABC = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%";
-        SecureRandom r = new SecureRandom();
-        StringBuilder sb = new StringBuilder(length);
-        for (int i = 0; i < length; i++) sb.append(ABC.charAt(r.nextInt(ABC.length())));
-        return sb.toString();
-    }
+//    @GetMapping("/resetear-claves-bd")
+//    public ResponseEntity<String> resetearClavesBd() {
+//        List<Usuario> usuarios = usuarioRepository.findAll();
+//        int arreglados = 0;
+//        int errores = 0;
+//
+//        for (Usuario u : usuarios) {
+//            if (u.getUsuarioBd() == null || u.getUsuarioBd().isBlank()) continue;
+//
+//            try {
+//                String claveRealNueva = generarClaveTemporal(16);
+//                String claveCifrada = aesCipherService.cifrar(claveRealNueva);
+//
+//                u.setClaveBd(claveCifrada);
+//                usuarioRepository.saveAndFlush(u);
+//
+//                jdbcTemplate.execute(
+//                        String.format("ALTER USER \"%s\" WITH PASSWORD '%s'",
+//                                u.getUsuarioBd(), claveRealNueva)
+//                );
+//
+//                arreglados++;
+//
+//            } catch (Exception e) {
+//                errores++;
+//                System.err.println("Error en " + u.getUsuarioApp() + ": " + e.getMessage());
+//            }
+//        }
+//
+//        return ResponseEntity.ok("Arreglados: " + arreglados + " | Errores: " + errores);
+//    }
+//
+//    private String generarClaveTemporal(int length) {
+//        final String ABC = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%";
+//        SecureRandom r = new SecureRandom();
+//        StringBuilder sb = new StringBuilder(length);
+//        for (int i = 0; i < length; i++) sb.append(ABC.charAt(r.nextInt(ABC.length())));
+//        return sb.toString();
+//    }
 }

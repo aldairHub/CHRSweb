@@ -60,13 +60,25 @@ public class JwtService {
             return false;
         }
     }
-//    public String generateToken(Usuario usuario) {
-//        return Jwts.builder()
-//                .setSubject(usuario.getUsuarioApp())
-//                .claim("rol", usuario.getRol().name())
-//                .setIssuedAt(new Date())
-//                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-//                .signWith(key)
-//                .compact();
-//    }
+    // Sobrecarga que incluye token_version
+    public String generateToken(String username, List<String> roles, int tokenVersion) {
+        return Jwts.builder()
+                .setSubject(username)
+                .claim("roles", roles)
+                .claim("tv", tokenVersion)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
+                .signWith(key(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+//  metodo original sin tokenVersion queda intacto — compatibilidad
+
+    // Extractor del claim "tv"
+    public Integer extractTokenVersion(String token) {
+        Object tv = parseClaims(token).get("tv");
+        if (tv instanceof Integer) return (Integer) tv;
+        if (tv instanceof Long)    return ((Long) tv).intValue();
+        return null; // tokens sin "tv" → compatibilidad
+    }
+
 }

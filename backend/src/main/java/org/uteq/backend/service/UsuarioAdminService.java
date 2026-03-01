@@ -9,6 +9,7 @@ import org.uteq.backend.entity.AutoridadAcademica;
 import org.uteq.backend.entity.RolApp;
 import org.uteq.backend.entity.Usuario;
 import org.uteq.backend.repository.AutoridadAcademicaRepository;
+import org.uteq.backend.repository.PostgresProcedureRepository;
 import org.uteq.backend.repository.RolAppRepository;
 import org.uteq.backend.repository.UsuarioRepository;
 
@@ -31,15 +32,18 @@ public class UsuarioAdminService {
     private final RolAppRepository rolAppRepository;
     private final AutoridadAcademicaRepository autoridadRepository;
     private final DbRoleSyncService dbRoleSyncService;
+    private final PostgresProcedureRepository procedureRepository;
 
     public UsuarioAdminService(UsuarioRepository usuarioRepository,
                                RolAppRepository rolAppRepository,
                                AutoridadAcademicaRepository autoridadRepository,
-                               DbRoleSyncService dbRoleSyncService) {
+                               DbRoleSyncService dbRoleSyncService,
+                               PostgresProcedureRepository procedureRepository) {
         this.usuarioRepository = usuarioRepository;
         this.rolAppRepository = rolAppRepository;
         this.autoridadRepository = autoridadRepository;
         this.dbRoleSyncService = dbRoleSyncService;
+        this.procedureRepository = procedureRepository;
     }
 
     // ─── Usuarios ──────────────────────────────────────────────
@@ -52,11 +56,9 @@ public class UsuarioAdminService {
     }
 
     public void cambiarEstadoUsuario(Long id, Boolean activo) {
-        Usuario u = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + id));
-        u.setActivo(activo);
-        usuarioRepository.save(u);
+        procedureRepository.cambiarEstadoUsuario(id, activo);
     }
+
 
     public UsuarioConRolesDTO actualizarRolesUsuario(Long idUsuario, List<Integer> idsRolApp) {
         Usuario u = usuarioRepository.findById(idUsuario)
@@ -79,11 +81,9 @@ public class UsuarioAdminService {
     }
 
     public void cambiarEstadoAutoridad(Long idAutoridad, Boolean estado) {
-        AutoridadAcademica a = autoridadRepository.findById(idAutoridad)
-                .orElseThrow(() -> new RuntimeException("Autoridad no encontrada: " + idAutoridad));
-        a.setEstado(estado);
-        autoridadRepository.save(a);
+        procedureRepository.cambiarEstadoAutoridad(idAutoridad, estado);
     }
+
 
     public AutoridadConRolesDTO actualizarRolesAutoridad(Long idAutoridad, List<Integer> idsRolApp) {
         AutoridadAcademica a = autoridadRepository.findById(idAutoridad)
