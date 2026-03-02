@@ -1,7 +1,14 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { ConvocatoriaService, Convocatoria } from '../../services/convocatoria.service';
+import { ConvocatoriaService, Convocatoria, SolicitudDocente } from '../../services/convocatoria.service';
+
+interface ConvocatoriaVM extends Convocatoria {
+  expandida:           boolean;
+  cargandoSolicitudes: boolean;
+  solicitudes:         SolicitudDocente[];
+  solicitudSeleccionada: SolicitudDocente | null;
+}
 
 @Component({
   selector: 'app-convocatorias-publicas',
@@ -12,60 +19,101 @@ import { ConvocatoriaService, Convocatoria } from '../../services/convocatoria.s
 })
 export class ConvocatoriasPublicasComponent implements OnInit {
 
-  convocatorias: Convocatoria[] = [];
+  convocatorias: ConvocatoriaVM[] = [];
   cargando = true;
-  mostrarModal = false;
-  convocatoriaSeleccionada: Convocatoria | null = null;
+
+  // Modal "¿Primera vez o ya postulé?"
+  mostrarModal          = false;
+  solicitudParaPostular: SolicitudDocente | null = null;
 
   constructor(
     private convocatoriaService: ConvocatoriaService,
     private router: Router,
-    private cdr: ChangeDetectorRef   // ← AGREGAR
+    private cdr:    ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.convocatoriaService.listarAbiertas().subscribe({
       next: (data) => {
-        this.convocatorias = data;
+        this.convocatorias = data.map(c => ({
+          ...c,
+          expandida:             false,
+          cargandoSolicitudes:   false,
+          solicitudes:           [],
+          solicitudSeleccionada: null
+        }));
         this.cargando = false;
-
-        if (data.length === 0) {
-          alert('No hay convocatorias activas en este momento.');
-          this.router.navigate(['/']);
-        }
-
-        this.cdr.detectChanges();   // ← AGREGAR
+        this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error(err);
+      error: () => {
         this.cargando = false;
-        alert('Error al cargar convocatorias.');
-        this.router.navigate(['/']);
-        this.cdr.detectChanges();   // ← AGREGAR
+        this.cdr.detectChanges();
       }
     });
   }
-  abrirModalPostular(conv: Convocatoria): void {
-    this.convocatoriaSeleccionada = conv;
-    this.mostrarModal = true;
+
+  toggleConvocatoria(conv: ConvocatoriaVM): void {
+    // Si ya estaba expandida, solo la colapsa
+    if (conv.expandida) {
+      conv.expandida             = false;
+      conv.solicitudSeleccionada = null;
+      return;
+    }
+
+    // Colapsar todas las demás
+    this.convocatorias.forEach(c => {
+      c.expandida             = false;
+      c.solicitudSeleccionada = null;
+    });
+
+    conv.expandida = true;
+
+    // Si ya cargó las solicitudes, no volver a pedir
+    if (conv.solicitudes.length > 0) return;
+
+    conv.cargandoSolicitudes = true;
+    this.convocatoriaService.obtenerSolicitudes(conv.idConvocatoria).subscribe({
+      next: (data) => {
+        conv.solicitudes           = data;
+        conv.cargandoSolicitudes   = false;
+        // Si solo hay una, la preseleccionamos
+        if (data.length === 1) conv.solicitudSeleccionada = data[0];
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        conv.cargandoSolicitudes = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  seleccionarSolicitud(conv: ConvocatoriaVM, s: SolicitudDocente): void {
+    conv.solicitudSeleccionada =
+      conv.solicitudSeleccionada?.idSolicitud === s.idSolicitud ? null : s;
+  }
+
+  abrirModal(conv: ConvocatoriaVM): void {
+    if (!conv.solicitudSeleccionada) return;
+    this.solicitudParaPostular = conv.solicitudSeleccionada;
+    this.mostrarModal          = true;
   }
 
   cerrarModal(): void {
-    this.mostrarModal = false;
-    this.convocatoriaSeleccionada = null;
+    this.mostrarModal          = false;
+    this.solicitudParaPostular = null;
   }
 
   irARegistro(): void {
-    if (!this.convocatoriaSeleccionada) return;
+    if (!this.solicitudParaPostular) return;
     this.router.navigate(['/registro'], {
-      queryParams: { convocatoriaId: this.convocatoriaSeleccionada.idConvocatoria }
+      queryParams: { idSolicitud: this.solicitudParaPostular.idSolicitud }
     });
   }
 
   irARepostulacion(): void {
-    if (!this.convocatoriaSeleccionada) return;
+    if (!this.solicitudParaPostular) return;
     this.router.navigate(['/repostulacion'], {
-      queryParams: { convocatoriaId: this.convocatoriaSeleccionada.idConvocatoria }
+      queryParams: { idSolicitud: this.solicitudParaPostular.idSolicitud }
     });
   }
 

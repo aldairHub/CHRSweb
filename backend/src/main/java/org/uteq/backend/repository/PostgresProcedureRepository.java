@@ -462,4 +462,28 @@ public class PostgresProcedureRepository {
                         "SELECT * FROM public.v_sesiones_activas");
             }
 
+    /**
+     * Re-postulación: copia el último registro RECHAZADO de esa cédula con nuevos documentos.
+     * Retorna: out_id_prepostulacion BIGINT
+     */
+    public Long repostular(
+            String identificacion,
+            Long   idSolicitud,
+            String urlCedula,
+            String urlFoto,
+            String urlPrerrequisitos) {
+
+        return jdbcTemplate.execute((java.sql.Connection conn) -> {
+            var ps = conn.prepareStatement("SELECT * FROM sp_repostular(?,?,?,?,?)");
+            ps.setString(1, identificacion);
+            ps.setObject(2, idSolicitud);
+            ps.setString(3, urlCedula);
+            ps.setString(4, urlFoto);
+            ps.setString(5, urlPrerrequisitos);
+            var rs = ps.executeQuery();
+            if (rs.next()) return rs.getLong("out_id_prepostulacion");
+            throw new RuntimeException("sp_repostular no retornó datos");
+        });
+    }
+
 }

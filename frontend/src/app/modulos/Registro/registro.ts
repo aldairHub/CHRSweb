@@ -4,8 +4,6 @@ import { Router } from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ConvocatoriaService } from '../../services/convocatoria.service';
-
 
 @Component({
   selector: 'app-registro',
@@ -17,10 +15,9 @@ import { ConvocatoriaService } from '../../services/convocatoria.service';
 export class RegistroComponent implements OnDestroy, OnInit {
 
   // ==========================================
-  // CONVOCATORIA
+  // SOLICITUD (antes era convocatoriaId)
   // ==========================================
-  convocatoriaId: number | null = null;
-  nombreConvocatoria = '';
+  idSolicitud: number | null = null;
 
   // ==========================================
   // ESTADO GENERAL
@@ -60,15 +57,14 @@ export class RegistroComponent implements OnDestroy, OnInit {
   // ==========================================
   // URLS BACKEND
   // ==========================================
-  private baseUrlVerificacion = 'http://localhost:8080/api/verificacion';
+  private baseUrlVerificacion   = 'http://localhost:8080/api/verificacion';
   private baseUrlPrepostulacion = 'http://localhost:8080/api/prepostulacion';
 
   constructor(
     private router: Router,
-    private http: HttpClient,
-    private cdr: ChangeDetectorRef,
-    private route: ActivatedRoute,
-    private convocatoriaService: ConvocatoriaService
+    private http:   HttpClient,
+    private cdr:    ChangeDetectorRef,
+    private route:  ActivatedRoute
   ) {}
 
   // ==========================================
@@ -76,13 +72,10 @@ export class RegistroComponent implements OnDestroy, OnInit {
   // ==========================================
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
-      if (params['convocatoriaId']) {
-        this.convocatoriaId = +params['convocatoriaId'];
-        this.convocatoriaService.obtener(this.convocatoriaId).subscribe({
-          next: (conv) => { this.nombreConvocatoria = conv.titulo; },
-          error: () => {}
-        });
+      if (params['idSolicitud']) {
+        this.idSolicitud = +params['idSolicitud'];
       } else {
+        // Si no viene idSolicitud redirigir a convocatorias
         this.router.navigate(['/convocatorias']);
       }
     });
@@ -123,7 +116,6 @@ export class RegistroComponent implements OnDestroy, OnInit {
     });
   }
 
-  // Alias que usa el HTML en el modal de error y en el paso 2
   reenviarCodigo(): void {
     this.enviarCodigo();
   }
@@ -275,19 +267,20 @@ export class RegistroComponent implements OnDestroy, OnInit {
     this.cargando = true;
 
     const formData = new FormData();
-    formData.append('correo', this.email);
-    formData.append('cedula', this.cedula);
-    formData.append('nombres', this.nombres);
+    formData.append('correo',    this.email);
+    formData.append('cedula',    this.cedula);
+    formData.append('nombres',   this.nombres);
     formData.append('apellidos', this.apellidos);
 
-    if (this.convocatoriaId) {
-      formData.append('idConvocatoria', String(this.convocatoriaId));
+    // CAMBIO CLAVE: se manda idSolicitud en vez de idConvocatoria
+    if (this.idSolicitud) {
+      formData.append('idSolicitud', String(this.idSolicitud));
     }
 
     if (this.archivoCedula)
-      formData.append('archivoCedula', this.archivoCedula, this.nombreArchivoCedula);
+      formData.append('archivoCedula',         this.archivoCedula,         this.nombreArchivoCedula);
     if (this.archivoFoto)
-      formData.append('archivoFoto', this.archivoFoto, this.nombreArchivoFoto);
+      formData.append('archivoFoto',           this.archivoFoto,           this.nombreArchivoFoto);
     if (this.archivoPrerrequisitos)
       formData.append('archivoPrerrequisitos', this.archivoPrerrequisitos, this.nombreArchivoPrerrequisitos);
 
@@ -297,9 +290,9 @@ export class RegistroComponent implements OnDestroy, OnInit {
         this.mostrarModalExito = true;
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err) => {
         this.cargando = false;
-        alert('Error al registrar');
+        alert(err.error?.mensaje || 'Error al registrar. Intente más tarde.');
         this.cdr.detectChanges();
       }
     });

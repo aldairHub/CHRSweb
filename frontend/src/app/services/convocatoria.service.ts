@@ -3,13 +3,27 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Convocatoria {
-  idConvocatoria:      number;
-  titulo:              string;
-  descripcion:         string;
-  fechaPublicacion:    string;
-  fechaInicio:         string;
-  fechaFin:            string;
-  estadoConvocatoria:  string; // 'abierta' | 'cerrada' | 'cancelada'
+  idConvocatoria:     number;
+  titulo:             string;
+  descripcion:        string;
+  fechaPublicacion:   string;
+  fechaInicio:        string;
+  fechaFin:           string;
+  estadoConvocatoria: string;
+}
+
+export interface SolicitudDocente {
+  idSolicitud:      number;
+  idMateria:        number;
+  nombreMateria:    string;
+  idCarrera:        number;
+  nombreCarrera:    string;
+  idArea:           number;
+  nombreArea:       string;
+  justificacion:    string;
+  cantidadDocentes: number;
+  nivelAcademico:   string;
+  estadoSolicitud:  string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -25,5 +39,9 @@ export class ConvocatoriaService {
 
   obtener(id: number): Observable<Convocatoria> {
     return this.http.get<Convocatoria>(`${this.apiUrl}/${id}`);
+  }
+
+  obtenerSolicitudes(idConvocatoria: number): Observable<SolicitudDocente[]> {
+    return this.http.get<SolicitudDocente[]>(`${this.apiUrl}/${idConvocatoria}/solicitudes`);
   }
 }

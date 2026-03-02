@@ -121,6 +121,7 @@ public class PrepostulacionService {
     /**
      * Re-postulación: crea una NUEVA fila en prepostulacion (mantiene historial).
      * Solo permitido si la última postulación de esa cédula fue RECHAZADA.
+     * La validación del estado RECHAZADO es delegada al stored procedure (atomicidad garantizada).
      *
      * @param idSolicitud La solicitud a la que aplica ahora (puede ser distinta a la anterior)
      */
@@ -132,50 +133,33 @@ public class PrepostulacionService {
             MultipartFile archivoPrerrequisitos,
             Long idSolicitud
     ) {
-        // 1. Buscar la última postulación de esta cédula
-        Prepostulacion ultima = prepostulacionRepository
-                .findTopByIdentificacionOrderByFechaEnvioDesc(cedula)
-                .orElseThrow(() -> new RuntimeException(
-                        "No se encontró ninguna solicitud con esta cédula. " +
-                                "Si es la primera vez, use el formulario de registro."));
-
-        // 2. Solo puede re-postular si fue rechazada
-        if (!"RECHAZADO".equalsIgnoreCase(ultima.getEstadoRevision())) {
-            throw new RuntimeException(
-                    "Su solicitud tiene estado '" + ultima.getEstadoRevision() + "'. " +
-                            "Solo puede re-postular si fue rechazada.");
-        }
-
-        // 3. Subir nuevos documentos a Supabase
+        // 1. Subir nuevos documentos a Supabase
         String urlCedula, urlFoto, urlPrerrequisitos;
         try {
             String tag = cedula + "_repost_" + System.currentTimeMillis();
-            urlCedula         = supabaseService.subirArchivo(archivoCedula,          "cedulas",         tag);
-            urlFoto           = supabaseService.subirArchivo(archivoFoto,            "fotos",           tag);
-            urlPrerrequisitos = supabaseService.subirArchivo(archivoPrerrequisitos,  "prerrequisitos",  tag);
+            urlCedula         = supabaseService.subirArchivo(archivoCedula,         "cedulas",        tag);
+            urlFoto           = supabaseService.subirArchivo(archivoFoto,           "fotos",          tag);
+            urlPrerrequisitos = supabaseService.subirArchivo(archivoPrerrequisitos, "prerrequisitos", tag);
         } catch (Exception e) {
             throw new RuntimeException("Error al subir documentos: " + e.getMessage());
         }
 
-        // 4. Guardar NUEVA fila via stored procedure (historial completo)
-        Long idNuevaPrepostulacion = postgresProcedureRepository.registrarPrepostulacion(
-                ultima.getNombres(),
-                ultima.getApellidos(),
-                cedula,
-                ultima.getCorreo(),
-                null,   // telefono: no existe en la entidad
-                null,   // fechaNacimiento: no existe en la entidad
-                urlCedula,
-                urlFoto,
-                urlPrerrequisitos,
-                idSolicitud
+        // 2. El SP valida RECHAZADO, copia datos anteriores e inserta nueva fila
+        Long idNuevaPrepostulacion = postgresProcedureRepository.repostular(
+                cedula, idSolicitud, urlCedula, urlFoto, urlPrerrequisitos
         );
 
         System.out.println("💾 Re-postulación guardada como nueva fila con ID: " + idNuevaPrepostulacion);
 
+        // 3. Obtener correo del registro más reciente para la respuesta
+        String correo = prepostulacionRepository
+                .findTopByIdentificacionOrderByFechaEnvioDesc(cedula)
+                .map(Prepostulacion::getCorreo)
+                .orElse("");
+
         return new PrepostulacionResponseDTO(
                 "Re-postulación enviada. Su solicitud está nuevamente en revisión.",
-                ultima.getCorreo(),
+                correo,
                 idNuevaPrepostulacion,
                 true,
                 LocalDateTime.now()

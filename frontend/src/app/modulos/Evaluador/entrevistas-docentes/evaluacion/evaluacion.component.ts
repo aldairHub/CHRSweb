@@ -25,6 +25,8 @@ interface CriterioForm extends CriterioResponse {
 })
 export class EvaluacionComponent implements OnInit, AfterViewInit {
 
+  window = window;
+
   reunion: ReunionResumen | null = null;
   criterios: CriterioForm[] = [];
 

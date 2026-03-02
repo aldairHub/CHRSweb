@@ -1,3 +1,5 @@
+@use "sass:color";
+
 $primary:   #00A63E;
 $dark:      #016630;
 $border:    #B9F8CF;
@@ -12,14 +14,9 @@ $text-gray: #64748b;
 
 // ── Navbar ────────────────────────────────────────────────────────────────────
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  max-width: 900px;
-  margin: 0 auto 1.5rem;
-  padding: 0 .5rem;
+  display: flex; justify-content: space-between; align-items: center;
+  max-width: 800px; margin: 0 auto 1.5rem; padding: 0 .5rem;
 }
-
 .btn-back, .btn-login {
   display: flex; align-items: center; gap: 6px;
   padding: 8px 16px; border-radius: 8px;
@@ -38,24 +35,17 @@ $text-gray: #64748b;
 
 // ── Header ────────────────────────────────────────────────────────────────────
 .page-header {
-  text-align: center;
-  max-width: 800px;
-  margin: 0 auto 2.5rem;
-  display: flex;
-  flex-direction: column;  // ← esto hace que logo y título vayan uno debajo del otro
-  align-items: center;
+  text-align: center; max-width: 800px; margin: 0 auto 2rem;
+  display: flex; flex-direction: column; align-items: center;
 
   .logo-box {
-    display: flex;
-    justify-content: center;
     margin-bottom: 1rem;
     .logo {
-      width: 70px; height: 70px;
-      background: $primary; border-radius: 50%;
-      padding: 8px; object-fit: contain;
+      width: 70px; height: 70px; background: $primary;
+      border-radius: 50%; padding: 8px; object-fit: contain;
     }
   }
-  h1 { font-size: 1.8rem; font-weight: 800; color: $dark; margin-bottom: .5rem; }
+  h1 { font-size: 1.8rem; font-weight: 800; color: $dark; margin-bottom: .4rem; }
   p  { color: $text-gray; font-size: .95rem; }
 }
 
@@ -78,55 +68,160 @@ $text-gray: #64748b;
   p   { color: $text-gray; }
 }
 
-// ── Cards ─────────────────────────────────────────────────────────────────────
-.cards-grid {
-  display: flex; flex-wrap: wrap; gap: 1.5rem;
-  justify-content: center; max-width: 1100px; margin: 0 auto;
+// ── Lista de convocatorias ────────────────────────────────────────────────────
+.convocatorias-list {
+  max-width: 800px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 1rem;
 }
 
-.card {
-  background: white; border: 1px solid $border; border-radius: 16px;
-  padding: 1.75rem 1.5rem; width: 100%; max-width: 320px;
-  display: flex; flex-direction: column; align-items: center; text-align: center;
-  transition: all .3s ease; box-shadow: 0 4px 12px rgba(0,0,0,.06); position: relative;
+// ── Card de convocatoria ──────────────────────────────────────────────────────
+.conv-card {
+  background: white;
+  border: 2px solid $border;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: border-color .25s, box-shadow .25s;
 
   &:hover {
-    transform: translateY(-5px); border-color: $primary;
-    box-shadow: 0 12px 28px rgba(0,166,62,.15);
+    border-color: color.adjust($border, $lightness: -10%);
   }
 
-  .card-badge {
-    position: absolute; top: 14px; right: 14px;
-    background: #dcfce7; color: $dark; font-size: .7rem; font-weight: 700;
-    padding: 3px 8px; border-radius: 20px; letter-spacing: .5px;
+  &.expandida {
+    border-color: $primary;
+    box-shadow: 0 8px 24px rgba(0,166,62,.12);
   }
-  .card-icon {
-    width: 60px; height: 60px; background: #dcfce7; border-radius: 14px;
-    display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;
-    svg { width: 30px; height: 30px; stroke: $primary; }
-  }
-  h3 {
-    font-size: 1rem; font-weight: 700; color: $dark;
-    margin-bottom: .75rem; line-height: 1.3;
-  }
-  .card-meta {
-    display: flex; flex-direction: column; gap: 4px;
-    margin-bottom: .75rem; width: 100%; text-align: left;
-    .meta-item {
-      display: flex; align-items: center; gap: 6px;
-      font-size: .8rem; color: $text-gray;
-      svg { flex-shrink: 0; stroke: $primary; }
+}
+
+// Cabecera clickeable
+.conv-header {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 1.25rem 1.5rem; cursor: pointer;
+  transition: background .2s;
+  &:hover { background: #f8fafc; }
+}
+
+.conv-icon {
+  width: 50px; height: 50px; flex-shrink: 0;
+  background: #dcfce7; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  svg { width: 26px; height: 26px; stroke: $primary; }
+}
+
+.conv-info {
+  flex: 1; min-width: 0;
+
+  .conv-top {
+    display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
+    margin-bottom: .3rem;
+    h3 {
+      font-size: 1rem; font-weight: 700; color: $dark;
+      margin: 0; line-height: 1.3;
+    }
+    .badge {
+      font-size: .65rem; font-weight: 700; letter-spacing: .5px;
+      background: #dcfce7; color: $dark;
+      padding: 2px 8px; border-radius: 20px; flex-shrink: 0;
     }
   }
-  .card-desc {
-    font-size: .85rem; color: $text-gray; line-height: 1.5;
-    margin-bottom: 1rem; text-align: left; flex: 1;
+
+  .conv-desc {
+    font-size: .82rem; color: $text-gray; margin: 0 0 .4rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .btn-postular {
-    width: 100%; padding: 11px; background: $primary; color: white;
-    border: none; border-radius: 8px; font-size: .95rem; font-weight: 700;
-    cursor: pointer; transition: all .2s; margin-top: auto;
-    &:hover { background: $dark; transform: translateY(-2px); }
+
+  .conv-fechas {
+    display: flex; gap: 1rem; flex-wrap: wrap;
+    span {
+      display: flex; align-items: center; gap: 4px;
+      font-size: .78rem; color: $text-gray;
+      svg { stroke: $primary; flex-shrink: 0; }
+    }
+  }
+}
+
+.conv-chevron {
+  flex-shrink: 0; color: $text-gray; transition: transform .3s ease;
+  &.open { transform: rotate(180deg); color: $primary; }
+}
+
+// ── Panel expandido ───────────────────────────────────────────────────────────
+.conv-body {
+  border-top: 1px solid $border;
+  padding: 1.25rem 1.5rem 1.5rem;
+  animation: fadeDown .2s ease;
+}
+
+.sol-loading {
+  display: flex; align-items: center; gap: 10px;
+  font-size: .875rem; color: $text-gray; padding: .5rem 0;
+  .spinner-sm {
+    width: 18px; height: 18px; flex-shrink: 0;
+    border: 2px solid #dcfce7; border-top-color: $primary;
+    border-radius: 50%; animation: spin .8s linear infinite;
+  }
+}
+
+.sol-empty {
+  font-size: .875rem; color: $text-gray; padding: .5rem 0;
+}
+
+.sol-hint {
+  font-size: .82rem; color: $text-gray; margin-bottom: .75rem;
+}
+
+// Grid de solicitudes
+.sol-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: .75rem;
+  margin-bottom: 1.25rem;
+}
+
+.sol-item {
+  display: flex; align-items: flex-start; gap: .65rem;
+  padding: .9rem 1rem; border: 2px solid $border; border-radius: 10px;
+  cursor: pointer; transition: all .2s;
+
+  &:hover    { border-color: $primary; background: #f0fdf4; }
+  &.selected { border-color: $primary; background: #dcfce7; }
+
+  .sol-check {
+    width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px;
+    border: 2px solid $border; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+  &.selected .sol-check {
+    background: $primary; border-color: $primary;
+    svg { stroke: white; }
+  }
+
+  .sol-data {
+    flex: 1;
+    strong {
+      display: block; font-size: .875rem; font-weight: 700;
+      color: $dark; line-height: 1.3; margin-bottom: 3px;
+    }
+    span {
+      display: block; font-size: .775rem; color: $text-gray;
+    }
+    .sol-plazas {
+      font-size: .75rem; font-weight: 600;
+      color: $primary; margin-top: 4px;
+    }
+  }
+}
+
+// Botón postular
+.btn-postular {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 12px; background: $primary; color: white;
+  border: none; border-radius: 10px; font-size: .95rem; font-weight: 700;
+  cursor: pointer; transition: all .2s;
+
+  &:hover:not(:disabled) { background: $dark; transform: translateY(-2px); }
+  &:disabled {
+    background: #a5d6a7; cursor: not-allowed; transform: none;
   }
 }
 
@@ -149,8 +244,8 @@ $text-gray: #64748b;
 .modal-header {
   text-align: center; margin-bottom: 1.75rem;
   svg { stroke: $primary; margin-bottom: .75rem; }
-  h3  { font-size: 1.3rem; font-weight: 700; color: $dark; margin-bottom: .5rem; }
-  p   { font-size: .875rem; color: $text-gray; line-height: 1.5; }
+  h3  { font-size: 1.3rem; font-weight: 700; color: $dark; margin-bottom: .35rem; }
+  p   { font-size: .875rem; color: $text-gray; }
 }
 .modal-options { display: flex; flex-direction: column; gap: 1rem; }
 
@@ -161,8 +256,8 @@ $text-gray: #64748b;
   &:hover { border-color: $primary; background: #f0fdf4; transform: translateX(4px); }
 
   .option-icon {
-    width: 52px; height: 52px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 52px; height: 52px; border-radius: 12px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
     &.new       { background: #dcfce7; svg { stroke: $primary; } }
     &.returning { background: #dbeafe; svg { stroke: #1e40af; } }
   }
@@ -175,13 +270,13 @@ $text-gray: #64748b;
 }
 
 .page-footer {
-  text-align: center; margin-top: 3rem;
-  font-size: .8rem; color: $text-gray;
+  text-align: center; margin-top: 3rem; font-size: .8rem; color: $text-gray;
 }
 
+// ── Animaciones ───────────────────────────────────────────────────────────────
 @keyframes spin    { to { transform: rotate(360deg); } }
-@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
+@keyframes fadeIn  { from { opacity: 0; }                    to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; } }
+@keyframes fadeDown { from { transform: translateY(-8px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; } }
