@@ -4,9 +4,11 @@ import { catchError, throwError } from "rxjs";
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = localStorage.getItem("token");
-  const authReq = token
+  const rutasPublicas = ['/api/auth/login', '/api/auth/registro', '/api/auth/recuperar'];
+  const esRutaPublica = rutasPublicas.some(r => req.url.includes(r));
+  const authReq = (token && !esRutaPublica)
     ? req.clone({
-      setHeaders: { Authorization: `Bearer ${token}` }
+      setHeaders: { Authorization: `Bearer ${token}`}
     })
     : req;
 

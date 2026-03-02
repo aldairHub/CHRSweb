@@ -43,7 +43,7 @@ export class ReportesComponent implements OnInit {
     this.http.get<SolicitudDto[]>(`${this.apiUrl}/solicitudes-docente`)
       .subscribe({
         next: (data: SolicitudDto[]) => {
-
+          this.cdr.detectChanges();
           this.reportesRecientes = data.map(s => ({
             id: s.idSolicitud,
             nombre: `Solicitud #${s.idSolicitud}`,
@@ -54,6 +54,7 @@ export class ReportesComponent implements OnInit {
           console.log('Solicitudes:', this.reportesRecientes);
         },
         error: (err: any) => {
+          this.cdr.detectChanges();
           console.error('Error cargando solicitudes', err);
         }
       });

@@ -33,6 +33,15 @@ export const AuthGuard: CanActivateFn = (route, state) => {
   const opciones = authState.getEstado().opciones;
   if (!opciones || opciones.length === 0) return true;
 
+  // Si la URL coincide exactamente con la raíz del módulo del usuario, permitir
+  // Ej: usuario con moduloRuta="evaluador" accediendo a /evaluador
+  const moduloRuta = authState.getEstado().moduloRuta;
+  if (moduloRuta) {
+    const raizModulo = '/' + moduloRuta.replace(/^\//, '');
+    const urlSinParams = state.url.split('?')[0];
+    if (urlSinParams === raizModulo || urlSinParams === raizModulo + '/') return true;
+  }
+
   // Verificar si la ruta está en las opciones permitidas del usuario
   const rutaSinParams = state.url.split('?')[0];
   if (!authState.rutaPermitida(rutaSinParams)) {

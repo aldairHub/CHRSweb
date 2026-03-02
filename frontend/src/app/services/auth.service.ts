@@ -3,12 +3,13 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { AuthStateService } from './auth-state.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private apiUrl = '/api/auth';
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router, private authState: AuthStateService) {}
 
   login(usuarioApp: string, claveApp: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, { usuarioApp, claveApp });
@@ -48,7 +49,7 @@ export class AuthService {
       localStorage.removeItem("rolNombre");
     }
 
-  // guardar la lista de roles disponibles para el selector
+    // guardar la lista de roles disponibles para el selector
     if (datos?.rolesDisponibles) {
       localStorage.setItem("rolesDisponibles", JSON.stringify(datos.rolesDisponibles));
     }
@@ -88,8 +89,9 @@ export class AuthService {
 
   /** 2) SOLO local: limpia storage y navega */
   cerrarSesionLocal(): void {
-    localStorage.clear();
-    this.router.navigate(['/login']);
+    this.authState.limpiar();   // limpia BehaviorSubject en memoria + keys críticos
+    localStorage.clear();       // limpia todo lo demás
+    this.router.navigate(['/login'], { replaceUrl: true });
   }
 
   /** 3) Helper: backend + local */
@@ -168,18 +170,18 @@ export class AuthService {
    *
    * PRIORIDAD: admin > revisor > evaluador > postulante
    */
-  // private calcularRolPrincipal(
-  //   roles: string[]
-  // ): 'admin' | 'evaluador' | 'postulante' | 'revisor' | null {
-  //   const r = (roles ?? []).map(x => (x || '').toUpperCase());
-  //
-  //   if (r.some(role => role.includes('ADMIN'))) return 'admin';
-  //   if (r.some(role => role.includes('REVISOR'))) return 'revisor';
-  //   if (r.some(role => role.includes('EVALUADOR') || role.includes('EVALUATOR'))) return 'evaluador';
-  //   if (r.includes('ROLE_POSTULANTE') || r.includes('POSTULANTE')) return 'postulante';
-  //
-  //   return null;
-  // }
+    // private calcularRolPrincipal(
+    //   roles: string[]
+    // ): 'admin' | 'evaluador' | 'postulante' | 'revisor' | null {
+    //   const r = (roles ?? []).map(x => (x || '').toUpperCase());
+    //
+    //   if (r.some(role => role.includes('ADMIN'))) return 'admin';
+    //   if (r.some(role => role.includes('REVISOR'))) return 'revisor';
+    //   if (r.some(role => role.includes('EVALUADOR') || role.includes('EVALUATOR'))) return 'evaluador';
+    //   if (r.includes('ROLE_POSTULANTE') || r.includes('POSTULANTE')) return 'postulante';
+    //
+    //   return null;
+    // }
   private readonly ROL_A_RUTA: Array<{ contiene: string; ruta: string }> = [
     { contiene: "ADMIN",      ruta: "admin"      },
     { contiene: "REVISOR",    ruta: "revisor"    },
@@ -198,6 +200,11 @@ export class AuthService {
   }
 
   redirigirPorRol(): void {
+    // Si no hay token, no hay sesión — ir al login directamente
+    if (!this.isLoggedIn()) {
+      this.router.navigate(['/login'], { replaceUrl: true });
+      return;
+    }
     if (this.esPrimerLogin()) {
       this.router.navigate(["/cambiar-clave-obligatorio"],
         { replaceUrl: true });
