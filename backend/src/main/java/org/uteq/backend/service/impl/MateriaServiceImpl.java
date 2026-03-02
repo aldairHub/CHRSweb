@@ -14,6 +14,7 @@ import org.uteq.backend.dto.MateriaRequestDTO;
 import org.uteq.backend.dto.MateriaResponseDTO;
 
 @Service
+@Transactional
 public class MateriaServiceImpl implements MateriaService {
 
     private final MateriaRepository materiaRepository;
@@ -96,3 +97,4 @@ public class MateriaServiceImpl implements MateriaService {
         return dto;
     }
 }
+
