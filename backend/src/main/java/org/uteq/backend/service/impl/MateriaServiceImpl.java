@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.uteq.backend.entity.Carrera;
 import org.uteq.backend.entity.Materia;
 import org.uteq.backend.repository.CarreraRepository;
@@ -68,6 +69,7 @@ public class MateriaServiceImpl implements MateriaService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public List<MateriaResponseDTO> listar() {
         return materiaRepository.findAll()
                 .stream()
@@ -76,6 +78,7 @@ public class MateriaServiceImpl implements MateriaService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<MateriaResponseDTO> listarPorCarrera(Long idCarrera) {
         return materiaRepository.findByCarreraIdCarrera(idCarrera)
                 .stream()
