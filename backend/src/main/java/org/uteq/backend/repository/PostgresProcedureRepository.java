@@ -408,39 +408,58 @@ public class PostgresProcedureRepository {
      * )
      * Retorna: out_id_prepostulacion BIGINT
      */
-    public Long registrarPrepostulacion(
-            String    nombres,
-            String    apellidos,
-            String    identificacion,
-            String    correo,
-            String    telefono,
-            LocalDate fechaNacimiento,
-            String    urlCedula,
-            String    urlFoto,
-            String    urlPrerrequisitos,
-            Long      idSolicitud
-    ) {
-        String sql = "SELECT * FROM sp_registrar_prepostulacion(?,?,?,?,?,?,?,?,?,?)";
-
-        return jdbcTemplate.execute((java.sql.Connection conn) -> {
-            var ps = conn.prepareStatement(sql);
-            ps.setString(1, nombres);
-            ps.setString(2, apellidos);
-            ps.setString(3, identificacion);
-            ps.setString(4, correo);
-            ps.setString(5, telefono);
-            ps.setObject(6, fechaNacimiento != null ? Date.valueOf(fechaNacimiento) : null);
-            ps.setString(7, urlCedula);
-            ps.setString(8, urlFoto);
-            ps.setString(9, urlPrerrequisitos);
-            ps.setObject(10, idSolicitud);
-
-            var rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getLong("out_id_prepostulacion");
+//    public Long registrarPrepostulacion(
+//            String    nombres,
+//            String    apellidos,
+//            String    identificacion,
+//            String    correo,
+//            String    telefono,
+//            LocalDate fechaNacimiento,
+//            String    urlCedula,
+//            String    urlFoto,
+//            String    urlPrerrequisitos,
+//            Long      idSolicitud
+//    ) {
+//        String sql = "SELECT * FROM sp_registrar_prepostulacion(?,?,?,?,?,?,?,?,?,?)";
+//
+//        return jdbcTemplate.execute((java.sql.Connection conn) -> {
+//            var ps = conn.prepareStatement(sql);
+//            ps.setString(1, nombres);
+//            ps.setString(2, apellidos);
+//            ps.setString(3, identificacion);
+//            ps.setString(4, correo);
+//            ps.setString(5, telefono);
+//            ps.setObject(6, fechaNacimiento != null ? Date.valueOf(fechaNacimiento) : null);
+//            ps.setString(7, urlCedula);
+//            ps.setString(8, urlFoto);
+//            ps.setString(9, urlPrerrequisitos);
+//            ps.setObject(10, idSolicitud);
+//
+//            var rs = ps.executeQuery();
+//            if (rs.next()) {
+//                return rs.getLong("out_id_prepostulacion");
+//            }
+//            throw new RuntimeException("sp_registrar_prepostulacion no retornó datos");
+//        });
+//    }
+        // Registrar inicio de sesión
+            public Long registrarSesion(String usuarioApp, int tokenVersion,
+                                        String ip, String userAgent) {
+                return jdbcTemplate.queryForObject(
+                        "SELECT public.sp_registrar_sesion(?, ?, ?, ?)",
+                        Long.class, usuarioApp, tokenVersion, ip, userAgent);
             }
-            throw new RuntimeException("sp_registrar_prepostulacion no retornó datos");
-        });
-    }
+
+            // Cerrar sesión por logout / force-logout
+            public void cerrarSesion(String usuarioApp, String motivo) {
+                jdbcTemplate.update(
+                        "CALL public.sp_cerrar_sesion(?, ?)", usuarioApp, motivo);
+            }
+
+            // Listar sesiones activas (para el panel de auditoría)
+            public List<Map<String, Object>> listarSesionesActivas() {
+                return jdbcTemplate.queryForList(
+                        "SELECT * FROM public.v_sesiones_activas");
+            }
 
 }

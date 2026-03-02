@@ -1,6 +1,8 @@
 package org.uteq.backend.service;
 
 import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
 import org.uteq.backend.dto.InstitucionRequestDTO;
 import org.uteq.backend.dto.InstitucionResponseDTO;
 
@@ -15,4 +17,8 @@ public interface InstitucionService {
     InstitucionResponseDTO actualizar(Long id, InstitucionRequestDTO dto);
 
     void eliminar(Long id);
+
+    InstitucionResponseDTO obtenerActiva();
+
+    String uploadLogo(Long idInstitucion, MultipartFile file);
 }

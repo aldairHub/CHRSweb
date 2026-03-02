@@ -28,4 +28,18 @@ public interface RolAppBdRepository extends JpaRepository<RolAppBd, Integer> {
             ORDER BY rolname
             """, nativeQuery = true)
     List<String> findRolesBdDisponibles();
+
+    // metodo con descripción
+    @Query(value = """
+    SELECT r.rolname                                                AS nombre,
+           d.description                                           AS descripcion
+    FROM   pg_roles r
+    LEFT JOIN pg_shdescription d
+           ON d.objoid = r.oid
+          AND d.classoid = 'pg_authid'::regclass
+    WHERE  r.rolname LIKE 'role\\_%' AND r.rolcanlogin = false
+    ORDER BY r.rolname
+    """, nativeQuery = true)
+    List<Object[]> findRolesBdConDescripcion();
+
 }

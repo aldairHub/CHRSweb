@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { RouterLink } from '@angular/router';
 import { NavbarComponent } from '../../../component/navbar';
 
 interface AudLoginApp {
@@ -26,7 +27,7 @@ interface Page<T> {
 @Component({
   selector: 'app-auditoria',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, RouterLink],
   templateUrl: './auditoria.html',
   styleUrls: ['./auditoria.scss']
 })

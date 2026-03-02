@@ -164,6 +164,16 @@ public class AuthService {
                 usuario.getTokenVersion()
         );
 
+        try {
+            String ip = httpRequest.getRemoteAddr();
+            String ua = httpRequest.getHeader("User-Agent");
+            postgresProcedureRepository.registrarSesion(
+                    usuario.getUsuarioApp(), usuario.getTokenVersion(), ip, ua);
+        } catch (Exception e) {
+            // No fallar el login si falla el registro de sesión
+            log.warn("[LOGIN] No se pudo registrar sesión activa: {}", e.getMessage());
+        }
+
         // 10) Auditar después de que todo fue exitoso
         safeAuditSuccess(usuarioApp, usuario.getUsuarioBd(), usuario.getIdUsuario(), httpRequest);
 

@@ -8,21 +8,41 @@ import lombok.Data;
 @Table(name = "institucion", schema = "public")
 public class Institucion {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_institucion")
     private Long idInstitucion;
 
     @Column(name = "nombre", nullable = false)
     private String nombre;
 
-    @Column(name = "direccion", nullable = false)
+    @Column(name = "direccion")
     private String direccion;
 
-    @Column(name = "correo", nullable = false)
+    @Column(name = "correo")
     private String correo;
 
     @Column(name = "telefono")
     private String telefono;
 
+    // Campos extra
+    @Column(name = "logo_url", columnDefinition = "TEXT")
+    private String logoUrl;
+
+    @Column(name = "email_smtp")
+    private String emailSmtp;
+
+    @Column(name = "email_password", columnDefinition = "TEXT")
+    private String emailPassword;  // almacenado cifrado
+
+    @Column(name = "email_host")
+    private String emailHost;
+
+    @Column(name = "email_port")
+    private Integer emailPort;
+
+    @Column(name = "app_name")
+    private String appName;
+
+    @Column(name = "activo")
+    private Boolean activo = true;
 }

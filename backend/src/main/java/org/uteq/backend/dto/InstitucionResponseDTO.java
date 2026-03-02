@@ -4,18 +4,17 @@ import lombok.Data;
 
 @Data
 public class InstitucionResponseDTO {
-
     private Long idInstitucion;
     private String nombreInstitucion;
     private String direccion;
+    private String correo;
     private String telefono;
-    private boolean estado;
+    private String logoUrl;
+    private String appName;
+    private String emailSmtp;
+    private String emailHost;
+    private Integer emailPort;
 
-    public boolean isEstado() {
-        return estado;
-    }
-
-    public void setEstado(boolean estado) {
-        this.estado = estado;
-    }
+    private Boolean tienePasswordConfigurado;
 }
+

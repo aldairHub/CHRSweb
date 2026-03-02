@@ -252,14 +252,28 @@
         </div>
       </div>
 
-      <div class="checkbox-grid" *ngIf="rolesBdDisponibles.length > 0; else noRolesBd">
-        <label class="checkbox-item" *ngFor="let rb of rolesBdDisponibles">
-          <input type="checkbox"
-                 [checked]="isRolBdSelected(rb)"
-                 (change)="toggleRolBd(rb, $event)" />
-          <span>{{ rb }}</span>
-        </label>
-      </div>
+<!--      <div class="checkbox-grid" *ngIf="rolesBdDisponibles.length > 0; else noRolesBd">-->
+<!--        <label class="checkbox-item" *ngFor="let rb of rolesBdDisponibles">-->
+<!--          <input type="checkbox"-->
+<!--                 [checked]="isRolBdSelected(rb)"-->
+<!--                 (change)="toggleRolBd(rb, $event)" />-->
+<!--          <span>{{ rb }}</span>-->
+<!--        </label>-->
+<!--      </div>-->
+
+        <div class="checkbox-grid" *ngIf="rolesBdDisponibles.length > 0; else noRolesBd">
+          <label class="checkbox-item" *ngFor="let rb of rolesBdDisponibles">
+            <input type="checkbox"
+                   [checked]="isRolBdSelected(rb.nombre)"
+                   (change)="toggleRolBd(rb.nombre, $event)"/>
+            <span>
+              {{ rb.nombre }}
+              <small class="text-muted d-block" *ngIf="rb.descripcion">
+                     {{ rb.descripcion }}
+              </small>
+            </span>
+          </label>
+        </div>
 
       <ng-template #noRolesBd>
         <div class="empty-state-sm">

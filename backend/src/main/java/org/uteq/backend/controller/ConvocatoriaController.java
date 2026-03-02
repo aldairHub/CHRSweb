@@ -47,26 +47,26 @@ public class ConvocatoriaController {
      * Retorna las solicitudes_docente asociadas a una convocatoria.
      * El postulante usa esto para elegir a cuál plaza específica quiere aplicar.
      */
-    @GetMapping("/api/convocatorias/{id}/solicitudes")
-    public ResponseEntity<List<SolicitudDocenteDTO>> obtenerSolicitudes(@PathVariable Long id) {
-        List<Long> idsSolicitud = convocatoriaSolicitudRepository
-                .findByIdConvocatoria(id)
-                .stream()
-                .map(ConvocatoriaSolicitud::getIdSolicitud)
-                .collect(Collectors.toList());
-
-        if (idsSolicitud.isEmpty()) {
-            return ResponseEntity.ok(List.of());
-        }
-
-        List<SolicitudDocenteDTO> solicitudes = solicitudDocenteRepository
-                .findAllById(idsSolicitud)
-                .stream()
-                .map(this::toSolicitudDTO)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(solicitudes);
-    }
+//    @GetMapping("/api/convocatorias/{id}/solicitudes")
+//    public ResponseEntity<List<SolicitudDocenteDTO>> obtenerSolicitudes(@PathVariable Long id) {
+//        List<Long> idsSolicitud = convocatoriaSolicitudRepository
+//                .findByIdConvocatoria(id)
+//                .stream()
+//                .map(ConvocatoriaSolicitud::getIdSolicitud)
+//                .collect(Collectors.toList());
+//
+//        if (idsSolicitud.isEmpty()) {
+//            return ResponseEntity.ok(List.of());
+//        }
+//
+//        List<SolicitudDocenteDTO> solicitudes = solicitudDocenteRepository
+//                .findAllById(idsSolicitud)
+//                .stream()
+//                .map(this::toSolicitudDTO)
+//                .collect(Collectors.toList());
+//
+//        return ResponseEntity.ok(solicitudes);
+//    }
 
     // ─── ADMIN ──────────────────────────────────────────────────────────────
 

@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.uteq.backend.config.ModuloDataInitializer;
 import org.uteq.backend.dto.ModuloOpcionesDTO;
 import org.uteq.backend.entity.Usuario;
 import org.uteq.backend.repository.PostgresProcedureRepository;
@@ -12,7 +13,8 @@ import org.uteq.backend.service.*;
 import org.uteq.backend.dto.LoginRequest;
 import org.uteq.backend.dto.LoginResponse;
 import java.util.Map;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.Base64;
 import java.util.List;
 
@@ -28,6 +30,8 @@ public class AuthController {
     private final PostgresProcedureRepository postgresProcedureRepository;
     private final AesCipherService aesCipherService;
 
+    private static final Logger log =
+            LoggerFactory.getLogger(ModuloDataInitializer.class);
 
     public AuthController(AuthService authService,
                           DbSwitchService dbSwitchService,
@@ -73,6 +77,7 @@ public class AuthController {
                                     u.getIdUsuario(), request
                             )
                     );
+                    postgresProcedureRepository.cerrarSesion(usuarioApp, "LOGOUT");
                 }
             } catch (Exception ignored) {}
             // Token expirado o inválido — igual hacemos logout
@@ -113,6 +118,42 @@ public class AuthController {
         ModuloOpcionesDTO modulo = postgresProcedureRepository.obtenerOpcionesUsuario(idRolApp);
         return ResponseEntity.ok(modulo);
     }
+//
+//    // ── Endpoint 1: listar sesiones activas ──────────────────────
+//    @GetMapping("/sesiones/activas")
+//    public ResponseEntity<List<Map<String, Object>>> listarSesionesActivas() {
+//        return ResponseEntity.ok(postgresProcedureRepository.listarSesionesActivas());
+//    }
+//    // ── Endpoint 2: forzar cierre de sesión de un usuario ────────
+//    @PostMapping("/sesiones/{usuarioApp}/forzar-cierre")
+//    public ResponseEntity<Map<String, String>> forzarCierre(
+//            @PathVariable String usuarioApp,
+//            HttpServletRequest request) {
+//
+//        // 1) Invalidar token (incrementa token_version en BD)
+//        postgresProcedureRepository.invalidarTokenUsuario(usuarioApp);
+//
+//        // 2) Registrar cierre en sesiones_activas_app
+//        postgresProcedureRepository.cerrarSesion(usuarioApp, "FORCE_LOGOUT");
+//
+//        // 3) Auditar la acción del admin
+//        String adminUser = extractAdminUser(request);
+//        log.info("[FORCE-LOGOUT] Admin '{}' cerró la sesión de '{}'", adminUser, usuarioApp);
+//
+//        return ResponseEntity.ok(Map.of(
+//                "mensaje", "Sesión de '" + usuarioApp + "' invalidada correctamente",
+//                "usuarioApp", usuarioApp
+//        ));
+//    }
+
+    private String extractAdminUser(HttpServletRequest req) {
+        String header = req.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return jwtService.extractUsername(header.substring(7));
+        }
+        return "desconocido";
+    }
+
     // ─── Helper ────────────────────────────────────────────────
 
     private String extraerToken(HttpServletRequest request) {

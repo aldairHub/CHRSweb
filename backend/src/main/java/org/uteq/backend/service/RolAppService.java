@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.uteq.backend.dto.RolAppConRolesBdDTO;
 import org.uteq.backend.dto.RolAppSaveDTO;
+import org.uteq.backend.dto.RolBdDescripcionDTO;
 import org.uteq.backend.entity.Modulo;
 import org.uteq.backend.entity.RolApp;
 import org.uteq.backend.entity.RolAppBd;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 /**
  * Servicio para gestión de roles_app y su mapeo con roles_bd.
  *
- * WHY: Reemplaza RolAutoridadService. Toda la lógica de seguridad
+ * Reemplaza RolAutoridadService. Toda la lógica de seguridad
  * de aplicación ahora gira en torno a roles_app (tabla) y sus
  * mapeos a roles de BD (pg_roles con prefijo role_*).
  */
@@ -58,25 +59,22 @@ public class RolAppService {
         return toConRolesBd(rol);
     }
 
+    public List<RolBdDescripcionDTO> listarRolesBdConDescripcion() {
+        return rolAppBdRepository.findRolesBdConDescripcion()
+                .stream()
+                .map(row -> new RolBdDescripcionDTO(
+                        (String) row[0],
+                        (String) row[1]
+                ))
+                .collect(Collectors.toList());
+    }
+
     public List<String> listarRolesBdDisponibles() {
         return rolAppBdRepository.findRolesBdDisponibles();
     }
 
     // ─── Escritura —con SPs ────────────────────────────
 
-//    public RolAppConRolesBdDTO crear(RolAppSaveDTO dto) {
-//        if (rolAppRepository.existsByNombre(dto.getNombre()))
-//            throw new RuntimeException("Ya existe un rol con ese nombre: " + dto.getNombre());
-//
-//        //  SP hace INSERT en roles_app + valida y asigna roles_bd en roles_app_bd
-//        Integer idCreado = procedureRepository.crearRolApp(
-//                dto.getNombre(),
-//                dto.getDescripcion(),
-//                dto.getRolesBd()
-//        );
-//
-//        return obtenerPorId(idCreado);
-//    }
     public RolAppConRolesBdDTO crear(RolAppSaveDTO dto) {
         if (rolAppRepository.existsByNombre(dto.getNombre()))
             throw new RuntimeException("Ya existe: " + dto.getNombre());
@@ -96,26 +94,6 @@ public class RolAppService {
         return obtenerPorId(idCreado);
     }
 
-
-
-//    public RolAppConRolesBdDTO actualizar(Integer id, RolAppSaveDTO dto) {
-//        if (!rolAppRepository.existsById(id))
-//            throw new RuntimeException("RolApp no encontrado: " + id);
-//
-//        // SP hace UPDATE en roles_app + DELETE/INSERT en roles_app_bd + valida pg_roles
-//        procedureRepository.actualizarRolApp(
-//                id,
-//                dto.getNombre(),
-//                dto.getDescripcion(),
-//                dto.getRolesBd()
-//        );
-//
-//        // activo no tiene SP — sigue en JPA
-//        if (dto.getActivo() != null)
-//            cambiarEstado(id, dto.getActivo());
-//
-//        return obtenerPorId(id);
-//    }
 
     public RolAppConRolesBdDTO actualizar(Integer id, RolAppSaveDTO dto) {
         RolApp rol = rolAppRepository.findById(id)
@@ -141,24 +119,6 @@ public class RolAppService {
         procedureRepository.cambiarEstadoRolApp(id, activo);
     }
     // ─── Helpers —────────────
-
-//    private RolAppConRolesBdDTO toConRolesBd(RolApp rol) {
-//        RolAppConRolesBdDTO dto = new RolAppConRolesBdDTO();
-//        dto.setIdRolApp(rol.getIdRolApp());
-//        dto.setNombre(rol.getNombre());
-//        dto.setDescripcion(rol.getDescripcion());
-//        dto.setActivo(rol.getActivo());
-//        dto.setFechaCreacion(rol.getFechaCreacion());
-//
-//        List<String> rolesBd = rolAppBdRepository.findByRolApp_IdRolApp(rol.getIdRolApp())
-//                .stream()
-//                .map(RolAppBd::getNombreRolBd)
-//                .sorted()
-//                .collect(Collectors.toList());
-//
-//        dto.setRolesBd(rolesBd);
-//        return dto;
-//        }
 
     private RolAppConRolesBdDTO toConRolesBd(RolApp rol) {
         RolAppConRolesBdDTO dto = new RolAppConRolesBdDTO();

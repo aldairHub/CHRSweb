@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import org.uteq.backend.dto.RolAppDTO;
 import org.uteq.backend.dto.RolAppSaveDTO;
 import org.uteq.backend.dto.RolAppConRolesBdDTO;
+import org.uteq.backend.dto.RolBdDescripcionDTO;
 import org.uteq.backend.service.RolAppService;
 
 import java.util.List;
@@ -61,4 +62,9 @@ public class RolAppController {
         rolAppService.cambiarEstado(id, activo);
         return ResponseEntity.ok().build();
     }
-}
+     @GetMapping("/roles-bd-con-descripcion")
+     public List<RolBdDescripcionDTO> rolesBdConDescripcion() {
+         return rolAppService.listarRolesBdConDescripcion();
+     }
+
+ }

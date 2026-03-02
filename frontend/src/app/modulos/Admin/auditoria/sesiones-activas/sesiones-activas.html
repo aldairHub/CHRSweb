@@ -1,0 +1,99 @@
+<app-navbar></app-navbar>
+
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h2>Sesiones activas</h2>
+        <p class="page-subtitle">Usuarios con sesión activa en este momento</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-outline" (click)="cargar()" [disabled]="isLoading">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          {{ isLoading ? 'Actualizando...' : 'Actualizar' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Mensaje de éxito -->
+    <div class="alert alert-success" *ngIf="mensaje">{{ mensaje }}</div>
+
+    <!-- Contador -->
+    <div class="sessions-summary" *ngIf="!isLoading">
+      <span class="session-count">
+        <span class="count-number">{{ sesiones.length }}</span>
+        sesión{{ sesiones.length !== 1 ? 'es' : '' }} activa{{ sesiones.length !== 1 ? 's' : '' }}
+      </span>
+      <span class="auto-refresh-note">Se actualiza automáticamente cada 30 segundos</span>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Cargando sesiones...</p>
+    </div>
+
+    <!-- Tabla -->
+    <div class="table-card" *ngIf="!isLoading">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>IP</th>
+            <th>Inicio de sesión</th>
+            <th>Tiempo activo</th>
+            <th>Navegador / App</th>
+            <th>Acción</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let s of sesiones">
+            <td>
+              <div class="user-cell">
+                <div class="user-avatar">{{ s.usuario_app[0].toUpperCase() }}</div>
+                <strong>{{ s.usuario_app }}</strong>
+              </div>
+            </td>
+            <td><code class="ip-code">{{ s.ip_cliente || '—' }}</code></td>
+            <td class="fecha-cell">{{ s.fecha_login | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <span class="badge badge-active">{{ formatMin(s.minutos_activo) }}</span>
+            </td>
+            <td class="ua-cell" [title]="s.user_agent">
+              {{ s.user_agent ? (s.user_agent.length > 40 ? s.user_agent.substring(0,40) + '…' : s.user_agent) : '—' }}
+            </td>
+            <td>
+              <button class="btn btn-danger btn-sm"
+                      [disabled]="cierreEnProceso === s.usuario_app"
+                      (click)="forzarCierre(s.usuario_app)">
+                <svg *ngIf="cierreEnProceso !== s.usuario_app" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                {{ cierreEnProceso === s.usuario_app ? 'Cerrando...' : 'Cerrar sesión' }}
+              </button>
+            </td>
+          </tr>
+
+          <tr *ngIf="sesiones.length === 0">
+            <td colspan="6" class="empty-state">
+              <div class="empty-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+              </div>
+              <p>No hay sesiones activas en este momento</p>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>

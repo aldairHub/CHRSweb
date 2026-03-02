@@ -14,53 +14,57 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap; // Import necesario para el mapa
 
 @Service
-@RequiredArgsConstructor
-@Data
 public class EmailService {
 
-    private final JavaMailSender mailSender;
-
-    // 1. AÑADIMOS ESTO: Memoria temporal para guardar los códigos (Correo -> Código)
+    private final DynamicMailService dynamicMailService; // ← REEMPLAZA mailSender
     private final Map<String, String> codigoStorage = new ConcurrentHashMap<>();
 
-    @Value("${app.email.from}")
-    private String emailFrom;
+    // emailFrom y appName ahora vienen de la institución, no de properties
+    // Si la institución no tiene correo configurado, usa un fallback
+    private static final String APP_NAME_FALLBACK = "Sistema UTEQ";
 
-    @Value("${app.name}")
-    private String appName;
+    public EmailService(DynamicMailService dynamicMailService) {
+        this.dynamicMailService = dynamicMailService;
+    }
+
+    // ─── Helper interno ──────────────────────────────────────
+    // Obtiene el "from" dinámicamente desde la institución activa
+    private String getEmailFrom() {
+        return dynamicMailService.getEmailFrom();
+    }
+
+    private String getAppName() {
+        return dynamicMailService.getAppName();
+    }
+
+    // ─── Métodos de envío — EXACTAMENTE iguales, solo cambia sender ──────────
 
     @Async
     public void enviarCodigoVerificacion(String destinatario, String codigo) {
-        // 2. GUARDAMOS EL CÓDIGO ANTES DE ENVIARLO
-        // Así el sistema recuerda que 'juan@uteq.edu.ec' tiene el código '123456'
         codigoStorage.put(destinatario, codigo);
-
         try {
-            MimeMessage message = mailSender.createMimeMessage();
+            JavaMailSender sender = dynamicMailService.getMailSender(); // ← ÚNICO CAMBIO
+            MimeMessage message = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom(emailFrom);
+            helper.setFrom(getEmailFrom());
             helper.setTo(destinatario);
-            helper.setSubject("Código de verificación - " + appName);
+            helper.setSubject("Código de verificación - " + getAppName());
             helper.setText(construirEmailCodigo(codigo), true);
 
-            mailSender.send(message);
-
+            sender.send(message);
         } catch (MessagingException e) {
             throw new RuntimeException("Error al enviar el código de verificación", e);
         }
     }
 
-    // 3. AÑADIMOS EL MÉTODO QUE TE FALTABA (Validar)
     public boolean validarCodigo(String correo, String codigoUsuario) {
         String codigoReal = codigoStorage.get(correo);
 
-        // --- CHISMOSO PARA VER EL ERROR EN CONSOLA ---
         System.out.println("--- INTENTO DE VALIDACIÓN ---");
         System.out.println("Correo buscado: " + correo);
         System.out.println("Código que envió el usuario: '" + codigoUsuario + "'");
         System.out.println("Código que tengo guardado: '" + codigoReal + "'");
-        // ---------------------------------------------
 
         if (codigoReal == null) {
             System.out.println("ERROR: No encontré código para este correo (¿Reiniciaste el server?)");
@@ -75,20 +79,40 @@ public class EmailService {
     @Async
     public void enviarCredenciales(String destinatario, String usuarioApp, String claveApp) {
         try {
-            MimeMessage message = mailSender.createMimeMessage();
+            JavaMailSender sender = dynamicMailService.getMailSender(); // ← ÚNICO CAMBIO
+            MimeMessage message = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom(emailFrom);
+            helper.setFrom(getEmailFrom());
             helper.setTo(destinatario);
-            helper.setSubject("Credenciales de acceso - " + appName);
+            helper.setSubject("Credenciales de acceso - " + getAppName());
             helper.setText(construirEmailCredenciales(usuarioApp, claveApp), true);
 
-            mailSender.send(message);
-
+            sender.send(message);
         } catch (MessagingException e) {
             throw new RuntimeException("Error al enviar credenciales", e);
         }
     }
+
+    public void enviarCorreoRechazo(String destinatario, String nombreCompleto, String motivo) {
+        try {
+            JavaMailSender sender = dynamicMailService.getMailSender(); // ← ÚNICO CAMBIO
+            MimeMessage mensaje = sender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
+
+            helper.setTo(destinatario);
+            helper.setSubject("Prepostulación Rechazada - " + getAppName());
+            helper.setText(construirEmailRechazo(nombreCompleto, motivo), true);
+            sender.send(mensaje);
+
+            System.out.println("✅ Correo de rechazo enviado exitosamente a: " + destinatario);
+        } catch (Exception e) {
+            System.err.println("❌ Error al enviar correo de rechazo: " + e.getMessage());
+            throw new RuntimeException("Error al enviar correo de rechazo", e);
+        }
+    }
+
+    // ─── Builders HTML — sin ningún cambio ───────────────────
 
     private String construirEmailCodigo(String codigo) {
         return """
@@ -166,18 +190,8 @@ public class EmailService {
             """.formatted(usuario, clave);
     }
 
-    /**
-     * Envía correo notificando el rechazo de la prepostulación
-     */
-    public void enviarCorreoRechazo(String destinatario, String nombreCompleto, String motivo) {
-        try {
-            MimeMessage mensaje = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
-
-            helper.setTo(destinatario);
-            helper.setSubject("Prepostulación Rechazada - UTEQ");
-
-            String contenidoHtml = String.format("""
+    private String construirEmailRechazo(String nombreCompleto, String motivo) {
+        return String.format("""
             <!DOCTYPE html>
             <html>
             <head>
@@ -193,43 +207,20 @@ public class EmailService {
             </head>
             <body>
                 <div class="container">
-                    <div class="header">
-                        <h1>Prepostulación Rechazada</h1>
-                    </div>
+                    <div class="header"><h1>Prepostulación Rechazada</h1></div>
                     <div class="content">
                         <p>Estimado/a <strong>%s</strong>,</p>
-                        
                         <p>Lamentamos informarle que su prepostulación ha sido rechazada.</p>
-                        
                         <div class="motivo">
-                            <strong>Motivo del rechazo:</strong><br>
-                            %s
+                            <strong>Motivo del rechazo:</strong><br>%s
                         </div>
-                        
                         <p>Si tiene alguna consulta, por favor comuníquese con nosotros.</p>
-                        
-                        <p>Atentamente,<br>
-                        <strong>Universidad Técnica Estatal de Quevedo</strong></p>
+                        <p>Atentamente,<br><strong>Universidad Técnica Estatal de Quevedo</strong></p>
                     </div>
-                    <div class="footer">
-                        <p>Este es un correo automático, por favor no responder.</p>
-                    </div>
+                    <div class="footer"><p>Este es un correo automático, por favor no responder.</p></div>
                 </div>
             </body>
             </html>
-            """,
-                    nombreCompleto,
-                    motivo
-            );
-
-            helper.setText(contenidoHtml, true);
-            mailSender.send(mensaje);
-
-            System.out.println("✅ Correo de rechazo enviado exitosamente a: " + destinatario);
-
-        } catch (Exception e) {
-            System.err.println("❌ Error al enviar correo de rechazo: " + e.getMessage());
-            throw new RuntimeException("Error al enviar correo de rechazo", e);
-        }
+            """, nombreCompleto, motivo);
     }
 }

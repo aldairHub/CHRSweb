@@ -1,18 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-import { OnInit } from '@angular/core';
+import { AuthStateService } from '../../services/auth-state.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './login.html', // Asegúrate que el nombre coincida con tu archivo
+  templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })
-export class LoginComponent  implements OnInit{
+export class LoginComponent implements OnInit {
   usuarioApp: string = '';
   claveApp: string = '';
   recordarme: boolean = false;
@@ -23,51 +23,61 @@ export class LoginComponent  implements OnInit{
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private authState: AuthStateService
   ) {}
 
+  ngOnInit() {
+    // Si ya hay sesión activa en el AuthStateService, redirigir directo
+    if (this.authState.isAutenticado()) {
+      this.authService.redirigirPorRol();
+    }
+  }
 
   togglePassword() {
     this.showPassword = !this.showPassword;
   }
 
   onLogin() {
-    // 1. Limpieza inicial
     this.serverError = '';
 
-    // Validación simple
     if (!this.usuarioApp || !this.claveApp) {
       this.serverError = 'Por favor, ingrese usuario y contraseña.';
       return;
     }
 
     this.isLoading = true;
-    console.log('Intentando login con:', this.usuarioApp); // Debug
 
-    // 2. Petición al servicio
-    // NOTA: Asegúrate que tu authService.login acepte (usuario, clave) y no un objeto {usuario, clave}
     this.authService.login(this.usuarioApp, this.claveApp).subscribe({
       next: (res: any) => {
         this.isLoading = false;
-        console.log('Login exitoso:', res);
 
         if (res && res.token) {
-          // Guardar sesión
+          // 1) Guardar en localStorage (compatibilidad con AuthService existente)
           this.authService.guardarSesion(res, this.recordarme);
 
+          // 2) ✅ CRÍTICO: Actualizar el AuthStateService (BehaviorSubject en memoria)
+          //    Sin esto, el AuthGuard ve isAutenticado()=false y redirige de vuelta al login
+          this.authState.setEstado({
+            token: res.token,
+            usuarioApp: res.usuarioApp,
+            roles: Array.isArray(res.roles) ? Array.from(res.roles) : [],
+            moduloNombre: res.modulo?.moduloNombre ?? null,
+            moduloRuta:   res.modulo?.moduloRuta   ?? null,
+            opciones:     res.modulo?.opciones     ?? [],
+            idUsuario:    res.idUsuario             ?? null,
+            nombreRolApp: res.nombreRolApp          ?? null,
+          });
 
-          // Redirigir usando la lógica del servicio o manual
-          // Si tu authService tiene 'redirigirPorRol', úsalo:
+          // 3) Redirigir según rol
           this.authService.redirigirPorRol();
 
-          // O si prefieres hacerlo manual aquí:
-          // this.executeRedirection(res.roles ? res.roles[0] : 'invitado');
         } else {
           this.serverError = 'Error: No se recibió el token de seguridad.';
         }
       },
       error: (err) => {
-        this.isLoading = false; // IMPORTANTE: Apagamos el spinner
+        this.isLoading = false;
         console.error('Error login:', err);
 
         if (err.status === 401) {
@@ -80,18 +90,11 @@ export class LoginComponent  implements OnInit{
       }
     });
   }
-  ngOnInit() {
-    const token = localStorage.getItem('token');
-    if (token) {
-      this.authService.redirigirPorRol();
-    }
-  }
 
   irAConvocatorias() {
     this.router.navigate(['/convocatorias']);
   }
 
-  // nuevo
   irARecuperarClave() {
     this.router.navigate(['/recuperar-clave']);
   }

@@ -33,6 +33,10 @@ export interface RolAppSavePayload {
   rolesBd: string[];
   idModulo?: number | null;
 }
+export interface RolBdDescripcion {
+  nombre: string;
+  descripcion: string | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class RolesAppService {
@@ -68,5 +72,9 @@ export class RolesAppService {
   }
   listarModulos(): Observable<any[]> {
     return this.http.get<any[]>('http://localhost:8080/api/admin/opciones/modulos');
+  }
+
+  listarRolesBdConDescripcion(): Observable<RolBdDescripcion[]> {
+    return this.http.get<RolBdDescripcion[]>(`${this.api}/roles-bd-con-descripcion`);
   }
 }

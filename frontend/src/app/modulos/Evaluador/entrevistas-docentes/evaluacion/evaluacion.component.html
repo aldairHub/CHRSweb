@@ -45,9 +45,10 @@
         <div class="card-header">
           <h3 class="card-title">Información de la Reunión</h3>
           <div class="header-actions">
-            <button class="btn btn-primary btn-sm" *ngIf="reunion.enlace"
-                    (click)="(null); $any(window).open(reunion.enlace, '_blank')">
-              🎥 Unirse a {{ reunion.modalidad }}
+            <button class="btn btn-primary btn-sm"
+                    *ngIf="reunion.enlace"
+                    (click)="abrirEnlace(reunion.enlace)">
+              Unirse a {{ reunion.modalidad }}
             </button>
           </div>
         </div>

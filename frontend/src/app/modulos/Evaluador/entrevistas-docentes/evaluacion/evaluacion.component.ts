@@ -131,7 +131,10 @@ export class EvaluacionComponent implements OnInit, AfterViewInit {
       this.ctx.clearRect(0, 0, this.canvasRef.nativeElement.width, this.canvasRef.nativeElement.height);
     }
   }
-
+  abrirEnlace(enlace: string): void {
+    if (!enlace) return;
+    window.open(enlace, '_blank');
+  }
   private capturarFirma(): string {
     return this.canvasRef?.nativeElement.toDataURL('image/png') ?? '';
   }

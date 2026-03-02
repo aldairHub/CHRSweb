@@ -136,11 +136,27 @@ export const routes: Routes = [
     canActivate: [AuthGuard, NoPrimerLoginGuard],
     data: { rol: 'admin' }
   },
+  {
+    path: 'auditoria/sesiones',
+    title: 'SSDC - Sesiones Activas',
+    loadComponent: () => import('./modulos/Admin/auditoria/sesiones-activas/sesiones-activas')
+      .then(m => m.SesionesActivasComponent),
+    canActivate: [AuthGuard, NoPrimerLoginGuard],
+    data: { rol: 'admin' }
+  },
+
   { path: 'gestion-opciones', loadComponent: () =>
       import('./modulos/Admin/gestion-opciones/gestion-opciones')
         .then(m => m.GestionOpcionesComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' }
   },
+
+  { path: 'config-institucion', loadComponent: () =>
+      import('./modulos/Admin/config-institucion/config-institucion')
+        .then(m => m.ConfigInstitucionComponent),
+    canActivate: [AuthGuard], data: { rol: 'admin' }
+  },
+
 
   // ── Revisor (Vicerrectorado) ──────────────────────────────────────────────
   { path: 'revisor', canActivate: [AuthGuard], data: { rol: 'revisor' }, children: [

@@ -10,7 +10,7 @@ import { NavbarComponent } from '../../../component/navbar';
 import {
   RolesAppService,
   RolAppConRolesBdDTO,
-  RolAppSavePayload
+  RolAppSavePayload, RolBdDescripcion
 } from '../../../services/roles-app.service';
 
 @Component({
@@ -27,7 +27,7 @@ export class GestionRolesComponent implements OnInit {
   rolesFiltrados: RolAppConRolesBdDTO[] = [];
 
   // ─── Catálogo BD ────────────────────────────────────────────
-  rolesBdDisponibles: string[] = [];
+  rolesBdDisponibles: RolBdDescripcion[] = [];
   selectedRolesBd: string[] = [];
 
   // ─── Filtros ────────────────────────────────────────────────
@@ -101,12 +101,12 @@ export class GestionRolesComponent implements OnInit {
       error: err => console.error('Error cargando roles_app:', err)
     });
   }
-
   loadRolesBd(): void {
-    this.svc.listarRolesBdDisponibles().subscribe({
-      next: data => {
-        this.rolesBdDisponibles = Array.isArray(data) ? data : [];
-        this.cdr.detectChanges();
+    this.svc.listarRolesBdConDescripcion().subscribe({
+        next: (data) => {
+          this.rolesBdDisponibles = data;
+          this.cdr.detectChanges();
+
       },
       error: err => console.error('Error cargando roles BD:', err)
     });
