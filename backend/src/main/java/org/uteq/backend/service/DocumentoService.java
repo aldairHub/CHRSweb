@@ -4,14 +4,9 @@ import org.uteq.backend.dto.DocumentoResponseDTO;
 import org.uteq.backend.dto.PostulanteInfoDTO;
 import org.uteq.backend.repository.DocumentoRepositoryCustomImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +14,7 @@ import java.util.UUID;
 
 // ============================================================
 // DocumentoService
-// Lógica de negocio: almacenamiento de archivos + llamadas a SPs
+// Lógica de negocio: almacenamiento en Supabase + llamadas a SPs
 // ============================================================
 @Service
 public class DocumentoService {
@@ -27,10 +22,8 @@ public class DocumentoService {
     @Autowired
     private DocumentoRepositoryCustomImpl documentoRepo;
 
-    // Configura la ruta base en application.properties:
-    // app.upload.dir=/uploads/documentos
-    @Value("${app.upload.dir:/uploads/documentos}")
-    private String uploadDir;
+    @Autowired
+    private SupabaseStorageService supabaseService;
 
     // ----------------------------------------------------------
     // Obtener documentos de una postulación (SP 1)
@@ -40,23 +33,23 @@ public class DocumentoService {
     }
 
     // ----------------------------------------------------------
-    // Subir archivo y registrar en BD (SP 2)
+    // Subir archivo a Supabase y registrar en BD (SP 2)
     // ----------------------------------------------------------
     public Map<String, Object> subirDocumento(
             Long idPostulacion,
             Long idTipoDocumento,
             MultipartFile archivo
-    ) throws IOException {
-
+    ) {
         Map<String, Object> response = new HashMap<>();
 
-        // Validar tipo
-        if (archivo.isEmpty()) {
+        // Validar que el archivo no esté vacío
+        if (archivo == null || archivo.isEmpty()) {
             response.put("exitoso", false);
             response.put("mensaje", "El archivo está vacío.");
             return response;
         }
 
+        // Validar tipo (solo PDF)
         String contentType = archivo.getContentType();
         if (!"application/pdf".equals(contentType)) {
             response.put("exitoso", false);
@@ -71,33 +64,47 @@ public class DocumentoService {
             return response;
         }
 
-        // Guardar físicamente el archivo
-        String nombreUnico = UUID.randomUUID() + "_" + archivo.getOriginalFilename();
-        String subCarpeta  = "postulacion_" + idPostulacion;
-        Path ruta = Paths.get(uploadDir, subCarpeta, nombreUnico);
-        Files.createDirectories(ruta.getParent());
-        Files.copy(archivo.getInputStream(), ruta, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        // ✅ SUBIR ARCHIVO A SUPABASE (carpeta "documentos")
+        String urlArchivo;
+        try {
+            System.out.println("📤 Subiendo documento a Supabase...");
+            String identificador = "postulacion_" + idPostulacion + "_tipo_" + idTipoDocumento
+                    + "_" + UUID.randomUUID();
+            urlArchivo = supabaseService.subirArchivo(
+                    archivo,
+                    "documentos",
+                    identificador
+            );
+            System.out.println("✅ Documento subido exitosamente: " + urlArchivo);
+        } catch (Exception e) {
+            System.err.println("❌ Error al subir documento a Supabase: " + e.getMessage());
+            e.printStackTrace();
+            response.put("exitoso", false);
+            response.put("mensaje", "Error al subir el archivo: " + e.getMessage());
+            return response;
+        }
 
-        // Ruta relativa que se guarda en BD
-        String rutaBD = subCarpeta + "/" + nombreUnico;
-
-        // Llamar SP 2
+        // Llamar SP 2 — se guarda la URL pública de Supabase en lugar de una ruta local
         Map<String, Object> resultado = documentoRepo.guardarDocumento(
-                idPostulacion, idTipoDocumento, rutaBD
+                idPostulacion, idTipoDocumento, urlArchivo
         );
 
         String mensaje = (String) resultado.get("mensaje");
 
         if (mensaje != null && mensaje.startsWith("ERROR")) {
-            // Si el SP falló, eliminar el archivo ya subido
-            Files.deleteIfExists(ruta);
+            // Si el SP falló, intentar eliminar el archivo ya subido en Supabase
+            try {
+                supabaseService.eliminarArchivo(urlArchivo);
+            } catch (Exception ex) {
+                System.err.println("⚠️ No se pudo eliminar el archivo de Supabase tras fallo del SP: " + ex.getMessage());
+            }
             response.put("exitoso", false);
             response.put("mensaje", mensaje);
         } else {
             response.put("exitoso", true);
             response.put("mensaje", "Documento subido correctamente.");
             response.put("idDocumento", resultado.get("idDocumento"));
-            response.put("rutaArchivo", rutaBD);
+            response.put("rutaArchivo", urlArchivo);
         }
 
         return response;

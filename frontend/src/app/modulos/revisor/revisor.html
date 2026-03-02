@@ -1,0 +1,40 @@
+<app-navbar></app-navbar>
+<div class="main-container">
+  <div class="content-wrapper">
+    <header class="dashboard-header">
+      <h1>Sistema de Selección Docente</h1>
+    </header>
+
+    <!-- Sin opciones asignadas -->
+    <div *ngIf="cards.length === 0" class="no-opciones">
+      <p>No hay opciones configuradas para este rol.</p>
+    </div>
+
+    <!-- Cards dinámicas — misma estructura que admin.html -->
+    <section class="cards-grid" *ngIf="cards.length > 0">
+      <article
+        *ngFor="let card of cards"
+        class="card"
+        (click)="navegarA(card.ruta)">
+
+        <div class="card-icon">
+          <svg width="48" height="48" viewBox="0 0 32 32" fill="none"
+               xmlns="http://www.w3.org/2000/svg">
+            <path
+              *ngFor="let path of card.svgPaths"
+              [attr.d]="path.d"
+              stroke="#43963C"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <h3>{{ card.titulo }}</h3>
+        <span>{{ card.descripcion }}</span>
+      </article>
+    </section>
+
+  </div>
+  <app-footer></app-footer>
+</div>

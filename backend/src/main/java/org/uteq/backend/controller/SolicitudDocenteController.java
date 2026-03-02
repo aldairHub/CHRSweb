@@ -30,9 +30,18 @@ public class SolicitudDocenteController {
 
         public String getUsuarioApp() { return usuarioApp; }
         public void setUsuarioApp(String usuarioApp) { this.usuarioApp = usuarioApp; }
-
         public SolicitudDocenteRequestDTO getSolicitud() { return solicitud; }
         public void setSolicitud(SolicitudDocenteRequestDTO solicitud) { this.solicitud = solicitud; }
+    }
+
+    public static class CambiarEstadoRequest {
+        private String nuevoEstado;
+        private String observaciones;
+
+        public String getNuevoEstado() { return nuevoEstado; }
+        public void setNuevoEstado(String nuevoEstado) { this.nuevoEstado = nuevoEstado; }
+        public String getObservaciones() { return observaciones; }
+        public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
     }
 
     public record ErrorResponse(String mensaje, int status) {}
@@ -46,7 +55,6 @@ public class SolicitudDocenteController {
             Long idAutoridad = solicitudService.obtenerIdAutoridadPorUsuarioApp(request.getUsuarioApp());
             SolicitudDocenteResponseDTO response =
                     solicitudService.crearSolicitud(request.getSolicitud(), idAutoridad);
-
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest()
@@ -60,6 +68,16 @@ public class SolicitudDocenteController {
     @GetMapping
     public ResponseEntity<List<SolicitudDocenteResponseDTO>> obtenerTodasLasSolicitudes() {
         return ResponseEntity.ok(solicitudService.obtenerTodasLasSolicitudes());
+    }
+
+    // =====================================================
+    // FILTRAR POR ESTADO  ← NUEVO
+    // GET /api/solicitudes-docente/estado/aprobada
+    // =====================================================
+    @GetMapping("/estado/{estado}")
+    public ResponseEntity<List<SolicitudDocenteResponseDTO>> obtenerPorEstado(
+            @PathVariable String estado) {
+        return ResponseEntity.ok(solicitudService.obtenerPorEstado(estado));
     }
 
     // =====================================================
@@ -77,22 +95,36 @@ public class SolicitudDocenteController {
     }
 
     // =====================================================
-    //  PDF MEJORADO CON LOGGING DE ERRORES
-    // ===================================================
+    // CAMBIAR ESTADO (aprobar / rechazar)  ← NUEVO
+    // PATCH /api/solicitudes-docente/{id}/estado
+    // =====================================================
+    @PatchMapping("/{id}/estado")
+    public ResponseEntity<?> cambiarEstado(
+            @PathVariable Long id,
+            @RequestBody CambiarEstadoRequest request) {
+        try {
+            SolicitudDocenteResponseDTO response =
+                    solicitudService.cambiarEstado(id, request.getNuevoEstado(), request.getObservaciones());
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value()));
+        }
+    }
+
+    // =====================================================
+    // PDF
+    // =====================================================
     @GetMapping("/{id}/reporte-pdf")
     public ResponseEntity<?> generarReportePdf(@PathVariable Long id) {
         try {
             System.out.println("🔍 Generando PDF para solicitud ID: " + id);
-
             byte[] pdf = solicitudService.generarPDFSolicitud(id);
 
             if (pdf == null || pdf.length == 0) {
-                System.err.println("❌ El PDF generado está vacío");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body(new ErrorResponse("El PDF generado está vacío", 500));
             }
-
-            System.out.println("✅ PDF generado correctamente. Tamaño: " + pdf.length + " bytes");
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=solicitud_" + id + ".pdf")
@@ -100,10 +132,7 @@ public class SolicitudDocenteController {
                     .body(pdf);
 
         } catch (Exception e) {
-            //  AHORA SÍ MOSTRAMOS EL ERROR COMPLETO
-            System.err.println("❌ ERROR GENERANDO PDF:");
             e.printStackTrace();
-
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(new ErrorResponse(
@@ -115,12 +144,13 @@ public class SolicitudDocenteController {
     }
 
     // =====================================================
-    // ⚠MANEJO DE ERRORES
+    // MANEJO DE ERRORES
     // =====================================================
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {
-        ex.printStackTrace(); // Para debugging
-        ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        ex.printStackTrace();
+        return new ResponseEntity<>(
+                new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value()),
+                HttpStatus.BAD_REQUEST);
     }
 }

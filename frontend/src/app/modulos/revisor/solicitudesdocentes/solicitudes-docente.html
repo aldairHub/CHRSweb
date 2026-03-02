@@ -1,0 +1,328 @@
+<!-- solicitudes-docente.html -->
+<app-navbar></app-navbar>
+
+<main class="sd-page">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <h2>Solicitudes de Docentes</h2>
+      <p class="page-subtitle">Revisión y gestión de solicitudes de contratación</p>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <h3>Total</h3>
+        <div class="stat-value">{{ solicitudes.length }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon pending">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <h3>Pendientes</h3>
+        <div class="stat-value pending">{{ contarEstado('pendiente') }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon success">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <h3>Aprobadas</h3>
+        <div class="stat-value success">{{ contarEstado('aprobada') }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon danger">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <h3>Rechazadas</h3>
+        <div class="stat-value danger">{{ contarEstado('rechazada') }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="filters-section">
+    <div class="search-box">
+      <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" class="form-input with-icon"
+             placeholder="Buscar por materia, carrera o área..."
+             [(ngModel)]="busqueda" (ngModelChange)="filtrar()"/>
+    </div>
+    <select class="form-select" [(ngModel)]="filtroEstado" (ngModelChange)="filtrar()">
+      <option value="">Todos los estados</option>
+      <option value="pendiente">Pendiente</option>
+      <option value="aprobada">Aprobada</option>
+      <option value="rechazada">Rechazada</option>
+    </select>
+  </div>
+
+  <!-- TABLA -->
+  <div class="table-container">
+    <table class="table">
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Materia</th>
+        <th>Carrera</th>
+        <th>Área</th>
+        <th>Doc.</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+      </thead>
+      <tbody>
+      <ng-container *ngIf="paginadas.length > 0; else sinDatos">
+        <tr *ngFor="let s of paginadas">
+          <td><span class="badge-count">SOL-{{ s.idSolicitud | number:'5.0-0' }}</span></td>
+          <td><strong>{{ s.nombreMateria }}</strong></td>
+          <td>{{ s.nombreCarrera }}</td>
+          <td>{{ s.nombreArea }}</td>
+          <td style="text-align:center">{{ s.cantidadDocentes }}</td>
+          <td>
+              <span class="badge" [ngClass]="estadoClass(s.estadoSolicitud)">
+                <span class="status-dot"></span>{{ s.estadoSolicitud | titlecase }}
+              </span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <!-- Ver -->
+              <button class="btn-icon" title="Ver detalle" (click)="verDetalle(s)">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              </button>
+              <!-- Aprobar -->
+              <button class="btn-icon approve" title="Aprobar"
+                      [disabled]="s.estadoSolicitud !== 'pendiente'"
+                      (click)="accionRapida(s, 'aprobada')">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+              </button>
+              <!-- Rechazar -->
+              <button class="btn-icon reject" title="Rechazar"
+                      [disabled]="s.estadoSolicitud !== 'pendiente'"
+                      (click)="accionRapida(s, 'rechazada')">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+              <!-- PDF -->
+              <button class="btn-icon pdf" title="Ver PDF" (click)="abrirPDF(s.idSolicitud!)">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-container>
+      <ng-template #sinDatos>
+        <tr>
+          <td colspan="7">
+            <div class="empty-state">
+              <div class="empty-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+              <p>Sin solicitudes</p>
+              <small>No hay registros con los filtros aplicados.</small>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PAGINACION -->
+  <div class="pagination" *ngIf="solicitudesFiltradas.length > itemsPorPagina">
+    <span class="pagination-info">
+      Mostrando {{ inicio + 1 }}–{{ fin }} de {{ solicitudesFiltradas.length }}
+    </span>
+    <div class="pagination-controls">
+      <button class="page-btn" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button *ngFor="let p of paginas" class="page-btn" [class.active]="p === paginaActual" (click)="cambiarPagina(p)">{{ p }}</button>
+      <button class="page-btn" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- MODAL DETALLE                              -->
+<!-- ══════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="solicitudDetalle" (click)="cerrarDetalle()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Detalle — SOL-{{ solicitudDetalle.idSolicitud | number:'5.0-0' }}</h3>
+      <button class="close-btn" (click)="cerrarDetalle()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="detalle-estado-row">
+        <span class="badge" [ngClass]="estadoClass(solicitudDetalle.estadoSolicitud)">
+          <span class="status-dot"></span>{{ solicitudDetalle.estadoSolicitud | titlecase }}
+        </span>
+        <span class="detalle-fecha">{{ solicitudDetalle.fechaSolicitud | date:'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+
+      <div class="detalle-grid">
+        <div class="detalle-block">
+          <div class="db-label">Solicitante</div>
+          <div class="db-value">{{ solicitudDetalle.nombreAutoridad || '—' }}</div>
+        </div>
+        <div class="detalle-block">
+          <div class="db-label">Facultad</div>
+          <div class="db-value">{{ solicitudDetalle.nombreFacultad || '—' }}</div>
+        </div>
+        <div class="detalle-block">
+          <div class="db-label">Carrera</div>
+          <div class="db-value">{{ solicitudDetalle.nombreCarrera }}</div>
+        </div>
+        <div class="detalle-block">
+          <div class="db-label">Modalidad</div>
+          <div class="db-value">{{ solicitudDetalle.modalidadCarrera || '—' }}</div>
+        </div>
+        <div class="detalle-block">
+          <div class="db-label">Materia</div>
+          <div class="db-value">{{ solicitudDetalle.nombreMateria }}</div>
+        </div>
+        <div class="detalle-block">
+          <div class="db-label">Nivel</div>
+          <div class="db-value">{{ solicitudDetalle.nivelMateria || '—' }}</div>
+        </div>
+        <div class="detalle-block">
+          <div class="db-label">Área</div>
+          <div class="db-value">{{ solicitudDetalle.nombreArea }}</div>
+        </div>
+        <div class="detalle-block">
+          <div class="db-label">Docentes req.</div>
+          <div class="db-value">{{ solicitudDetalle.cantidadDocentes }}</div>
+        </div>
+        <div class="detalle-block">
+          <div class="db-label">Nivel Académico</div>
+          <div class="db-value">{{ solicitudDetalle.nivelAcademico || '—' }}</div>
+        </div>
+        <div class="detalle-block">
+          <div class="db-label">Exp. Profesional</div>
+          <div class="db-value">{{ solicitudDetalle.experienciaProfesionalMin }} año(s)</div>
+        </div>
+        <div class="detalle-block">
+          <div class="db-label">Exp. Docente</div>
+          <div class="db-value">{{ solicitudDetalle.experienciaDocenteMin }} año(s)</div>
+        </div>
+      </div>
+
+      <div class="detalle-text-block">
+        <div class="dtb-label">Justificación</div>
+        <div class="dtb-content">{{ solicitudDetalle.justificacion || 'Sin justificación.' }}</div>
+      </div>
+
+      <div class="detalle-text-block" *ngIf="solicitudDetalle.observaciones">
+        <div class="dtb-label">Observaciones</div>
+        <div class="dtb-content">{{ solicitudDetalle.observaciones }}</div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="cerrarDetalle()">Cerrar</button>
+      <button class="btn btn-pdf" (click)="abrirPDF(solicitudDetalle.idSolicitud!)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" width="16" height="16">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+        </svg>
+        PDF
+      </button>
+      <ng-container *ngIf="solicitudDetalle.estadoSolicitud === 'pendiente'">
+        <button class="btn btn-danger" (click)="accionRapida(solicitudDetalle, 'rechazada'); cerrarDetalle()">
+          Rechazar
+        </button>
+        <button class="btn btn-success" (click)="accionRapida(solicitudDetalle, 'aprobada'); cerrarDetalle()">
+          Aprobar
+        </button>
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- MODAL CONFIRMAR ACCION                     -->
+<!-- ══════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="modalConfirm" (click)="cancelarConfirm()">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ accionPendiente === 'aprobada' ? 'Aprobar solicitud' : 'Rechazar solicitud' }}</h3>
+      <button class="close-btn" (click)="cancelarConfirm()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="confirm-icon" [class.approve]="accionPendiente === 'aprobada'" [class.reject]="accionPendiente === 'rechazada'">
+        <svg *ngIf="accionPendiente === 'aprobada'" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <svg *ngIf="accionPendiente === 'rechazada'" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <p class="confirm-text">
+        ¿Confirmas {{ accionPendiente === 'aprobada' ? 'aprobar' : 'rechazar' }} la solicitud
+        <strong>SOL-{{ solicitudParaAccion?.idSolicitud | number:'5.0-0' }}</strong>?
+      </p>
+      <div class="form-group">
+        <label>Observaciones <span class="optional">(opcional)</span></label>
+        <textarea class="form-input" rows="3"
+                  placeholder="Motivo de la decisión..."
+                  [(ngModel)]="observacionesAccion"></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="cancelarConfirm()" [disabled]="procesando">Cancelar</button>
+      <button class="btn"
+              [class.btn-success]="accionPendiente === 'aprobada'"
+              [class.btn-danger]="accionPendiente === 'rechazada'"
+              [disabled]="procesando"
+              (click)="confirmarAccion()">
+        {{ procesando ? 'Procesando...' : 'Confirmar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

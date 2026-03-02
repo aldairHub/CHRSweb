@@ -63,17 +63,43 @@ public class SolicitudDocenteService {
                 .orElseThrow(() -> new RuntimeException("Autoridad académica no encontrada"));
         return autoridad.getIdAutoridad();
     }
-
+    @Transactional(readOnly = true)
     public List<SolicitudDocenteResponseDTO> obtenerTodasLasSolicitudes() {
         return solicitudRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
     }
-
+    @Transactional(readOnly = true)
     public SolicitudDocenteResponseDTO obtenerSolicitudPorId(Long id) {
         SolicitudDocente solicitud = solicitudRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
         return convertToDTO(solicitud);
     }
+    @Transactional(readOnly = true)
+    public List<SolicitudDocenteResponseDTO> obtenerPorEstado(String estado) {
+        return solicitudRepository.findAll().stream()
+                .filter(s -> estado.equalsIgnoreCase(s.getEstadoSolicitud()))
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
 
+    // ── NUEVO: cambiar estado (aprobar/rechazar) ──────────────────────────
+    @Transactional
+    public SolicitudDocenteResponseDTO cambiarEstado(Long id, String nuevoEstado, String observaciones) {
+        List<String> estadosValidos = List.of("pendiente", "aprobada", "rechazada");
+        if (!estadosValidos.contains(nuevoEstado.toLowerCase())) {
+            throw new RuntimeException("Estado inválido. Use: pendiente, aprobada o rechazada");
+        }
+
+        SolicitudDocente solicitud = solicitudRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada con ID: " + id));
+
+        solicitud.setEstadoSolicitud(nuevoEstado.toLowerCase());
+        if (observaciones != null && !observaciones.isBlank()) {
+            solicitud.setObservaciones(observaciones);
+        }
+
+        return convertToDTO(solicitudRepository.save(solicitud));
+    }
+    @Transactional(readOnly = true)
     public byte[] generarPDFSolicitud(Long id) {
         try {
             String html = generarHTMLSolicitud(id);
@@ -196,8 +222,8 @@ public class SolicitudDocenteService {
     private String getEstadoColor(String estado) {
         if (estado == null) return "#ea580c";
         return switch (estado.toLowerCase()) {
-            case "aprobado" -> "#16a34a";
-            case "rechazado" -> "#dc2626";
+            case "aprobada" -> "#16a34a";
+            case "rechazada" -> "#dc2626";
             default -> "#ea580c";
         };
     }

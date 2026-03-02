@@ -161,10 +161,17 @@ export const routes: Routes = [
   // ── Revisor (Vicerrectorado) ──────────────────────────────────────────────
   { path: 'revisor', canActivate: [AuthGuard], data: { rol: 'revisor' }, children: [
       { path: '', loadComponent: () =>
-          import('./modulos/vicerrectorado/vicerrectorado').then(m => m.VicerrectoradoComponent),
-        data: { isHome: true } }
+          import('./modulos/revisor/revisor').then(m => m.RevisorComponent),
+        data: { isHome: true } },
+      { path: 'convocatorias', loadComponent: () =>
+          import('./modulos/revisor/convocatoria/convocatoria').then(m => m.ConvocatoriaComponent) },
+      { path: 'solicitudes-docente', loadComponent: () =>
+          import('./modulos/revisor/solicitudesdocentes/solicitudes-docente')
+            .then(m => m.SolicitudesDocenteComponent) },
+      { path: 'prepostulaciones', loadComponent: () =>
+          import('./modulos/revisor/gestionpostulante/gestionpostulante')
+            .then(m => m.GestionPostulanteComponent) },
     ]},
-
   // ── 404 ───────────────────────────────────────────────────────────────────
   { path: '**', redirectTo: '' }
 ];

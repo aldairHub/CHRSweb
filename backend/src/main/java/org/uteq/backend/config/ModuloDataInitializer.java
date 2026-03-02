@@ -60,6 +60,7 @@ public class ModuloDataInitializer implements ApplicationRunner {
         Modulo rev = mod("revisor","Panel de Revisor","/revisor",3);
         op(rev,"Pre-postulaciones","Revisar postulaciones",   "/revisor/prepostulaciones",1);
         op(rev,"Convocatorias",    "Gestionar convocatorias", "/revisor/convocatorias",   2);
+        op(rev,"Solicitudes Docente","Gestionar solicitudes de contratación docente", "/revisor/solicitudes-docente", 3);
         // ── POSTULANTE ──────────────────────────────────────────────
         Modulo pos = mod("postulante","Panel de Postulante","/postulante",4);
         op(pos,"Mis Documentos","Subir y gestionar docs",  "/postulante/subir-documentos",1);
