@@ -1,6 +1,7 @@
 // entrevistas-docentes/config-fases/config-fases.component.ts
 
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../../../component/navbar';
@@ -10,7 +11,7 @@ import { FaseRequest, FaseResponse } from '../../../../models/entrevistas-models
 @Component({
   selector: 'app-config-fases',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, RouterModule, FormsModule, NavbarComponent],
   templateUrl: './config-fases.component.html',
   styleUrls: ['./config-fases.component.scss']
 })

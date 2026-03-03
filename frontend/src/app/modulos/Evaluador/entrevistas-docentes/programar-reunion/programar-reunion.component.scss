@@ -104,3 +104,47 @@ $text-dark: #1a1a1a; $text-gray: #536b50; $bg-white: #ffffff; $error: #dc2626;
   .form-grid { grid-template-columns: 1fr; }
   .evaluadores-list { grid-template-columns: 1fr; }
 }
+
+// ── MODULE TABS ──────────────────────────────────────────────
+.module-tabs {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-bottom: 2px solid #B9F8CF;
+  padding: 0 2rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+
+  .tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 1rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #536b50;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    transition: all 0.2s;
+    cursor: pointer;
+    &:hover { color: #00A63E; background: #EEF9EC; }
+    &.active { color: #00A63E; border-bottom-color: #00A63E; }
+  }
+}
+
+// ── CARD GLOBAL FIX (sobreescribe max-width:260px del styles.scss) ─────────
+:host .card {
+  max-width: 100% !important;
+  min-height: unset !important;
+  align-items: stretch !important;
+  text-align: left !important;
+  cursor: default !important;
+  &:hover {
+    transform: none !important;
+    border-color: #B9F8CF !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+  }
+}

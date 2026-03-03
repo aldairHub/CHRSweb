@@ -4,15 +4,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-import java.util.List;
-
-// ─── PostulanteDTO (vista lista) ───────────────────────────
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostulanteEvaluacionDTO {
 
-    private Long idPostulante;   // = idProceso en backend
+    private Long idProceso;   // ← era "idPostulante", corregido para coincidir con frontend
     private String codigo;
     private String nombres;
     private String apellidos;

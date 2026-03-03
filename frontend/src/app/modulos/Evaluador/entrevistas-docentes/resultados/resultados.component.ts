@@ -4,6 +4,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { NavbarComponent } from '../../../../component/navbar';
 import { ResultadosService } from '../../../../services/entrevistas/resultados.service';
 import { PostulantesService } from '../../../../services/entrevistas/postulantes.service';
@@ -12,7 +13,7 @@ import { PostulanteResumen, ResultadoProceso, ResultadoFase, DecisionFinalReques
 @Component({
   selector: 'app-resultados',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, DecimalPipe],
+  imports: [CommonModule, RouterModule, FormsModule, NavbarComponent, DecimalPipe],
   templateUrl: './resultados.component.html',
   styleUrls: ['./resultados.component.scss']
 })
@@ -56,7 +57,7 @@ export class ResultadosComponent implements OnInit {
 
   ngOnInit(): void {
     this.postulantesService.listar().subscribe({
-      next: (data) => {
+      next: (data: PostulanteResumen[]) => {
         this.postulantes = data;
         this.isLoading   = false;
         this.route.params.subscribe(params => {
@@ -69,7 +70,7 @@ export class ResultadosComponent implements OnInit {
         });
         this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         console.error(err); this.error = 'No se pudieron cargar los procesos.';
         this.isLoading = false; this.cdr.detectChanges();
       }
@@ -83,13 +84,13 @@ export class ResultadosComponent implements OnInit {
     this.decision = ''; this.justificacion = '';
 
     this.resultadosService.obtenerResultados(this.idProcesoSeleccionado).subscribe({
-      next: (data) => {
+      next: (data: ResultadoProceso) => {
         this.resultado = data;
         if (data.decision) this.decision = data.decision;
         if (data.justificacionDecision) this.justificacion = data.justificacionDecision;
         this.isLoadingResultado = false; this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         console.error(err); this.isLoadingResultado = false; this.cdr.detectChanges();
       }
     });
@@ -102,22 +103,22 @@ export class ResultadosComponent implements OnInit {
   }
 
   irEvaluar(idReunion: number): void {
-    this.router.navigate(['/entrevistas-docentes/evaluacion', idReunion]);
+    this.router.navigate(['/evaluador/entrevistas-docentes/evaluacion', idReunion]);
   }
 
   guardarDecision(): void {
-    if (!this.decision)            { alert('Selecciona una decisión.'); return; }
+    if (!this.decision)             { alert('Selecciona una decisión.'); return; }
     if (!this.justificacion.trim()) { alert('La justificación es obligatoria.'); return; }
 
     this.isSaving = true;
     const payload: DecisionFinalRequest = { decision: this.decision, justificacion: this.justificacion };
 
     this.resultadosService.guardarDecision(this.idProcesoSeleccionado, payload).subscribe({
-      next: (data) => {
+      next: (data: ResultadoProceso) => {
         this.resultado = data; this.isSaving = false;
         alert('✅ Decisión final guardada correctamente.'); this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         console.error(err); alert('Error al guardar la decisión.');
         this.isSaving = false; this.cdr.detectChanges();
       }

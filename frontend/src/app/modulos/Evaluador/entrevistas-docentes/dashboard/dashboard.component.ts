@@ -1,8 +1,6 @@
-// entrevistas-docentes/dashboard/dashboard.component.ts
-
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NavbarComponent } from '../../../../component/navbar';
 import { DashboardService } from '../../../../services/entrevistas/dashboard.service';
 import { PostulantesService } from '../../../../services/entrevistas/postulantes.service';
@@ -13,7 +11,7 @@ import { forkJoin } from 'rxjs';
 @Component({
   selector: 'app-evaluacion-dashboard',
   standalone: true,
-  imports: [CommonModule, NavbarComponent],
+  imports: [CommonModule, NavbarComponent, RouterModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
@@ -30,6 +28,9 @@ export class EvaluacionDashboardComponent implements OnInit {
   reunionesProximas: ReunionResumen[] = [];
   isLoading = true;
   error = '';
+
+  // Mapa idProceso → próxima reunión (para mostrar en la tabla)
+  private reunionesPorProceso = new Map<number, ReunionResumen>();
 
   constructor(
     private router: Router,
@@ -55,7 +56,16 @@ export class EvaluacionDashboardComponent implements OnInit {
         this.stats                = stats;
         this.postulantesRecientes = postulantes.slice(0, 5);
         this.reunionesProximas    = reuniones.slice(0, 5);
-        this.isLoading            = false;
+
+        // Mapear reuniones por proceso para consulta rápida en la tabla
+        this.reunionesPorProceso.clear();
+        reuniones.forEach(r => {
+          if (r.idProceso && !this.reunionesPorProceso.has(r.idProceso)) {
+            this.reunionesPorProceso.set(r.idProceso, r);
+          }
+        });
+
+        this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -68,15 +78,22 @@ export class EvaluacionDashboardComponent implements OnInit {
   }
 
   navegarPostulante(idProceso: number): void {
-    this.router.navigate(['/entrevistas-docentes/postulantes', idProceso]);
+    this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', idProceso]);
   }
 
   navegarPostulantes(): void {
-    this.router.navigate(['/entrevistas-docentes/postulantes']);
+    this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']);
   }
 
   getNombreCompleto(p: PostulanteResumen): string {
     return `${p.nombres} ${p.apellidos}`;
+  }
+
+  /** Devuelve "fecha hora" de la próxima reunión del postulante, o null si no tiene */
+  getProximaReunion(p: PostulanteResumen): string | null {
+    const r = this.reunionesPorProceso.get(p.idProceso);
+    if (!r) return null;
+    return `${r.fecha} ${r.hora}`;
   }
 
   getBadgeClass(estado: string): string {
@@ -94,7 +111,9 @@ export class EvaluacionDashboardComponent implements OnInit {
   }
 
   getModalidadLabel(m: string): string {
-    const map: Record<string, string> = { zoom: 'Zoom', meet: 'Google Meet', teams: 'Teams', presencial: 'Presencial' };
+    const map: Record<string, string> = {
+      zoom: 'Zoom', meet: 'Google Meet', teams: 'Teams', presencial: 'Presencial'
+    };
     return map[m] ?? m;
   }
 

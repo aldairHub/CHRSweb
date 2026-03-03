@@ -58,10 +58,22 @@ export const EVALUACION_DOCENTE_ROUTES: Routes = [
         .then(m => m.ProgramarReunionComponent)
   },
   {
+    path: 'programar-reunion/:idProceso',
+    loadComponent: () =>
+      import('./programar-reunion/programar-reunion.component')
+        .then(m => m.ProgramarReunionComponent)
+  },
+  {
     path: 'programar-reunion/:idProceso/:idFase',
     loadComponent: () =>
       import('./programar-reunion/programar-reunion.component')
         .then(m => m.ProgramarReunionComponent)
+  },
+  {
+    path: 'evaluacion',
+    // Sin idReunion: redirige a postulantes para seleccionar una reunión
+    redirectTo: 'postulantes',
+    pathMatch: 'full'
   },
   {
     path: 'evaluacion/:idReunion',
@@ -82,16 +94,3 @@ export const EVALUACION_DOCENTE_ROUTES: Routes = [
         .then(m => m.ResultadosComponent)
   }
 ];
-
-/*
-  ──────────────────────────────────────────────────────────────
-  En tu app.routes.ts agrega esto:
-
-  {
-    path: 'entrevistas-docentes',
-    loadChildren: () =>
-      import('./modulos/Evaluador/entrevistas-docentes/evaluacion-docente.routes')
-        .then(m => m.EVALUACION_DOCENTE_ROUTES)
-  }
-  ──────────────────────────────────────────────────────────────
-*/

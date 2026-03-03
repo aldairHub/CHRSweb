@@ -1,5 +1,17 @@
 <!-- entrevistas-docentes/resultados/resultados.component.html -->
 <app-navbar></app-navbar>
+<!-- NAV TABS del módulo -->
+<nav class="module-tabs">
+  <a class="tab" routerLink="/evaluador/entrevistas-docentes/dashboard" routerLinkActive="active">📊 Dashboard</a>
+  <a class="tab" routerLink="/evaluador/entrevistas-docentes/fases" routerLinkActive="active">⚙️ Configurar Fases</a>
+  <a class="tab" routerLink="/evaluador/entrevistas-docentes/plantillas" routerLinkActive="active">📋 Plantillas</a>
+  <a class="tab" routerLink="/evaluador/entrevistas-docentes/criterios" routerLinkActive="active">📝 Criterios</a>
+  <a class="tab" routerLink="/evaluador/entrevistas-docentes/postulantes" routerLinkActive="active">👥 Postulantes</a>
+  <a class="tab" routerLink="/evaluador/entrevistas-docentes/programar-reunion" routerLinkActive="active">📅 Programar</a>
+  <a class="tab" routerLink="/evaluador/entrevistas-docentes/evaluacion" routerLinkActive="active">⭐ Evaluar</a>
+  <a class="tab" routerLink="/evaluador/entrevistas-docentes/resultados" routerLinkActive="active">📈 Resultados</a>
+</nav>
+
 
 <div class="main-container">
   <div class="content-wrapper">
@@ -77,13 +89,12 @@
                   <td>{{ f.peso }}%</td>
                   <td>
                       <span *ngIf="f.calificacion">
-                        {{ f.calificacion | number:'1.1-1' }}/5.0
-                        ({{ (f.calificacion / 5 * 100).toFixed(0) }}%)
+                        {{ f.calificacion | number:'1.1-1' }} / 100
                       </span>
                     <span *ngIf="!f.calificacion" class="text-muted">Pendiente</span>
                   </td>
                   <td>
-                    <strong *ngIf="f.ponderado" style="color: var(--primary, #00A63E);">
+                    <strong *ngIf="f.ponderado" style="color: #00A63E;">
                       {{ f.ponderado | number:'1.1-1' }}%
                     </strong>
                     <span *ngIf="!f.ponderado" class="text-muted">—</span>
@@ -130,7 +141,7 @@
                         <tr *ngFor="let ev of f.evaluaciones">
                           <td>{{ ev.nombreEvaluador }}</td>
                           <td>{{ ev.fechaEvaluacion }}</td>
-                          <td><strong>{{ ev.calificacionFinal | number:'1.1-1' }}/5.0</strong></td>
+                          <td><strong>{{ ev.calificacionFinal | number:'1.1-1' }} / 100</strong></td>
                           <td>{{ ev.observaciones }}</td>
                           <td>
                             <span class="badge success" *ngIf="ev.confirmada">✓ Confirmada</span>
@@ -141,7 +152,7 @@
                         <tr class="promedio-row">
                           <td colspan="2"><strong>PROMEDIO FINAL</strong></td>
                           <td><strong style="color: #00A63E;">
-                            {{ getPromedioFase(f) | number:'1.1-1' }}/5.0
+                            {{ getPromedioFase(f) | number:'1.1-1' }} / 100
                           </strong></td>
                           <td colspan="2"></td>
                         </tr>

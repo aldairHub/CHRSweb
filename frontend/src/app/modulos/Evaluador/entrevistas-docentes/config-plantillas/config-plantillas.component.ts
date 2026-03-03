@@ -4,6 +4,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { NavbarComponent } from '../../../../component/navbar';
 import { ConfigPlantillasService } from '../../../../services/entrevistas/config-plantillas.service';
 import { FasesService } from '../../../../services/entrevistas/config-fases.service';
@@ -13,7 +14,7 @@ import { forkJoin } from 'rxjs';
 @Component({
   selector: 'app-config-plantillas',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, RouterModule, FormsModule, NavbarComponent],
   templateUrl: './config-plantillas.component.html',
   styleUrls: ['./config-plantillas.component.scss']
 })
@@ -105,6 +106,6 @@ export class ConfigPlantillasComponent implements OnInit {
   }
 
   verCriterios(p: PlantillaResponse): void {
-    this.router.navigate(['/entrevistas-docentes/criterios', p.idPlantilla]);
+    this.router.navigate(['/evaluador/entrevistas-docentes/criterios', p.idPlantilla]);
   }
 }

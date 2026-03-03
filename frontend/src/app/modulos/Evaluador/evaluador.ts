@@ -134,6 +134,13 @@ const SVG_MAP: Record<string, Array<{ d: string }>> = {
     { d: 'M10 15.3333H18' },
   ],
 
+
+  'entrevistas-docentes': [
+    { d: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2' },
+    { d: 'M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
+    { d: 'M9 12l2 2 4-4' },
+  ],
+
 };
 
 const SVG_FALLBACK: Array<{ d: string }> = [
@@ -158,6 +165,11 @@ export class EvaluadorComponent implements OnInit {
     private authService: AuthService
   ) {}
 
+  irEntrevistasDocentes(): void {
+    this.router.navigate(['/evaluador/entrevistas-docentes']);
+  }
+
+
   ngOnInit(): void {
     this.construirCards();
   }
@@ -170,7 +182,7 @@ export class EvaluadorComponent implements OnInit {
     }
 
     this.cards = modulo.opciones.map(op => {
-      // "/evaluador/postulantes" → "postulantes"
+      // "/evaluador/entrevistas-docentes" → "entrevistas-docentes"
       const rutaKey = (op.ruta || '').split('/').pop() ?? '';
 
       return {
@@ -183,6 +195,8 @@ export class EvaluadorComponent implements OnInit {
   }
 
   navegarA(ruta: string): void {
+    // Rutas con sub-segmentos como "entrevistas-docentes" navegan
+    // como child del evaluador: /evaluador/entrevistas-docentes
     this.router.navigate([`/evaluador/${ruta}`]);
   }
 }

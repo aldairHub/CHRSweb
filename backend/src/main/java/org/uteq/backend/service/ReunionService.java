@@ -30,7 +30,6 @@ public class ReunionService {
     // ─── Programar reunión ─────────────────────────────────────
     public ReunionResponseDTO programar(ReunionRequestDTO dto) {
 
-        // idPostulante del frontend = idProceso en backend
         ProcesoEvaluacion proceso = procesoService.findOrThrow(dto.getIdPostulante());
 
         FaseProceso faseProceso = faseProcesoRepository
@@ -38,7 +37,6 @@ public class ReunionService {
                 .orElseThrow(() -> new RuntimeException(
                         "No se encontró la fase " + dto.getIdFase() + " en este proceso"));
 
-        // Resolver nombres de evaluadores
         List<String> nombresEvaluadores = dto.getEvaluadoresIds() != null
                 ? dto.getEvaluadoresIds().stream()
                 .map(id -> usuarioRepository.findById(id)
@@ -52,7 +50,6 @@ public class ReunionService {
                 : "";
         String nombresStr = String.join(",", nombresEvaluadores);
 
-        // Si ya existe reunión para esta fase-proceso, actualizar
         Reunion reunion = reunionRepository
                 .findByFaseProceso_IdFaseProceso(faseProceso.getIdFaseProceso())
                 .orElseGet(Reunion::new);
@@ -70,14 +67,12 @@ public class ReunionService {
 
         reunion = reunionRepository.save(reunion);
 
-        // Actualizar estado de la fase-proceso a "en_curso" si estaba pendiente
         if ("pendiente".equals(faseProceso.getEstado())) {
             faseProceso.setEstado("en_curso");
             faseProceso.setEvaluadoresAsignados(nombresStr);
             faseProcesoRepository.save(faseProceso);
         }
 
-        // Registrar en historial
         procesoService.registrarHistorial(proceso,
                 "Reunión Programada – " + faseProceso.getFase().getNombre(),
                 "Reunión programada para el " + dto.getFecha() + " a las " + dto.getHora()
@@ -104,6 +99,22 @@ public class ReunionService {
         return toDTO(r, r.getFaseProceso().getProceso().getIdProceso());
     }
 
+    // ─── Cambiar estado ────────────────────────────────────────
+    /** NUEVO: llamado desde PATCH /reuniones/{id}/estado?estado=... */
+    public ReunionResponseDTO cambiarEstado(Long idReunion, String nuevoEstado) {
+        Reunion r = reunionRepository.findById(idReunion)
+                .orElseThrow(() -> new RuntimeException("Reunión no encontrada con id: " + idReunion));
+        r.setEstado(nuevoEstado);
+        r = reunionRepository.save(r);
+
+        ProcesoEvaluacion proceso = r.getFaseProceso().getProceso();
+        procesoService.registrarHistorial(proceso,
+                "Estado de Reunión Actualizado",
+                "Nuevo estado: " + nuevoEstado, "Sistema");
+
+        return toDTO(r, proceso.getIdProceso());
+    }
+
     // ─── Cancelar reunión ──────────────────────────────────────
     public ReunionResponseDTO cancelar(Long idReunion, String motivo) {
         Reunion r = reunionRepository.findById(idReunion)
@@ -120,8 +131,8 @@ public class ReunionService {
 
     // ─── Mapper ────────────────────────────────────────────────
     private ReunionResponseDTO toDTO(Reunion r, Long idProceso) {
-        FaseProceso fp  = r.getFaseProceso();
-        Postulante   p  = fp.getProceso().getPostulante();
+        FaseProceso fp = r.getFaseProceso();
+        Postulante  p  = fp.getProceso().getPostulante();
 
         return ReunionResponseDTO.builder()
                 .idReunion(r.getIdReunion())

@@ -14,11 +14,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Gestión de Postulantes dentro del proceso de evaluación.
- * Endpoints consumidos por los componentes postulantes, resultados y dashboard.
+ * CAMBIO: @RequestMapping era "/api/evaluacion/postulantes"
+ *         ahora es "/api/evaluacion/procesos" para coincidir con el frontend.
  */
 @RestController
-@RequestMapping("/api/evaluacion/postulantes")
+@RequestMapping("/api/evaluacion/procesos")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class PostulantesEvaluacionController {
@@ -26,35 +26,38 @@ public class PostulantesEvaluacionController {
     private final ProcesoEvaluacionService procesoService;
     private final EvaluacionService evaluacionService;
 
-    /** Lista todos los postulantes activos en proceso de evaluación */
+    /**
+     * GET /api/evaluacion/procesos?estado=en_proceso&query=...
+     * El frontend puede pasar estado y query como filtros opcionales.
+     * El service actual no filtra, pero los recibe sin error.
+     */
     @GetMapping
-    public ResponseEntity<List<PostulanteEvaluacionDTO>> listar() {
+    public ResponseEntity<List<PostulanteEvaluacionDTO>> listar(
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) String query) {
         return ResponseEntity.ok(procesoService.listarPostulantes());
     }
 
-    /** Obtiene el detalle de un postulante (fases + historial) */
+    /** GET /api/evaluacion/procesos/{idProceso} */
     @GetMapping("/{idProceso}")
     public ResponseEntity<PostulanteDetalleDTO> detalle(@PathVariable Long idProceso) {
         return ResponseEntity.ok(procesoService.obtenerDetalle(idProceso));
     }
 
-    /** Obtiene los resultados y calificaciones de un postulante */
+    /** GET /api/evaluacion/procesos/{idProceso}/resultados */
     @GetMapping("/{idProceso}/resultados")
     public ResponseEntity<ResultadoPostulanteDTO> resultados(@PathVariable Long idProceso) {
         return ResponseEntity.ok(evaluacionService.obtenerResultados(idProceso));
     }
 
-    /**
-     * Registra la decisión final del comité sobre un postulante.
-     * Body: { "decision": "aprobado_contratar", "justificacion": "..." }
-     */
+    /** POST /api/evaluacion/procesos/{idProceso}/decision */
     @PostMapping("/{idProceso}/decision")
     public ResponseEntity<Map<String, String>> registrarDecision(
             @PathVariable Long idProceso,
             @RequestBody DecisionRequestDTO dto) {
         procesoService.registrarDecision(idProceso, dto);
         return ResponseEntity.ok(Map.of(
-                "mensaje", "Decisión registrada correctamente",
+                "mensaje",  "Decisión registrada correctamente",
                 "decision", dto.getDecision()
         ));
     }

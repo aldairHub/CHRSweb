@@ -4,6 +4,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { NavbarComponent } from '../../../../component/navbar';
 import { ProgramarReunionService } from '../../../../services/entrevistas/programar-reunion.service';
 import { PostulantesService } from '../../../../services/entrevistas/postulantes.service';
@@ -21,7 +22,7 @@ interface EvaluadorUI {
 @Component({
   selector: 'app-programar-reunion',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, RouterModule, FormsModule, NavbarComponent],
   templateUrl: './programar-reunion.component.html',
   styleUrls: ['./programar-reunion.component.scss']
 })

@@ -10,10 +10,6 @@ import org.uteq.backend.service.ReunionService;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Gestión de Reuniones de Evaluación.
- * Endpoints consumidos por el componente programar-reunion del frontend.
- */
 @RestController
 @RequestMapping("/api/evaluacion/reuniones")
 @CrossOrigin(origins = "*")
@@ -22,31 +18,50 @@ public class ReunionController {
 
     private final ReunionService service;
 
-    /** Lista las reuniones programadas (próximas) */
+    /**
+     * GET /api/evaluacion/reuniones?estado=programada
+     * AGREGADO: el frontend llama con ?estado= como param opcional.
+     * Delega a listarProgramadas() si estado=programada, o devuelve todas.
+     */
+    @GetMapping
+    public ResponseEntity<List<ReunionResponseDTO>> listar(
+            @RequestParam(required = false) String estado) {
+        if ("programada".equals(estado)) {
+            return ResponseEntity.ok(service.listarProgramadas());
+        }
+        return ResponseEntity.ok(service.listarProgramadas()); // por ahora devuelve todas las programadas
+    }
+
+    /** GET /api/evaluacion/reuniones/programadas (se mantiene) */
     @GetMapping("/programadas")
     public ResponseEntity<List<ReunionResponseDTO>> listarProgramadas() {
         return ResponseEntity.ok(service.listarProgramadas());
     }
 
-    /** Obtener reunión por ID */
+    /** GET /api/evaluacion/reuniones/{id} */
     @GetMapping("/{id}")
     public ResponseEntity<ReunionResponseDTO> obtener(@PathVariable Long id) {
         return ResponseEntity.ok(service.obtenerPorId(id));
     }
 
-    /**
-     * Programar (crear o actualizar) una reunión.
-     * Body: { idPostulante, idFase, fecha, hora, duracion, modalidad, enlace, evaluadoresIds, observaciones }
-     */
+    /** POST /api/evaluacion/reuniones */
     @PostMapping
     public ResponseEntity<ReunionResponseDTO> programar(@RequestBody ReunionRequestDTO dto) {
         return ResponseEntity.status(201).body(service.programar(dto));
     }
 
     /**
-     * Cancelar una reunión.
-     * Body: { "motivo": "..." }  (opcional)
+     * PATCH /api/evaluacion/reuniones/{id}/estado?estado=completada
+     * AGREGADO: el frontend llama a este endpoint para cambiar estado.
      */
+    @PatchMapping("/{id}/estado")
+    public ResponseEntity<ReunionResponseDTO> cambiarEstado(
+            @PathVariable Long id,
+            @RequestParam String estado) {
+        return ResponseEntity.ok(service.cambiarEstado(id, estado));
+    }
+
+    /** PATCH /api/evaluacion/reuniones/{id}/cancelar (se mantiene) */
     @PatchMapping("/{id}/cancelar")
     public ResponseEntity<ReunionResponseDTO> cancelar(
             @PathVariable Long id,

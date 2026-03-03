@@ -1,6 +1,6 @@
 package org.uteq.backend.config;
 
-import org.slf4j.Logger;
+import  org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -56,6 +56,7 @@ public class ModuloDataInitializer implements ApplicationRunner {
         op(ev,"Reportes",          "Informes en PDF",         "/evaluador/reportes",   4);
         op(ev,"Solicitar Docente", "Nueva requisición",       "/evaluador/solicitar",  5);
         op(ev,"Entrevistas",       "Gestión de entrevistas",  "/evaluador/entrevistas",6);
+        op(ev,"Entrevistas Docentes","Proceso de evaluación docente","/evaluador/entrevistas-docentes",7);
         // ── REVISOR ─────────────────────────────────────────────────
         Modulo rev = mod("revisor","Panel de Revisor","/revisor",3);
         op(rev,"Pre-postulaciones","Revisar postulaciones",   "/revisor/prepostulaciones",1);

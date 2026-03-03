@@ -98,8 +98,12 @@ export const routes: Routes = [
           import('./modulos/Evaluador/evaluacion/evaluacion').then(m => m.EvaluacionMeritosComponent) },
       { path: 'reportes', loadComponent: () =>
           import('./modulos/Evaluador/reportes/reportes').then(m => m.ReportesComponent) },
-      { path: 'entrevistas', loadComponent: () =>
-          import('./modulos/Evaluador/entrevistas/entrevistas').then(m => m.EntrevistasComponent) }
+      {
+        path: 'entrevistas-docentes',
+        loadChildren: () =>
+          import('./modulos/Evaluador/entrevistas-docentes/evaluacion-docente.routes')
+            .then(m => m.EVALUACION_DOCENTE_ROUTES)
+      }
     ]},
 
   // ── Admin ─────────────────────────────────────────────────────────────────

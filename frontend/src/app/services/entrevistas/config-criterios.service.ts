@@ -1,7 +1,7 @@
 // services/config-criterios.service.ts
 
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CriterioRequest, CriterioResponse, PesoTotalResponse } from '../../models/entrevistas-models';
 
@@ -10,46 +10,45 @@ import { CriterioRequest, CriterioResponse, PesoTotalResponse } from '../../mode
 })
 export class ConfigCriteriosService {
 
-  private apiUrl = 'http://localhost:8080/api/evaluacion/criterios';
+  private base = 'http://localhost:8080/api/evaluacion';
 
   constructor(private http: HttpClient) {}
 
+  /** GET /api/evaluacion/plantillas/{idPlantilla}/criterios */
   listarPorPlantilla(idPlantilla: number): Observable<CriterioResponse[]> {
-    return this.http.get<CriterioResponse[]>(this.apiUrl, {
-      params: { idPlantilla: String(idPlantilla) }
-    });
+    return this.http.get<CriterioResponse[]>(`${this.base}/plantillas/${idPlantilla}/criterios`);
   }
 
-  /**
-   * Carga criterios de la plantilla activa asociada a una fase.
-   * Usado en el componente de evaluación para cargar los criterios al abrir una reunión.
-   * Backend: GET /api/evaluacion/criterios?idFase=X
-   */
+  /** GET /api/evaluacion/criterios?idFase=X  (usado en evaluacion.component) */
   listarPorFase(idFase: number): Observable<CriterioResponse[]> {
-    return this.http.get<CriterioResponse[]>(this.apiUrl, {
+    return this.http.get<CriterioResponse[]>(`${this.base}/criterios`, {
       params: { idFase: String(idFase) }
     });
   }
 
+  /** GET /api/evaluacion/criterios/{id} */
   obtener(id: number): Observable<CriterioResponse> {
-    return this.http.get<CriterioResponse>(`${this.apiUrl}/${id}`);
+    return this.http.get<CriterioResponse>(`${this.base}/criterios/${id}`);
   }
 
   pesoTotal(idPlantilla: number): Observable<PesoTotalResponse> {
-    return this.http.get<PesoTotalResponse>(`${this.apiUrl}/peso-total`, {
+    return this.http.get<PesoTotalResponse>(`${this.base}/criterios/peso-total`, {
       params: { idPlantilla: String(idPlantilla) }
     });
   }
 
+  /** POST /api/evaluacion/criterios */
   crear(data: CriterioRequest): Observable<CriterioResponse> {
-    return this.http.post<CriterioResponse>(this.apiUrl, data);
+    return this.http.post<CriterioResponse>(`${this.base}/criterios`, data);
   }
 
+  /** PUT /api/evaluacion/criterios/{id} */
   actualizar(id: number, data: CriterioRequest): Observable<CriterioResponse> {
-    return this.http.put<CriterioResponse>(`${this.apiUrl}/${id}`, data);
+    return this.http.put<CriterioResponse>(`${this.base}/criterios/${id}`, data);
   }
 
+  /** DELETE /api/evaluacion/criterios/{id} */
   eliminar(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<void>(`${this.base}/criterios/${id}`);
   }
 }
