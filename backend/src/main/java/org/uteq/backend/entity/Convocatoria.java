@@ -33,6 +33,8 @@ public class Convocatoria {
     @Column(name = "estado_convocatoria", nullable = false)
     private String estadoConvocatoria;
 
+    @Column(name = "imagen_portada_url")
+    private String imagenPortadaUrl;
     public Convocatoria() {
         this.estadoConvocatoria = "abierta";
         this.fechaPublicacion   = LocalDate.now();

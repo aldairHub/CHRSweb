@@ -10,6 +10,8 @@ import {
   SolicitudResumen
 } from '../../../services/convocatoria-admin.service';
 import { SolicitudDocenteService, SolicitudDocenteResponse } from '../../../services/SolicitudDocente.service';
+import { ToastService } from '../../../services/toast.service';
+import { ToastComponent } from '../../../component/toast.component';
 
 @Component({
   selector: 'app-convocatoria',
@@ -17,7 +19,8 @@ import { SolicitudDocenteService, SolicitudDocenteResponse } from '../../../serv
   imports: [
     CommonModule,
     FormsModule,
-    NavbarComponent
+    NavbarComponent,
+    ToastComponent
   ],
   templateUrl: './convocatoria.html',
   styleUrls: ['./convocatoria.scss']
@@ -83,10 +86,15 @@ export class ConvocatoriaComponent implements OnInit {
   // ===== Modal detalle =====
   detalleConvocatoria: ConvocatoriaDetalleResponse | null = null;
 
+  // ===== Generación de imagen IA =====
+  generandoImagen = false;
+  private toastImagenId: number | null = null;
+
   constructor(
     private convocatoriaService: ConvocatoriaAdminService,
     private solicitudService: SolicitudDocenteService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -261,15 +269,22 @@ export class ConvocatoriaComponent implements OnInit {
   guardar(): void {
     this.submitted = true;
 
+    // if (!this.form.titulo.trim()) {
+    //   alert('El título es obligatorio.');
+    //   return;
+    // }
+    // if (!this.form.fechaInicio || !this.form.fechaFin) {
+    //   alert('Las fechas de inicio y fin son obligatorias.');
+    //   return;
+    // }
     if (!this.form.titulo.trim()) {
-      alert('El título es obligatorio.');
+      this.toast.warning('Campo requerido', 'El título de la convocatoria es obligatorio.');
       return;
     }
     if (!this.form.fechaInicio || !this.form.fechaFin) {
-      alert('Las fechas de inicio y fin son obligatorias.');
+      this.toast.warning('Campos requeridos', 'Las fechas de inicio y fin son obligatorias.');
       return;
     }
-
     this.isSaving = true;
 
     if (this.editando) {
@@ -280,18 +295,30 @@ export class ConvocatoriaComponent implements OnInit {
         fechaInicio: this.form.fechaInicio,
         fechaFin: this.form.fechaFin
       }).subscribe({
+        // next: (resp) => {
+        //   this.isSaving = false;
+        //   this.closeModal();
+        //   alert('✅ Convocatoria actualizada con éxito.');
+        //   this.cargarConvocatorias();
+        //   this.cdr.detectChanges();
+        //
+        // },
+        // error: (err) => {
+        //   this.isSaving = false;
+        //   const msg = err?.error?.mensaje || err?.error?.message || 'Error desconocido';
+        //   alert('❌ No se pudo actualizar: ' + msg);
+        // }
         next: (resp) => {
           this.isSaving = false;
           this.closeModal();
-          alert('✅ Convocatoria actualizada con éxito.');
+          this.toast.success('Convocatoria actualizada', 'Los cambios se guardaron correctamente.');
           this.cargarConvocatorias();
           this.cdr.detectChanges();
-
         },
         error: (err) => {
           this.isSaving = false;
           const msg = err?.error?.mensaje || err?.error?.message || 'Error desconocido';
-          alert('❌ No se pudo actualizar: ' + msg);
+          this.toast.error('No se pudo actualizar', msg);
         }
       });
     } else {
@@ -303,18 +330,56 @@ export class ConvocatoriaComponent implements OnInit {
         fechaFin: this.form.fechaFin,
         idsSolicitudes: this.form.idsSolicitudes
       }).subscribe({
+        // next: (resp) => {
+        //   this.isSaving = false;
+        //   this.closeModal();
+        //   alert('✅ Convocatoria creada con éxito.');
+        //   this.cargarConvocatorias();
+        //   this.cdr.detectChanges();
+        //
+        // },
+        // error: (err) => {
+        //   this.isSaving = false;
+        //   const msg = err?.error?.mensaje || err?.error?.message || 'Error desconocido';
+        //   alert('❌ No se pudo crear: ' + msg);
+        // }
         next: (resp) => {
           this.isSaving = false;
-          this.closeModal();
-          alert('✅ Convocatoria creada con éxito.');
-          this.cargarConvocatorias();
-          this.cdr.detectChanges();
-
+          if (resp.exito && resp.data) {
+            const idNueva = resp.data as number;
+            this.closeModal();
+            this.generandoImagen = true;
+            this.toastImagenId = this.toast.loading(
+              'Generando imagen de portada...',
+              'Esto puede tomar hasta 60 segundos'
+            );
+            this.cdr.detectChanges();
+            this.convocatoriaService.generarImagen(idNueva).subscribe({
+              next: (r) => {
+                if (this.toastImagenId) this.toast.remove(this.toastImagenId);
+                this.generandoImagen = false;
+                if (r.exito) {
+                  this.toast.success('¡Convocatoria creada!', 'La imagen de portada se generó correctamente.');
+                } else {
+                  this.toast.warning('Convocatoria creada', 'No se pudo generar la imagen: ' + r.mensaje);
+                }
+                this.cargarConvocatorias();
+                this.cdr.detectChanges();
+              },
+              error: () => {
+                if (this.toastImagenId) this.toast.remove(this.toastImagenId);
+                this.generandoImagen = false;
+                this.toast.warning('Convocatoria creada sin imagen', 'Puedes regenerarla desde el detalle cuando el modelo esté disponible.');
+                this.cargarConvocatorias();
+                this.cdr.detectChanges();
+              }
+            });
+          }
         },
         error: (err) => {
           this.isSaving = false;
           const msg = err?.error?.mensaje || err?.error?.message || 'Error desconocido';
-          alert('❌ No se pudo crear: ' + msg);
+          this.toast.error('No se pudo crear', msg);
         }
       });
     }
@@ -332,18 +397,30 @@ export class ConvocatoriaComponent implements OnInit {
   guardarEstado(): void {
     this.isSaving = true;
     this.convocatoriaService.cambiarEstado(this.convocatoriaSeleccionadaId, this.nuevoEstado).subscribe({
+      // next: () => {
+      //   this.isSaving = false;
+      //   this.modalEstadoAbierto = false;
+      //   alert('✅ Estado actualizado con éxito.');
+      //   this.cargarConvocatorias();
+      //   this.cdr.detectChanges();
+      //
+      // },
+      // error: (err) => {
+      //   this.isSaving = false;
+      //   const msg = err?.error?.mensaje || err?.error?.message || 'Error desconocido';
+      //   alert('❌ No se pudo cambiar el estado: ' + msg);
+      // }
       next: () => {
         this.isSaving = false;
         this.modalEstadoAbierto = false;
-        alert('✅ Estado actualizado con éxito.');
+        this.toast.success('Estado actualizado', `La convocatoria ahora está ${this.nuevoEstado}.`);
         this.cargarConvocatorias();
         this.cdr.detectChanges();
-
       },
       error: (err) => {
         this.isSaving = false;
         const msg = err?.error?.mensaje || err?.error?.message || 'Error desconocido';
-        alert('❌ No se pudo cambiar el estado: ' + msg);
+        this.toast.error('No se pudo cambiar el estado', msg);
       }
     });
   }
@@ -359,10 +436,15 @@ export class ConvocatoriaComponent implements OnInit {
         this.detalleConvocatoria = data;
         this.cdr.detectChanges();
       },
+      // error: (err) => {
+      //   console.error('Error al cargar detalle:', err);
+      //   this.modalDetalleAbierto = false;
+      //   alert('❌ No se pudo cargar el detalle.');
+      // }
       error: (err) => {
         console.error('Error al cargar detalle:', err);
         this.modalDetalleAbierto = false;
-        alert('❌ No se pudo cargar el detalle.');
+        this.toast.error('Error', 'No se pudo cargar el detalle de la convocatoria.');
       }
     });
   }
@@ -373,16 +455,27 @@ export class ConvocatoriaComponent implements OnInit {
   eliminar(conv: ConvocatoriaListaResponse): void {
     if (!confirm(`¿Seguro que deseas eliminar la convocatoria "${conv.titulo}"? Esta acción no se puede deshacer.`)) return;
 
+    // this.convocatoriaService.eliminar(conv.idConvocatoria).subscribe({
+    //   next: () => {
+    //     alert('✅ Convocatoria eliminada.');
+    //     this.cargarConvocatorias();
+    //     this.cdr.detectChanges();
+    //
+    //   },
+    //   error: (err) => {
+    //     const msg = err?.error?.mensaje || err?.error?.message || 'Error desconocido';
+    //     alert('❌ No se pudo eliminar: ' + msg);
+    //   }
+    // });
     this.convocatoriaService.eliminar(conv.idConvocatoria).subscribe({
       next: () => {
-        alert('✅ Convocatoria eliminada.');
+        this.toast.success('Convocatoria eliminada', `"${conv.titulo}" fue eliminada correctamente.`);
         this.cargarConvocatorias();
         this.cdr.detectChanges();
-
       },
       error: (err) => {
         const msg = err?.error?.mensaje || err?.error?.message || 'Error desconocido';
-        alert('❌ No se pudo eliminar: ' + msg);
+        this.toast.error('No se pudo eliminar', msg);
       }
     });
   }
@@ -408,5 +501,34 @@ export class ConvocatoriaComponent implements OnInit {
     this.detalleConvocatoria = null;
     this.cdr.detectChanges();
 
+  }
+  regenerarImagen(id: number): void {
+    this.generandoImagen = true;
+    this.toastImagenId = this.toast.loading('Regenerando imagen...', 'Puede tomar hasta 60 segundos');
+    this.cdr.detectChanges();
+
+    this.convocatoriaService.generarImagen(id).subscribe({
+      next: (resp) => {
+        if (this.toastImagenId) this.toast.remove(this.toastImagenId);
+        this.generandoImagen = false;
+        if (resp.exito && resp.data) {
+          if (this.detalleConvocatoria) {
+            this.detalleConvocatoria.imagenPortadaUrl = resp.data as string;
+          }
+          this.toast.success('¡Imagen regenerada!', 'La nueva portada se asignó a la convocatoria.');
+        } else {
+          this.toast.warning('No se pudo regenerar', resp.mensaje);
+        }
+        this.cargarConvocatorias();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        if (this.toastImagenId) this.toast.remove(this.toastImagenId);
+        this.generandoImagen = false;
+        const msg = err?.error?.mensaje || 'El modelo de IA no está disponible ahora.';
+        this.toast.error('Error al regenerar imagen', msg);
+        this.cdr.detectChanges();
+      }
+    });
   }
 }

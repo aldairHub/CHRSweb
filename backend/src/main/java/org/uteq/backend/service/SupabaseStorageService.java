@@ -100,4 +100,27 @@ public class SupabaseStorageService {
 
         System.out.println("🗑️ Archivo eliminado: " + nombreArchivo);
     }
+
+
+
+    public String subirBytes(byte[] bytes, String carpeta, String nombreBase,
+                             String extension, String bucketDestino)
+            throws IOException, InterruptedException {
+
+        String nombre = carpeta + "/" + nombreBase + "_" + UUID.randomUUID() + extension;
+        String url = supabaseUrl + "/storage/v1/object/" + bucketDestino + "/" + nombre;
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Authorization", "Bearer " + supabaseKey)
+                .header("Content-Type", "image/jpeg")
+                .POST(HttpRequest.BodyPublishers.ofByteArray(bytes))
+                .build();
+
+        HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+        if (res.statusCode() == 200 || res.statusCode() == 201)
+            return supabaseUrl + "/storage/v1/object/public/" + bucketDestino + "/" + nombre;
+        throw new RuntimeException("Error subiendo imagen: " + res.body());
+    }
 }

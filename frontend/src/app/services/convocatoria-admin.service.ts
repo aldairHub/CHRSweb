@@ -10,6 +10,7 @@ export interface ConvocatoriaListaResponse {
   fechaInicio: string;
   fechaFin: string;
   estadoConvocatoria: string;
+  imagenPortadaUrl?: string;
   totalSolicitudes: number;
 }
 
@@ -21,6 +22,7 @@ export interface ConvocatoriaDetalleResponse {
   fechaInicio: string;
   fechaFin: string;
   estadoConvocatoria: string;
+  imagenPortadaUrl?: string;
   solicitudes: SolicitudResumen[];
 }
 
@@ -89,5 +91,8 @@ export class ConvocatoriaAdminService {
 
   eliminar(id: number): Observable<MensajeResponse> {
     return this.http.delete<MensajeResponse>(`${this.apiUrl}/${id}`);
+  }
+  generarImagen(id: number): Observable<MensajeResponse> {
+    return this.http.post<MensajeResponse>(`${this.apiUrl}/${id}/generar-imagen`, {});
   }
 }

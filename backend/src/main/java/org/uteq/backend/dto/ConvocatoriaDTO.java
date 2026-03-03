@@ -49,6 +49,8 @@ public class ConvocatoriaDTO {
         @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate fechaFin;
         private String    estadoConvocatoria;
         private Long      totalSolicitudes;
+        private String imagenPortadaUrl;
+
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -61,6 +63,8 @@ public class ConvocatoriaDTO {
         @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate fechaFin;
         private String    estadoConvocatoria;
         private List<SolicitudResumen> solicitudes;
+        private String imagenPortadaUrl;
+
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder

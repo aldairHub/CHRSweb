@@ -13,6 +13,7 @@ import org.uteq.backend.entity.SolicitudDocente;
 import org.uteq.backend.repository.ConvocatoriaRepository;
 import org.uteq.backend.repository.ConvocatoriaSolicitudRepository;
 import org.uteq.backend.repository.SolicitudDocenteRepository;
+import org.uteq.backend.service.ConvocatoriaImagenService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -26,6 +27,7 @@ public class ConvocatoriaController {
     private final ConvocatoriaRepository          convocatoriaRepository;
     private final ConvocatoriaSolicitudRepository convocatoriaSolicitudRepository;
     private final SolicitudDocenteRepository      solicitudDocenteRepository;
+    private final ConvocatoriaImagenService convocatoriaImagenService;
 
     // ─── PÚBLICO ────────────────────────────────────────────────────────────
 
@@ -182,7 +184,18 @@ public class ConvocatoriaController {
         convocatoriaRepository.deleteById(id);
         return ResponseEntity.ok(new MensajeResponse(true, "Convocatoria eliminada correctamente", null));
     }
-
+    @PostMapping("/api/admin/convocatorias/{id}/generar-imagen")
+    public ResponseEntity<MensajeResponse> generarImagen(@PathVariable Long id) {
+        try {
+            String url = convocatoriaImagenService.generarYPersistir(id);
+            return ResponseEntity.ok(new MensajeResponse(true, "Imagen generada", url));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(503).body(new MensajeResponse(false, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(new MensajeResponse(false, "Error interno: " + e.getMessage(), null));
+        }
+    }
     // ─── Mappers ────────────────────────────────────────────────────────────
 
     private ListaResponse toListaResponse(Convocatoria c) {
@@ -195,6 +208,7 @@ public class ConvocatoriaController {
                 .fechaInicio(c.getFechaInicio())
                 .fechaFin(c.getFechaFin())
                 .estadoConvocatoria(c.getEstadoConvocatoria())
+                .imagenPortadaUrl(c.getImagenPortadaUrl())
                 .totalSolicitudes(totalSolicitudes)
                 .build();
     }
@@ -218,6 +232,7 @@ public class ConvocatoriaController {
                 .fechaInicio(c.getFechaInicio())
                 .fechaFin(c.getFechaFin())
                 .estadoConvocatoria(c.getEstadoConvocatoria())
+                .imagenPortadaUrl(c.getImagenPortadaUrl())
                 .solicitudes(solicitudes)
                 .build();
     }
