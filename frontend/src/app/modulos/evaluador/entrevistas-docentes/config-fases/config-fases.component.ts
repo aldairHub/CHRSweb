@@ -39,7 +39,7 @@ export class ConfigFasesComponent implements OnInit {
 
   evaluadoresOpciones = [
     'Comité de Selección', 'Coordinador', 'Experto Técnico',
-    'Decano', 'Pedagogo', 'Comité Evaluador', 'Vicerrectorado'
+    'Decano', 'Pedagogo', 'Comité evaluador', 'Vicerrectorado'
   ];
 
   constructor(

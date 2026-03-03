@@ -78,7 +78,7 @@ export interface PesoTotalDTO {
  */
 export interface PostulanteDTO {
   idProceso: number;      // ID del ProcesoEvaluacionPostulante — usar ESTE para las peticiones
-  idPostulante: number;   // ID del Postulante original
+  idPostulante: number;   // ID del postulante original
   codigo: string;
   nombres: string;
   apellidos: string;

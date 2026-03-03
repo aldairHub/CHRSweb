@@ -1,4 +1,4 @@
-// src/app/modulos/Admin/gestion-roles/gestion-roles.ts
+// src/app/modulos/admin/gestion-roles/gestion-roles.ts
 //
 // Reemplaza roles-autoridad/roles-autoridad.ts
 // Gestión de roles_app ↔ roles_bd

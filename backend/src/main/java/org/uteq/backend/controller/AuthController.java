@@ -138,7 +138,7 @@ public class AuthController {
 //
 //        // 3) Auditar la acción del admin
 //        String adminUser = extractAdminUser(request);
-//        log.info("[FORCE-LOGOUT] Admin '{}' cerró la sesión de '{}'", adminUser, usuarioApp);
+//        log.info("[FORCE-LOGOUT] admin '{}' cerró la sesión de '{}'", adminUser, usuarioApp);
 //
 //        return ResponseEntity.ok(Map.of(
 //                "mensaje", "Sesión de '" + usuarioApp + "' invalidada correctamente",

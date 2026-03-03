@@ -51,7 +51,7 @@ export class CrearEvaluadorComponent {
     setTimeout(() => {
       this.isLoading = false;
       console.log('Enviando a BD:', this.evaluador);
-      alert('Evaluador creado correctamente. Se han enviado las credenciales al correo.');
+      alert('evaluador creado correctamente. Se han enviado las credenciales al correo.');
       this.router.navigate(['/admin']); // Vuelve al dashboard admin
     }, 1000);
   }

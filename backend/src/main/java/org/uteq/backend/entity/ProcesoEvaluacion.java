@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * Representa el proceso de evaluación de un postulante aprobado en prepostulación.
- * Vincula: Postulante (usuario) → SolicitudDocente → conjunto de FasesProceso
+ * Vincula: postulante (usuario) → SolicitudDocente → conjunto de FasesProceso
  */
 @Entity
 @Table(name = "proceso_evaluacion")

@@ -35,7 +35,7 @@ public class EvaluacionService {
                 .orElseThrow(() -> new RuntimeException("Reunión no encontrada con id: " + dto.getIdReunion()));
 
         Usuario evaluador = usuarioRepository.findById(idEvaluador)
-                .orElseThrow(() -> new RuntimeException("Evaluador no encontrado con id: " + idEvaluador));
+                .orElseThrow(() -> new RuntimeException("evaluador no encontrado con id: " + idEvaluador));
 
         // Validar que el evaluador no haya evaluado ya esta reunión
         if (evaluacionRepository.existsByReunion_IdReunionAndEvaluador_IdUsuario(dto.getIdReunion(), idEvaluador))

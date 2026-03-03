@@ -77,7 +77,7 @@ public class ReunionService {
                 "Reunión Programada – " + faseProceso.getFase().getNombre(),
                 "Reunión programada para el " + dto.getFecha() + " a las " + dto.getHora()
                         + " por modalidad " + dto.getModalidad(),
-                "Admin Sistema");
+                "admin Sistema");
 
         return toDTO(reunion, proceso.getIdProceso());
     }
@@ -124,7 +124,7 @@ public class ReunionService {
 
         ProcesoEvaluacion proceso = r.getFaseProceso().getProceso();
         procesoService.registrarHistorial(proceso, "Reunión Cancelada",
-                "Motivo: " + (motivo != null ? motivo : "Sin especificar"), "Admin Sistema");
+                "Motivo: " + (motivo != null ? motivo : "Sin especificar"), "admin Sistema");
 
         return toDTO(r, proceso.getIdProceso());
     }

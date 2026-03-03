@@ -67,7 +67,7 @@ export const EVALUADORES_PERMITIDOS = [
   'Experto Técnico',
   'Decano',
   'Pedagogo',
-  'Comité Evaluador',
+  'Comité evaluador',
   'Vicerrectorado',
 ] as const;
 

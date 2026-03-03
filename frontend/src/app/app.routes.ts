@@ -53,7 +53,7 @@ export const routes: Routes = [
         .then(m => m.CambiarClaveObligatorioComponent), canActivate: [AuthGuard] },
   { path: 'cambio-clave-obligatorio', redirectTo: 'cambiar-clave-obligatorio', pathMatch: 'full' },
 
-  // ── Postulante ────────────────────────────────────────────────────────────
+  // ── postulante ────────────────────────────────────────────────────────────
 
   {
     path: 'postulante',
@@ -62,80 +62,80 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        loadComponent: () => import('./modulos/Postulante/postulante').then(m => m.PostulanteComponent),
+        loadComponent: () => import('./modulos/././postulante/postulante').then(m => m.PostulanteComponent),
         data: { isHome: true }
       },
       {
         path: 'subir-documentos',
-        loadComponent: () => import('./modulos/Postulante/subir-documentos/subir-documentos')
+        loadComponent: () => import('./modulos/././postulante/subir-documentos/subir-documentos')
           .then(m => m.SubirDocumentosComponent)
       },
       {
         path: 'resultados',
-        loadComponent: () => import('./modulos/Postulante/resultados/resultados')
+        loadComponent: () => import('./modulos/././postulante/resultados/resultados')
           .then(m => m.ResultadosComponent)
       },
       {
         path: 'entrevistas',
-        loadComponent: () => import('./modulos/Postulante/entrevista/entrevista')
+        loadComponent: () => import('./modulos/././postulante/entrevista/entrevista')
           .then(m => m.EntrevistaPostulanteComponent)
       }
     ]
   },
-  // ── Evaluador ─────────────────────────────────────────────────────────────
+  // ── evaluador ─────────────────────────────────────────────────────────────
   { path: 'evaluador', canActivate: [AuthGuard], data: { rol: 'evaluador' }, children: [
       { path: '', loadComponent: () =>
-          import('./modulos/Evaluador/evaluador').then(m => m.EvaluadorComponent),
+          import('./modulos/././evaluador/evaluador').then(m => m.EvaluadorComponent),
         data: { isHome: true } },
       { path: 'solicitar', loadComponent: () =>
-          import('./modulos/Evaluador/solicitar-docente/solicitar-docente')
+          import('./modulos/././evaluador/solicitar-docente/solicitar-docente')
             .then(m => m.SolicitarDocenteComponent) },
       { path: 'postulantes', loadComponent: () =>
-          import('./modulos/Evaluador/postulantes/postulantes').then(m => m.PostulantesComponent) },
+          import('./modulos/././evaluador/postulantes/postulantes').then(m => m.PostulantesComponent) },
       { path: 'documentos', loadComponent: () =>
-          import('./modulos/Evaluador/documentos/documentos').then(m => m.DocumentosComponent) },
+          import('./modulos/././evaluador/documentos/documentos').then(m => m.DocumentosComponent) },
       { path: 'evaluacion', loadComponent: () =>
-          import('./modulos/Evaluador/evaluacion/evaluacion').then(m => m.EvaluacionMeritosComponent) },
+          import('./modulos/././evaluador/evaluacion/evaluacion').then(m => m.EvaluacionMeritosComponent) },
       { path: 'reportes', loadComponent: () =>
-          import('./modulos/Evaluador/reportes/reportes').then(m => m.ReportesComponent) },
+          import('./modulos/././evaluador/reportes/reportes').then(m => m.ReportesComponent) },
       {
         path: 'entrevistas-docentes',
         loadChildren: () =>
-          import('./modulos/Evaluador/entrevistas-docentes/evaluacion-docente.routes')
+          import('./modulos/././evaluador/entrevistas-docentes/evaluacion-docente.routes')
             .then(m => m.EVALUACION_DOCENTE_ROUTES)
       }
     ]},
 
-  // ── Admin ─────────────────────────────────────────────────────────────────
+  // ── admin ─────────────────────────────────────────────────────────────────
   { path: 'admin', loadComponent: () =>
-      import('./modulos/Admin/admin').then(m => m.AdminComponent),
+      import('./modulos/././admin/admin').then(m => m.AdminComponent),
     canActivate: [AuthGuard], data: { rol: 'admin', isHome: true } },
   { path: 'gestion-roles', loadComponent: () =>
-      import('./modulos/Admin/gestion-roles/gestion-roles').then(m => m.GestionRolesComponent),
+      import('./modulos/././admin/gestion-roles/gestion-roles').then(m => m.GestionRolesComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' } },
   { path: 'roles-autoridad', redirectTo: 'gestion-roles', pathMatch: 'full' },
   { path: 'gestion-usuarios', loadComponent: () =>
-      import('./modulos/Admin/gestion-usuarios/gestion-usuarios').then(m => m.GestionUsuariosComponent),
+      import('./modulos/././admin/gestion-usuarios/gestion-usuarios').then(m => m.GestionUsuariosComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' } },
   { path: 'facultad', loadComponent: () =>
-      import('./modulos/Admin/facultad/facultad').then(m => m.FacultadComponent),
+      import('./modulos/././admin/facultad/facultad').then(m => m.FacultadComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' } },
   { path: 'carrera', loadComponent: () =>
-      import('./modulos/Admin/carrera/carrera').then(m => m.CarreraComponent),
+      import('./modulos/././admin/carrera/carrera').then(m => m.CarreraComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' } },
   { path: 'materia', loadComponent: () =>
-      import('./modulos/Admin/materia/materia').then(m => m.MateriaComponent),
+      import('./modulos/././admin/materia/materia').then(m => m.MateriaComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' } },
   { path: 'gestion-postulante', loadComponent: () =>
-      import('./modulos/Admin/postulante/postulante').then(m => m.PostulanteComponent),
+      import('./modulos/././admin/postulante/postulante').then(m => m.PostulanteComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' } },
   { path: 'gestion-documentos', loadComponent: () =>
-      import('./modulos/Admin/gestiondocumentos/gestion-documentos')
+      import('./modulos/././admin/gestiondocumentos/gestion-documentos')
         .then(m => m.GestionDocumentosComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' } },{
     path: 'auditoria',
     title: 'SSDC - Auditoría',
-    loadComponent: () => import('./modulos/Admin/auditoria/auditoria')
+    loadComponent: () => import('./modulos/././admin/auditoria/auditoria')
       .then(m => m.AuditoriaComponent),
     canActivate: [AuthGuard, NoPrimerLoginGuard],
     data: { rol: 'admin' }
@@ -143,20 +143,20 @@ export const routes: Routes = [
   {
     path: 'auditoria/sesiones',
     title: 'SSDC - Sesiones Activas',
-    loadComponent: () => import('./modulos/Admin/auditoria/sesiones-activas/sesiones-activas')
+    loadComponent: () => import('./modulos/././admin/auditoria/sesiones-activas/sesiones-activas')
       .then(m => m.SesionesActivasComponent),
     canActivate: [AuthGuard, NoPrimerLoginGuard],
     data: { rol: 'admin' }
   },
 
   { path: 'gestion-opciones', loadComponent: () =>
-      import('./modulos/Admin/gestion-opciones/gestion-opciones')
+      import('./modulos/././admin/gestion-opciones/gestion-opciones')
         .then(m => m.GestionOpcionesComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' }
   },
 
   { path: 'config-institucion', loadComponent: () =>
-      import('./modulos/Admin/config-institucion/config-institucion')
+      import('./modulos/././admin/config-institucion/config-institucion')
         .then(m => m.ConfigInstitucionComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' }
   },

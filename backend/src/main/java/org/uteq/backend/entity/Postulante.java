@@ -26,9 +26,6 @@ public class Postulante {
     @Column(name = "correo_postulante", nullable = false)
     private String correoPostulante;
 
-    @Column(name = "telefono_postulante", nullable = false)
-    private String telefonoPostulante;
-
     // FK → usuario
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", nullable = false)

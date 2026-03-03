@@ -140,7 +140,7 @@ public class ProcesoEvaluacionService {
 
         // Registrar en historial
         registrarHistorial(proceso, "Proceso Iniciado",
-                "Postulante ingresado al sistema de evaluación", "Sistema");
+                "postulante ingresado al sistema de evaluación", "Sistema");
 
         return obtenerDetalle(proceso.getIdProceso());
     }

@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-// 1. Importamos el componente CORRECTO (Evaluador)
+// 1. Importamos el componente CORRECTO (evaluador)
 import { EvaluadorComponent } from './evaluador';
 import { RouterTestingModule } from '@angular/router/testing';
 
