@@ -92,8 +92,6 @@ public class PrepostulacionService {
                 apellidos,
                 cedula,
                 correo,
-                null,   // teléfono: agregar al form si lo necesitas
-                null,   // fecha_nacimiento: idem
                 urlCedula,
                 urlFoto,
                 urlPrerrequisitos,
@@ -259,7 +257,9 @@ public class PrepostulacionService {
                         correo,
                         usuarioBd,
                         claveBdCifrada,
-                        claveBdReal
+                        claveBdReal,
+                        prepostulacion.getIdPrepostulacion()   // ✅ CLAVE
+
                 );
                 System.out.println("✅✅✅ POSTULANTE REGISTRADO CON ID: " + resultado.getIdUsuario());
 

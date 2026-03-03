@@ -250,10 +250,16 @@ public class PostgresProcedureRepository {
      * Registra postulante aprobado
      */
     public RegistroSpResultDTO registrarPostulante(
-            String usuarioApp, String claveApp, String correo,
-            String usuarioBd, String claveBdHash, String claveBdReal) {
+            String usuarioApp,
+            String claveApp,
+            String correo,
+            String usuarioBd,
+            String claveBdHash,
+            String claveBdReal,
+            Long idPrepostulacion   // ✅ nuevo
+    ) {
 
-        String sql = "SELECT * FROM sp_registrar_postulante(?,?,?,?,?,?)";
+        String sql =     "SELECT * FROM sp_registrar_postulante(?,?,?,?,?,?,?)";
 
         return jdbcTemplate.execute((java.sql.Connection conn) -> {
             var ps = conn.prepareStatement(sql);
@@ -263,6 +269,7 @@ public class PostgresProcedureRepository {
             ps.setString(4, usuarioBd);
             ps.setString(5, claveBdHash);
             ps.setString(6, claveBdReal);
+            ps.setLong(7, idPrepostulacion); // ✅ NUEVO
 
             var rs = ps.executeQuery();
             if (rs.next()) {
@@ -413,14 +420,12 @@ public class PostgresProcedureRepository {
             String    apellidos,
             String    identificacion,
             String    correo,
-            String    telefono,
-            LocalDate fechaNacimiento,
             String    urlCedula,
             String    urlFoto,
             String    urlPrerrequisitos,
             Long      idSolicitud
     ) {
-        String sql = "SELECT * FROM sp_registrar_prepostulacion(?,?,?,?,?,?,?,?,?,?)";
+        String sql = "SELECT * FROM sp_registrar_prepostulacion(?,?,?,?,?,?,?,?)";
 
         return jdbcTemplate.execute((java.sql.Connection conn) -> {
             var ps = conn.prepareStatement(sql);
@@ -428,12 +433,10 @@ public class PostgresProcedureRepository {
             ps.setString(2, apellidos);
             ps.setString(3, identificacion);
             ps.setString(4, correo);
-            ps.setString(5, telefono);
-            ps.setObject(6, fechaNacimiento != null ? Date.valueOf(fechaNacimiento) : null);
-            ps.setString(7, urlCedula);
-            ps.setString(8, urlFoto);
-            ps.setString(9, urlPrerrequisitos);
-            ps.setObject(10, idSolicitud);
+            ps.setString(5, urlCedula);
+            ps.setString(6, urlFoto);
+            ps.setString(7, urlPrerrequisitos);
+            ps.setObject(8, idSolicitud);
 
             var rs = ps.executeQuery();
             if (rs.next()) {
