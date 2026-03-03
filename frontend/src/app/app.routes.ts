@@ -32,7 +32,7 @@ export const routes: Routes = [
   },
   {
     path: 'registro',
-    loadComponent: () => import('./modulos/Registro/registro').then(m => m.RegistroComponent)
+    loadComponent: () => import('./modulos/././registro/registro').then(m => m.RegistroComponent)
   },
   {
     path: 'recuperar-clave',

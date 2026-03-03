@@ -44,13 +44,13 @@ public class ModuloDataInitializer implements ApplicationRunner {
         op(adm,"Carreras",          "Gestión de carreras",          "/carrera",            5);
         op(adm,"Materias",          "Gestión de materias",          "/materia",            6);
         op(adm,"Postulantes",       "Información de postulantes",   "/gestion-postulante", 7);
-        op(adm,"Auditoría",         "Registro de sesiones",         "/auditoria",          8);
+        op(adm,"Auditoría",         "registro de sesiones",         "/auditoria",          8);
         op(adm,"Gestión Opciones",  "Configurar módulos y opciones","/gestion-opciones",   9);
         op(adm,"Configuración institucional",  "Configurar datos de la institución","/config-institucion",   10);
 
         // ── EVALUADOR ───────────────────────────────────────────────
         Modulo ev = mod("evaluador","Panel de evaluador","/evaluador",2);
-        op(ev,"Postulantes",       "Registro y seguimiento",  "/evaluador/postulantes",1);
+        op(ev,"Postulantes",       "registro y seguimiento",  "/evaluador/postulantes",1);
         op(ev,"Documentos",        "Gestión de archivos",     "/evaluador/documentos", 2);
         op(ev,"Evaluación",        "Matriz de méritos",       "/evaluador/evaluacion", 3);
         op(ev,"Reportes",          "Informes en PDF",         "/evaluador/reportes",   4);

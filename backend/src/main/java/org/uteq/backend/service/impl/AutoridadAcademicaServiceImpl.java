@@ -240,7 +240,7 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         }
 
         return new RegistroResponseDTO(
-                "Registro exitoso. Credenciales enviadas a tu correo.",
+                "registro exitoso. Credenciales enviadas a tu correo.",
                 dto.getCorreo(), true
         );
     }

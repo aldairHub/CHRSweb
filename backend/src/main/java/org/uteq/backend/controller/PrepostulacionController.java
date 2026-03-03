@@ -18,7 +18,7 @@ public class PrepostulacionController {
     private final PrepostulacionService prepostulacionService;
 
     /**
-     * Registro inicial de postulante.
+     * registro inicial de postulante.
      * Recibe idSolicitud (no idConvocatoria) — el postulante ya eligió la solicitud específica en el front.
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

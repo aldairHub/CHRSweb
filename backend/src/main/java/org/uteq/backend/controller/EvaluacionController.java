@@ -13,7 +13,7 @@ import org.uteq.backend.service.JwtService;
 import java.util.List;
 
 /**
- * Registro de Evaluaciones por parte de los evaluadores.
+ * registro de Evaluaciones por parte de los evaluadores.
  * Endpoints consumidos por el componente evaluacion del frontend.
  */
 @RestController

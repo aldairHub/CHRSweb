@@ -60,7 +60,7 @@ public class RegistroService {
         }
 
         return new RegistroResponseDTO(
-                "Registro exitoso. Se han enviado las credenciales a tu correo electrónico.",
+                "registro exitoso. Se han enviado las credenciales a tu correo electrónico.",
                 dto.getCorreo(),
                 true
         );
