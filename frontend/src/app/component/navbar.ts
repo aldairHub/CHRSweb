@@ -5,12 +5,15 @@ import { AuthService } from '../services/auth.service';
 import { Location } from '@angular/common';
 import { ActivatedRoute, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { LogoService } from '../services/logo.service';
+import { AsyncPipe } from '@angular/common';
+
 
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, AsyncPipe],
   templateUrl: './navbar.html',
   styleUrls: ['./navbar.scss']
 })
@@ -57,7 +60,8 @@ export class NavbarComponent {
     private router: Router,
     private authService: AuthService,
     private location: Location,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
+    public logoService: LogoService
   ) {
     this.cargarDatosUsuario();
     this.syncIsHome();
@@ -144,5 +148,8 @@ export class NavbarComponent {
       error: () => alert('No se pudo cambiar el rol. Intente de nuevo.')
     });
   }
-
+  onLogoError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = 'imgs/logo-uteq.png';
+  }
 }

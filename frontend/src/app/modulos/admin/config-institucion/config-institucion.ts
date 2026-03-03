@@ -1,5 +1,5 @@
 // config-institucion.ts
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // 👈 añadir ChangeDetectorRef
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../../component/navbar';
@@ -30,6 +30,7 @@ export class ConfigInstitucionComponent implements OnInit {
     gmailPassword: '',
     emailHost: 'smtp.gmail.com',
     emailPort: 587,
+    emailSsl: false,
   };
 
   logoFile: File | null = null;
@@ -37,7 +38,7 @@ export class ConfigInstitucionComponent implements OnInit {
 
   constructor(
     private svc: InstitucionAdminService,
-    private cdr: ChangeDetectorRef // 👈 inyectar
+    private cdr: ChangeDetectorRef // inyectar
   ) {}
 
   ngOnInit(): void {
@@ -51,7 +52,7 @@ export class ConfigInstitucionComponent implements OnInit {
         this.config = data;
         this.prellenarForm(data);
         this.isLoading = false;
-        this.cdr.detectChanges(); // 👈 forzar actualización de la vista
+        this.cdr.detectChanges(); // forzar actualización de la vista
       },
       error: () => {
         this.mostrarMensaje('danger', 'No se pudo cargar la configuración institucional.');
@@ -70,6 +71,7 @@ export class ConfigInstitucionComponent implements OnInit {
     this.form.emailSmtp         = data.emailSmtp         ?? '';
     this.form.emailHost         = data.emailHost         ?? 'smtp.gmail.com';
     this.form.emailPort         = data.emailPort         ?? 587;
+    this.form.emailSsl          = data.emailSsl          ?? false;
     this.form.gmailPassword     = '';
   }
 
@@ -86,7 +88,7 @@ export class ConfigInstitucionComponent implements OnInit {
     const reader = new FileReader();
     reader.onload = (e) => {
       this.logoPreview = e.target?.result as string;
-      this.cdr.detectChanges(); // 👈 FileReader corre fuera de la zona de Angular
+      this.cdr.detectChanges(); // FileReader corre fuera de la zona de Angular
     };
     reader.readAsDataURL(file);
   }

@@ -13,6 +13,7 @@ export interface InstitucionConfig {
   emailSmtp: string;
   emailHost: string;
   emailPort: number;
+  emailSsl: boolean;
   tienePasswordConfigurado: boolean;
 }
 

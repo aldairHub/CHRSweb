@@ -13,5 +13,6 @@ public class InstitucionRequestDTO {
     private String gmailPassword;
     private String emailHost;
     private Integer emailPort;
-    // logoUrl se recibe por separado via MultipartFile
+    private Boolean emailSsl;   // true = SSL (465) | false = STARTTLS (587)
+
 }

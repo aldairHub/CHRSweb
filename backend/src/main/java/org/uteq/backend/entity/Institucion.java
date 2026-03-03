@@ -45,4 +45,11 @@ public class Institucion {
 
     @Column(name = "activo")
     private Boolean activo = true;
+
+     //true  → SSL puro  (puerto recomendado: 465)
+    //false → STARTTLS   (puerto recomendado: 587)
+
+    @Column(name = "email_ssl", nullable = false)
+    private Boolean emailSsl = false;
+
 }

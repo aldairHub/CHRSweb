@@ -51,7 +51,7 @@ public class InstitucionServiceImpl implements InstitucionService {
         inst.setEmailSmtp(dto.getEmailSmtp());
         inst.setEmailHost(dto.getEmailHost() != null ? dto.getEmailHost() : "smtp.gmail.com");
         inst.setEmailPort(dto.getEmailPort() != null ? dto.getEmailPort() : 587);
-
+        inst.setEmailSsl(dto.getEmailSsl() != null ? dto.getEmailSsl() : false);
         // Solo actualizar password si se envió uno nuevo
         if (dto.getGmailPassword() != null && !dto.getGmailPassword().isBlank()) {
             inst.setEmailPassword(aesCipherService.cifrar(dto.getGmailPassword()));
@@ -72,6 +72,7 @@ public class InstitucionServiceImpl implements InstitucionService {
         dto.setEmailSmtp(i.getEmailSmtp());
         dto.setEmailHost(i.getEmailHost());
         dto.setEmailPort(i.getEmailPort());
+        dto.setEmailSsl(i.getEmailSsl());
         dto.setTienePasswordConfigurado(i.getEmailPassword() != null);
         return dto;
     }

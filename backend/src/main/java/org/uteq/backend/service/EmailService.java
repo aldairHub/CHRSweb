@@ -9,13 +9,15 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap; // Import necesario para el mapa
 
 @Service
 public class EmailService {
-
+    private static final Logger log = LoggerFactory.getLogger(EmailService.class);
     private final DynamicMailService dynamicMailService; // ← REEMPLAZA mailSender
     private final Map<String, String> codigoStorage = new ConcurrentHashMap<>();
 
@@ -93,7 +95,7 @@ public class EmailService {
             throw new RuntimeException("Error al enviar credenciales", e);
         }
     }
-
+    @Async
     public void enviarCorreoRechazo(String destinatario, String nombreCompleto, String motivo) {
         try {
             JavaMailSender sender = dynamicMailService.getMailSender(); // ← ÚNICO CAMBIO
@@ -105,9 +107,11 @@ public class EmailService {
             helper.setText(construirEmailRechazo(nombreCompleto, motivo), true);
             sender.send(mensaje);
 
-            System.out.println("✅ Correo de rechazo enviado exitosamente a: " + destinatario);
+//            System.out.println("✅ Correo de rechazo enviado exitosamente a: " + destinatario);
+            log.info("Correo de rechazo enviado exitosamente a {}", destinatario);
         } catch (Exception e) {
-            System.err.println("❌ Error al enviar correo de rechazo: " + e.getMessage());
+//            System.err.println("❌ Error al enviar correo de rechazo: " + e.getMessage());
+            log.error("Error al enviar correo a {}: {}", destinatario, e.getMessage(), e);
             throw new RuntimeException("Error al enviar correo de rechazo", e);
         }
     }

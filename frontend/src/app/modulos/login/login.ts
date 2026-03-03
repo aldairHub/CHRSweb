@@ -4,11 +4,14 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { AuthStateService } from '../../services/auth-state.service';
+import { LogoService } from '../../services/logo.service';
+import { AsyncPipe } from '@angular/common';
+
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AsyncPipe],
   templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })
@@ -24,7 +27,8 @@ export class LoginComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private authState: AuthStateService
+    private authState: AuthStateService,
+    public logoService: LogoService
   ) {}
 
   ngOnInit() {
@@ -97,5 +101,9 @@ export class LoginComponent implements OnInit {
 
   irARecuperarClave() {
     this.router.navigate(['/recuperar-clave']);
+  }
+  onLogoError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = 'imgs/logo-uteq.png';
   }
 }

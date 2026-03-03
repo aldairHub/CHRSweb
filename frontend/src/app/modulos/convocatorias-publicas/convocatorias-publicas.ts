@@ -1,8 +1,8 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import {AsyncPipe, CommonModule, DatePipe} from '@angular/common';
 import { Router } from '@angular/router';
 import { ConvocatoriaService, Convocatoria, SolicitudDocente } from '../../services/convocatoria.service';
-
+import { LogoService } from '../../services/logo.service';
 interface ConvocatoriaVM extends Convocatoria {
   expandida:           boolean;
   cargandoSolicitudes: boolean;
@@ -13,7 +13,7 @@ interface ConvocatoriaVM extends Convocatoria {
 @Component({
   selector: 'app-convocatorias-publicas',
   standalone: true,
-  imports: [CommonModule, DatePipe],
+  imports: [CommonModule, DatePipe, AsyncPipe],
   templateUrl: './convocatorias-publicas.html',
   styleUrls: ['./convocatorias-publicas.scss']
 })
@@ -29,7 +29,8 @@ export class ConvocatoriasPublicasComponent implements OnInit {
   constructor(
     private convocatoriaService: ConvocatoriaService,
     private router: Router,
-    private cdr:    ChangeDetectorRef
+    private cdr:    ChangeDetectorRef,
+    public logoService: LogoService
   ) {}
 
   ngOnInit(): void {
@@ -119,4 +120,8 @@ export class ConvocatoriasPublicasComponent implements OnInit {
 
   volver():   void { this.router.navigate(['/']); }
   irALogin(): void { this.router.navigate(['/login']); }
+  onLogoError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = 'imgs/logo-uteq.png';
+  }
 }

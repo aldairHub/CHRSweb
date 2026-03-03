@@ -14,7 +14,7 @@ public class InstitucionResponseDTO {
     private String emailSmtp;
     private String emailHost;
     private Integer emailPort;
-
+    private Boolean emailSsl;
     private Boolean tienePasswordConfigurado;
 }
 

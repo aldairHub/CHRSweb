@@ -23,7 +23,11 @@
   <!-- Header -->
   <div class="page-header">
     <div class="logo-box">
-      <img src="imgs/logo-uteq.png" alt="UTEQ" class="logo">
+      <img
+        [src]="(logoService.getLogo() | async) || 'imgs/logo-uteq.png'"
+        alt="Logo institucional"
+        class="logo"
+        (error)="onLogoError($event)">
     </div>
     <h1>Convocatorias Activas</h1>
     <p>Plazas docentes disponibles — Universidad Técnica Estatal de Quevedo</p>

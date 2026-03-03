@@ -7,16 +7,14 @@ export const AuthGuard: CanActivateFn = (route, state) => {
   const authState = inject(AuthStateService);
 
   // Rutas públicas — siempre permitir sin importar el estado
-  const rutasPublicas = [
-    '/login',
-    '/registro',
-    '/recuperar-clave',
-    '/sin-acceso',
-    '/cambiar-clave-obligatorio',  // ✅ debe ser pública: el usuario llega aquí antes de tener opciones
-    '/cambio-clave-obligatorio',
+  const RUTAS_TRANSVERSALES = [
+    '/login', '/registro', '/recuperar-clave', '/sin-acceso',
+    '/cambiar-clave-obligatorio', '/cambio-clave-obligatorio',
+    '/perfil',  // <- FIX: ruta transversal para todos los roles
   ];
-  if (rutasPublicas.some(r => state.url.startsWith(r))) return true;
 
+
+  if (RUTAS_TRANSVERSALES.some(r => state.url.startsWith(r))) return true;
   // Sin autenticación → login
   if (!authState.isAutenticado()) {
     router.navigate(['/login']);

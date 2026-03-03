@@ -40,8 +40,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
+//        if (!jwtService.isTokenValid(token)) {
+//            filterChain.doFilter(request, response); return;
+//        }
         if (!jwtService.isTokenValid(token)) {
-            filterChain.doFilter(request, response); return;
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write(
+                    "{\"error\":\"Token expirado\",\"code\":\"TOKEN_EXPIRED\"}");
+            return;
         }
 
         String  username = jwtService.extractUsername(token);

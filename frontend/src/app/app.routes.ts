@@ -13,7 +13,7 @@ export const routes: Routes = [
 
   // ── Convocatorias públicas ────────────────────────────────────────────────
   {
-    path: 'convocatorias',
+    path: 'convocatorias',title: 'SSDC - Convocatorias',
     loadComponent: () => import('./modulos/convocatorias-publicas/convocatorias-publicas')
       .then(m => m.ConvocatoriasPublicasComponent)
   },
@@ -27,7 +27,7 @@ export const routes: Routes = [
 
   // ── Públicas (sin cambios) ────────────────────────────────────────────────
   {
-    path: 'login',
+    path: 'login', title: 'SSDC - Inicio de sesión',
     loadComponent: () => import('./modulos/login/login').then(m => m.LoginComponent)
   },
   {
@@ -35,20 +35,24 @@ export const routes: Routes = [
     loadComponent: () => import('./modulos/././registro/registro').then(m => m.RegistroComponent)
   },
   {
-    path: 'recuperar-clave',
+    path: 'recuperar-clave',title: 'SSDC - Recuperar clave',
     loadComponent: () => import('./modulos/recuperar-clave/recuperar-clave')
       .then(m => m.RecuperarClaveComponent)
   },
 
   // ── Sin acceso ────────────────────────────────────────────────────────────
-  { path: 'sin-acceso', loadComponent: () =>
+  { path: 'sin-acceso',title: 'SSDC - SIN ACCESO',
+    loadComponent: () =>
       import('./modulos/sin-acceso/sin-acceso').then(m => m.SinAccesoComponent) },
 
   // ── Perfil / cambio de clave ──────────────────────────────────────────────
-  { path: 'perfil', loadComponent: () =>
+  { path: 'perfil', title: 'SSDC - Perfil',
+    loadComponent: () =>
       import('./modulos/perfil/perfil').then(m => m.PerfilComponent),
     canActivate: [AuthGuard] },
-  { path: 'cambiar-clave-obligatorio', loadComponent: () =>
+  { path: 'cambiar-clave-obligatorio',
+    title: 'SSDC - Cambio de clave',
+    loadComponent: () =>
       import('./modulos/cambiar-clave-obligatorio/cambiar-clave-obligatorio')
         .then(m => m.CambiarClaveObligatorioComponent), canActivate: [AuthGuard] },
   { path: 'cambio-clave-obligatorio', redirectTo: 'cambiar-clave-obligatorio', pathMatch: 'full' },
@@ -107,29 +111,36 @@ export const routes: Routes = [
     ]},
 
   // ── admin ─────────────────────────────────────────────────────────────────
-  { path: 'admin', loadComponent: () =>
+  { path: 'admin',
+    title: 'SSDC - Administrador',loadComponent: () =>
       import('./modulos/././admin/admin').then(m => m.AdminComponent),
     canActivate: [AuthGuard], data: { rol: 'admin', isHome: true } },
-  { path: 'gestion-roles', loadComponent: () =>
+  { path: 'gestion-roles',
+    title: 'SSDC - Roles',loadComponent: () =>
       import('./modulos/././admin/gestion-roles/gestion-roles').then(m => m.GestionRolesComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' } },
   { path: 'roles-autoridad', redirectTo: 'gestion-roles', pathMatch: 'full' },
-  { path: 'gestion-usuarios', loadComponent: () =>
+  { path: 'gestion-usuarios',
+    title: 'SSDC - Usuarios',loadComponent: () =>
       import('./modulos/././admin/gestion-usuarios/gestion-usuarios').then(m => m.GestionUsuariosComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' } },
-  { path: 'facultad', loadComponent: () =>
+  { path: 'facultad',
+    title: 'SSDC - Facultades',loadComponent: () =>
       import('./modulos/././admin/facultad/facultad').then(m => m.FacultadComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' } },
-  { path: 'carrera', loadComponent: () =>
+  { path: 'carrera',
+    title: 'SSDC - Carreras',loadComponent: () =>
       import('./modulos/././admin/carrera/carrera').then(m => m.CarreraComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' } },
-  { path: 'materia', loadComponent: () =>
+  { path: 'materia',
+    title: 'SSDC - Materias',loadComponent: () =>
       import('./modulos/././admin/materia/materia').then(m => m.MateriaComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' } },
   { path: 'gestion-postulante', loadComponent: () =>
       import('./modulos/././admin/postulante/postulante').then(m => m.PostulanteComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' } },
-  { path: 'gestion-documentos', loadComponent: () =>
+  { path: 'gestion-documentos',
+    title: 'SSDC - Gestión de documentos',loadComponent: () =>
       import('./modulos/././admin/gestiondocumentos/gestion-documentos')
         .then(m => m.GestionDocumentosComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' } },{
@@ -142,20 +153,22 @@ export const routes: Routes = [
   },
   {
     path: 'auditoria/sesiones',
-    title: 'SSDC - Sesiones Activas',
+    title: 'SSDC - Sesiones activas',
     loadComponent: () => import('./modulos/././admin/auditoria/sesiones-activas/sesiones-activas')
       .then(m => m.SesionesActivasComponent),
     canActivate: [AuthGuard, NoPrimerLoginGuard],
     data: { rol: 'admin' }
   },
 
-  { path: 'gestion-opciones', loadComponent: () =>
+  { path: 'gestion-opciones',
+    title: 'SSDC - Configuración de opciones',loadComponent: () =>
       import('./modulos/././admin/gestion-opciones/gestion-opciones')
         .then(m => m.GestionOpcionesComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' }
   },
 
-  { path: 'config-institucion', loadComponent: () =>
+  { path: 'config-institucion',
+    title: 'SSDC - Institución',loadComponent: () =>
       import('./modulos/././admin/config-institucion/config-institucion')
         .then(m => m.ConfigInstitucionComponent),
     canActivate: [AuthGuard], data: { rol: 'admin' }
