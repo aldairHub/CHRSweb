@@ -691,6 +691,7 @@ public class PromptBuilderService {
             this.paleta    = paleta;
             this.simbolos  = simbolos;
             this.atmosfera = atmosfera;
+            //fix
         }
     }
 }
