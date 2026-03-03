@@ -1,10 +1,11 @@
-package org.uteq.backend.service;
+package org.uteq.backend.service.impl;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import org.uteq.backend.repository.AuditLoginRepository;
 import org.uteq.backend.dto.AuditLoginMotivo;
 import org.uteq.backend.dto.AuditLoginResultado;
+import org.uteq.backend.service.LoginAuditService;
 
 @Service
 public class LoginAuditServiceImpl implements LoginAuditService {
