@@ -182,9 +182,4 @@ export class EvaluacionComponent implements OnInit, AfterViewInit {
       }
     });
   }
-
-  abrirEnlace(enlace: string): void {
-    if (!enlace) return;
-    window.open(enlace, '_blank');
-  }
 }

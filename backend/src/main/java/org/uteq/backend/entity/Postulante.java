@@ -29,9 +29,6 @@ public class Postulante {
     @Column(name = "telefono_postulante", nullable = false)
     private String telefonoPostulante;
 
-    @Column(name = "fecha_nacimiento", nullable = false)
-    private LocalDate fechaNacimiento;
-
     // FK → usuario
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", nullable = false)
@@ -41,5 +38,4 @@ public class Postulante {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_prepostulacion", unique = true)
     private Prepostulacion prepostulacion;
-
 }
