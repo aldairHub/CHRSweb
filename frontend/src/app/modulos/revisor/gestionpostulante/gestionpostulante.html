@@ -120,13 +120,24 @@
           <td>{{ doc.cedula }}</td>
           <td>
             <div class="documentos-list">
-                <span *ngFor="let documento of doc.documentos" class="documento-tag" [title]="documento.nombre">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  {{ documento.tipo }}
-                </span>
-              <span class="documentos-count">{{ doc.documentos.length }} archivos</span>
+              <span class="documento-tag">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Cédula
+              </span>
+              <span class="documento-tag">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Foto
+              </span>
+              <span class="documento-tag">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Títulos
+              </span>
             </div>
           </td>
           <td>
@@ -218,8 +229,11 @@
       </button>
     </div>
     <div class="modal-body">
+
+      <!-- Cédula y Foto -->
       <div class="documentos-grid">
-        <div class="documento-card" *ngFor="let documento of selectedDocumento?.documentos">
+
+        <div class="documento-card" *ngIf="selectedDocumento?.urlCedula">
           <div class="documento-header">
             <div class="documento-icon">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -227,16 +241,65 @@
               </svg>
             </div>
             <div class="documento-info">
-              <h4>{{ documento.tipo }}</h4>
-              <p>{{ documento.nombre }}</p>
+              <h4>Cédula / Pasaporte</h4>
+              <p>cedula.pdf</p>
             </div>
           </div>
           <div class="documento-actions">
-            <button class="btn btn-sm btn-outline" (click)="verDocumento(documento)">Ver</button>
-            <button class="btn btn-sm btn-primary" (click)="descargarDocumento(documento)">Descargar</button>
+            <button class="btn btn-sm btn-outline" (click)="verDocumento({ url: selectedDocumento.urlCedula })">Ver</button>
+            <button class="btn btn-sm btn-primary" (click)="descargarDocumento({ url: selectedDocumento.urlCedula, nombre: 'cedula.pdf' })">Descargar</button>
           </div>
         </div>
+
+        <div class="documento-card" *ngIf="selectedDocumento?.urlFoto">
+          <div class="documento-header">
+            <div class="documento-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div class="documento-info">
+              <h4>Selfie con Documento</h4>
+              <p>foto.jpg</p>
+            </div>
+          </div>
+          <div class="documento-actions">
+            <button class="btn btn-sm btn-outline" (click)="verDocumento({ url: selectedDocumento.urlFoto })">Ver</button>
+            <button class="btn btn-sm btn-primary" (click)="descargarDocumento({ url: selectedDocumento.urlFoto, nombre: 'foto.jpg' })">Descargar</button>
+          </div>
+        </div>
+
       </div>
+
+      <!-- ============================================ -->
+      <!-- DOCUMENTOS ACADÉMICOS (TÍTULOS) -->
+      <!-- ============================================ -->
+      <div class="doc-section">
+        <h4 class="doc-section-title">
+          Documentos Académicos ({{ selectedDocumento?.documentosAcademicos?.length || 0 }})
+        </h4>
+
+        <div *ngIf="!selectedDocumento?.documentosAcademicos?.length"
+             class="no-docs-msg">
+          No hay documentos académicos registrados.
+        </div>
+
+        <div *ngFor="let doc of selectedDocumento?.documentosAcademicos; let i = index"
+             class="doc-item-card">
+          <div class="doc-item-info">
+            <span class="doc-item-num">{{ i + 1 }}</span>
+            <div class="doc-item-detail">
+              <strong>{{ doc.descripcion }}</strong>
+              <small>Subido: {{ doc.fechaSubida | date:'dd/MM/yyyy HH:mm' }}</small>
+            </div>
+          </div>
+          <a [href]="doc.urlDocumento" target="_blank" class="btn btn-sm btn-outline">
+            Ver PDF
+          </a>
+        </div>
+      </div>
+      <!-- ============================================ -->
+
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" (click)="closeDocumentosModal()">Cerrar</button>

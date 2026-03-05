@@ -5,6 +5,15 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
+// ==========================================
+// INTERFAZ PARA DOCUMENTOS ACADÉMICOS
+// ==========================================
+export interface DocumentoEntrada {
+  archivo: File | null;
+  descripcion: string;
+  nombreArchivo: string;
+}
+
 @Component({
   selector: 'app-registro',
   standalone: true,
@@ -48,11 +57,10 @@ export class RegistroComponent implements OnDestroy, OnInit {
   // ==========================================
   archivoCedula: File | null = null;
   archivoFoto: File | null = null;
-  archivoPrerrequisitos: File | null = null;
+  documentosAcademicos: DocumentoEntrada[] = [];
 
   nombreArchivoCedula = '';
   nombreArchivoFoto = '';
-  nombreArchivoPrerrequisitos = '';
 
   // ==========================================
   // URLS BACKEND
@@ -71,6 +79,7 @@ export class RegistroComponent implements OnDestroy, OnInit {
   // INIT
   // ==========================================
   ngOnInit(): void {
+    this.agregarDocumento(); // Un campo vacío por defecto
     this.route.queryParams.subscribe(params => {
       if (params['idSolicitud']) {
         this.idSolicitud = +params['idSolicitud'];
@@ -228,15 +237,38 @@ export class RegistroComponent implements OnDestroy, OnInit {
     }
   }
 
-  onFilePrerrequisitosSelected(event: any): void {
+  onFileDocumentoSelected(event: any, index: number): void {
     const f = event.target.files[0];
     if (f?.type === 'application/pdf') {
-      this.archivoPrerrequisitos = f;
-      this.nombreArchivoPrerrequisitos = f.name;
+      this.documentosAcademicos[index].archivo = f;
+      this.documentosAcademicos[index].nombreArchivo = f.name;
     } else {
-      alert('Debe ser un archivo PDF');
+      alert('Solo se permiten archivos PDF');
       event.target.value = '';
     }
+  }
+
+  // ==========================================
+  // GESTIÓN DE DOCUMENTOS ACADÉMICOS
+  // ==========================================
+  agregarDocumento(): void {
+    if (this.documentosAcademicos.length >= 10) {
+      alert('Máximo 10 documentos permitidos');
+      return;
+    }
+    this.documentosAcademicos.push({
+      archivo: null,
+      descripcion: '',
+      nombreArchivo: ''
+    });
+  }
+
+  eliminarDocumento(index: number): void {
+    if (this.documentosAcademicos.length <= 1) {
+      alert('Debe existir al menos un documento académico');
+      return;
+    }
+    this.documentosAcademicos.splice(index, 1);
   }
 
   // ==========================================
@@ -252,9 +284,6 @@ export class RegistroComponent implements OnDestroy, OnInit {
     } else if (tipo === 'foto' && this.archivoFoto) {
       const ext = this.archivoFoto.name.split('.').pop();
       this.nombreArchivoFoto = `${nuevoNombre.trim()}.${ext}`;
-    } else if (tipo === 'prerrequisitos' && this.archivoPrerrequisitos) {
-      const ext = this.archivoPrerrequisitos.name.split('.').pop();
-      this.nombreArchivoPrerrequisitos = `${nuevoNombre.trim()}.${ext}`;
     }
   }
 
@@ -278,11 +307,17 @@ export class RegistroComponent implements OnDestroy, OnInit {
     }
 
     if (this.archivoCedula)
-      formData.append('archivoCedula',         this.archivoCedula,         this.nombreArchivoCedula);
+      formData.append('archivoCedula', this.archivoCedula, this.nombreArchivoCedula);
     if (this.archivoFoto)
-      formData.append('archivoFoto',           this.archivoFoto,           this.nombreArchivoFoto);
-    if (this.archivoPrerrequisitos)
-      formData.append('archivoPrerrequisitos', this.archivoPrerrequisitos, this.nombreArchivoPrerrequisitos);
+      formData.append('archivoFoto',   this.archivoFoto,   this.nombreArchivoFoto);
+
+    // NUEVO: Agregar múltiples documentos
+    for (const doc of this.documentosAcademicos) {
+      if (doc.archivo) {
+        formData.append('archivosDocumentos',      doc.archivo,      doc.nombreArchivo);
+        formData.append('descripcionesDocumentos', doc.descripcion);
+      }
+    }
 
     this.http.post(`${this.baseUrlPrepostulacion}`, formData).subscribe({
       next: () => {
@@ -310,9 +345,25 @@ export class RegistroComponent implements OnDestroy, OnInit {
       alert('Complete todos los campos');
       return false;
     }
-    if (!this.archivoCedula || !this.archivoFoto || !this.archivoPrerrequisitos) {
+    if (!this.archivoCedula || !this.archivoFoto) {
       alert('Suba todos los archivos requeridos');
       return false;
+    }
+
+    // Validar documentos académicos
+    if (this.documentosAcademicos.length === 0) {
+      alert('Debe agregar al menos un documento académico');
+      return false;
+    }
+    for (const doc of this.documentosAcademicos) {
+      if (!doc.archivo) {
+        alert('Todos los documentos deben tener archivo PDF');
+        return false;
+      }
+      if (!doc.descripcion.trim()) {
+        alert('Todos los documentos deben tener descripción');
+        return false;
+      }
     }
     return true;
   }

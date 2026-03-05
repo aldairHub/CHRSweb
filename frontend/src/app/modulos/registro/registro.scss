@@ -930,3 +930,188 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
     }
   }
 }
+// ==========================================
+// SECCIÓN DE DOCUMENTOS ACADÉMICOS
+// ==========================================
+
+.form-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  margin-top: 4px;
+
+  label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: $dark-green;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+  }
+
+  .btn-add-doc {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, $primary 0%, #00c853 100%);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(0, 166, 62, 0.25);
+    white-space: nowrap;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 14px rgba(0, 166, 62, 0.35);
+      background: linear-gradient(135deg, $primary-dark 0%, $primary 100%);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+// Tarjeta individual de documento académico
+.documento-card {
+  background-color: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  transition: all 0.3s ease;
+  animation: fadeIn 0.3s ease-out;
+
+  &:hover {
+    border-color: $border-color;
+    box-shadow: 0 4px 12px rgba(0, 166, 62, 0.08);
+  }
+
+  // Encabezado de la tarjeta (número + botón eliminar)
+  .doc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+
+    .doc-number {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: $primary;
+      background-color: #f0fdf4;
+      border: 1px solid $border-color;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .btn-remove-doc {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid #fecaca;
+      background-color: #fff5f5;
+      color: #ef4444;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      line-height: 1;
+
+      &:hover:not(:disabled) {
+        background-color: #ef4444;
+        border-color: #ef4444;
+        color: white;
+        transform: scale(1.1);
+      }
+
+      &:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  // Input de descripción dentro de la tarjeta
+  .form-group {
+    margin-bottom: 12px;
+
+    input.form-input {
+      background-color: white;
+      height: 44px;
+      padding: 0 14px;
+      width: 100%;
+      border: 1.5px solid $border-color;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      color: $text-dark;
+      transition: all 0.3s ease;
+      outline: none;
+
+      &::placeholder { color: #cbd5e1; }
+
+      &:focus {
+        border-color: $primary;
+        background-color: $white;
+        box-shadow: 0 0 0 4px rgba(0, 166, 62, 0.1);
+      }
+    }
+  }
+
+  // Upload box dentro de la tarjeta (estilo igual al de cédula/foto)
+  .file-upload-box {
+    .file-label {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      background-color: white;
+      border: 1.5px dashed #cbd5e1;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      gap: 0;
+
+      &:hover {
+        background-color: #f0fdf4;
+        border-color: $primary;
+      }
+
+      // Ícono de PDF (replicando .icon-area)
+      &::before {
+        content: '';
+        display: none; // Lo manejamos con el SVG en HTML
+      }
+
+      .text-area {
+        display: flex;
+        flex-direction: column;
+
+        .main-text {
+          font-size: 0.88rem;
+          font-weight: 600;
+          color: $text-dark;
+        }
+
+        .sub-text {
+          font-size: 0.75rem;
+          color: $text-gray;
+          margin-top: 2px;
+        }
+      }
+    }
+
+    &.has-file .file-label {
+      border-style: solid;
+      border-color: $primary;
+      background-color: #f0fdf4;
+    }
+  }
+}

@@ -14,7 +14,7 @@ import {
   Carrera,
   Materia,
   AreaConocimiento
-} from '../../../services/SolicitudDocente.service';
+} from '../../../services/solicitud-docente.service';
 
 @Component({
   selector: 'app-solicitar-docente',

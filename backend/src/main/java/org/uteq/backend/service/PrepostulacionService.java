@@ -28,7 +28,7 @@ public class PrepostulacionService {
     private final RolAppRepository rolAppRepository;
     private final PostgresProcedureRepository postgresProcedureRepository;
     private final AesCipherService aesCipherService;
-
+    private final PrepostulacionDocumentoRepository documentoRepository;
     public PrepostulacionService(
             PrepostulacionRepository prepostulacionRepository,
             SupabaseStorageService supabaseService,
@@ -37,7 +37,8 @@ public class PrepostulacionService {
             PasswordEncoder passwordEncoder,
             RolAppRepository rolAppRepository,
             PostgresProcedureRepository postgresProcedureRepository,
-            AesCipherService aesCipherService
+            AesCipherService aesCipherService,
+            PrepostulacionDocumentoRepository documentoRepository
     ) {
         this.prepostulacionRepository = prepostulacionRepository;
         this.supabaseService = supabaseService;
@@ -47,6 +48,7 @@ public class PrepostulacionService {
         this.rolAppRepository = rolAppRepository;
         this.postgresProcedureRepository = postgresProcedureRepository;
         this.aesCipherService = aesCipherService;
+        this.documentoRepository = documentoRepository;
     }
 
     // =========================================================================
@@ -55,10 +57,8 @@ public class PrepostulacionService {
 
     /**
      * Registra una nueva prepostulación y la asocia a la solicitud elegida por el postulante.
-     * Todo se hace via stored procedure (atomicidad garantizada).
      *
-     * @param idSolicitud ID de la solicitud_docente específica que el postulante seleccionó
-     */
+     **/
     @Transactional
     public PrepostulacionResponseDTO procesarPrepostulacion(
             String correo,
@@ -67,35 +67,28 @@ public class PrepostulacionService {
             String apellidos,
             MultipartFile archivoCedula,
             MultipartFile archivoFoto,
-            MultipartFile archivoPrerrequisitos,
+            List<MultipartFile> archivosDocumentos,      // NUEVO: lista de PDFs
+            List<String> descripcionesDocumentos,         // NUEVO: lista de descripciones
             Long idSolicitud
     ) {
-//        System.out.println("🔄 Procesando prepostulación para identificación: " + cedula);
         log.info("Procesando prepostulacion para identificacion: {}", cedula);
-        // Subir archivos a Supabase
-        String urlCedula, urlFoto, urlPrerrequisitos;
+
+        // Subir cédula y foto (sin cambios)
+        String urlCedula, urlFoto;
         try {
-//            System.out.println("📤 Subiendo cédula a Supabase...");
-            log.debug("Subiendo id a Supabase...");
+            log.debug("Subiendo cedula a Supabase...");
             urlCedula = supabaseService.subirArchivo(archivoCedula, "cedulas", cedula);
 
-//            System.out.println("📤 Subiendo foto a Supabase...");
             log.debug("Subiendo foto a Supabase...");
             urlFoto = supabaseService.subirArchivo(archivoFoto, "fotos", cedula);
 
-//            System.out.println("📤 Subiendo prerrequisitos a Supabase...");
-            log.debug("Subiendo prerrequisitos a Supabase...");
-            urlPrerrequisitos = supabaseService.subirArchivo(archivoPrerrequisitos, "prerrequisitos", cedula);
-
-//            System.out.println("✅ Todos los archivos subidos exitosamente");
-            log.info("Archivos de prepostulacion subidos exitosamente");
+            log.info("Archivos base de prepostulacion subidos exitosamente");
         } catch (Exception e) {
-//            System.err.println("❌ Error al subir archivos: " + e.getMessage());
-            log.error("Error al subir archivos: {}", e.getMessage());
+            log.error("Error al subir archivos base: {}", e.getMessage());
             throw new RuntimeException("Error al subir archivos: " + e.getMessage());
         }
 
-        // Guardar en BD via stored procedure
+        // Guardar prepostulacion en BD via stored procedure (sin url_prerrequisitos)
         Long idPrepostulacion = postgresProcedureRepository.registrarPrepostulacion(
                 nombres,
                 apellidos,
@@ -103,18 +96,39 @@ public class PrepostulacionService {
                 correo,
                 urlCedula,
                 urlFoto,
-                urlPrerrequisitos,
                 idSolicitud
         );
 
-//        System.out.println("💾 Prepostulación guardada en BD con ID: " + idPrepostulacion);
-         log.info("Prepostulacion guardada con ID: {}", idPrepostulacion);
+        log.info("Prepostulacion guardada con ID: {}", idPrepostulacion);
         if (idSolicitud != null) {
-//            System.out.println("✅ Prepostulacion " + idPrepostulacion + " amarrada a solicitud " + idSolicitud);
-             log.info("Prepostulacion {} vinculada a solicitud {}",
-                    idPrepostulacion, idSolicitud);
-
+            log.info("Prepostulacion {} vinculada a solicitud {}", idPrepostulacion, idSolicitud);
         }
+
+        // Subir y registrar cada documento académico individualmente
+        String tag = cedula + "_" + System.currentTimeMillis();
+        for (int i = 0; i < archivosDocumentos.size(); i++) {
+            MultipartFile archivo = archivosDocumentos.get(i);
+            String descripcion = (descripcionesDocumentos != null && i < descripcionesDocumentos.size())
+                    ? descripcionesDocumentos.get(i)
+                    : "Documento " + (i + 1);
+            try {
+                log.debug("Subiendo documento academico {} de {}: {}", i + 1, archivosDocumentos.size(), descripcion);
+                String urlDoc = supabaseService.subirArchivo(archivo, "documentos_academicos", tag + "_" + i);
+
+                postgresProcedureRepository.agregarDocumentoPrepostulacion(
+                        idPrepostulacion,
+                        descripcion,
+                        urlDoc
+                );
+                log.debug("Documento {} registrado correctamente", i + 1);
+            } catch (Exception e) {
+                log.error("Error al subir documento academico {}: {}", i + 1, e.getMessage());
+                throw new RuntimeException("Error al subir documento académico " + (i + 1) + ": " + e.getMessage());
+            }
+        }
+
+        log.info("Prepostulacion {} completada con {} documento(s) academico(s)",
+                idPrepostulacion, archivosDocumentos.size());
 
         return new PrepostulacionResponseDTO(
                 "Solicitud registrada exitosamente",
@@ -124,6 +138,71 @@ public class PrepostulacionService {
                 LocalDateTime.now()
         );
     }
+//    @Transactional
+//    public PrepostulacionResponseDTO procesarPrepostulacion(
+//            String correo,
+//            String cedula,
+//            String nombres,
+//            String apellidos,
+//            MultipartFile archivoCedula,
+//            MultipartFile archivoFoto,
+//            MultipartFile archivoPrerrequisitos,
+//            Long idSolicitud
+//    ) {
+////        System.out.println("🔄 Procesando prepostulación para identificación: " + cedula);
+//        log.info("Procesando prepostulacion para identificacion: {}", cedula);
+//        // Subir archivos a Supabase
+//        String urlCedula, urlFoto, urlPrerrequisitos;
+//        try {
+////            System.out.println("📤 Subiendo cédula a Supabase...");
+//            log.debug("Subiendo id a Supabase...");
+//            urlCedula = supabaseService.subirArchivo(archivoCedula, "cedulas", cedula);
+//
+////            System.out.println("📤 Subiendo foto a Supabase...");
+//            log.debug("Subiendo foto a Supabase...");
+//            urlFoto = supabaseService.subirArchivo(archivoFoto, "fotos", cedula);
+//
+////            System.out.println("📤 Subiendo prerrequisitos a Supabase...");
+//            log.debug("Subiendo prerrequisitos a Supabase...");
+//            urlPrerrequisitos = supabaseService.subirArchivo(archivoPrerrequisitos, "prerrequisitos", cedula);
+//
+////            System.out.println("✅ Todos los archivos subidos exitosamente");
+//            log.info("Archivos de prepostulacion subidos exitosamente");
+//        } catch (Exception e) {
+////            System.err.println("❌ Error al subir archivos: " + e.getMessage());
+//            log.error("Error al subir archivos: {}", e.getMessage());
+//            throw new RuntimeException("Error al subir archivos: " + e.getMessage());
+//        }
+//
+//        // Guardar en BD via stored procedure
+//        Long idPrepostulacion = postgresProcedureRepository.registrarPrepostulacion(
+//                nombres,
+//                apellidos,
+//                cedula,
+//                correo,
+//                urlCedula,
+//                urlFoto,
+//                urlPrerrequisitos,
+//                idSolicitud
+//        );
+//
+////        System.out.println("💾 Prepostulación guardada en BD con ID: " + idPrepostulacion);
+//         log.info("Prepostulacion guardada con ID: {}", idPrepostulacion);
+//        if (idSolicitud != null) {
+////            System.out.println("✅ Prepostulacion " + idPrepostulacion + " amarrada a solicitud " + idSolicitud);
+//             log.info("Prepostulacion {} vinculada a solicitud {}",
+//                    idPrepostulacion, idSolicitud);
+//
+//        }
+//
+//        return new PrepostulacionResponseDTO(
+//                "Solicitud registrada exitosamente",
+//                correo,
+//                idPrepostulacion,
+//                true,
+//                LocalDateTime.now()
+//        );
+//    }
 
     // =========================================================================
     // REPOSTULACIÓN

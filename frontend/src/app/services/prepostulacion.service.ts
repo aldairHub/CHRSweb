@@ -14,18 +14,31 @@ export interface Prepostulacion {
   fechaEnvio: string;
   urlCedula?: string;
   urlFoto?: string;
-  urlPrerrequisitos?: string;
+  urlPrerrequisitos?: string;  // se mantiene por compatibilidad con datos históricos
   observacionesRevision?: string;
   fechaRevision?: string;
   idRevisor?: number;
 }
 
+export interface DocumentoAcademico {
+  idDocumento?: number;
+  descripcion: string;
+  urlDocumento: string;
+  fechaSubida?: string;
+}
+
 export interface DocumentosResponse {
   cedula: string;
   foto: string;
-  prerrequisitos: string;
+  documentosAcademicos: DocumentoAcademico[];  // reemplaza prerrequisitos
   nombreCompleto: string;
   identificacion: string;
+}
+
+export interface DocumentoEntrada {
+  archivo: File | null;
+  descripcion: string;
+  nombreArchivo: string;
 }
 
 export interface ActualizarEstadoRequest {

@@ -7,6 +7,7 @@ export const routes: Routes = [
   // ── Landing (raíz) ────────────────────────────────────────────────────────
   {
     path: '',
+    title: 'SSDC',
     loadComponent: () => import('./modulos/landing/landing').then(m => m.LandingComponent),
     pathMatch: 'full'
   },
@@ -21,6 +22,7 @@ export const routes: Routes = [
   // ── Re-postulación ────────────────────────────────────────────────────────
   {
     path: 'repostulacion',
+    title: 'SSDC - Repostulación',
     loadComponent: () => import('./modulos/repostulacion/repostulacion')
       .then(m => m.RepostulacionComponent)
   },
@@ -32,6 +34,7 @@ export const routes: Routes = [
   },
   {
     path: 'registro',
+    title: 'SSDC - Registrar prepostulación',
     loadComponent: () => import('./modulos/././registro/registro').then(m => m.RegistroComponent)
   },
   {
@@ -71,39 +74,49 @@ export const routes: Routes = [
       },
       {
         path: 'subir-documentos',
+        title: 'SSDC - Subir documentos',
         loadComponent: () => import('./modulos/././postulante/subir-documentos/subir-documentos')
           .then(m => m.SubirDocumentosComponent)
       },
       {
         path: 'resultados',
+        title: 'SSDC - Resultados',
         loadComponent: () => import('./modulos/././postulante/resultados/resultados')
           .then(m => m.ResultadosComponent)
       },
       {
         path: 'entrevistas',
+        title: 'SSDC - Entrevistas',
         loadComponent: () => import('./modulos/././postulante/entrevista/entrevista')
           .then(m => m.EntrevistaPostulanteComponent)
       }
     ]
   },
   // ── evaluador ─────────────────────────────────────────────────────────────
-  { path: 'evaluador', canActivate: [AuthGuard], data: { rol: 'evaluador' }, children: [
+  { path: 'evaluador',
+    title: 'SSDC - Evaluador',canActivate: [AuthGuard], data: { rol: 'evaluador' }, children: [
       { path: '', loadComponent: () =>
           import('./modulos/././evaluador/evaluador').then(m => m.EvaluadorComponent),
         data: { isHome: true } },
-      { path: 'solicitar', loadComponent: () =>
+      { path: 'solicitar',
+        title: 'SSDC - Solicitud de docente',loadComponent: () =>
           import('./modulos/././evaluador/solicitar-docente/solicitar-docente')
             .then(m => m.SolicitarDocenteComponent) },
-      { path: 'postulantes', loadComponent: () =>
+      { path: 'postulantes',
+        title: 'SSDC - Postulantes',loadComponent: () =>
           import('./modulos/././evaluador/postulantes/postulantes').then(m => m.PostulantesComponent) },
-      { path: 'documentos', loadComponent: () =>
+      { path: 'documentos',
+        title: 'SSDC - Documentos',loadComponent: () =>
           import('./modulos/././evaluador/documentos/documentos').then(m => m.DocumentosComponent) },
-      { path: 'evaluacion', loadComponent: () =>
+      { path: 'evaluacion',
+        title: 'SSDC - Evalaución',loadComponent: () =>
           import('./modulos/././evaluador/evaluacion/evaluacion').then(m => m.EvaluacionMeritosComponent) },
-      { path: 'reportes', loadComponent: () =>
+      { path: 'reportes',
+        title: 'SSDC - Reportes',loadComponent: () =>
           import('./modulos/././evaluador/reportes/reportes').then(m => m.ReportesComponent) },
       {
         path: 'entrevistas-docentes',
+        title: 'SSDC - Entrevistas',
         loadChildren: () =>
           import('./modulos/././evaluador/entrevistas-docentes/evaluacion-docente.routes')
             .then(m => m.EVALUACION_DOCENTE_ROUTES)
@@ -176,16 +189,20 @@ export const routes: Routes = [
 
 
   // ── Revisor (Vicerrectorado) ──────────────────────────────────────────────
-  { path: 'revisor', canActivate: [AuthGuard], data: { rol: 'revisor' }, children: [
+  { path: 'revisor',
+    title: 'SSDC - Revisor', canActivate: [AuthGuard], data: { rol: 'revisor' }, children: [
       { path: '', loadComponent: () =>
           import('./modulos/revisor/revisor').then(m => m.RevisorComponent),
         data: { isHome: true } },
-      { path: 'convocatorias', loadComponent: () =>
+      { path: 'convocatorias',
+        title: 'SSDC - Convocatorias',loadComponent: () =>
           import('./modulos/revisor/convocatoria/convocatoria').then(m => m.ConvocatoriaComponent) },
-      { path: 'solicitudes-docente', loadComponent: () =>
+      { path: 'solicitudes-docente',
+        title: 'SSDC - Solicitudes',loadComponent: () =>
           import('./modulos/revisor/solicitudesdocentes/solicitudes-docente')
             .then(m => m.SolicitudesDocenteComponent) },
-      { path: 'prepostulaciones', loadComponent: () =>
+      { path: 'prepostulaciones',
+        title: 'SSDC - Prepostulaciones',loadComponent: () =>
           import('./modulos/revisor/gestionpostulante/gestionpostulante')
             .then(m => m.GestionPostulanteComponent) },
     ]},

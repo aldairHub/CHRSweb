@@ -3,11 +3,14 @@ package org.uteq.backend.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.uteq.backend.dto.DocumentoAcademicoDTO;
 import org.uteq.backend.entity.Prepostulacion;
+import org.uteq.backend.repository.PrepostulacionDocumentoRepository;
 import org.uteq.backend.service.PrepostulacionService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin/prepostulaciones")
@@ -16,6 +19,7 @@ import java.util.Map;
 public class AdminPrepostulacionController {
 
     private final PrepostulacionService prepostulacionService;
+    private final PrepostulacionDocumentoRepository documentoRepository; // NUEVO
 
     /**
      * Listar todas las prepostulaciones con URL de documentos
@@ -38,19 +42,29 @@ public class AdminPrepostulacionController {
     }
 
     /**
-     * Obtener URLs de documentos de una prepostulación específica
+     * Obtener documentos de una prepostulación específica
      * GET http://localhost:8080/api/admin/prepostulaciones/1/documentos
      */
     @GetMapping("/{id}/documentos")
     public ResponseEntity<?> obtenerDocumentos(@PathVariable Long id) {
         Prepostulacion p = prepostulacionService.obtenerPorId(id);
 
+        List<DocumentoAcademicoDTO> docs = documentoRepository
+                .findByIdPrepostulacion(id)
+                .stream()
+                .map(d -> new DocumentoAcademicoDTO(
+                        d.getIdDocumento(),
+                        d.getDescripcion(),
+                        d.getUrlDocumento(),
+                        d.getFechaSubida()))
+                .collect(Collectors.toList());
+
         return ResponseEntity.ok(Map.of(
-                "cedula", p.getUrlCedula() != null ? p.getUrlCedula() : "",
-                "foto", p.getUrlFoto() != null ? p.getUrlFoto() : "",
-                "prerrequisitos", p.getUrlPrerrequisitos() != null ? p.getUrlPrerrequisitos() : "",
-                "nombreCompleto", p.getNombres() + " " + p.getApellidos(),
-                "identificacion", p.getIdentificacion()
+                "cedula",               p.getUrlCedula() != null ? p.getUrlCedula() : "",
+                "foto",                 p.getUrlFoto() != null ? p.getUrlFoto() : "",
+                "documentosAcademicos", docs,
+                "nombreCompleto",       p.getNombres() + " " + p.getApellidos(),
+                "identificacion",       p.getIdentificacion()
         ));
     }
 

@@ -9,7 +9,7 @@ import {
   ConvocatoriaDetalleResponse,
   SolicitudResumen
 } from '../../../services/convocatoria-admin.service';
-import { SolicitudDocenteService, SolicitudDocenteResponse } from '../../../services/SolicitudDocente.service';
+import { SolicitudDocenteService, SolicitudDocenteResponse } from '../../../services/solicitud-docente.service';
 import { ToastService } from '../../../services/toast.service';
 import { ToastComponent } from '../../../component/toast.component';
 

@@ -4,6 +4,16 @@ import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../../component/navbar';
 import { PrepostulacionService, Prepostulacion } from '../../../services/prepostulacion.service';
 
+// ==========================================
+// INTERFACES
+// ==========================================
+export interface DocumentoAcademico {
+  idDocumento: number;
+  descripcion: string;
+  urlDocumento: string;
+  fechaSubida: string;
+}
+
 @Component({
   selector: 'app-gestion-postulante',
   standalone: true,
@@ -64,11 +74,9 @@ export class GestionPostulanteComponent implements OnInit {
           postulacion: 'N/A',
           estado: this.mapEstado(p.estadoRevision),
           fechaEnvio: new Date(p.fechaEnvio),
-          documentos: [
-            { tipo: 'Cédula', nombre: 'Cédula' },
-            { tipo: 'Foto', nombre: 'Foto' },
-            { tipo: 'Prerrequisitos', nombre: 'Prerrequisitos' }
-          ]
+          urlCedula: p.urlCedula || '',
+          urlFoto: p.urlFoto || '',
+          documentosAcademicos: []  // Se carga al abrir el modal
         }));
         this.applyFilters();
         this.calcularEstadisticas();
@@ -89,17 +97,15 @@ export class GestionPostulanteComponent implements OnInit {
   }
 
   verDocumentos(doc: any): void {
+    this.selectedDocumento = { ...doc };
+    this.showDocumentosModal = true;
+
+    // Cargar cédula, foto y documentos académicos via API
     this.prepostulacionService.obtenerDocumentos(doc.id).subscribe({
-      next: (res) => {
-        this.selectedDocumento = {
-          ...doc,
-          documentos: [
-            { tipo: 'Cédula', nombre: 'cedula.pdf', formato: 'PDF', tamanio: '—', url: res.cedula },
-            { tipo: 'Foto', nombre: 'foto.jpg', formato: 'IMG', tamanio: '—', url: res.foto },
-            { tipo: 'Prerrequisitos', nombre: 'prerrequisitos.pdf', formato: 'PDF', tamanio: '—', url: res.prerrequisitos }
-          ]
-        };
-        this.showDocumentosModal = true;
+      next: (data: any) => {
+        this.selectedDocumento.urlCedula = data.cedula || '';
+        this.selectedDocumento.urlFoto   = data.foto   || '';
+        this.selectedDocumento.documentosAcademicos = data.documentosAcademicos || [];
         this.cdr.detectChanges();
       },
       error: () => alert('Error al cargar los documentos')
@@ -128,10 +134,15 @@ export class GestionPostulanteComponent implements OnInit {
   descargarDocumentos(doc?: any): void {
     if (!doc) return;
     this.prepostulacionService.obtenerDocumentos(doc.id).subscribe({
-      next: (docs) => {
-        if (docs.cedula) window.open(docs.cedula, '_blank');
-        if (docs.foto) window.open(docs.foto, '_blank');
-        if (docs.prerrequisitos) window.open(docs.prerrequisitos, '_blank');
+      next: (data: any) => {
+        if (data.cedula)  window.open(data.cedula, '_blank');
+        if (data.foto)    window.open(data.foto,   '_blank');
+        // Abrir cada documento académico
+        if (data.documentosAcademicos?.length) {
+          data.documentosAcademicos.forEach((d: DocumentoAcademico) => {
+            window.open(d.urlDocumento, '_blank');
+          });
+        }
       },
       error: () => alert('Error al descargar los documentos')
     });

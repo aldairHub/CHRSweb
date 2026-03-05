@@ -9,6 +9,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.uteq.backend.service.PrepostulacionService;
 import org.uteq.backend.dto.PrepostulacionResponseDTO;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/prepostulacion")
 @CrossOrigin(origins = "*")
@@ -23,19 +25,21 @@ public class PrepostulacionController {
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> registrarPrepostulacion(
-            @RequestParam("correo")                  String correo,
-            @RequestParam("cedula")                  String cedula,
-            @RequestParam("nombres")                 String nombres,
-            @RequestParam("apellidos")               String apellidos,
-            @RequestParam("archivoCedula")           MultipartFile archivoCedula,
-            @RequestParam("archivoFoto")             MultipartFile archivoFoto,
-            @RequestParam("archivoPrerrequisitos")   MultipartFile archivoPrerrequisitos,
+            @RequestParam("correo")                    String correo,
+            @RequestParam("cedula")                    String cedula,
+            @RequestParam("nombres")                   String nombres,
+            @RequestParam("apellidos")                 String apellidos,
+            @RequestParam("archivoCedula")             MultipartFile archivoCedula,
+            @RequestParam("archivoFoto")               MultipartFile archivoFoto,
+            @RequestParam("archivosDocumentos")        List<MultipartFile> archivosDocumentos,
+            @RequestParam("descripcionesDocumentos") List<String> descripcionesDocumentos,
             @RequestParam(value = "idSolicitud", required = false) Long idSolicitud
     ) {
         try {
             PrepostulacionResponseDTO response = prepostulacionService.procesarPrepostulacion(
                     correo, cedula, nombres, apellidos,
-                    archivoCedula, archivoFoto, archivoPrerrequisitos,
+                    archivoCedula, archivoFoto,
+                    archivosDocumentos, descripcionesDocumentos,
                     idSolicitud
             );
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -50,7 +54,6 @@ public class PrepostulacionController {
             ));
         }
     }
-
     /**
      * Verifica si una cédula está disponible (no ha postulado nunca).
      */

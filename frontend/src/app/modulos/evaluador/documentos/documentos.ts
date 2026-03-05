@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 
 // Importar el servicio
-import { PrepostulacionService, Prepostulacion, DocumentosResponse } from '../../../services/prepostulacion.service';
+import { PrepostulacionService, Prepostulacion, DocumentosResponse, DocumentoAcademico } from '../../../services/prepostulacion.service';
 
 // Importar componentes
 import { NavbarComponent } from '../../../component/navbar';
@@ -19,7 +19,7 @@ interface Documento {
   urlCompleta: string;
   estado: 'pendiente' | 'valido' | 'rechazado';
   observacion: string;
-  tipoDocumento: 'cedula' | 'foto' | 'prerrequisitos';
+  tipoDocumento: 'cedula' | 'foto' | 'academico';  // 'prerrequisitos' → 'academico'
 }
 
 @Component({
@@ -38,7 +38,7 @@ interface Documento {
 })
 export class DocumentosComponent implements OnInit {
 
-  // ID de la prepostulación (viene de la ruta)
+  // ID de la prepostulación
   prepostulacionId!: number;
 
   // Datos del postulante
@@ -103,7 +103,7 @@ export class DocumentosComponent implements OnInit {
     this.prepostulacionService.obtenerDocumentos(this.prepostulacionId)
       .subscribe({
         next: (docs: DocumentosResponse) => {
-          // Crear la lista de documentos para la validación
+          // Documentos base: cédula y foto
           this.documentos = [
             {
               id: 1,
@@ -122,17 +122,23 @@ export class DocumentosComponent implements OnInit {
               estado: 'pendiente',
               observacion: '',
               tipoDocumento: 'foto'
-            },
-            {
-              id: 3,
-              nombre: 'Prerrequisitos',
-              archivo: 'prerrequisitos.pdf',
-              urlCompleta: docs.prerrequisitos,
-              estado: 'pendiente',
-              observacion: '',
-              tipoDocumento: 'prerrequisitos'
             }
           ];
+
+          // Agregar cada documento académico individualmente
+          if (docs.documentosAcademicos?.length) {
+            docs.documentosAcademicos.forEach((doc: DocumentoAcademico, i: number) => {
+              this.documentos.push({
+                id: 3 + i,
+                nombre: doc.descripcion,
+                archivo: `titulo_${i + 1}.pdf`,
+                urlCompleta: doc.urlDocumento,
+                estado: 'pendiente',
+                observacion: '',
+                tipoDocumento: 'academico'
+              });
+            });
+          }
 
           this.cargando = false;
         },
@@ -187,7 +193,7 @@ export class DocumentosComponent implements OnInit {
     const request = {
       estado: estadoFinal,
       observaciones: observaciones || 'Documentos revisados correctamente',
-      idRevisor: 1 // ⚠️ TODO: Obtener el ID del usuario logueado
+      idRevisor: 1 //  Obtener el ID del usuario logueado
     };
 
     // Enviar al backend

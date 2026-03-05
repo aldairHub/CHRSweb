@@ -488,5 +488,57 @@ public class PostgresProcedureRepository {
             throw new RuntimeException("sp_repostular no retornó datos");
         });
     }
+    /** Registrar prepostulacion SIN url_prerrequisitos */
+    public Long registrarPrepostulacion(
+            String nombres, String apellidos, String identificacion,
+            String correo, String urlCedula, String urlFoto, Long idSolicitud) {
+
+        String sql = "SELECT * FROM sp_registrar_prepostulacion(?,?,?,?,?,?,?)";
+        return jdbcTemplate.execute((java.sql.Connection conn) -> {
+            var ps = conn.prepareStatement(sql);
+            ps.setString(1, nombres);
+            ps.setString(2, apellidos);
+            ps.setString(3, identificacion);
+            ps.setString(4, correo);
+            ps.setString(5, urlCedula);
+            ps.setString(6, urlFoto);
+            ps.setObject(7, idSolicitud);
+            var rs = ps.executeQuery();
+            if (rs.next()) return rs.getLong("out_id_prepostulacion");
+            throw new RuntimeException("sp_registrar_prepostulacion sin resultado");
+        });
+    }
+
+    /** Agregar un documento académico a una prepostulacion */
+    public Long agregarDocumentoPrepostulacion(
+            Long idPrepostulacion, String descripcion, String urlDocumento) {
+
+        String sql = "SELECT * FROM sp_agregar_documento_prepostulacion(?,?,?)";
+        return jdbcTemplate.execute((java.sql.Connection conn) -> {
+            var ps = conn.prepareStatement(sql);
+            ps.setLong(1, idPrepostulacion);
+            ps.setString(2, descripcion);
+            ps.setString(3, urlDocumento);
+            var rs = ps.executeQuery();
+            if (rs.next()) return rs.getLong("out_id_documento");
+            throw new RuntimeException("sp_agregar_documento sin resultado");
+        });
+    }
+
+    /** Repostular SIN url_prerrequisitos */
+    public Long repostular(String identificacion, Long idSolicitud,
+                           String urlCedula, String urlFoto) {
+        return jdbcTemplate.execute((java.sql.Connection conn) -> {
+            var ps = conn.prepareStatement(
+                    "SELECT * FROM sp_repostular(?,?,?,?)");
+            ps.setString(1, identificacion);
+            ps.setObject(2, idSolicitud);
+            ps.setString(3, urlCedula);
+            ps.setString(4, urlFoto);
+            var rs = ps.executeQuery();
+            if (rs.next()) return rs.getLong("out_id_prepostulacion");
+            throw new RuntimeException("sp_repostular sin resultado");
+        });
+    }
 
 }
