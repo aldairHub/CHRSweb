@@ -1,13 +1,13 @@
 <nav class="navbar">
 
-  <div class="navbar-brand">
+  <div class="navbar-brand" (click)="irAlHome()" style="cursor:pointer;" title="Ir al inicio">
     <img
-      [src]="(logoService.getLogo() | async) || 'imgs/logo-uteq.png'"
+      *ngIf="logoService.getLogo() | async as logoUrl"
+      [src]="logoUrl"
       alt="Logo institucional"
-      class="logo"
-      (error)="onLogoError($event)">
+      class="logo">
     <div class="brand-text">
-      <h1>UTEQ</h1>
+      <h1>{{ (logoService.getNombre() | async) || 'SSDC' }}</h1>
       <span>Sistema de selección docente</span>
     </div>
   </div>

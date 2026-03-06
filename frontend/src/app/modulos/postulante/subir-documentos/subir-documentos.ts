@@ -5,6 +5,8 @@ import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { NavbarComponent } from '../../../component/navbar';
 import { FooterComponent } from '../../../component/footer';
+import { ToastComponent } from '../../../component/toast.component';
+import { ToastService } from '../../../services/toast.service';
 import {
   DocumentoService,
   DocumentoBackend,
@@ -27,7 +29,7 @@ export interface DocumentoUI {
 @Component({
   selector: 'app-subir-documentos',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent, ToastComponent],
   templateUrl: './subir-documentos.html',
   styleUrls: ['./subir-documentos.scss']
 })
@@ -37,13 +39,6 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
   mostrarModalExito    = false;
   documentoSubiendoId: number | null = null;
 
-  // Toast
-  showToast    = false;
-  toastType:   'success' | 'error' | 'info' = 'success';
-  toastTitle   = '';
-  toastMessage = '';
-  private toastTimer: any;
-
   postulante:    PostulanteInfo | null = null;
   idPostulacion: number | null = null;
   documentos:    DocumentoUI[] = [];
@@ -51,7 +46,8 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private documentoSvc: DocumentoService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toast: ToastService
   ) {}
 
   // ── Lifecycle ──────────────────────────────────────────────
@@ -62,7 +58,7 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    clearTimeout(this.toastTimer);
+    // ngOnDestroy reservado para limpieza futura de subscripciones
   }
 
   // ── Carga inicial ──────────────────────────────────────────
@@ -293,16 +289,10 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
   }
 
   // ── Toast ──────────────────────────────────────────────────
+  // Delegamos al ToastService centralizado. Mantenemos el método para no
+  // tener que cambiar ninguna de las llamadas existentes en este componente.
   mostrarToast(tipo: 'success' | 'error' | 'info', titulo: string, mensaje: string): void {
-    this.toastType    = tipo;
-    this.toastTitle   = titulo;
-    this.toastMessage = mensaje;
-    this.showToast    = true;
-    clearTimeout(this.toastTimer);
-    this.toastTimer   = setTimeout(() => {
-      this.showToast = false;
-      this.cdr.detectChanges();
-    }, 3500);
+    this.toast[tipo](titulo, mensaje);
   }
 
   // ── Auth helper ────────────────────────────────────────────

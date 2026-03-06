@@ -3,28 +3,18 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FooterComponent } from '../../../component/footer.component';
 import { NavbarComponent } from '../../../component/navbar';
+import { ToastComponent } from '../../../component/toast.component';
+import { ToastService } from '../../../services/toast.service';
 import { CarreraService } from '../../../services/carrera.service';
 import { FacultadService } from '../../../services/facultad.service';
-
 @Component({
   selector: 'app-carrera',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    NavbarComponent
-  ],
+  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent, ToastComponent],
   templateUrl: './carrera.html',
   styleUrls: ['./carrera.scss']
 })
 export class CarreraComponent implements OnInit {
-  getNombreFacultad(idFacultad: number | null | undefined): string {
-    if (!idFacultad) return '—';
-
-    const f = this.facultades.find(x => x.idFacultad === idFacultad);
-    return f ? f.nombreFacultad : 'No encontrada';
-  }
-
 
   // ===== Datos =====
   carreras: any[] = [];
@@ -76,7 +66,8 @@ export class CarreraComponent implements OnInit {
   constructor(
     private carreraService: CarreraService,
     private facultadService: FacultadService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -95,12 +86,11 @@ export class CarreraComponent implements OnInit {
         this.calculatePagination();
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('Error al cargar carreras:', err);
+      error: () => {
         this.carreras = [];
         this.carrerasFiltradas = [];
         this.calculatePagination();
-        this.cdr.detectChanges();
+        this.toast.error('Error', 'No se pudieron cargar las carreras.');
       }
     });
   }
@@ -111,13 +101,18 @@ export class CarreraComponent implements OnInit {
         this.facultades = Array.isArray(data) ? data : [];
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('Error al cargar facultades:', err);
+      error: () => {
         this.facultades = [];
+        this.toast.error('Error', 'No se pudieron cargar las facultades.');
       }
     });
   }
+  getNombreFacultad(idFacultad: number | null | undefined): string {
+    if (!idFacultad) return '—';
 
+    const f = this.facultades.find(x => x.idFacultad === idFacultad);
+    return f ? f.nombreFacultad : 'No encontrada';
+  }
   // =========================
   // FILTROS
   // =========================
@@ -249,78 +244,65 @@ export class CarreraComponent implements OnInit {
   guardar(): void {
     this.submitted = true;
 
-    // Validación
-    if (!this.form.nombreCarrera || !this.form.nombreCarrera.trim()) {
-      alert('El nombre de la carrera es obligatorio.');
+    if (!this.form.nombreCarrera?.trim()) {
+      this.toast.warning('Campo requerido', 'El nombre de la carrera es obligatorio.');
       return;
     }
-
     if (!this.form.idFacultad) {
-      alert('Debe seleccionar una facultad.');
+      this.toast.warning('Campo requerido', 'Debe seleccionar una facultad.');
       return;
     }
 
     this.isSaving = true;
+    const nombre = this.form.nombreCarrera.trim();
+    const loadId = this.toast.loading(this.editando ? 'Actualizando carrera...' : 'Creando carrera...');
 
-    const carreraEnvio = { ...this.form };
+    const request = this.editando
+      ? this.carreraService.update(this.form.id, { ...this.form })
+      : this.carreraService.create({ ...this.form });
 
-    if (this.editando) {
-      this.carreraService.update(this.form.id, carreraEnvio).subscribe({
-        next: () => {
-          this.isSaving = false;
-          this.closeModal();
-          alert('✅ Carrera actualizada con éxito.');
-          this.cargarCarreras();
-        },
-        error: (err) => {
-          this.isSaving = false;
-          console.error('Error al actualizar:', err);
-          const msg = err?.error?.message || err?.error || err?.message || 'Error desconocido';
-          alert('❌ No se pudo actualizar: ' + msg);
-        }
-      });
-    } else {
-      this.carreraService.create(carreraEnvio).subscribe({
-        next: () => {
-          this.isSaving = false;
-          this.closeModal();
-          alert('✅ Carrera creada con éxito.');
-          this.cargarCarreras();
-        },
-        error: (err) => {
-          this.isSaving = false;
-          console.error('Error al crear:', err);
-          const msg = err?.error?.message || err?.error || err?.message || 'Error desconocido';
-          alert('❌ No se pudo crear: ' + msg);
-        }
-      });
-    }
+    request.subscribe({
+      next: () => {
+        this.isSaving = false;
+        this.toast.remove(loadId);
+        this.toast.success(
+          this.editando ? 'Carrera actualizada' : 'Carrera creada',
+          `"${nombre}" fue ${this.editando ? 'actualizada' : 'creada'} correctamente.`
+        );
+        this.closeModal();
+        this.cargarCarreras();
+      },
+      error: (err) => {
+        this.isSaving = false;
+        this.toast.remove(loadId);
+        const msg = err?.error?.message || err?.message || 'Intenta de nuevo.';
+        this.toast.error('No se pudo guardar', msg);
+      }
+    });
   }
 
   // =========================
   // TOGGLE ESTADO
   // =========================
   toggleEstado(carrera: any): void {
-    const nuevoEstado = !carrera.estado;
-    const accion = nuevoEstado ? 'activar' : 'desactivar';
-
-    if (!confirm(`¿Seguro que deseas ${accion} esta carrera?`)) return;
-
     const id = carrera.id || carrera.idCarrera;
     const estadoAnterior = carrera.estado;
-
-    // Optimistic UI
+    const nuevoEstado = !carrera.estado;
     carrera.estado = nuevoEstado;
 
     this.carreraService.toggleEstado(id).subscribe({
       next: () => {
+        this.toast.info(
+          nuevoEstado ? 'Carrera activada' : 'Carrera desactivada',
+          `La carrera fue ${nuevoEstado ? 'activada' : 'desactivada'} correctamente.`
+        );
         this.applyFilters();
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error al cambiar estado:', err);
-        carrera.estado = estadoAnterior; // Revertir
-        alert('❌ No se pudo cambiar el estado.');
+        carrera.estado = estadoAnterior;
+        const msg = err?.error?.message || 'No se pudo cambiar el estado.';
+        this.toast.error('Error', msg);
         this.cdr.detectChanges();
       }
     });

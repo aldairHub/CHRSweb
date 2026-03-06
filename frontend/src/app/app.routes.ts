@@ -124,67 +124,77 @@ export const routes: Routes = [
     ]},
 
   // ── admin ─────────────────────────────────────────────────────────────────
-  { path: 'admin',
-    title: 'SSDC - Administrador',loadComponent: () =>
-      import('./modulos/././admin/admin').then(m => m.AdminComponent),
-    canActivate: [AuthGuard], data: { rol: 'admin', isHome: true } },
-  { path: 'gestion-roles',
-    title: 'SSDC - Roles',loadComponent: () =>
-      import('./modulos/././admin/gestion-roles/gestion-roles').then(m => m.GestionRolesComponent),
-    canActivate: [AuthGuard], data: { rol: 'admin' } },
-  { path: 'roles-autoridad', redirectTo: 'gestion-roles', pathMatch: 'full' },
-  { path: 'gestion-usuarios',
-    title: 'SSDC - Usuarios',loadComponent: () =>
-      import('./modulos/././admin/gestion-usuarios/gestion-usuarios').then(m => m.GestionUsuariosComponent),
-    canActivate: [AuthGuard], data: { rol: 'admin' } },
-  { path: 'facultad',
-    title: 'SSDC - Facultades',loadComponent: () =>
-      import('./modulos/././admin/facultad/facultad').then(m => m.FacultadComponent),
-    canActivate: [AuthGuard], data: { rol: 'admin' } },
-  { path: 'carrera',
-    title: 'SSDC - Carreras',loadComponent: () =>
-      import('./modulos/././admin/carrera/carrera').then(m => m.CarreraComponent),
-    canActivate: [AuthGuard], data: { rol: 'admin' } },
-  { path: 'materia',
-    title: 'SSDC - Materias',loadComponent: () =>
-      import('./modulos/././admin/materia/materia').then(m => m.MateriaComponent),
-    canActivate: [AuthGuard], data: { rol: 'admin' } },
-  { path: 'gestion-postulante', loadComponent: () =>
-      import('./modulos/././admin/postulante/postulante').then(m => m.PostulanteComponent),
-    canActivate: [AuthGuard], data: { rol: 'admin' } },
-  { path: 'gestion-documentos',
-    title: 'SSDC - Gestión de documentos',loadComponent: () =>
-      import('./modulos/././admin/gestiondocumentos/gestion-documentos')
-        .then(m => m.GestionDocumentosComponent),
-    canActivate: [AuthGuard], data: { rol: 'admin' } },{
-    path: 'auditoria',
-    title: 'SSDC - Auditoría',
-    loadComponent: () => import('./modulos/././admin/auditoria/auditoria')
-      .then(m => m.AuditoriaComponent),
-    canActivate: [AuthGuard, NoPrimerLoginGuard],
-    data: { rol: 'admin' }
-  },
   {
-    path: 'auditoria/sesiones',
-    title: 'SSDC - Sesiones activas',
-    loadComponent: () => import('./modulos/././admin/auditoria/sesiones-activas/sesiones-activas')
-      .then(m => m.SesionesActivasComponent),
-    canActivate: [AuthGuard, NoPrimerLoginGuard],
-    data: { rol: 'admin' }
-  },
-
-  { path: 'gestion-opciones',
-    title: 'SSDC - Configuración de opciones',loadComponent: () =>
-      import('./modulos/././admin/gestion-opciones/gestion-opciones')
-        .then(m => m.GestionOpcionesComponent),
-    canActivate: [AuthGuard], data: { rol: 'admin' }
-  },
-
-  { path: 'config-institucion',
-    title: 'SSDC - Institución',loadComponent: () =>
-      import('./modulos/././admin/config-institucion/config-institucion')
-        .then(m => m.ConfigInstitucionComponent),
-    canActivate: [AuthGuard], data: { rol: 'admin' }
+    path: 'admin',
+    canActivate: [AuthGuard],
+    data: { rol: 'admin' },
+    children: [
+      {
+        path: '',
+        title: 'SSDC - Administrador',
+        loadComponent: () => import('./modulos/admin/admin').then(m => m.AdminComponent),
+        data: { isHome: true }
+      },
+      {
+        path: 'gestion-roles',
+        title: 'SSDC - Roles',
+        loadComponent: () => import('./modulos/admin/gestion-roles/gestion-roles').then(m => m.GestionRolesComponent)
+      },
+      {
+        path: 'gestion-usuarios',
+        title: 'SSDC - Usuarios',
+        loadComponent: () => import('./modulos/admin/gestion-usuarios/gestion-usuarios').then(m => m.GestionUsuariosComponent)
+      },
+      {
+        path: 'facultad',
+        title: 'SSDC - Facultades',
+        loadComponent: () => import('./modulos/admin/facultad/facultad').then(m => m.FacultadComponent)
+      },
+      {
+        path: 'carrera',
+        title: 'SSDC - Carreras',
+        loadComponent: () => import('./modulos/admin/carrera/carrera').then(m => m.CarreraComponent)
+      },
+      {
+        path: 'materia',
+        title: 'SSDC - Materias',
+        loadComponent: () => import('./modulos/admin/materia/materia').then(m => m.MateriaComponent)
+      },
+      {
+        path: 'gestion-postulante',
+        title: 'SSDC - Postulantes',
+        loadComponent: () => import('./modulos/admin/postulante/postulante').then(m => m.PostulanteComponent)
+      },
+      {
+        path: 'gestion-documentos',
+        title: 'SSDC - Gestión de documentos',
+        loadComponent: () => import('./modulos/admin/gestiondocumentos/gestion-documentos').then(m => m.GestionDocumentosComponent)
+      },
+      {
+        path: 'auditoria',
+        title: 'SSDC - Auditoría',
+        canActivate: [NoPrimerLoginGuard],
+        loadComponent: () => import('./modulos/admin/auditoria/auditoria').then(m => m.AuditoriaComponent)
+      },
+      {
+        path: 'auditoria/sesiones',
+        title: 'SSDC - Sesiones activas',
+        canActivate: [NoPrimerLoginGuard],
+        loadComponent: () => import('./modulos/admin/auditoria/sesiones-activas/sesiones-activas').then(m => m.SesionesActivasComponent)
+      },
+      {
+        path: 'gestion-opciones',
+        title: 'SSDC - Configuración de opciones',
+        loadComponent: () => import('./modulos/admin/gestion-opciones/gestion-opciones').then(m => m.GestionOpcionesComponent)
+      },
+      {
+        path: 'config-institucion',
+        title: 'SSDC - Institución',
+        loadComponent: () => import('./modulos/admin/config-institucion/config-institucion').then(m => m.ConfigInstitucionComponent)
+      },
+      // Alias de compatibilidad
+      { path: 'roles-autoridad', redirectTo: 'gestion-roles', pathMatch: 'full' },
+    ]
   },
 
 

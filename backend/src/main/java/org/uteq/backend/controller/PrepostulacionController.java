@@ -31,8 +31,8 @@ public class PrepostulacionController {
             @RequestParam("apellidos")                 String apellidos,
             @RequestParam("archivoCedula")             MultipartFile archivoCedula,
             @RequestParam("archivoFoto")               MultipartFile archivoFoto,
-            @RequestParam("archivosDocumentos")        List<MultipartFile> archivosDocumentos,
-            @RequestParam("descripcionesDocumentos") List<String> descripcionesDocumentos,
+            @RequestParam(value = "archivosDocumentos", required = false) List<MultipartFile> archivosDocumentos,
+            @RequestParam(value = "descripcionesDocumentos", required = false) List<String> descripcionesDocumentos,
             @RequestParam(value = "idSolicitud", required = false) Long idSolicitud
     ) {
         try {

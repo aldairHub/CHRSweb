@@ -3,13 +3,15 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../../component/navbar';
+import { ToastComponent } from '../../../component/toast.component';
+import { ToastService } from '../../../services/toast.service';
 import { InstitucionAdminService, InstitucionConfig } from '../../../services/institucion-admin.service';
 import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-config-institucion',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, ToastComponent],
   templateUrl: './config-institucion.html',
   styleUrls: ['./config-institucion.scss']
 })
@@ -18,7 +20,6 @@ export class ConfigInstitucionComponent implements OnInit {
   config: InstitucionConfig | null = null;
   isLoading = false;
   isSaving = false;
-  mensaje: { tipo: string; texto: string } | null = null;
 
   form = {
     nombreInstitucion: '',
@@ -37,8 +38,9 @@ export class ConfigInstitucionComponent implements OnInit {
   logoPreview: string | null = null;
 
   constructor(
-    private svc: InstitucionAdminService,
-    private cdr: ChangeDetectorRef // inyectar
+    private svc:   InstitucionAdminService,
+    private cdr:   ChangeDetectorRef,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -151,14 +153,13 @@ export class ConfigInstitucionComponent implements OnInit {
     this.prellenarForm(this.config);
     this.logoFile = null;
     this.logoPreview = null;
-    this.mensaje = null;
   }
 
+  // ── Mensaje ────────────────────────────────────────────────
+  // Delegamos al ToastService centralizado. Mantenemos la firma para no tocar ninguna de las llamadas existentes en este componente.
   private mostrarMensaje(tipo: string, texto: string): void {
-    this.mensaje = { tipo, texto };
-    setTimeout(() => {
-      this.mensaje = null;
-      this.cdr.detectChanges();
-    }, 5000);
+    if (tipo === 'success') this.toast.success('Éxito', texto);
+    else if (tipo === 'warning') this.toast.warning('Atención', texto);
+    else this.toast.error('Error', texto);
   }
 }

@@ -1,16 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FooterComponent } from '../../../component/footer.component';
 import { NavbarComponent } from '../../../component/navbar';
+import { ToastComponent } from '../../../component/toast.component';
+import { ToastService } from '../../../services/toast.service';
 import { FacultadService } from '../../../services/facultad.service';
 import { Facultad } from '../../../models/facultad.model';
-import { ChangeDetectorRef } from '@angular/core';
-
 @Component({
   selector: 'app-facultad',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent, ToastComponent],
   templateUrl: './facultad.html',
   styleUrls: ['./facultad.scss']
 })
@@ -35,7 +35,9 @@ export class FacultadComponent implements OnInit {
 
   constructor(
     private facultadService: FacultadService,
-    private cdr: ChangeDetectorRef) {}
+    private cdr: ChangeDetectorRef,
+    private toast: ToastService
+  ) {}
 
   ngOnInit(): void {
     console.log('FacultadComponent INIT -> cargando...');
@@ -53,10 +55,9 @@ export class FacultadComponent implements OnInit {
           nombreFacultad: x.nombreFacultad ?? x.nombre_facultad,
           estado: x.estado
         }));
-        console.log('Facultades cargadas (mapeadas):', this.facultades);
         this.cdr.detectChanges();
       },
-      error: (err) => console.error('Error al cargar:', err)
+      error: () => this.toast.error('Error', 'No se pudieron cargar las facultades.')
     });
   }
 
@@ -104,7 +105,7 @@ export class FacultadComponent implements OnInit {
   }
 
   // =========================
-  // MAPEADOR (CLAVE PARA QUE NO MANDE NULL)
+  // MAPEADOR
   // =========================
   private toPayload(f: Facultad) {
     return {
@@ -119,32 +120,31 @@ export class FacultadComponent implements OnInit {
   guardar(): void {
     const nombre = (this.form.nombreFacultad ?? '').trim();
     if (!nombre) {
-      alert('El nombre de la facultad es obligatorio');
+      this.toast.warning('Campo requerido', 'El nombre de la facultad es obligatorio.');
       return;
     }
 
     // Aseguramos el trim en el form también
     this.form.nombreFacultad = nombre;
-
-    const payload = {
-      nombreFacultad: this.form.nombreFacultad,
-      estado: this.form.estado
-    };
-
-    console.log('Payload enviado (guardar):', payload);
-
+    const payload = { nombreFacultad: this.form.nombreFacultad, estado: this.form.estado };
     const request = this.editando
       ? this.facultadService.actualizar(this.form.idFacultad, payload)
       : this.facultadService.crear(payload);
 
+    const loadId = this.toast.loading(this.editando ? 'Actualizando...' : 'Creando...');
     request.subscribe({
       next: () => {
+        this.toast.remove(loadId);
+        this.toast.success(
+          this.editando ? 'Facultad actualizada' : 'Facultad creada',
+          `"${nombre}" fue ${this.editando ? 'actualizada' : 'creada'} correctamente.`
+        );
         this.cargarFacultades();
         this.closeModal();
       },
       error: (err) => {
-        console.error('Error al guardar:', err);
-        alert('Error: ' + (err.error?.message || 'Revisa la consola'));
+        this.toast.remove(loadId);
+        this.toast.error('No se pudo guardar', err?.error?.message || 'Intenta de nuevo.');
       }
     });
   }
@@ -154,16 +154,15 @@ export class FacultadComponent implements OnInit {
   // =========================
   toggleEstado(f: Facultad): void {
     const anterior = f.estado;
-    f.estado = !f.estado; // cambio visual inmediato
-
-    // IMPORTANTÍSIMO: no mandes "f" (camelCase) al backend
-    const payload = this.toPayload(f);
-    console.log('Payload enviado (toggleEstado):', payload);
-
-    this.facultadService.actualizar(f.idFacultad, payload).subscribe({
+    f.estado = !f.estado;
+    this.facultadService.actualizar(f.idFacultad, this.toPayload(f)).subscribe({
+      next: () => this.toast.info(
+        f.estado ? 'Facultad activada' : 'Facultad desactivada',
+        `"${f.nombreFacultad}" fue ${f.estado ? 'activada' : 'desactivada'}.`
+      ),
       error: (err) => {
-        f.estado = anterior; // revertir si falla
-        console.error('Error al cambiar estado', err);
+        f.estado = anterior;
+        this.toast.error('Error', err?.error?.message || 'No se pudo cambiar el estado.');
       }
     });
   }

@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { NavbarComponent } from '../../../component/navbar';
+import { ToastComponent } from '../../../component/toast.component';
+import { ToastService } from '../../../services/toast.service';
 
 interface AudLoginApp {
   idAud:      number;
@@ -27,7 +29,7 @@ interface Page<T> {
 @Component({
   selector: 'app-auditoria',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, RouterLink],
+  imports: [CommonModule, FormsModule, NavbarComponent, RouterLink, ToastComponent],
   templateUrl: './auditoria.html',
   styleUrls: ['./auditoria.scss']
 })
@@ -58,8 +60,9 @@ export class AuditoriaComponent implements OnInit {
   registroDetalle: AudLoginApp | null = null;
 
   constructor(
-    private http: HttpClient,
-    private cdr:  ChangeDetectorRef
+    private http:  HttpClient,
+    private cdr:   ChangeDetectorRef,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -89,6 +92,7 @@ export class AuditoriaComponent implements OnInit {
       },
       error: () => {
         this.isLoading = false;
+        this.toast.error('Error', 'No se pudieron cargar los registros de auditoría.');
         this.cdr.detectChanges();
       }
     });

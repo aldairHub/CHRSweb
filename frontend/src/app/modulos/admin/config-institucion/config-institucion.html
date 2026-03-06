@@ -12,252 +12,248 @@
       </div>
     </div>
 
-    <!-- Alert de resultado -->
-    <div class="alert" *ngIf="mensaje" [ngClass]="mensaje.tipo">
-      {{ mensaje.texto }}
-    </div>
+  </div>
 
-    <!-- Loading -->
-    <div class="loading-state" *ngIf="isLoading">
-      <div class="spinner"></div>
-      <p>Cargando configuración...</p>
-    </div>
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Cargando configuración...</p>
+  </div>
 
-    <ng-container *ngIf="!isLoading && config">
+  <ng-container *ngIf="!isLoading && config">
 
-      <!-- ══ SECCIÓN 1: Identidad ══════════════════════════════════ -->
-      <div class="section-card">
-        <div class="section-header">
-          <div class="section-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-            </svg>
-          </div>
-          <div>
-            <p class="section-title">Identidad institucional</p>
-            <p class="section-subtitle">Nombre, dirección y datos de contacto</p>
-          </div>
+    <!-- ══ SECCIÓN 1: Identidad ══════════════════════════════════ -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+          </svg>
         </div>
-
-        <div class="section-body">
-          <div class="form-grid">
-
-            <div class="form-group col-span-2">
-              <label>Nombre de la institución <span class="required">*</span></label>
-              <input type="text" class="form-input"
-                     [(ngModel)]="form.nombreInstitucion"
-                     placeholder="Ej: Universidad Técnica Estatal de Quevedo" />
-            </div>
-
-            <div class="form-group">
-              <label>Nombre en la aplicación</label>
-              <input type="text" class="form-input"
-                     [(ngModel)]="form.appName"
-                     placeholder="Ej: Sistema UTEQ" />
-              <span class="form-hint">Aparece en los correos y encabezados del sistema.</span>
-            </div>
-
-            <div class="form-group">
-              <label>Teléfono</label>
-              <input type="text" class="form-input"
-                     [(ngModel)]="form.telefono"
-                     placeholder="Ej: +593 5 275-0000" />
-            </div>
-
-            <div class="form-group col-span-2">
-              <label>Dirección</label>
-              <input type="text" class="form-input"
-                     [(ngModel)]="form.direccion"
-                     placeholder="Ej: Av. Walter Andrade, Quevedo, Ecuador" />
-            </div>
-
-          </div>
+        <div>
+          <p class="section-title">Identidad institucional</p>
+          <p class="section-subtitle">Nombre, dirección y datos de contacto</p>
         </div>
       </div>
 
-      <!-- ══ SECCIÓN 2: Logo ═══════════════════════════════════════ -->
-      <div class="section-card">
-        <div class="section-header">
-          <div class="section-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
+      <div class="section-body">
+        <div class="form-grid">
+
+          <div class="form-group col-span-2">
+            <label>Nombre de la institución <span class="required">*</span></label>
+            <input type="text" class="form-input"
+                   [(ngModel)]="form.nombreInstitucion"
+                   placeholder="Ej: Universidad Técnica Estatal de Quevedo" />
           </div>
-          <div>
-            <p class="section-title">Logo institucional</p>
-            <p class="section-subtitle">PNG o JPG, máximo 2 MB. Se muestra en la app y correos.</p>
+
+          <div class="form-group">
+            <label>Nombre en la aplicación</label>
+            <input type="text" class="form-input"
+                   [(ngModel)]="form.appName"
+                   placeholder="Ej: Sistema UTEQ" />
+            <span class="form-hint">Aparece en los correos y encabezados del sistema.</span>
           </div>
+
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="text" class="form-input"
+                   [(ngModel)]="form.telefono"
+                   placeholder="Ej: +593 5 275-0000" />
+          </div>
+
+          <div class="form-group col-span-2">
+            <label>Dirección</label>
+            <input type="text" class="form-input"
+                   [(ngModel)]="form.direccion"
+                   placeholder="Ej: Av. Walter Andrade, Quevedo, Ecuador" />
+          </div>
+
         </div>
+      </div>
+    </div>
 
-        <div class="section-body">
-          <div class="logo-area">
+    <!-- ══ SECCIÓN 2: Logo ═══════════════════════════════════════ -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="section-title">Logo institucional</p>
+          <p class="section-subtitle">PNG o JPG, máximo 2 MB. Se muestra en la app y correos.</p>
+        </div>
+      </div>
 
-            <!-- Preview -->
-            <div class="logo-preview" [class.has-image]="logoPreview || config.logoUrl">
-              <img *ngIf="logoPreview || config.logoUrl"
-                   [src]="logoPreview || config.logoUrl"
-                   alt="Logo institucional" />
-              <div class="placeholder-icon" *ngIf="!logoPreview && !config.logoUrl">
+      <div class="section-body">
+        <div class="logo-area">
+
+          <!-- Preview -->
+          <div class="logo-preview" [class.has-image]="logoPreview || config.logoUrl">
+            <img *ngIf="logoPreview || config.logoUrl"
+                 [src]="logoPreview || config.logoUrl"
+                 alt="Logo institucional" />
+            <div class="placeholder-icon" *ngIf="!logoPreview && !config.logoUrl">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              <span>Sin logo</span>
+            </div>
+          </div>
+
+          <!-- Controles -->
+          <div class="logo-controls">
+            <p>Sube el logo oficial de la institución. Se mostrará en el encabezado del sistema y en los correos automáticos.</p>
+            <div class="file-input-wrapper">
+              <input type="file" accept="image/png,image/jpeg,image/jpg"
+                     (change)="onLogoSeleccionado($event)" />
+              <div class="file-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                 </svg>
-                <span>Sin logo</span>
+                Seleccionar imagen
               </div>
+              <p class="file-name" [class.selected]="logoFile">
+                {{ logoFile ? logoFile.name : 'Ningún archivo seleccionado' }}
+              </p>
             </div>
-
-            <!-- Controles -->
-            <div class="logo-controls">
-              <p>Sube el logo oficial de la institución. Se mostrará en el encabezado del sistema y en los correos automáticos.</p>
-              <div class="file-input-wrapper">
-                <input type="file" accept="image/png,image/jpeg,image/jpg"
-                       (change)="onLogoSeleccionado($event)" />
-                <div class="file-btn">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                  </svg>
-                  Seleccionar imagen
-                </div>
-                <p class="file-name" [class.selected]="logoFile">
-                  {{ logoFile ? logoFile.name : 'Ningún archivo seleccionado' }}
-                </p>
-              </div>
-            </div>
-
           </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SECCIÓN 3: Correo ═════════════════════════════════════ -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="section-title">Configuración de correo</p>
+          <p class="section-subtitle">Cuenta Gmail desde la que se envían los correos del sistema</p>
         </div>
       </div>
 
-      <!-- ══ SECCIÓN 3: Correo ═════════════════════════════════════ -->
-      <div class="section-card">
-        <div class="section-header">
-          <div class="section-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-            </svg>
+      <div class="section-body">
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label>Correo institucional (remitente visible)</label>
+            <input type="email" class="form-input"
+                   [(ngModel)]="form.correo"
+                   placeholder="correo@institucion.edu.ec" />
+            <span class="form-hint">Dirección que aparece en el campo "De:" de los correos.</span>
           </div>
-          <div>
-            <p class="section-title">Configuración de correo</p>
-            <p class="section-subtitle">Cuenta Gmail desde la que se envían los correos del sistema</p>
+
+          <div class="form-group">
+            <label>Cuenta Gmail SMTP</label>
+            <input type="email" class="form-input"
+                   [(ngModel)]="form.emailSmtp"
+                   placeholder="cuenta@gmail.com" />
+            <span class="form-hint">La cuenta Gmail que hace el envío real.</span>
           </div>
-        </div>
 
-        <div class="section-body">
-          <div class="form-grid">
-
-            <div class="form-group">
-              <label>Correo institucional (remitente visible)</label>
-              <input type="email" class="form-input"
-                     [(ngModel)]="form.correo"
-                     placeholder="correo@institucion.edu.ec" />
-              <span class="form-hint">Dirección que aparece en el campo "De:" de los correos.</span>
-            </div>
-
-            <div class="form-group">
-              <label>Cuenta Gmail SMTP</label>
-              <input type="email" class="form-input"
-                     [(ngModel)]="form.emailSmtp"
-                     placeholder="cuenta@gmail.com" />
-              <span class="form-hint">La cuenta Gmail que hace el envío real.</span>
-            </div>
-
-            <div class="form-group col-span-2">
-              <label>
-                Contraseña de aplicación Gmail
-                <span class="password-badge" *ngIf="config.tienePasswordConfigurado">
+          <div class="form-group col-span-2">
+            <label>
+              Contraseña de aplicación Gmail
+              <span class="password-badge" *ngIf="config.tienePasswordConfigurado">
                   ✓ Configurada
                 </span>
-              </label>
-              <input type="password" class="form-input"
-                     [(ngModel)]="form.gmailPassword"
-                     placeholder="Dejar vacío para no cambiar la contraseña actual" />
-              <span class="form-hint">
+            </label>
+            <input type="password" class="form-input"
+                   [(ngModel)]="form.gmailPassword"
+                   placeholder="Dejar vacío para no cambiar la contraseña actual" />
+            <span class="form-hint">
                 Usa una contraseña de aplicación de Google (no la contraseña de tu cuenta).
                 Ve a <strong>Cuenta de Google → Seguridad → Contraseñas de aplicaciones</strong>.
               </span>
-            </div>
+          </div>
 
-            <div class="form-group">
-              <label>Servidor SMTP</label>
-              <input type="text" class="form-input"
-                     [(ngModel)]="form.emailHost"
-                     placeholder="smtp.gmail.com" />
-            </div>
+          <div class="form-group">
+            <label>Servidor SMTP</label>
+            <input type="text" class="form-input"
+                   [(ngModel)]="form.emailHost"
+                   placeholder="smtp.gmail.com" />
+          </div>
 
-            <div class="form-group">
-              <label>Puerto SMTP</label>
-              <input type="number" class="form-input"
-                     [(ngModel)]="form.emailPort"
-                     placeholder="587" />
-            </div>
+          <div class="form-group">
+            <label>Puerto SMTP</label>
+            <input type="number" class="form-input"
+                   [(ngModel)]="form.emailPort"
+                   placeholder="587" />
+          </div>
 
-            <!-- Toggle SSL -->
-            <div class="form-group col-span-2">
-              <label>Modo de cifrado</label>
-              <div class="ssl-toggle-group">
-                <button type="button"
-                        class="ssl-option"
-                        [class.active]="!form.emailSsl"
-                        (click)="form.emailSsl = false">
+          <!-- Toggle SSL -->
+          <div class="form-group col-span-2">
+            <label>Modo de cifrado</label>
+            <div class="ssl-toggle-group">
+              <button type="button"
+                      class="ssl-option"
+                      [class.active]="!form.emailSsl"
+                      (click)="form.emailSsl = false">
                   <span class="ssl-option-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                     </svg>
                   </span>
-                  <div>
-                    <span class="ssl-option-label">STARTTLS</span>
-                    <span class="ssl-option-desc">Puerto 587 — Gmail, Outlook</span>
-                  </div>
-                </button>
-                <button type="button"
-                        class="ssl-option"
-                        [class.active]="form.emailSsl"
-                        (click)="form.emailSsl = true">
+                <div>
+                  <span class="ssl-option-label">STARTTLS</span>
+                  <span class="ssl-option-desc">Puerto 587 — Gmail, Outlook</span>
+                </div>
+              </button>
+              <button type="button"
+                      class="ssl-option"
+                      [class.active]="form.emailSsl"
+                      (click)="form.emailSsl = true">
                   <span class="ssl-option-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                     </svg>
                   </span>
-                  <div>
-                    <span class="ssl-option-label">SSL puro</span>
-                    <span class="ssl-option-desc">Puerto 465 — Servidores corporativos</span>
-                  </div>
-                </button>
-              </div>
-              <span class="form-hint">
+                <div>
+                  <span class="ssl-option-label">SSL puro</span>
+                  <span class="ssl-option-desc">Puerto 465 — Servidores corporativos</span>
+                </div>
+              </button>
+            </div>
+            <span class="form-hint">
                 Si usas Gmail, elige <strong>STARTTLS</strong> con puerto 587.
                 Usa <strong>SSL puro</strong> solo si tu proveedor de correo lo requiere explícitamente.
               </span>
-            </div>
-
           </div>
+
         </div>
       </div>
+    </div>
 
-      <!-- ══ BOTONES ═══════════════════════════════════════════════ -->
-      <div class="actions-bar">
-        <button class="btn btn-outline" (click)="resetForm()" [disabled]="isSaving">
-          Descartar cambios
-        </button>
-        <button class="btn btn-primary" (click)="guardar()" [disabled]="isSaving">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M5 13l4 4L19 7"/>
-          </svg>
-          {{ isSaving ? 'Guardando...' : 'Guardar configuración' }}
-        </button>
-      </div>
-      <div class="empty-state" *ngIf="!isLoading && !config">
-        <p>No se encontró configuración institucional activa.</p>
-        <button (click)="cargar()">Reintentar</button>
-      </div>
-    </ng-container>
-
-  </div>
+    <!-- ══ BOTONES ═══════════════════════════════════════════════ -->
+    <div class="actions-bar">
+      <button class="btn btn-outline" (click)="resetForm()" [disabled]="isSaving">
+        Descartar cambios
+      </button>
+      <button class="btn btn-primary" (click)="guardar()" [disabled]="isSaving">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M5 13l4 4L19 7"/>
+        </svg>
+        {{ isSaving ? 'Guardando...' : 'Guardar configuración' }}
+      </button>
+    </div>
+    <div class="empty-state" *ngIf="!isLoading && !config">
+      <p>No se encontró configuración institucional activa.</p>
+      <button (click)="cargar()">Reintentar</button>
+    </div>
+  </ng-container>
 </div>
+<app-toast></app-toast>

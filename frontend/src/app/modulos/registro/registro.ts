@@ -314,7 +314,9 @@ export class RegistroComponent implements OnDestroy, OnInit {
     // NUEVO: Agregar múltiples documentos
     for (const doc of this.documentosAcademicos) {
       if (doc.archivo) {
-        formData.append('archivosDocumentos',      doc.archivo,      doc.nombreArchivo);
+        // Usar el nombre original del archivo, no el descripcion
+        const nombreSeguro = doc.archivo.name; // nombre original sin caracteres especiales
+        formData.append('archivosDocumentos', doc.archivo, nombreSeguro);
         formData.append('descripcionesDocumentos', doc.descripcion);
       }
     }

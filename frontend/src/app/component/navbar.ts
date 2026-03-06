@@ -75,6 +75,15 @@ export class NavbarComponent {
     this.location.back();
   }
 
+  irAlHome(): void {
+    const ruta = this.authService.getRol();
+    if (ruta) {
+      this.router.navigate([`/${ruta}`], { replaceUrl: false });
+    } else {
+      this.router.navigate(['/']);
+    }
+  }
+
   private syncIsHome(): void {
     let route = this.activatedRoute;
     while (route.firstChild) route = route.firstChild; // llega al último hijo activo
@@ -94,11 +103,6 @@ export class NavbarComponent {
     this.router.navigate(['/perfil']);
   }
 
-  // cargarDatosUsuario(): void {
-  //   this.nombreUsuario = localStorage.getItem('usuario') || 'Usuario';
-  //   this.rolUsuario = localStorage.getItem('rol') || 'Sin rol';
-  //   this.iniciales = this.obtenerIniciales(this.nombreUsuario);
-  // }
   rolesDisponibles: any[] = [];
 
   cargarDatosUsuario(): void {
@@ -148,8 +152,5 @@ export class NavbarComponent {
       error: () => alert('No se pudo cambiar el rol. Intente de nuevo.')
     });
   }
-  onLogoError(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    img.src = 'imgs/logo-uteq.png';
-  }
+
 }

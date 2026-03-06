@@ -221,21 +221,6 @@
 </div>
 
 <!-- TOAST -->
-<div class="toast-container" *ngIf="showToast">
-  <div
-    class="toast"
-    [class.toast--success]="toastType === 'success'"
-    [class.toast--error]="toastType === 'error'"
-    [class.toast--info]="toastType === 'info'"
-  >
-    <i class="pi pi-check-circle"         *ngIf="toastType === 'success'"></i>
-    <i class="pi pi-times-circle"         *ngIf="toastType === 'error'"></i>
-    <i class="pi pi-info-circle"          *ngIf="toastType === 'info'"></i>
-    <div>
-      <strong>{{ toastTitle }}</strong>
-      <p>{{ toastMessage }}</p>
-    </div>
-  </div>
-</div>
+<app-toast></app-toast>
 
 <app-footer></app-footer>
