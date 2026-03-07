@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit,ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { LogoService } from '../../services/logo.service';
@@ -73,7 +73,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     private router: Router,
     public logoService: LogoService,
     private convocatoriaService: ConvocatoriaService,
-    private institucionService: InstitucionAdminService,
+    private institucionService: InstitucionAdminService,private cdr: ChangeDetectorRef,
     public themeService: ThemeService
   ) {}
 
@@ -86,12 +86,14 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.cargarInstitucion();
     this.cargarConvocatorias();
+    this.cdr.detectChanges();
   }
 
   ngAfterViewInit(): void {
     setTimeout(() => this.updateScrollButtons(), 100);
     this.initScrollReveal();
     this.initHeroShrink();
+    this.cdr.detectChanges();
   }
 
   initHeroShrink(): void {
@@ -107,16 +109,16 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     hero.style.transformOrigin = 'center top';
     // Transición corta para suavizar sin agregar lag perceptible
     hero.style.transition    = 'transform 50ms linear, opacity 50ms linear, border-radius 50ms linear';
-
+    this.cdr.detectChanges();
     // Cachear heroHeight FUERA del handler — leer offsetHeight dentro causa
     // forced reflow en cada evento de scroll, que es la mayor fuente de lag
     const heroHeight = hero.offsetHeight || window.innerHeight;
-
+    this.cdr.detectChanges();
     window.addEventListener('scroll', () => {
       const progress = Math.min(window.scrollY / (heroHeight * 0.7), 1);
       hero.style.transform    = `scale(${1 - progress * 0.07}) translateZ(0)`;
       hero.style.opacity      = `${1 - progress * 0.35}`;
-      hero.style.borderRadius = `${progress * 20}px`;
+      hero.style.borderRadius = `${progress * 20}px`;      this.cdr.detectChanges();
     }, { passive: true });
   }
 
@@ -126,6 +128,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
         if (entry.isIntersecting) {
           entry.target.classList.add('revealed');
           observer.unobserve(entry.target);
+          this.cdr.detectChanges();
         }
       });
     }, { threshold: 0.12 });
@@ -139,7 +142,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   cargarConvocatorias(): void {
     const CACHE_KEY = 'cache_conv_activas';
-
+    this.cdr.detectChanges();
     // ── 1. Mostrar caché inmediatamente si existe ─────────────────────────────
     const cached = cacheGet<Convocatoria[]>(CACHE_KEY);
     if (cached) {
@@ -151,6 +154,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
       setTimeout(() => {
         this.updateScrollButtons();
         this.revealAll();
+        this.cdr.detectChanges();
       }, 50);
     }
 
@@ -166,6 +170,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
         setTimeout(() => {
           this.updateScrollButtons();
           this.revealAll();
+          this.cdr.detectChanges();
         }, 150);
       },
       error: () => { this.cargando = false; }
@@ -174,7 +179,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   cargarInstitucion(): void {
     const CACHE_KEY = 'cache_inst_activa';
-
+    this.cdr.detectChanges();
     // ── 1. Aplicar caché al instante ──────────────────────────────────────────
     const cached = cacheGet<any>(CACHE_KEY);
     if (cached) this.aplicarInstitucion(cached);
@@ -184,6 +189,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
       next: (inst) => {
         cacheSet(CACHE_KEY, inst);
         this.aplicarInstitucion(inst);
+        this.cdr.detectChanges();
       },
       error: () => {}
     });
@@ -193,6 +199,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     if (inst.imagenFondoUrl) this.campusBg = inst.imagenFondoUrl;
     if (inst.appName)        this.appName  = inst.appName;
     if (inst.nombreInstitucion) this.heroSubtitle = inst.nombreInstitucion;
+    this.cdr.detectChanges();
   }
 
   private revealAll(): void {
@@ -200,6 +207,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
       .forEach(el => {
         if (!el.classList.contains('revealed')) el.classList.add('revealed');
       });
+    this.cdr.detectChanges();
   }
   getDefaultImage(index: number): string {
     return DEFAULT_IMAGES[index % DEFAULT_IMAGES.length];
@@ -214,6 +222,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!img.dataset['fallback']) {
       img.dataset['fallback'] = '1';
       img.src = LandingComponent.PLACEHOLDER_IMG;
+      this.cdr.detectChanges();
     }
   }
 
@@ -222,11 +231,13 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!track) return;
     const scrollAmount = direction === 'left' ? -720 : 720;
     track.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    this.cdr.detectChanges();
   }
 
   onCarouselScroll(): void {
     this.updateScrollButtons();
     this.updateCurrentIndex();
+    this.cdr.detectChanges();
   }
 
   updateScrollButtons(): void {
@@ -234,16 +245,18 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!track) return;
     this.canScrollLeft = track.scrollLeft > 0;
     this.canScrollRight = track.scrollLeft < track.scrollWidth - track.clientWidth - 10;
+    this.cdr.detectChanges();
   }
 
   updateCurrentIndex(): void {
     const track = this.carouselTrack?.nativeElement;
     if (!track) return;
     this.currentIndex = Math.round(track.scrollLeft / 336);
+    this.cdr.detectChanges();
   }
 
   verDetalleConvocatoria(conv: ConvocatoriaVM): void {
-    this.router.navigate(['/convocatorias'], { queryParams: { id: conv.idConvocatoria } });
+    this.router.navigate(['/convocatorias'], { queryParams: { id: conv.idConvocatoria } });      this.cdr.detectChanges();
   }
 
   scrollAConvocatorias(): void {
@@ -251,13 +264,14 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!target) return;
     const targetY = target.getBoundingClientRect().top + window.scrollY;
     this.smoothScrollTo(targetY, 900);
+    this.cdr.detectChanges();
   }
 
   private smoothScrollTo(targetY: number, duration: number): void {
     const startY = window.scrollY;
     const diff = targetY - startY;
     let startTime: number | null = null;
-
+    this.cdr.detectChanges();
     const easeInOutCubic = (t: number) =>
       t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
@@ -267,6 +281,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
       const progress = Math.min(elapsed / duration, 1);
       window.scrollTo(0, startY + diff * easeInOutCubic(progress));
       if (progress < 1) requestAnimationFrame(step);
+      this.cdr.detectChanges();
     };
 
     requestAnimationFrame(step);
@@ -277,5 +292,6 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   onLogoError(event: Event): void {
     const img = event.target as HTMLImageElement;
     img.src = 'imgs/logo-uteq.png';
+    this.cdr.detectChanges();
   }
 }

@@ -580,3 +580,798 @@ html.dark .footer p {
 html.dark .copyright { color: #444444 !important; }
 html.dark .copyright strong { color: #00A63E !important; }
 html.dark .version { color: #333333 !important; }
+
+// =========================================
+// 11. DARK MODE — COMPONENTES COMPLETOS
+// Cubre todos los módulos del sistema
+// =========================================
+
+html.dark {
+
+  // ─── Contenedores principales ────────────────────────────
+  .main-container,
+  .page-container,
+  .content-wrapper,
+  .sd-page {
+    background: #0d0d0d !important;
+    color: #e0e0e0 !important;
+  }
+
+  // ─── Section cards (config-institucion, etc.) ────────────
+  .section-card,
+  .form-card,
+  .card-box,
+  .filters-card,
+  .chart-card,
+  .chart-config-card,
+  .kpi-card,
+  .total-card,
+  .tabla-card,
+  .table-card,
+  .option-card,
+  .detalle-card,
+  .aviso-card,
+  .eval-titulo,
+  .fase-card,
+  .criteria-block {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.5) !important;
+    color: #e0e0e0 !important;
+  }
+
+  .section-card .section-header,
+  .fase-card .fase-card-header {
+    background: #1f1f1f !important;
+    border-color: #2a2a2a !important;
+  }
+
+  .section-card .section-title,
+  .fase-card .fase-card-header h3 { color: #00D149 !important; }
+  .section-card .section-subtitle  { color: #6b9c6b !important; }
+
+  // ─── Tabs ────────────────────────────────────────────────
+  .tabs,
+  .tabs-bar,
+  .tabs-container,
+  .module-tabs,
+  .submodule-tabs,
+  .filtro-tabs {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+  }
+
+  .tab,
+  .tab-btn,
+  .tab-item {
+    background: transparent !important;
+    color: #777777 !important;
+    border-color: #2a2a2a !important;
+
+    &:hover { color: #e0e0e0 !important; background: #222222 !important; }
+
+    &.active,
+    &[class*="active"] {
+      background: #00A63E !important;
+      color: #ffffff !important;
+      border-color: #00A63E !important;
+    }
+  }
+
+  // ─── Filtros / búsqueda ──────────────────────────────────
+  .filters-section,
+  .filters-grid,
+  .filtros-bar,
+  .filtros-grupo,
+  .filter-group,
+  .buscador {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+  }
+
+  .buscador input { background: transparent !important; color: #e0e0e0 !important; }
+  .buscador svg   { stroke: #555555 !important; }
+
+  .filtro-chip {
+    background: #222222 !important;
+    border-color: #333333 !important;
+    color: #aaaaaa !important;
+  }
+
+  .select-tipo,
+  .form-select {
+    background: #111111 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+  }
+
+  // ─── Stat cards / KPIs ───────────────────────────────────
+  .stat-card,
+  .stat-content,
+  .sessions-summary,
+  .summary-item,
+  .progreso-card {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+  }
+
+  .stat-icon,
+  .icon-wrapper,
+  .icon-wrap {
+    background: #222222 !important;
+    border-color: #333333 !important;
+  }
+
+  // ─── Solicitudes / listas ────────────────────────────────
+  .sol-item,
+  .solicitudes-list,
+  .solicitudes-detalle,
+  .solicitud-detalle-item,
+  .notif-row,
+  .notif-lista,
+  .rol-item,
+  .role-list-item,
+  .rol-app-item,
+  .roles-list,
+  .roles-app-list,
+  .roles-panel,
+  .roles-container,
+  .evaluadores-list,
+  .evaluadores-section,
+  .criterios-list,
+  .criteria-grid,
+  .fases-grid,
+  .doc-list,
+  .file-list,
+  .info-grid,
+  .ranking-list,
+  .documentos-list,
+  .documentos-grid {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+  }
+
+  .sol-item,
+  .notif-row,
+  .ranking-item,
+  .doc-item,
+  .file-item,
+  .rol-item,
+  .criterio-item {
+    border-bottom-color: #222222 !important;
+    &:hover { background: #1e1e1e !important; }
+  }
+
+  // ─── Detalle / paneles de info ───────────────────────────
+  .detalle-card,
+  .detalle-block,
+  .detalle-header,
+  .detalle-grid,
+  .detalle-seccion,
+  .info-card,
+  .obs-box,
+  .conflict-box,
+  .puntaje-banner,
+  .puntaje-bloque,
+  .estado-card,
+  .estado-banner,
+  .progreso-info {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+  }
+
+  .detalle-label,
+  .info-label,
+  .det-nombre,
+  .criterio-label,
+  .criteria-label { color: #666666 !important; }
+
+  .detalle-value,
+  .info-valor,
+  .det-score,
+  .criterio-peso  { color: #e0e0e0 !important; }
+
+  // ─── Formularios extendidos ──────────────────────────────
+  .form-section,
+  .form-row,
+  .form-grid { background: transparent !important; }
+
+  .form-section-title,
+  .seccion-titulo,
+  .block-title,
+  .panel-title,
+  .chart-title,
+  .criteria-header h3 { color: #00D149 !important; }
+
+  .field-hint,
+  .form-hint,
+  .sol-hint,
+  .hint,
+  .obligatorio-hint { color: #555555 !important; }
+
+  textarea,
+  .textarea-modern,
+  .obs-textarea,
+  .obs-input,
+  .nota-input,
+  .score-input {
+    background: #111111 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+    &::placeholder { color: #444444 !important; }
+    &:focus {
+      border-color: #00A63E !important;
+      box-shadow: 0 0 0 3px rgba(0,166,62,0.15) !important;
+    }
+  }
+
+  // ─── Checkboxes / toggles ────────────────────────────────
+  .checkbox-item,
+  .check-item,
+  .toggle-group,
+  .estado-options,
+  .estado-option {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+  }
+
+  .toggle-switch {
+    background: #2a2a2a !important;
+    &.checked,
+    &[class*="active"]  { background: #00A63E !important; }
+  }
+
+  // ─── Badges de estado específicos ────────────────────────
+  .badge-estado,
+  .status-badge,
+  .estado-badge,
+  .meta-badge,
+  .criterio-badge,
+  .convocatoria-tag,
+  .mod-badge,
+  .modulo-badge,
+  .role-badge,
+  .badge-rol-app {
+    background: #222222 !important;
+    border-color: #333333 !important;
+    color: #aaaaaa !important;
+  }
+
+  // badges con color semántico
+  [class*="badge"][class*="activ"],
+  [class*="badge"][class*="apro"],
+  [class*="badge"][class*="comp"],
+  [class*="badge"][class*="success"] {
+    background: #0d2818 !important;
+    color: #4ade80 !important;
+  }
+
+  [class*="badge"][class*="pend"],
+  [class*="badge"][class*="revi"],
+  [class*="badge"][class*="warn"] {
+    background: #2a1800 !important;
+    color: #f59e0b !important;
+  }
+
+  [class*="badge"][class*="rech"],
+  [class*="badge"][class*="inac"],
+  [class*="badge"][class*="dang"],
+  [class*="badge"][class*="error"] {
+    background: #2a0808 !important;
+    color: #f87171 !important;
+  }
+
+  // ─── Barras de progreso ───────────────────────────────────
+  .barra-track,
+  .detalle-barra-track,
+  .stat-bar-bg,
+  .ranking-bar-bg,
+  .progress-bar,
+  .upload-barra {
+    background: #2a2a2a !important;
+  }
+
+  .barra-fill,
+  .barra-total-fill,
+  .stat-bar-fill,
+  .ranking-bar,
+  .progress-fill,
+  .upload-fill {
+    // mantienen su color dinámico, no override
+  }
+
+  // ─── Timeline ────────────────────────────────────────────
+  .timeline-item   { border-color: #2a2a2a !important; }
+  .timeline-content {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+  }
+  .timeline-title  { color: #e0e0e0 !important; }
+  .timeline-date,
+  .timeline-meta   { color: #555555 !important; }
+  .timeline-dot    { border-color: #2a2a2a !important; background: #181818 !important; }
+
+  // ─── Pipeline ────────────────────────────────────────────
+  .pipeline-step   { background: #181818 !important; border-color: #2a2a2a !important; }
+  .pipeline-label  { color: #aaaaaa !important; }
+  .pipeline-date   { color: #555555 !important; }
+  .pipeline-connector { background: #2a2a2a !important; }
+
+  // ─── Charts ──────────────────────────────────────────────
+  .chart-container,
+  .chart-controls,
+  .chart-legend    { color: #aaaaaa !important; }
+  .bar             { background: #222222 !important; }
+  .legend-dot      { border: none; }
+  .legend-item     { color: #aaaaaa !important; }
+
+  // ─── Convocatorias ───────────────────────────────────────
+  .conv-card,
+  .conv-header     {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+  }
+  .conv-body       { background: #141414 !important; }
+  .conv-num        { color: #00D149 !important; }
+  .conv-chevron svg { stroke: #555555 !important; }
+
+  // ─── Perfil ───────────────────────────────────────────────
+  .perfil-grid     { background: transparent !important; }
+  .clave-card      {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+  }
+  .avatar-lg       {
+    background: #222222 !important;
+    border-color: #2a2a2a !important;
+    color: #00D149 !important;
+  }
+  .verification-info,
+  .verified-badge  {
+    background: #0d2818 !important;
+    border-color: #1a3a24 !important;
+    color: #4ade80 !important;
+  }
+
+  // ─── Upload / documentos ─────────────────────────────────
+  .file-upload,
+  .file-upload-box,
+  .doc-item,
+  .documento-card  {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+  }
+
+  .doc-nombre,
+  .doc-title,
+  .archivo-nombre  { color: #e0e0e0 !important; }
+  .doc-descripcion,
+  .archivo-info    { color: #666666 !important; }
+
+  // ─── Evaluación ──────────────────────────────────────────
+  .evaluation-panel,
+  .card-evaluacion,
+  .criterio-eval-item {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+  }
+
+  .criterio-eval-nota  { color: #00D149 !important; }
+  .criterio-eval-peso  { color: #666666 !important; }
+  .calificacion-final  {
+    background: #0f2018 !important;
+    border-color: #1a3a24 !important;
+    color: #4ade80 !important;
+  }
+
+  // ─── Candidatos / postulantes ────────────────────────────
+  .candidate-card,
+  .postulante-tags {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+  }
+
+  // ─── Resultados / ranking ─────────────────────────────────
+  .ranking-item    {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+  }
+  .ranking-nombre  { color: #e0e0e0 !important; }
+  .ranking-pos     { color: #00D149 !important; }
+  .ranking-intentos { color: #666666 !important; }
+  .resumen-barras  { background: transparent !important; }
+
+  // ─── Reuniones / entrevistas ─────────────────────────────
+  .proxima-reunion,
+  .unirse-section,
+  .sin-reunion     {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+  }
+
+  // ─── Alertas / avisos ────────────────────────────────────
+  .alert-box,
+  .info-alert,
+  .info-aviso,
+  .aviso-docs      {
+    background: #1a1a0a !important;
+    border-color: #3a3a1a !important;
+    color: #f0d060 !important;
+  }
+
+  .alert-success   { background: #0d2818 !important; border-color: #1a3a24 !important; color: #4ade80 !important; }
+  .alert-error     { background: #2a0808 !important; border-color: #5a1a1a !important; color: #f87171 !important; }
+
+  // ─── Empty states ─────────────────────────────────────────
+  .empty-state,
+  .empty-state-sm,
+  .empty-state-card,
+  .sol-empty,
+  .empty-chart,
+  .empty-solicitudes,
+  .sin-reunion {
+    color: #555555 !important;
+    svg { stroke: #333333 !important; }
+    h3, p { color: #555555 !important; }
+  }
+
+  // ─── SSL toggle (config-institucion) ─────────────────────
+  .ssl-toggle-group .ssl-option {
+    background: #111111 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+    &.active {
+      background: #0f2018 !important;
+      border-color: #00A63E !important;
+    }
+  }
+
+  // ─── File input wrapper ───────────────────────────────────
+  .file-input-wrapper .file-btn {
+    background: #111111 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+  }
+  .file-input-wrapper:hover .file-btn {
+    background: rgba(0,166,62,0.08) !important;
+    border-color: #00A63E !important;
+    color: #00A63E !important;
+  }
+
+  // ─── Logo preview ─────────────────────────────────────────
+  .logo-preview {
+    background: #1a1a1a !important;
+    border-color: #2a2a2a !important;
+  }
+
+  // ─── Dividers ─────────────────────────────────────────────
+  .divider,
+  .summary-divider,
+  .doc-divider     { background: #2a2a2a !important; }
+
+  // ─── Texto auxiliar global ────────────────────────────────
+  .text-muted,
+  .page-info,
+  .scroll-hint,
+  .char-counter    { color: #555555 !important; }
+
+  .text-warn       { color: #f59e0b !important; }
+
+  // ─── Breadcrumb ───────────────────────────────────────────
+  .breadcrumb      { color: #555555 !important; a { color: #00A63E !important; } }
+
+  // ─── Botones de acción de tabla ───────────────────────────
+  .btn-icon {
+    background: #222222 !important;
+    border-color: #333333 !important;
+    color: #888888 !important;
+    svg { stroke: #888888 !important; }
+
+    &:hover {
+      background: #2a2a2a !important;
+      color: #e0e0e0 !important;
+      svg { stroke: #e0e0e0 !important; }
+    }
+  }
+
+  .action-buttons,
+  .actions         { gap: 0.5rem; }
+
+  // ─── Sidebar (evaluadores, etc.) ─────────────────────────
+  .sidebar-header  { background: #1f1f1f !important; border-color: #2a2a2a !important; }
+  .sidebar-list    { background: #181818 !important; border-color: #2a2a2a !important; }
+  .sidebar-sub     { color: #666666 !important; }
+
+  // ─── Toast ────────────────────────────────────────────────
+  .toast-container {
+    &.success { background: #0d2818 !important; border-color: #1a3a24 !important; }
+    &.error   { background: #2a0808 !important; border-color: #5a1a1a !important; }
+  }
+
+  // ─── Opciones / permisos ─────────────────────────────────
+  .opciones-panel,
+  .opciones-layout,
+  .opciones-table  {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+  }
+  .opciones-header,
+  .panel-header    {
+    background: #1f1f1f !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+  }
+
+  // ─── Gráficos barras de auditoria ────────────────────────
+  .bar-group,
+  .bar-chart,
+  .bars            { color: #aaaaaa !important; }
+  .bar-label,
+  .bar-totals      { color: #666666 !important; }
+  .totals-bar      { background: #222222 !important; }
+
+  // ─── Cambiar clave / registro ─────────────────────────────
+  .clave-card,
+  .progress-steps  {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+  }
+
+  // ─── IP code (sesiones activas) ──────────────────────────
+  .ip-code         {
+    background: #222222 !important;
+    color: #00D149 !important;
+    border-color: #333333 !important;
+  }
+
+  // ─── Subrow / sub-table ───────────────────────────────────
+  .sub-table,
+  .sub-table-wrapper {
+    background: #141414 !important;
+    border-color: #222222 !important;
+  }
+  .sub-table-title   { color: #00D149 !important; }
+  .subrow-cell       { color: #aaaaaa !important; }
+}
+
+// =========================================
+// 12. DARK MODE — Config institución + Landing cards
+// Selectores globales que penetran encapsulación
+// =========================================
+
+html.dark {
+
+  // ─── Config institución: contenedor ──────────────────────
+  .main-container {
+    background: #0d0d0d !important;
+  }
+
+  // ─── Section cards (config-institucion) ──────────────────
+  .section-card {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+  }
+
+  .section-card .section-header {
+    background: #1f1f1f !important;
+    border-color: #2a2a2a !important;
+  }
+
+  .section-title  { color: #00D149 !important; }
+  .section-subtitle { color: #666666 !important; }
+
+  // Labels de formulario (config-institucion)
+  .form-group label { color: #00D149 !important; }
+  .form-hint        { color: #555555 !important; }
+  .password-badge {
+    background: #0f2018 !important;
+    color: #4ade80 !important;
+    border-color: #1a3a24 !important;
+  }
+
+  // Logo preview
+  .logo-preview {
+    background: #1a1a1a !important;
+    border-color: #2a2a2a !important;
+    .placeholder-icon { color: #444444 !important; }
+  }
+
+  // File input button
+  .file-btn {
+    background: #111111 !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+  }
+  .file-name { color: #555555 !important; }
+
+  // SSL toggle
+  .ssl-option {
+    background: #111111 !important;
+    border-color: #2a2a2a !important;
+
+    .ssl-option-label { color: #e0e0e0 !important; }
+    .ssl-option-desc  { color: #555555 !important; }
+
+    &.active {
+      background: #0f2018 !important;
+      border-color: #00A63E !important;
+      box-shadow: 0 0 0 3px rgba(0,166,62,0.12) !important;
+      .ssl-option-label { color: #00D149 !important; }
+      .ssl-option-icon svg { stroke: #00A63E !important; }
+    }
+  }
+
+  // Actions bar botones
+  .actions-bar .btn-outline {
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+    &:hover {
+      border-color: #00A63E !important;
+      color: #00A63E !important;
+      background: rgba(0,166,62,0.07) !important;
+    }
+  }
+
+  // ─── Landing: cards de convocatorias ─────────────────────
+  .lnd-card {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.5) !important;
+
+    &:hover {
+      background: #1e1e1e !important;
+      border-color: #00A63E !important;
+      box-shadow: 0 12px 36px rgba(0,166,62,0.15) !important;
+    }
+  }
+
+  .lnd-card-body {
+    h3 { color: #f0f0f0 !important; }
+    p  { color: #888888 !important; }
+  }
+
+  .lnd-card-footer {
+    border-color: #2a2a2a !important;
+    background: transparent !important;
+  }
+
+  .lnd-card-date {
+    color: #555555 !important;
+    svg { stroke: #00A63E !important; }
+  }
+
+  .lnd-card-arrow {
+    background: #222222 !important;
+    svg { stroke: #00A63E !important; }
+  }
+
+  .lnd-card:hover .lnd-card-arrow {
+    background: #00A63E !important;
+    svg { stroke: white !important; }
+  }
+}
+
+// =========================================
+// 13. CONFIG-INSTITUCIÓN — layout compacto
+// Fuerza ancho máximo en todo el contenido
+// =========================================
+
+// La ruta /admin/config-institucion tiene section-cards
+// fuera del content-wrapper, así que limitamos el main-container
+// directamente para esa página usando el selector de URL no disponible,
+// pero lo hacemos acotando la sección con padding inteligente:
+
+app-config-institucion .main-container,
+app-config-institucion .content-wrapper {
+  max-width: 660px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+// El main-container necesita width total para el fondo,
+// pero limitamos su contenido interno
+app-config-institucion .main-container {
+  max-width: 100% !important;
+  padding-left: max(1rem, calc(50% - 330px)) !important;
+  padding-right: max(1rem, calc(50% - 330px)) !important;
+}
+
+// =========================================
+// 14. DARK MODE — Clases faltantes (gap fill)
+// =========================================
+html.dark {
+
+  // ─── Botones con fondo blanco hardcodeado ────────────────
+  .btn-back,
+  .btn-filtro,
+  .btn-view {
+    background: #1e1e1e !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+    &:hover { border-color: #00A63E !important; color: #00A63E !important; }
+  }
+
+  // ─── Canvas de firma ─────────────────────────────────────
+  .canvas-wrapper { background: #111111 !important; border-color: #2a2a2a !important; }
+
+  // ─── Títulos de card ─────────────────────────────────────
+  .card-title { color: #e0e0e0 !important; }
+
+  // ─── Fecha chip ──────────────────────────────────────────
+  .fecha-chip {
+    background: #1e1e1e !important;
+    border-color: #2a2a2a !important;
+    color: #888888 !important;
+  }
+
+  // ─── Form label ──────────────────────────────────────────
+  .form-label { color: #888888 !important; }
+
+  // ─── Loading message ─────────────────────────────────────
+  .loading-message {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    p { color: #666666 !important; }
+  }
+
+  // ─── Sin docs placeholder ────────────────────────────────
+  .no-docs-placeholder {
+    background: #141414 !important;
+    border-color: #2a2a2a !important;
+    color: #555555 !important;
+  }
+
+  // ─── Permisos BD preview ─────────────────────────────────
+  .permisos-bd-preview {
+    background: #0f2018 !important;
+    border-color: #1a3a24 !important;
+    color: #e0e0e0 !important;
+  }
+
+  // ─── Fila promedio / total en tablas de resultados ───────
+  .promedio-row {
+    background: #0f2018 !important;
+    td {
+      border-color: #1a3a24 !important;
+      color: #e0e0e0 !important;
+      font-weight: 700;
+    }
+  }
+
+  .total-valor { color: #00D149 !important; }
+
+  // ─── thead de tablas que escapan al global ────────────────
+  thead, thead tr { background: #111111 !important; }
+  th { background: #111111 !important; color: #555555 !important; border-color: #222222 !important; }
+
+  // ─── Cualquier fondo blanco residual dentro de cards ─────
+  .section-body,
+  .card-body,
+  .modal-body { background: #181818 !important; color: #e0e0e0 !important; }
+
+  // ─── Textos con colores fijos que quedan ilegibles ───────
+  .text-dark,
+  .text-body  { color: #e0e0e0 !important; }
+
+  // ─── Chips / tags genéricos ───────────────────────────────
+  .tag,
+  .chip {
+    background: #222222 !important;
+    border-color: #333333 !important;
+    color: #aaaaaa !important;
+  }
+}

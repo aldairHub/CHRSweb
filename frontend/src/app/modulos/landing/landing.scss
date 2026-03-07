@@ -380,44 +380,64 @@ html {
 // CARDS
 .lnd-card {
   flex-shrink: 0;
-  width: 400px;
+  width: 380px;
   background: white;
-  border-radius: 24px;
+  border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
-  transition: all .4s cubic-bezier(.4,0,.2,1);
-  border: 1px solid #f1f5f9;
-  box-shadow: 0 4px 16px rgba(0,0,0,.07);
+  transition: all .35s cubic-bezier(.4,0,.2,1);
+  border: 1px solid #e8f5e9;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
   animation: cardIn .5s ease both;
   display: flex;
   flex-direction: column;
+
   &:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 24px 60px rgba(0,0,0,.14);
-    border-color: #d1fae5;
-    .lnd-card-img img { transform: scale(1.06); }
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(0,166,62,.13);
+    border-color: #bbf7d0;
+    .lnd-card-img img { transform: scale(1.04); }
     .lnd-card-body h3 { color: $primary; }
   }
 }
+
 .lnd-card-img {
   position: relative;
-  height: 210px;
+  height: 180px;
   overflow: hidden;
   background: #f0fdf4;
-  img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s ease; }
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .5s ease;
+    filter: brightness(.95);
+  }
+  // overlay gradient sutil en la parte inferior
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: linear-gradient(to top, rgba(0,0,0,.22), transparent);
+    pointer-events: none;
+  }
 }
+
 .lnd-badge {
   position: absolute;
-  top: 1rem; left: 1rem;
-  padding: .35rem .9rem;
+  top: .8rem; left: .8rem;
+  padding: .28rem .75rem;
   border-radius: 50px;
-  font-size: .68rem;
+  font-size: .65rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .07em;
-  background: rgba(255,255,255,.95);
+  background: rgba(255,255,255,.92);
   color: $text-light;
-  border: 1px solid rgba(255,255,255,.6);
+  border: 1px solid rgba(255,255,255,.5);
+  backdrop-filter: blur(4px);
+
   &.activa {
     background: $primary;
     color: white;
@@ -425,72 +445,79 @@ html {
     &::before {
       content: '';
       display: inline-block;
-      width: 6px; height: 6px;
+      width: 5px; height: 5px;
       background: #86efac;
       border-radius: 50%;
-      margin-right: .4rem;
+      margin-right: .35rem;
       vertical-align: middle;
-      box-shadow: 0 0 8px #86efac;
+      box-shadow: 0 0 6px #86efac;
       animation: pulse 2s infinite;
     }
   }
 }
+
 .lnd-card-body {
-  padding: 1.75rem;
+  padding: 1.25rem 1.4rem 1rem;
   flex: 1;
   display: flex;
   flex-direction: column;
 }
+
 .lnd-card-body h3 {
-  font-size: 1.15rem;
+  font-size: 1rem;
   font-weight: 700;
-  color: $text;
-  margin: 0 0 .6rem;
+  color: #1e293b;
+  margin: 0 0 .45rem;
   line-height: 1.4;
-  transition: color .3s ease;
+  transition: color .25s ease;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
 .lnd-card-body p {
-  font-size: .9rem;
-  color: $text-light;
-  margin: 0 0 1.25rem;
-  line-height: 1.65;
+  font-size: .83rem;
+  color: #64748b;
+  margin: 0 0 1rem;
+  line-height: 1.6;
   flex: 1;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
 .lnd-card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 1.1rem;
-  border-top: 1px solid #f1f5f9;
+  padding-top: .85rem;
+  border-top: 1px solid #f0fdf4;
 }
+
 .lnd-card-date {
   display: flex;
   align-items: center;
-  gap: .45rem;
-  font-size: .82rem;
-  color: $text-light;
-  svg { width: 15px; height: 15px; stroke: $primary; flex-shrink: 0; }
+  gap: .4rem;
+  font-size: .775rem;
+  color: #94a3b8;
+  svg { width: 13px; height: 13px; stroke: $primary; flex-shrink: 0; }
 }
+
 .lnd-card-arrow {
-  width: 32px; height: 32px;
+  width: 28px; height: 28px;
   border-radius: 50%;
   background: #f0fdf4;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all .3s ease;
+  transition: all .25s ease;
   flex-shrink: 0;
-  svg { width: 15px; height: 15px; stroke: $primary; }
+  svg { width: 13px; height: 13px; stroke: $primary; }
 }
+
 .lnd-card:hover .lnd-card-arrow {
   background: $primary;
   svg { stroke: white; }
@@ -515,7 +542,7 @@ html {
   .convocatorias-section { padding: 2.5rem 1.5rem 4rem; }
   .section-header { flex-direction: column; gap: 1rem; align-items: flex-start; }
   .section-title { font-size: 1.7rem; }
-  .lnd-card { width: 320px; }
+  .lnd-card { width: 300px; }
   .nav-btn { display: none; }
   .hero-actions { flex-direction: column; align-items: center; }
   .footer { padding: 2rem 1.5rem; }
