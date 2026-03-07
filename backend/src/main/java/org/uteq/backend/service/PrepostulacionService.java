@@ -242,25 +242,41 @@ public class PrepostulacionService {
         }
 
         // 2. El SP valida RECHAZADO, copia datos anteriores e inserta nueva fila
-        Long idNuevaPrepostulacion = postgresProcedureRepository.repostular(
-                cedula, idSolicitud, urlCedula, urlFoto, urlPrerrequisitos
-        );
+        try {
+            Long idNuevaPrepostulacion = postgresProcedureRepository.repostular(
+                    cedula, idSolicitud, urlCedula, urlFoto, urlPrerrequisitos
+            );
 
-        System.out.println("💾 Re-postulación guardada como nueva fila con ID: " + idNuevaPrepostulacion);
+            System.out.println("💾 Re-postulación guardada como nueva fila con ID: " + idNuevaPrepostulacion);
 
-        // 3. Obtener correo del registro más reciente para la respuesta
-        String correo = prepostulacionRepository
-                .findTopByIdentificacionOrderByFechaEnvioDesc(cedula)
-                .map(Prepostulacion::getCorreo)
-                .orElse("");
+            // 3. Obtener correo del registro más reciente para la respuesta
+            String correo = prepostulacionRepository
+                    .findTopByIdentificacionOrderByFechaEnvioDesc(cedula)
+                    .map(Prepostulacion::getCorreo)
+                    .orElse("");
 
-        return new PrepostulacionResponseDTO(
-                "Re-postulación enviada. Su solicitud está nuevamente en revisión.",
-                correo,
-                idNuevaPrepostulacion,
-                true,
-                LocalDateTime.now()
-        );
+            return new PrepostulacionResponseDTO(
+                    "Re-postulación enviada. Su solicitud está nuevamente en revisión.",
+                    correo,
+                    idNuevaPrepostulacion,
+                    true,
+                    LocalDateTime.now()
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(extraerMensajeTrigger(e));
+        }
+    }
+
+    private String extraerMensajeTrigger(Exception e) {
+        Throwable causa = e;
+        while (causa.getCause() != null) causa = causa.getCause();
+        String msg = causa.getMessage();
+        if (msg != null && msg.contains("ERROR:")) {
+            msg = msg.substring(msg.indexOf("ERROR:") + 6).trim();
+            if (msg.contains("\n")) msg = msg.substring(0, msg.indexOf("\n")).trim();
+            if (msg.contains("Where:")) msg = msg.substring(0, msg.indexOf("Where:")).trim();
+        }
+        return msg != null ? msg : "Error al procesar la solicitud.";
     }
 
     // =========================================================================
@@ -465,4 +481,5 @@ public class PrepostulacionService {
         for (int i = 0; i < length; i++) sb.append(ABC.charAt(r.nextInt(ABC.length())));
         return sb.toString();
     }
+
 }
