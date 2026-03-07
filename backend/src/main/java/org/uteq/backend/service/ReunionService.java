@@ -31,7 +31,8 @@ public class ReunionService {
     // ─── Programar reunión ─────────────────────────────────────
     public ReunionResponseDTO programar(ReunionRequestDTO dto) {
 
-        ProcesoEvaluacion proceso = procesoService.findOrThrow(dto.getIdPostulante());
+        // Busca directamente por idProceso
+        ProcesoEvaluacion proceso = procesoService.findOrThrow(dto.getIdProceso());
 
         FaseProceso faseProceso = faseProcesoRepository
                 .findByProceso_IdProcesoAndFase_IdFase(proceso.getIdProceso(), dto.getIdFase())
@@ -135,7 +136,6 @@ public class ReunionService {
     }
 
     // ─── Cambiar estado ────────────────────────────────────────
-    /** NUEVO: llamado desde PATCH /reuniones/{id}/estado?estado=... */
     public ReunionResponseDTO cambiarEstado(Long idReunion, String nuevoEstado) {
         Reunion r = reunionRepository.findById(idReunion)
                 .orElseThrow(() -> new RuntimeException("Reunión no encontrada con id: " + idReunion));
