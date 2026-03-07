@@ -10,7 +10,8 @@ export const AuthGuard: CanActivateFn = (route, state) => {
   const RUTAS_TRANSVERSALES = [
     '/login', '/registro', '/recuperar-clave', '/sin-acceso',
     '/cambiar-clave-obligatorio', '/cambio-clave-obligatorio',
-    '/perfil',  // <- FIX: ruta transversal para todos los roles
+    '/perfil',         // transversal para todos los roles
+    '/notificaciones', // historial de notificaciones — todos los roles
   ];
 
 

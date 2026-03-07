@@ -1,0 +1,144 @@
+<app-navbar></app-navbar>
+
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <!-- HEADER -->
+    <div class="page-header">
+      <div>
+        <h2>Notificaciones</h2>
+        <p class="page-subtitle">
+          {{ noLeidasCount > 0 ? noLeidasCount + ' notificación(es) sin leer' : 'Todo al día' }}
+        </p>
+      </div>
+      <button
+        class="btn-marcar-todas"
+        (click)="marcarTodasLeidas()"
+        [disabled]="noLeidasCount === 0">
+        ✓ Marcar todo como leído
+      </button>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="filtros-bar">
+
+      <div class="filtros-grupo">
+        <!-- Estado -->
+        <div class="filtro-tabs">
+          <button
+            [class.active]="filtroEstado === 'todas'"
+            (click)="filtroEstado = 'todas'; aplicarFiltros()">
+            Todas
+          </button>
+          <button
+            [class.active]="filtroEstado === 'no_leidas'"
+            (click)="filtroEstado = 'no_leidas'; aplicarFiltros()">
+            No leídas
+            <span class="badge" *ngIf="noLeidasCount > 0">{{ noLeidasCount }}</span>
+          </button>
+          <button
+            [class.active]="filtroEstado === 'leidas'"
+            (click)="filtroEstado = 'leidas'; aplicarFiltros()">
+            Leídas
+          </button>
+        </div>
+
+        <!-- Tipo -->
+        <select [(ngModel)]="filtroTipo" (change)="aplicarFiltros()" class="select-tipo">
+          <option value="todos">Todos los tipos</option>
+          <option value="success">Éxito</option>
+          <option value="info">Información</option>
+          <option value="warning">Advertencia</option>
+          <option value="error">Error</option>
+        </select>
+      </div>
+
+      <!-- Buscador -->
+      <div class="buscador">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input
+          type="text"
+          placeholder="Buscar notificaciones..."
+          [(ngModel)]="busqueda"
+          (input)="aplicarFiltros()">
+      </div>
+
+    </div>
+
+    <!-- TABLA -->
+    <div class="tabla-card">
+
+      <!-- Cargando -->
+      <div class="estado-vacio" *ngIf="cargando">
+        <div class="spinner"></div>
+        <p>Cargando notificaciones...</p>
+      </div>
+
+      <!-- Vacío -->
+      <div class="estado-vacio" *ngIf="!cargando && filtradas.length === 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+        </svg>
+        <p>No hay notificaciones que mostrar</p>
+      </div>
+
+      <!-- Lista -->
+      <div class="notif-lista" *ngIf="!cargando && filtradas.length > 0">
+        <div
+          *ngFor="let notif of paginadas"
+          class="notif-row"
+          [class.unread]="!notif.leida"
+          (click)="irAModulo(notif)">
+
+          <!-- Icono tipo -->
+          <div class="notif-icono" [ngClass]="notif.tipo">
+            <!-- success -->
+            <svg *ngIf="notif.tipo === 'success'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <!-- error -->
+            <svg *ngIf="notif.tipo === 'error'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <!-- warning -->
+            <svg *ngIf="notif.tipo === 'warning'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <!-- info -->
+            <svg *ngIf="notif.tipo === 'info'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+
+          <!-- Contenido -->
+          <div class="notif-body">
+            <div class="notif-titulo">{{ notif.titulo }}</div>
+            <div class="notif-mensaje" *ngIf="notif.mensaje">{{ notif.mensaje }}</div>
+          </div>
+
+          <!-- Tiempo + estado -->
+          <div class="notif-meta">
+            <span class="notif-tiempo">{{ notif.tiempoRelativo }}</span>
+            <span class="notif-estado leida"    *ngIf="notif.leida">Leída</span>
+            <span class="notif-estado no-leida" *ngIf="!notif.leida">Nueva</span>
+          </div>
+
+          <!-- Punto no leída -->
+          <span class="dot-unread" *ngIf="!notif.leida"></span>
+
+        </div>
+      </div>
+
+      <!-- PAGINACIÓN -->
+      <div class="paginacion" *ngIf="totalPaginas > 1">
+        <button (click)="paginaAnterior()" [disabled]="paginaActual === 1">← Anterior</button>
+        <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
+        <button (click)="paginaSiguiente()" [disabled]="paginaActual === totalPaginas">Siguiente →</button>
+      </div>
+
+    </div>
+  </div>
+</div>

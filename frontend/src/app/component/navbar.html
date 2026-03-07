@@ -59,7 +59,7 @@
               *ngFor="let notif of notifService.notificaciones()"
               class="notif-item"
               [class.unread]="!notif.leida"
-              (click)="marcarLeida(notif.idNotificacion, $event)">
+              (click)="navegarANotificacion(notif, $event)">
 
               <div class="notif-icon" [ngClass]="notif.tipo">
                 <!-- success -->

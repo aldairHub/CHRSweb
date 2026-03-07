@@ -7,6 +7,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { NavbarComponent } from '../../../component/navbar';
 import { FooterComponent } from '../../../component/footer';
 
+import { NivelAcademicoService, NivelAcademico } from '../../../services/nivel-academico.service';
 import {
   SolicitudDocenteService,
   SolicitudDocenteRequest,
@@ -53,23 +54,26 @@ export class SolicitarDocenteComponent implements OnInit {
   toastType: 'success' | 'error' = 'success';
   private toastTimer: any;
 
-  nivelesAcademicos = [
-    { value: 'Pregrado', label: 'Pregrado' },
-    { value: 'Especialización', label: 'Especialización' },
-    { value: 'Maestría', label: 'Maestría' },
-    { value: 'Doctorado', label: 'Doctorado' },
-    { value: 'Postdoctorado', label: 'Postdoctorado' }
-  ];
+  nivelesAcademicos: NivelAcademico[] = [];
 
   constructor(
     private router: Router,
     private solicitudService: SolicitudDocenteService,
+    private nivelSvc: NivelAcademicoService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.cargarCredenciales();
     this.cargarCatalogos();
+    this.cargarNiveles();
+  }
+
+  cargarNiveles(): void {
+    this.nivelSvc.listarActivos().subscribe({
+      next: data => { this.nivelesAcademicos = data; this.cdr.detectChanges(); },
+      error: () => console.warn('No se pudieron cargar los niveles académicos')
+    });
   }
 
   crearSolicitudVacia() {

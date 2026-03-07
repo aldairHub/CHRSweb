@@ -33,6 +33,16 @@ public class NotificacionController {
     }
 
     /**
+     * GET /api/notificaciones/historial
+     * Devuelve TODAS las notificaciones (leídas + no leídas) para el historial.
+     */
+    @GetMapping("/historial")
+    public ResponseEntity<NotificacionesResumenDTO> obtenerHistorial(HttpServletRequest request) {
+        Long idUsuario = extraerIdUsuario(request);
+        return ResponseEntity.ok(notifService.obtenerHistorial(idUsuario));
+    }
+
+    /**
      * PATCH /api/notificaciones/{id}/leer
      * Marca una notificación específica como leída.
      */
@@ -45,8 +55,8 @@ public class NotificacionController {
         boolean ok = notifService.marcarLeida(id, idUsuario);
 
         return ResponseEntity.ok(Map.of(
-            "ok", ok,
-            "mensaje", ok ? "Notificación marcada como leída" : "No se pudo marcar"
+                "ok", ok,
+                "mensaje", ok ? "Notificación marcada como leída" : "No se pudo marcar"
         ));
     }
 
@@ -60,9 +70,9 @@ public class NotificacionController {
         int total = notifService.marcarTodasLeidas(idUsuario);
 
         return ResponseEntity.ok(Map.of(
-            "ok", true,
-            "total", total,
-            "mensaje", total + " notificación(es) marcada(s) como leídas"
+                "ok", true,
+                "total", total,
+                "mensaje", total + " notificación(es) marcada(s) como leídas"
         ));
     }
 
@@ -75,7 +85,7 @@ public class NotificacionController {
 
         String usuarioApp = jwtService.extractUsername(header.substring(7));
         return usuarioRepo.findByUsuarioApp(usuarioApp)
-            .map(u -> u.getIdUsuario())
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + usuarioApp));
+                .map(u -> u.getIdUsuario())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + usuarioApp));
     }
 }

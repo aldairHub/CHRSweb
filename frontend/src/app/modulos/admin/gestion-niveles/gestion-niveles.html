@@ -1,0 +1,192 @@
+<app-navbar></app-navbar>
+
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <!-- HEADER -->
+    <div class="page-header">
+      <div>
+        <h2>Niveles Académicos</h2>
+        <p class="page-subtitle">Configura los niveles disponibles en el formulario de solicitud docente</p>
+      </div>
+      <button class="btn btn-primary" (click)="openCreate()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Nuevo Nivel
+      </button>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0v6"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>Total Niveles</h3>
+          <div class="stat-value">{{ niveles.length }}</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon success">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>Activos</h3>
+          <div class="stat-value">{{ activos }}</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon purple">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>Inactivos</h3>
+          <div class="stat-value">{{ inactivos }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILTRO -->
+    <div class="filters-section">
+      <div class="search-box">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input type="text" class="form-input with-icon" placeholder="Buscar nivel académico..." [(ngModel)]="search">
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-container">
+      <table class="table">
+        <thead>
+        <tr>
+          <th>#</th>
+          <th>Nombre</th>
+          <th>Orden</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let n of filtrados()">
+          <td><strong>#{{ n.idNivel }}</strong></td>
+          <td>{{ n.nombre }}</td>
+          <td>{{ n.orden }}</td>
+          <td>
+              <span class="badge" [ngClass]="n.estado ? 'success' : 'danger'">
+                <span class="status-dot"></span>
+                {{ n.estado ? 'Activo' : 'Inactivo' }}
+              </span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <label class="toggle-switch" [title]="n.estado ? 'Desactivar' : 'Activar'">
+                <input type="checkbox" [checked]="n.estado" (change)="toggleEstado(n)">
+                <span class="toggle-slider"></span>
+              </label>
+              <button class="btn-icon" (click)="edit(n)" title="Editar">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </button>
+              <button class="btn-icon danger" (click)="confirmarEliminar(n)" title="Eliminar">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <tr *ngIf="filtrados().length === 0">
+          <td colspan="5" class="empty-state">
+            <div class="empty-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 14l9-5-9-5-9 5 9 5zm0 0v6"/>
+              </svg>
+            </div>
+            <p>No se encontraron niveles académicos</p>
+            <small>Crea el primero haciendo click en "Nuevo Nivel"</small>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+  <app-footer></app-footer>
+</div>
+
+<!-- MODAL CREAR / EDITAR -->
+<div class="modal-overlay" *ngIf="modalAbierto" (click)="closeModal()">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editando ? 'Editar Nivel' : 'Nuevo Nivel Académico' }}</h3>
+      <button class="close-btn" (click)="closeModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nombre del Nivel <span class="required">*</span></label>
+        <input type="text" class="form-input" [(ngModel)]="form.nombre"
+               placeholder="Ej: Maestría, Doctorado, PhD...">
+      </div>
+      <div class="form-group">
+        <label>Orden de aparición</label>
+        <input type="number" class="form-input" [(ngModel)]="form.orden" min="0"
+               placeholder="0">
+        <small class="hint">Número más bajo aparece primero en el select</small>
+      </div>
+      <div class="form-group">
+        <label class="checkbox-item">
+          <input type="checkbox" [(ngModel)]="form.estado">
+          <span>Nivel activo (visible en formularios)</span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" (click)="guardar()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        {{ editando ? 'Actualizar' : 'Crear Nivel' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR ELIMINAR -->
+<div class="modal-overlay" *ngIf="confirmando" (click)="cancelarEliminar()">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header danger-header">
+      <h3>Confirmar eliminación</h3>
+    </div>
+    <div class="modal-body">
+      <p>¿Estás seguro que deseas eliminar el nivel <strong>"{{ nivelAEliminar?.nombre }}"</strong>?</p>
+      <p class="text-warn">Esta acción no se puede deshacer. Las solicitudes que ya usen este nivel no se verán afectadas.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="cancelarEliminar()">Cancelar</button>
+      <button class="btn btn-danger" (click)="eliminar()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<app-toast></app-toast>

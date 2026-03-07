@@ -89,8 +89,8 @@
               required
             >
               <option value="">Seleccione</option>
-              <option *ngFor="let n of nivelesAcademicos" [value]="n.value">
-                {{ n.label }}
+              <option *ngFor="let n of nivelesAcademicos" [value]="n.nombre">
+                {{ n.nombre }}
               </option>
             </select>
           </div>

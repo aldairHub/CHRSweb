@@ -37,14 +37,13 @@ public class NotificacionService {
     /**
      * Notifica a un usuario concreto (por su id_usuario).
      */
-    @Async
     public void notificarUsuario(Long idUsuario, String tipo, String titulo,
-                                  String mensaje, String entidadTipo, Long entidadId) {
+                                 String mensaje, String entidadTipo, Long entidadId) {
         try {
             jdbc.queryForObject(
-                "SELECT sp_crear_notificacion(?, ?, ?, ?, ?, ?)",
-                Long.class,
-                idUsuario, tipo, titulo, mensaje, entidadTipo, entidadId
+                    "SELECT sp_crear_notificacion(?, ?, ?, ?, ?, ?)",
+                    Long.class,
+                    idUsuario, tipo, titulo, mensaje, entidadTipo, entidadId
             );
         } catch (Exception e) {
             log.error("Error al crear notificacion para usuario {}: {}", idUsuario, e.getMessage());
@@ -56,12 +55,11 @@ public class NotificacionService {
      * Ej: notificarRol("revisor", ...) → avisa a todos los revisores.
      * Ej: notificarRol("admin",   ...) → avisa a todos los admins.
      */
-    @Async
     public void notificarRol(String nombreRol, String tipo, String titulo,
-                              String mensaje, String entidadTipo, Long entidadId) {
+                             String mensaje, String entidadTipo, Long entidadId) {
         try {
             List<Map<String, Object>> usuarios = jdbc.queryForList(
-                "SELECT id_usuario FROM sp_notif_usuarios_por_rol(?)", nombreRol
+                    "SELECT id_usuario FROM sp_notif_usuarios_por_rol(?)", nombreRol
             );
 
             for (Map<String, Object> row : usuarios) {
@@ -69,7 +67,7 @@ public class NotificacionService {
                 notificarUsuario(idUsuario, tipo, titulo, mensaje, entidadTipo, entidadId);
             }
             log.info("Notificacion '{}' enviada a {} usuarios con rol '{}'",
-                     titulo, usuarios.size(), nombreRol);
+                    titulo, usuarios.size(), nombreRol);
         } catch (Exception e) {
             log.error("Error al notificar rol '{}': {}", nombreRol, e.getMessage());
         }
@@ -84,21 +82,21 @@ public class NotificacionService {
     /** Llama desde PrepostulacionService.actualizarEstado() cuando estado = APROBADO */
     public void notifPostulanteAprobado(Long idUsuarioPostulante, Long idPrepostulacion) {
         notificarUsuario(
-            idUsuarioPostulante, "success",
-            "¡Prepostulación aprobada!",
-            "Tu prepostulación fue aprobada. Revisa tu correo para obtener tus credenciales de acceso.",
-            "PREPOSTULACION", idPrepostulacion
+                idUsuarioPostulante, "success",
+                "¡Prepostulación aprobada!",
+                "Tu prepostulación fue aprobada. Revisa tu correo para obtener tus credenciales de acceso.",
+                "PREPOSTULACION", idPrepostulacion
         );
     }
 
     /** Llama desde PrepostulacionService.actualizarEstado() cuando estado = RECHAZADO */
     public void notifPostulanteRechazado(Long idUsuarioPostulante, Long idPrepostulacion, String motivo) {
         notificarUsuario(
-            idUsuarioPostulante, "error",
-            "Prepostulación rechazada",
-            "Tu prepostulación no fue aprobada. " +
-            (motivo != null && !motivo.isBlank() ? "Motivo: " + motivo : "Comunícate con la institución para más información."),
-            "PREPOSTULACION", idPrepostulacion
+                idUsuarioPostulante, "error",
+                "Prepostulación rechazada",
+                "Tu prepostulación no fue aprobada. " +
+                        (motivo != null && !motivo.isBlank() ? "Motivo: " + motivo : "Comunícate con la institución para más información."),
+                "PREPOSTULACION", idPrepostulacion
         );
     }
 
@@ -107,10 +105,10 @@ public class NotificacionService {
                                                     String fecha, String hora, String modalidad) {
         String detalle = "Fecha: " + fecha + " a las " + hora + " — Modalidad: " + modalidad;
         notificarUsuario(
-            idUsuarioPostulante, "info",
-            "Entrevista programada",
-            "Se ha programado tu entrevista. " + detalle,
-            "REUNION", idReunion
+                idUsuarioPostulante, "info",
+                "Entrevista programada",
+                "Se ha programado tu entrevista. " + detalle,
+                "REUNION", idReunion
         );
     }
 
@@ -118,24 +116,24 @@ public class NotificacionService {
     public void notifPostulanteProcesoCerrado(Long idUsuarioPostulante, Long idProceso, String decision) {
         boolean aprobado = decision != null && decision.startsWith("aprobado");
         notificarUsuario(
-            idUsuarioPostulante,
-            aprobado ? "success" : "info",
-            aprobado ? "¡Proceso finalizado — Seleccionado!" : "Proceso de evaluación cerrado",
-            aprobado
-                ? "Felicitaciones, has sido seleccionado en el proceso de evaluación docente."
-                : "El proceso de evaluación docente en el que participaste ha finalizado.",
-            "PROCESO", idProceso
+                idUsuarioPostulante,
+                aprobado ? "success" : "info",
+                aprobado ? "¡Proceso finalizado — Seleccionado!" : "Proceso de evaluación cerrado",
+                aprobado
+                        ? "Felicitaciones, has sido seleccionado en el proceso de evaluación docente."
+                        : "El proceso de evaluación docente en el que participaste ha finalizado.",
+                "PROCESO", idProceso
         );
     }
 
     /** Llama cuando al postulante le faltan documentos por completar */
     public void notifPostulanteFaltanDocumentos(Long idUsuarioPostulante, Long idProceso, String detalle) {
         notificarUsuario(
-            idUsuarioPostulante, "warning",
-            "Documentos pendientes",
-            "Tienes documentos pendientes por subir. " +
-            (detalle != null ? detalle : "Ingresa al sistema para completarlos."),
-            "PROCESO", idProceso
+                idUsuarioPostulante, "warning",
+                "Documentos pendientes",
+                "Tienes documentos pendientes por subir. " +
+                        (detalle != null ? detalle : "Ingresa al sistema para completarlos."),
+                "PROCESO", idProceso
         );
     }
 
@@ -144,20 +142,20 @@ public class NotificacionService {
     /** Llama desde PrepostulacionService.procesarPrepostulacion() — nueva prepostulación recibida */
     public void notifRevisorNuevaPrepostulacion(Long idPrepostulacion, String nombrePostulante) {
         notificarRol(
-            "revisor", "info",
-            "Nueva prepostulación recibida",
-            "El postulante " + nombrePostulante + " ha enviado una prepostulación pendiente de revisión.",
-            "PREPOSTULACION", idPrepostulacion
+                "revisor", "info",
+                "Nueva prepostulación recibida",
+                "El postulante " + nombrePostulante + " ha enviado una prepostulación pendiente de revisión.",
+                "PREPOSTULACION", idPrepostulacion
         );
     }
 
     /** Llama desde SolicitudDocenteService.crearSolicitud() */
     public void notifRevisorNuevaSolicitudDocente(Long idSolicitud, String materia, String carrera) {
         notificarRol(
-            "revisor", "warning",
-            "Nueva solicitud de docente",
-            "Solicitud de docente para " + materia + " (" + carrera + ") requiere tu revisión.",
-            "SOLICITUD", idSolicitud
+                "revisor", "warning",
+                "Nueva solicitud de docente",
+                "Solicitud de docente para " + materia + " (" + carrera + ") requiere tu revisión.",
+                "SOLICITUD", idSolicitud
         );
     }
 
@@ -165,34 +163,34 @@ public class NotificacionService {
 
     /** Llama desde ProcesoEvaluacionService cuando se asigna evaluador a un proceso */
     public void notifEvaluadorPostulanteAsignado(Long idUsuarioEvaluador, Long idProceso,
-                                                  String nombrePostulante) {
+                                                 String nombrePostulante) {
         notificarUsuario(
-            idUsuarioEvaluador, "info",
-            "Nuevo postulante asignado",
-            "Se te ha asignado evaluar al postulante " + nombrePostulante + ".",
-            "PROCESO", idProceso
+                idUsuarioEvaluador, "info",
+                "Nuevo postulante asignado",
+                "Se te ha asignado evaluar al postulante " + nombrePostulante + ".",
+                "PROCESO", idProceso
         );
     }
 
     /** Llama desde ReunionService.programar() para cada evaluador de la reunión */
     public void notifEvaluadorReunionProgramada(Long idUsuarioEvaluador, Long idReunion,
-                                                 String nombrePostulante, String fecha, String hora) {
+                                                String nombrePostulante, String fecha, String hora) {
         notificarUsuario(
-            idUsuarioEvaluador, "warning",
-            "Reunión de entrevista programada",
-            "Tienes una reunión con " + nombrePostulante + " el " + fecha + " a las " + hora + ".",
-            "REUNION", idReunion
+                idUsuarioEvaluador, "warning",
+                "Reunión de entrevista programada",
+                "Tienes una reunión con " + nombrePostulante + " el " + fecha + " a las " + hora + ".",
+                "REUNION", idReunion
         );
     }
 
     /** Llama cuando queda evaluación pendiente de confirmar */
     public void notifEvaluadorEvaluacionPendiente(Long idUsuarioEvaluador, Long idReunion,
-                                                   String nombrePostulante) {
+                                                  String nombrePostulante) {
         notificarUsuario(
-            idUsuarioEvaluador, "warning",
-            "Evaluación pendiente",
-            "Tienes pendiente confirmar tu evaluación del postulante " + nombrePostulante + ".",
-            "REUNION", idReunion
+                idUsuarioEvaluador, "warning",
+                "Evaluación pendiente",
+                "Tienes pendiente confirmar tu evaluación del postulante " + nombrePostulante + ".",
+                "REUNION", idReunion
         );
     }
 
@@ -201,10 +199,10 @@ public class NotificacionService {
     /** Llama desde UsuarioAdminService / AutoridadAcademicaService cuando se crea un usuario */
     public void notifAdminUsuarioCreado(Long idUsuarioNuevo, String nombreCompleto, String rol) {
         notificarRol(
-            "admin", "success",
-            "Nuevo usuario registrado",
-            "Se registró el usuario " + nombreCompleto + " con rol: " + rol + ".",
-            "USUARIO", idUsuarioNuevo
+                "admin", "success",
+                "Nuevo usuario registrado",
+                "Se registró el usuario " + nombreCompleto + " con rol: " + rol + ".",
+                "USUARIO", idUsuarioNuevo
         );
     }
 
@@ -223,25 +221,55 @@ public class NotificacionService {
     @Transactional(readOnly = true)
     public NotificacionesResumenDTO obtenerResumen(Long idUsuario) {
         List<Map<String, Object>> rows = jdbc.queryForList(
-            "SELECT * FROM sp_notificaciones_usuario(?, FALSE, 30)", idUsuario
+                "SELECT * FROM sp_notificaciones_usuario(?, FALSE, 30)", idUsuario
         );
 
         List<NotificacionDTO> lista = rows.stream()
-            .map(row -> NotificacionDTO.builder()
-                .idNotificacion(toLong(row.get("id_notificacion")))
-                .tipo((String) row.get("tipo"))
-                .titulo((String) row.get("titulo"))
-                .mensaje((String) row.get("mensaje"))
-                .leida((Boolean) row.get("leida"))
-                .entidadTipo((String) row.get("entidad_tipo"))
-                .entidadId(toLong(row.get("entidad_id")))
-                .fechaCreacion(toLocalDateTime(row.get("fecha_creacion")))
-                .tiempoRelativo((String) row.get("tiempo_relativo"))
-                .build())
-            .collect(Collectors.toList());
+                .map(row -> NotificacionDTO.builder()
+                        .idNotificacion(toLong(row.get("id_notificacion")))
+                        .tipo((String) row.get("tipo"))
+                        .titulo((String) row.get("titulo"))
+                        .mensaje((String) row.get("mensaje"))
+                        .leida((Boolean) row.get("leida"))
+                        .entidadTipo((String) row.get("entidad_tipo"))
+                        .entidadId(toLong(row.get("entidad_id")))
+                        .fechaCreacion(toLocalDateTime(row.get("fecha_creacion")))
+                        .tiempoRelativo((String) row.get("tiempo_relativo"))
+                        .build())
+                .collect(Collectors.toList());
 
         int noLeidas = jdbc.queryForObject(
-            "SELECT sp_contar_no_leidas(?)", Integer.class, idUsuario
+                "SELECT sp_contar_no_leidas(?)", Integer.class, idUsuario
+        );
+
+        return new NotificacionesResumenDTO(noLeidas, lista);
+    }
+
+    /**
+     * Devuelve TODAS las notificaciones (leídas + no leídas) para el historial.
+     */
+    @Transactional(readOnly = true)
+    public NotificacionesResumenDTO obtenerHistorial(Long idUsuario) {
+        List<Map<String, Object>> rows = jdbc.queryForList(
+                "SELECT * FROM sp_notificaciones_usuario(?, FALSE, 100)", idUsuario
+        );
+
+        List<NotificacionDTO> lista = rows.stream()
+                .map(row -> NotificacionDTO.builder()
+                        .idNotificacion(toLong(row.get("id_notificacion")))
+                        .tipo((String) row.get("tipo"))
+                        .titulo((String) row.get("titulo"))
+                        .mensaje((String) row.get("mensaje"))
+                        .leida((Boolean) row.get("leida"))
+                        .entidadTipo((String) row.get("entidad_tipo"))
+                        .entidadId(toLong(row.get("entidad_id")))
+                        .fechaCreacion(toLocalDateTime(row.get("fecha_creacion")))
+                        .tiempoRelativo((String) row.get("tiempo_relativo"))
+                        .build())
+                .collect(Collectors.toList());
+
+        int noLeidas = jdbc.queryForObject(
+                "SELECT sp_contar_no_leidas(?)", Integer.class, idUsuario
         );
 
         return new NotificacionesResumenDTO(noLeidas, lista);
@@ -254,7 +282,7 @@ public class NotificacionService {
     public boolean marcarLeida(Long idNotificacion, Long idUsuario) {
         try {
             jdbc.update("CALL sp_marcar_notificacion_leida(?, ?, NULL, NULL)",
-                        idNotificacion, idUsuario);
+                    idNotificacion, idUsuario);
             return true;
         } catch (Exception e) {
             log.error("Error al marcar notificacion {} como leida: {}", idNotificacion, e.getMessage());

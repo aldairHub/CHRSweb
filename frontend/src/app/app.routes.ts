@@ -183,6 +183,12 @@ export const routes: Routes = [
         loadComponent: () => import('./modulos/admin/auditoria/sesiones-activas/sesiones-activas').then(m => m.SesionesActivasComponent)
       },
       {
+        path: 'niveles-academicos',
+        title: 'SSDC - Niveles Académicos',
+        loadComponent: () => import('./modulos/admin/gestion-niveles/gestion-niveles')
+          .then(m => m.GestionNivelesComponent)
+      },
+      {
         path: 'gestion-opciones',
         title: 'SSDC - Configuración de opciones',
         loadComponent: () => import('./modulos/admin/gestion-opciones/gestion-opciones').then(m => m.GestionOpcionesComponent)
@@ -216,6 +222,15 @@ export const routes: Routes = [
           import('./modulos/revisor/gestionpostulante/gestionpostulante')
             .then(m => m.GestionPostulanteComponent) },
     ]},
+  // ── Historial notificaciones (todos los roles) ──────────────────────────
+  {
+    path: 'notificaciones',
+    title: 'SSDC - Notificaciones',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./modulos/notificaciones/historial-notificaciones')
+      .then(m => m.HistorialNotificacionesComponent)
+  },
+
   // ── 404 ───────────────────────────────────────────────────────────────────
   { path: '**', redirectTo: '' }
 ];

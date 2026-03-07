@@ -77,6 +77,49 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.notifService.marcarTodasLeidas();
   }
 
+  irAlHistorial(event: MouseEvent): void {
+    event.stopPropagation();
+    this.showNotifications = false;
+    this.router.navigate(['/notificaciones']);
+  }
+
+  navegarANotificacion(notif: any, event: MouseEvent): void {
+    event.stopPropagation();
+    this.notifService.marcarLeida(notif.idNotificacion);
+    this.showNotifications = false;
+
+    const rol = localStorage.getItem('rol') || '';
+
+    switch (notif.entidadTipo) {
+      case 'PREPOSTULACION':
+        if (rol === 'revisor')        this.router.navigate(['/revisor/prepostulaciones']);
+        else if (rol === 'admin')     this.router.navigate(['/admin/gestion-postulante']);
+        else                          this.router.navigate(['/' + rol]);
+        break;
+      case 'SOLICITUD':
+        if (rol === 'revisor')        this.router.navigate(['/revisor/solicitudes-docente']);
+        else if (rol === 'evaluador') this.router.navigate(['/evaluador/solicitar']);
+        else                          this.router.navigate(['/' + rol]);
+        break;
+      case 'REUNION':
+        if (rol === 'evaluador')       this.router.navigate(['/evaluador/entrevistas-docentes']);
+        else if (rol === 'postulante') this.router.navigate(['/postulante/entrevistas']);
+        else                           this.router.navigate(['/' + rol]);
+        break;
+      case 'PROCESO':
+        if (rol === 'postulante')      this.router.navigate(['/postulante/resultados']);
+        else if (rol === 'evaluador')  this.router.navigate(['/evaluador/postulantes']);
+        else                           this.router.navigate(['/' + rol]);
+        break;
+      case 'USUARIO':
+        if (rol === 'admin')           this.router.navigate(['/admin/gestion-usuarios']);
+        else                           this.router.navigate(['/' + rol]);
+        break;
+      default:
+        this.router.navigate(['/' + rol]);
+    }
+  }
+
   // ── Navegación / perfil ─────────────────────────────────────
   goBack(): void {
     this.location.back();

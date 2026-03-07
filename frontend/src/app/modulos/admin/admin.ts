@@ -74,6 +74,12 @@ const SVG_MAP: Record<string, Array<{ d: string }>> = {
     { d: 'M16 16V28' },
     { d: 'M16 16L28 10' },
   ],
+  'niveles-academicos': [
+    { d: 'M12 14l9-5-9-5-9 5 9 5z' },
+    { d: 'M12 14l9-5-9-5-9 5 9 5zm0 0v6' },
+    { d: 'M3 21l9-5 9 5' },
+  ],
+
   'config-institucion': [
     { d: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
   ],
