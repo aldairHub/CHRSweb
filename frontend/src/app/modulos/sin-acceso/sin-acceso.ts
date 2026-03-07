@@ -13,7 +13,7 @@ import { AuthService } from '../../services/auth.service';
       <div class="no-access-card">
         <div class="icon-circle">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+               stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             <line x1="12" y1="8" x2="12" y2="12"/>
             <line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -41,6 +41,7 @@ import { AuthService } from '../../services/auth.service';
       align-items: center;
       justify-content: center;
       padding: 1rem;
+      transition: background 0.3s;
     }
 
     .no-access-card {
@@ -52,6 +53,7 @@ import { AuthService } from '../../services/auth.service';
       width: 100%;
       text-align: center;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      transition: background 0.3s, border-color 0.3s;
     }
 
     .icon-circle {
@@ -63,6 +65,7 @@ import { AuthService } from '../../services/auth.service';
       align-items: center;
       justify-content: center;
       margin: 0 auto 1.75rem;
+      transition: background 0.3s;
       svg { stroke: #016630; }
     }
 
@@ -99,6 +102,34 @@ import { AuthService } from '../../services/auth.service';
       transition: background 0.2s;
 
       &:hover { background: #016630; }
+    }
+
+    /* ── Dark mode ── */
+    :host-context(html.dark) .no-access-wrapper {
+      background: #0d0d0d;
+    }
+
+    :host-context(html.dark) .no-access-card {
+      background: #181818;
+      border-color: #2a2a2a;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    }
+
+    :host-context(html.dark) .icon-circle {
+      background: #0f2018;
+      svg { stroke: #00D149; }
+    }
+
+    :host-context(html.dark) h1 {
+      color: #00D149;
+    }
+
+    :host-context(html.dark) p {
+      color: #888888;
+    }
+
+    :host-context(html.dark) .hint {
+      color: #555555;
     }
   `]
 })
