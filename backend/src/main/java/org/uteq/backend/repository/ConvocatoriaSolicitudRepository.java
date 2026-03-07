@@ -1,5 +1,6 @@
 package org.uteq.backend.repository;
 
+import org.springframework.stereotype.Repository;
 import org.uteq.backend.entity.ConvocatoriaSolicitud;
 import org.uteq.backend.entity.ConvocatoriaSolicitud.ConvocatoriaSolicitudId;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
+@Repository
 public interface ConvocatoriaSolicitudRepository
         extends JpaRepository<ConvocatoriaSolicitud, ConvocatoriaSolicitudId> {
 

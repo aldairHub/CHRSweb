@@ -21,12 +21,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AdminPrepostulacionController {
 
-    private final PrepostulacionService                 prepostulacionService;
-    private final PrepostulacionDocumentoRepository     documentoRepository;
-    private final PrepostulacionSolicitudRepository     prepostulacionSolicitudRepository;
-    private final ConvocatoriaSolicitudRepository       convocatoriaSolicitudRepository;
-    private final SolicitudDocenteRepository            solicitudDocenteRepository;
-    private final ConvocatoriaRepository                convocatoriaRepository;
+    private final PrepostulacionService prepostulacionService;
+    private final PrepostulacionDocumentoRepository documentoRepository;
+    private final PrepostulacionSolicitudRepository prepostulacionSolicitudRepository;
+    private final ConvocatoriaSolicitudRepository convocatoriaSolicitudRepository;
+    private final SolicitudDocenteRepository solicitudDocenteRepository;
+    private final ConvocatoriaRepository convocatoriaRepository;
 
     // ─── LISTAR TODAS ───────────────────────────────────────────────────────
     @GetMapping
