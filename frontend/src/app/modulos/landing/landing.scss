@@ -12,19 +12,17 @@ $text-light: #64748b;
   flex-direction: column;
   overflow-x: hidden;
   background: #f0fdf4;
-  scroll-behavior: smooth;
 }
 
 html {
-  scroll-behavior: smooth;
+  // scroll-behavior: smooth eliminado — el JS smoothScrollTo lo maneja mejor
+  // y este flag puede causar conflictos en Chrome al interactuar con scroll events
 }
 
 // ============ HEADER ============
 .header {
   padding: 1.25rem 3rem;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(0, 10, 5, 0.72);
   border-bottom: 1px solid rgba(255,255,255,0.08);
   position: absolute;
   top: 0;
@@ -105,12 +103,14 @@ html {
   align-items: center;
   justify-content: center;
   text-align: center;
-  image-rendering: auto;
   overflow: visible;
   will-change: transform, opacity;
-  transition: border-radius 0.1s ease;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   background-size: cover;
   background-position: center;
+  transform-origin: center top;
   // El overlay se extiende 120px hacia abajo para fusionarse con el fondo
   &::after {
     content: '';
@@ -133,7 +133,6 @@ html {
       rgba(0, 0, 0, 0.35) 100%
   );
   z-index: 1;
-  backdrop-filter: blur(2px);
 }
 .hero-content {
   position: relative;
@@ -147,8 +146,7 @@ html {
   align-items: center;
   gap: .6rem;
   padding: .55rem 1.4rem;
-  background: rgba(0, 166, 62, 0.2);
-  backdrop-filter: blur(10px);
+  background: rgba(0, 166, 62, 0.28);
   border-radius: 999px;
   border: 1px solid rgba(74,222,128,0.45);
   color: #86efac;
@@ -218,7 +216,7 @@ html {
   align-items: center;
   gap: .6rem;
   padding: 1rem 2.25rem;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.15);
   color: white;
   border: 2px solid rgba(255,255,255,0.4);
   border-radius: 50px;
@@ -226,7 +224,6 @@ html {
   font-weight: 600;
   cursor: pointer;
   transition: all .3s ease;
-  backdrop-filter: blur(8px);
   svg { width: 20px; height: 20px; }
   &:hover {
     background: rgba(255,255,255,0.2);
@@ -422,9 +419,8 @@ html {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .07em;
-  background: rgba(255,255,255,.92);
+  background: rgba(255,255,255,.95);
   color: $text-light;
-  backdrop-filter: blur(8px);
   border: 1px solid rgba(255,255,255,.6);
   &.activa {
     background: $primary;
@@ -530,35 +526,68 @@ html {
 }
 
 // ============ SCROLL REVEAL ============
-.reveal,
-.reveal-left,
-.reveal-right,
-.reveal-scale {
-  opacity: 0;
-  transition: opacity 0.7s cubic-bezier(.22,1,.36,1),
-  transform 0.7s cubic-bezier(.22,1,.36,1);
+// Scoped dentro de .landing-container para NO filtrar a /convocatorias, /login, etc.
+.landing-container {
+  .reveal,
+  .reveal-left,
+  .reveal-right,
+  .reveal-scale {
+    opacity: 0;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    // Easing suave tipo Apple — rápido al inicio, se frena elegantemente
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal {
+    transform: translateY(18px) translateZ(0);
+    &.revealed { opacity: 1; transform: translateY(0) translateZ(0); }
+  }
+  .reveal-left {
+    transform: translateX(-24px) translateZ(0);
+    &.revealed { opacity: 1; transform: translateX(0) translateZ(0); }
+  }
+  .reveal-right {
+    transform: translateX(24px) translateZ(0);
+    &.revealed { opacity: 1; transform: translateX(0) translateZ(0); }
+  }
+  .reveal-scale {
+    transform: scale(0.97) translateY(14px) translateZ(0);
+    &.revealed { opacity: 1; transform: scale(1) translateY(0) translateZ(0); }
+  }
 }
 
-.reveal {
-  transform: translateY(40px);
-  &.revealed { opacity: 1; transform: translateY(0); }
-}
-.reveal-left {
-  transform: translateX(-50px);
-  &.revealed { opacity: 1; transform: translateX(0); }
-}
-.reveal-right {
-  transform: translateX(50px);
-  &.revealed { opacity: 1; transform: translateX(0); }
-}
-.reveal-scale {
-  transform: scale(0.92) translateY(30px);
-  &.revealed { opacity: 1; transform: scale(1) translateY(0); }
+
+@keyframes heroIn {
+  from { opacity: 0; transform: translateY(35px) translateZ(0); }
+  to   { opacity: 1; transform: translateY(0)    translateZ(0); }
 }
 
+// ─── CSS Scroll-Driven Animations (Chrome 115+, Edge 115+) ───────────────────
+// Corren 100% en el compositor thread — cero JS, cero lag, 60fps garantizados.
+// @supports evita conflicto con Firefox/Safari (donde el JS hace el fallback).
+@supports (animation-timeline: scroll()) {
+  .hero {
+    animation: heroScrollShrink linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0% 70vh;
+  }
+}
 
-from { opacity: 0; transform: translateY(35px); }
-to { opacity: 1; transform: translateY(0); }
+@keyframes heroScrollShrink {
+  from {
+    transform:     scale(1)    translateZ(0);
+    opacity:       1;
+    border-radius: 0px;
+  }
+  to {
+    transform:     scale(0.93) translateZ(0);
+    opacity:       0.65;
+    border-radius: 20px;
+  }
+}
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }

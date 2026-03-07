@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { LogoService } from '../../services/logo.service';
@@ -28,7 +28,7 @@ export const CAMPUS_BG = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wB
   templateUrl: './landing.html',
   styleUrls: ['./landing.scss']
 })
-export class LandingComponent implements OnInit, AfterViewInit {
+export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('carouselTrack') carouselTrack!: ElementRef<HTMLDivElement>;
 
   // readonly campusBg = CAMPUS_BG;
@@ -43,12 +43,23 @@ export class LandingComponent implements OnInit, AfterViewInit {
   canScrollLeft = false;
   canScrollRight = true;
 
+  // Lerp scroll state para animación suave del hero
+  private lerpScrollY = 0;
+  private targetScrollY = 0;
+  private animFrameId: number | null = null;
+
   constructor(
     private router: Router,
     public logoService: LogoService,
     private convocatoriaService: ConvocatoriaService,
     private institucionService: InstitucionAdminService
   ) {}
+
+  ngOnDestroy(): void {
+    if (this.animFrameId) {
+      cancelAnimationFrame(this.animFrameId);
+    }
+    }
 
   ngOnInit(): void {
     this.cargarInstitucion();
@@ -59,54 +70,32 @@ export class LandingComponent implements OnInit, AfterViewInit {
     setTimeout(() => this.updateScrollButtons(), 100);
     this.initScrollReveal();
     this.initHeroShrink();
-    this.initSmoothWheel();
   }
 
   initHeroShrink(): void {
     const hero = document.querySelector('.hero') as HTMLElement;
     if (!hero) return;
 
+    // Chrome 115+ / Edge 115+: CSS scroll-driven animations lo manejan en el
+    // compositor thread (cero JS, cero lag). No hacer nada aquí.
+    if (CSS.supports('animation-timeline: scroll()')) return;
+
+    // ─── Fallback JS para Firefox / Safari ───────────────────────────────────
+    hero.style.willChange    = 'transform, opacity';
+    hero.style.transformOrigin = 'center top';
+    // Transición corta para suavizar sin agregar lag perceptible
+    hero.style.transition    = 'transform 50ms linear, opacity 50ms linear, border-radius 50ms linear';
+
+    // Cachear heroHeight FUERA del handler — leer offsetHeight dentro causa
+    // forced reflow en cada evento de scroll, que es la mayor fuente de lag
+    const heroHeight = hero.offsetHeight || window.innerHeight;
+
     window.addEventListener('scroll', () => {
-      const scrollY = window.scrollY;
-      const heroHeight = hero.offsetHeight;
-      const progress = Math.min(scrollY / heroHeight, 1);
-      const scale = 1 - progress * 0.1;
-      const opacity = 1 - progress * 0.4;
-      hero.style.transform = `scale(${scale})`;
-      hero.style.transformOrigin = 'center top';
-      hero.style.opacity = `${opacity}`;
-      hero.style.borderRadius = `${progress * 24}px`;
+      const progress = Math.min(window.scrollY / (heroHeight * 0.7), 1);
+      hero.style.transform    = `scale(${1 - progress * 0.07}) translateZ(0)`;
+      hero.style.opacity      = `${1 - progress * 0.35}`;
+      hero.style.borderRadius = `${progress * 20}px`;
     }, { passive: true });
-  }
-
-  private initSmoothWheel(): void {
-    let targetY = window.scrollY;
-    let currentY = window.scrollY;
-    let ticking = false;
-
-    const animate = () => {
-      const diff = targetY - currentY;
-      if (Math.abs(diff) < 0.5) {
-        currentY = targetY;
-        window.scrollTo(0, currentY);
-        ticking = false;
-        return;
-      }
-      // Factor 0.08 = muy suave, tipo inercia
-      currentY += diff * 0.08;
-      window.scrollTo(0, currentY);
-      requestAnimationFrame(animate);
-    };
-
-    window.addEventListener('wheel', (e: WheelEvent) => {
-      e.preventDefault();
-      const maxScroll = document.body.scrollHeight - window.innerHeight;
-      targetY = Math.max(0, Math.min(targetY + e.deltaY * 1.5, maxScroll));
-      if (!ticking) {
-        ticking = true;
-        requestAnimationFrame(animate);
-      }
-    }, { passive: false });
   }
 
   initScrollReveal(): void {

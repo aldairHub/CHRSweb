@@ -26,7 +26,8 @@ $error-bg: #fff5f5;
 }
 
 html {
-  scroll-behavior: smooth;
+  // scroll-behavior: smooth desactivado globalmente — causa jank en Chrome
+  // al combinarse con scroll listeners. El JS smoothScrollTo lo maneja donde se necesita.
 }
 
 html, body {
@@ -34,6 +35,10 @@ html, body {
   height: 100%;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: #EEF9EC;
+  // Mejora el renderizado de texto y subpixel en todos los navegadores
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 // 🔥 LAYOUT PRINCIPAL (admin, evaluador, postulante) 🔥
@@ -439,30 +444,4 @@ html, body {
   margin-top: 28px;
   padding-top: 20px;
   border-top: 1px solid $border;
-}
-
-// ============ SCROLL REVEAL (global - necesario para clases añadidas via JS) ============
-.reveal,
-.reveal-left,
-.reveal-right,
-.reveal-scale {
-  opacity: 0;
-  transition: opacity 0.7s cubic-bezier(.22,1,.36,1),
-  transform 0.7s cubic-bezier(.22,1,.36,1);
-}
-.reveal {
-  transform: translateY(40px);
-  &.revealed { opacity: 1; transform: translateY(0); }
-}
-.reveal-left {
-  transform: translateX(-50px);
-  &.revealed { opacity: 1; transform: translateX(0); }
-}
-.reveal-right {
-  transform: translateX(50px);
-  &.revealed { opacity: 1; transform: translateX(0); }
-}
-.reveal-scale {
-  transform: scale(0.92) translateY(30px);
-  &.revealed { opacity: 1; transform: scale(1) translateY(0); }
 }
