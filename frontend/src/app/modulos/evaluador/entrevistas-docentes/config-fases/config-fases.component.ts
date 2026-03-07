@@ -4,9 +4,17 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { NavbarComponent } from '../../../../component/navbar';
 import { FasesService } from '../../../../services/entrevistas/config-fases.service';
 import { FaseRequest, FaseResponse } from '../../../../models/entrevistas-models';
+
+interface EvaluadorUsuario {
+  id_usuario: number;
+  usuario_app: string;
+  correo: string;
+  nombre_completo: string;
+}
 
 @Component({
   selector: 'app-config-fases',
@@ -37,17 +45,29 @@ export class ConfigFasesComponent implements OnInit {
     { value: 'decision',  label: 'Decisión de Comité' }
   ];
 
-  evaluadoresOpciones = [
-    'Comité de Selección', 'Coordinador', 'Experto Técnico',
-    'Decano', 'Pedagogo', 'Comité evaluador', 'Vicerrectorado'
-  ];
+  evaluadoresOpciones: EvaluadorUsuario[] = [];
 
   constructor(
     private cdr: ChangeDetectorRef,
-    private fasesService: FasesService
+    private fasesService: FasesService,
+    private http: HttpClient
   ) {}
 
-  ngOnInit(): void { this.cargarFases(); }
+  ngOnInit(): void {
+    this.cargarFases();
+    this.cargarEvaluadores();
+  }
+
+  cargarEvaluadores(): void {
+    this.http.get<EvaluadorUsuario[]>('http://localhost:8080/api/evaluacion/evaluadores')
+      .subscribe({
+        next: (data) => {
+          this.evaluadoresOpciones = data;
+          this.cdr.detectChanges();
+        },
+        error: (err) => console.error('Error cargando evaluadores:', err)
+      });
+  }
 
   cargarFases(): void {
     this.isLoading = true;
@@ -72,14 +92,14 @@ export class ConfigFasesComponent implements OnInit {
   }
 
   openCreate(): void {
-    this.editMode  = false;
-    this.form      = this.initForm();
+    this.editMode   = false;
+    this.form       = this.initForm();
     this.form.orden = this.fases.length + 1;
-    this.showModal = true;
+    this.showModal  = true;
   }
 
   openEdit(f: FaseResponse): void {
-    this.editMode  = true;
+    this.editMode = true;
     this.form = {
       idFase: f.idFase, nombre: f.nombre, tipo: f.tipo,
       peso: f.peso, orden: f.orden,
@@ -90,18 +110,20 @@ export class ConfigFasesComponent implements OnInit {
 
   closeModal(): void { this.showModal = false; }
 
-  toggleEvaluador(ev: string): void {
+  toggleEvaluador(nombreCompleto: string): void {
     const arr = this.form.evaluadoresPermitidos;
-    const idx = arr.indexOf(ev);
-    if (idx >= 0) arr.splice(idx, 1); else arr.push(ev);
+    const idx = arr.indexOf(nombreCompleto);
+    if (idx >= 0) arr.splice(idx, 1); else arr.push(nombreCompleto);
     this.form.evaluadoresPermitidos = [...arr];
   }
 
-  isEvaluadorSelected(ev: string): boolean {
-    return this.form.evaluadoresPermitidos.includes(ev);
+  isEvaluadorSelected(nombreCompleto: string): boolean {
+    return this.form.evaluadoresPermitidos.includes(nombreCompleto);
   }
 
   save(): void {
+    console.log('evaluadoresPermitidos al guardar:', this.form.evaluadoresPermitidos);
+
     if (!this.form.nombre?.trim()) { alert('El nombre es obligatorio.'); return; }
     if (!this.form.peso || this.form.peso < 1) { alert('El peso debe ser mayor a 0.'); return; }
 

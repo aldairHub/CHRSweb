@@ -1,6 +1,5 @@
 <!-- entrevistas-docentes/config-fases/config-fases.component.html -->
 <app-navbar></app-navbar>
-<!-- NAV TABS del módulo -->
 <nav class="module-tabs">
   <a class="tab" routerLink="/evaluador/entrevistas-docentes/dashboard" routerLinkActive="active">📊 Dashboard</a>
   <a class="tab" routerLink="/evaluador/entrevistas-docentes/fases" routerLinkActive="active">⚙️ Configurar Fases</a>
@@ -11,7 +10,6 @@
   <a class="tab" routerLink="/evaluador/entrevistas-docentes/evaluacion" routerLinkActive="active">⭐ Evaluar</a>
   <a class="tab" routerLink="/evaluador/entrevistas-docentes/resultados" routerLinkActive="active">📈 Resultados</a>
 </nav>
-
 
 <div class="main-container">
   <div class="content-wrapper">
@@ -29,7 +27,6 @@
       </button>
     </div>
 
-    <!-- LOADING -->
     <div class="loading-state" *ngIf="isLoading">
       <svg class="spinner-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="32" height="32">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -38,7 +35,6 @@
       <p>Cargando fases...</p>
     </div>
 
-    <!-- ERROR -->
     <div class="alert danger" *ngIf="error">
       <div><strong>Error</strong><p>{{ error }}</p>
         <button class="btn btn-outline btn-sm" (click)="cargarFases()">Reintentar</button>
@@ -46,7 +42,6 @@
     </div>
 
     <ng-container *ngIf="!isLoading && !error">
-
       <div class="alert info">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -58,7 +53,6 @@
         </div>
       </div>
 
-      <!-- PESO TOTAL -->
       <div class="peso-indicator" [class.valid]="pesoValido" [class.invalid]="!pesoValido">
         <span>Peso total de todas las fases:</span>
         <strong>{{ pesoTotal }}%</strong>
@@ -74,7 +68,6 @@
             {{ pesoValido ? 'Configuración válida' : 'Pendiente ajuste' }}
           </span>
         </div>
-
         <div class="table-container">
           <table class="table">
             <thead>
@@ -87,9 +80,7 @@
             <tr *ngFor="let f of fases">
               <td><strong>{{ f.orden }}</strong></td>
               <td>{{ f.nombre }}</td>
-              <td>
-                <span class="badge" [ngClass]="getTipoBadge(f.tipo)">{{ getTipoLabel(f.tipo) }}</span>
-              </td>
+              <td><span class="badge" [ngClass]="getTipoBadge(f.tipo)">{{ getTipoLabel(f.tipo) }}</span></td>
               <td><strong>{{ f.peso }}%</strong></td>
               <td>
                 <div class="roles-container">
@@ -98,10 +89,10 @@
                 </div>
               </td>
               <td>
-                  <span class="badge" [ngClass]="f.estado ? 'success' : 'danger'"
-                        style="cursor:pointer;" (click)="cambiarEstado(f)">
-                    {{ f.estado ? 'Activa' : 'Inactiva' }}
-                  </span>
+                <span class="badge" [ngClass]="f.estado ? 'success' : 'danger'"
+                      style="cursor:pointer;" (click)="cambiarEstado(f)">
+                  {{ f.estado ? 'Activa' : 'Inactiva' }}
+                </span>
               </td>
               <td>
                 <div class="action-buttons">
@@ -123,7 +114,6 @@
           </table>
         </div>
       </div>
-
     </ng-container>
   </div>
 </div>
@@ -142,7 +132,7 @@
     <div class="modal-body">
       <div class="form-group">
         <label>Nombre de la Fase <span class="required">*</span></label>
-        <input class="form-input" type="text" [(ngModel)]="form.nombre" placeholder="Ej: Evaluación Psicológica">
+        <input class="form-input" type="text" [(ngModel)]="form.nombre" placeholder="Ej: Evaluación Técnica">
       </div>
       <div class="form-grid">
         <div class="form-group">
@@ -164,10 +154,19 @@
       <div class="form-group">
         <label>Evaluadores Permitidos</label>
         <div class="roles-app-list">
-          <label class="rol-app-item" *ngFor="let ev of evaluadoresOpciones" (click)="toggleEvaluador(ev)">
-            <input type="checkbox" [checked]="isEvaluadorSelected(ev)" (click)="$event.stopPropagation()">
-            <div class="rol-app-info"><div class="rol-app-nombre">{{ ev }}</div></div>
+          <label class="rol-app-item" *ngFor="let ev of evaluadoresOpciones"
+                 (click)="toggleEvaluador(ev.nombre_completo)">
+            <input type="checkbox"
+                   [checked]="isEvaluadorSelected(ev.nombre_completo)"
+                   (click)="$event.stopPropagation()">
+            <div class="rol-app-info">
+              <div class="rol-app-nombre">{{ ev.nombre_completo }}</div>
+              <small class="text-muted">{{ ev.usuario_app }}</small>
+            </div>
           </label>
+          <div *ngIf="evaluadoresOpciones.length === 0" class="text-muted" style="padding: 1rem; text-align: center;">
+            Cargando evaluadores...
+          </div>
         </div>
       </div>
     </div>
