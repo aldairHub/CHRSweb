@@ -1244,3 +1244,132 @@ $success: #16a34a;
 
   &.selected { flex-direction: row; align-items: center; justify-content: space-between; }
 }
+
+// ─── Gestión Postulante — Premium Oscuro ──────────────
+:host-context(html.dark) .main-container {
+  background: #111111 !important;
+}
+
+:host-context(html.dark) .page-header {
+  h2 { color: #00D149 !important; }
+  .page-subtitle { color: #666666 !important; }
+}
+
+:host-context(html.dark) .stat-card {
+  background: #181818 !important;
+  border-color: #2a2a2a !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+
+  .stat-label { color: #666666 !important; }
+  .stat-value { color: #f0f0f0 !important; }
+  .stat-icon  { opacity: 0.8; }
+}
+
+:host-context(html.dark) .filter-section,
+:host-context(html.dark) .filters-row {
+  background: #181818 !important;
+  border-color: #2a2a2a !important;
+}
+
+:host-context(html.dark) .search-input,
+:host-context(html.dark) .filter-select,
+:host-context(html.dark) input[type="text"],
+:host-context(html.dark) input[type="search"],
+:host-context(html.dark) select {
+  background: #111111 !important;
+  border-color: #2a2a2a !important;
+  color: #f0f0f0 !important;
+  &::placeholder { color: #444444 !important; }
+}
+
+:host-context(html.dark) .table-wrapper,
+:host-context(html.dark) .table-container {
+  background: #181818 !important;
+  border-color: #2a2a2a !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+}
+
+:host-context(html.dark) table thead tr {
+  background: #111111 !important;
+  th {
+    color: #555555 !important;
+    border-color: #222222 !important;
+    letter-spacing: 0.08em;
+  }
+}
+
+:host-context(html.dark) table tbody tr {
+  border-color: #1e1e1e !important;
+  &:hover { background: #1e1e1e !important; }
+
+  td {
+    color: #d0d0d0 !important;
+    border-color: #1e1e1e !important;
+  }
+}
+
+:host-context(html.dark) .badge-pendiente,
+:host-context(html.dark) .status-badge.pendiente {
+  background: #2a1800 !important;
+  color: #f59e0b !important;
+  border-color: #4a2800 !important;
+}
+
+:host-context(html.dark) .badge-validado,
+:host-context(html.dark) .status-badge.validado {
+  background: #0d2818 !important;
+  color: #4ade80 !important;
+  border-color: #1a4a2a !important;
+}
+
+:host-context(html.dark) .badge-rechazado,
+:host-context(html.dark) .status-badge.rechazado {
+  background: #2a0808 !important;
+  color: #f87171 !important;
+  border-color: #4a1010 !important;
+}
+
+:host-context(html.dark) .doc-tag,
+:host-context(html.dark) .convocatoria-tag {
+  background: rgba(0,166,62,0.08) !important;
+  color: #4ade80 !important;
+  border: 1px solid rgba(0,166,62,0.2) !important;
+}
+
+:host-context(html.dark) .action-btn,
+:host-context(html.dark) .btn-action {
+  background: #222222 !important;
+  border-color: #333333 !important;
+  color: #888888 !important;
+  &:hover { background: #2a2a2a !important; color: #f0f0f0 !important; }
+}
+
+:host-context(html.dark) .empty-state {
+  background: #181818 !important;
+  color: #444444 !important;
+  svg { stroke: #2a2a2a !important; }
+  p   { color: #444444 !important; }
+}
+
+:host-context(html.dark) .modal-overlay {
+  background: rgba(0,0,0,0.85) !important;
+}
+
+:host-context(html.dark) .modal-content,
+:host-context(html.dark) .modal-card {
+  background: #181818 !important;
+  border: 1px solid #2a2a2a !important;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.8) !important;
+
+  h3, h4, .modal-title { color: #f0f0f0 !important; }
+  p, .modal-sub         { color: #888888 !important; }
+}
+
+:host-context(html.dark) .filtro-option {
+  background: #111111 !important;
+  border-color: #2a2a2a !important;
+  .filtro-option-title { color: #d0d0d0 !important; }
+  .filtro-option-sub   { color: #666666 !important; }
+  &:hover    { background: #1e1e1e !important; border-color: #00A63E !important; }
+  &.selected { background: #0d1f12 !important; border-color: #00A63E !important; .filtro-option-title { color: #4ade80 !important; } }
+}

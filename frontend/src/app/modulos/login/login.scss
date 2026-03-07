@@ -338,3 +338,88 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
 
   &:hover { color: #15325c; }
 }
+
+// ─── Botón de tema flotante en login ──────────────────
+.btn-theme-login {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.5rem;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0,166,62,0.1);
+  border: 1.5px solid rgba(0,166,62,0.3);
+  color: #00A63E;
+  cursor: pointer;
+  transition: all 0.25s ease;
+
+  svg { width: 22px; height: 22px; }
+
+  &:hover {
+    background: rgba(0,166,62,0.2);
+    transform: scale(1.08);
+    box-shadow: 0 0 16px rgba(0,166,62,0.3);
+  }
+}
+
+// ─── Login premium oscuro ─────────────────────────────
+:host-context(html.dark) .login-container {
+  background: #0a0a0a;
+}
+
+:host-context(html.dark) .login-card {
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+}
+
+:host-context(html.dark) .login-header {
+  .title      { color: #00D149; }
+  .university { color: #888888; }
+  .subtitle   { color: #00A63E; }
+}
+
+:host-context(html.dark) .form-title    { color: #f0f0f0; }
+:host-context(html.dark) .form-subtitle { color: #00A63E; }
+
+:host-context(html.dark) label {
+  color: #888888 !important;
+}
+
+:host-context(html.dark) .form-input {
+  background: #111111;
+  border-color: #2a2a2a;
+  color: #f0f0f0;
+
+  &::placeholder { color: #444444; }
+  &:focus {
+    border-color: #00A63E;
+    box-shadow: 0 0 0 3px rgba(0,166,62,0.15);
+  }
+}
+
+:host-context(html.dark) .input-icon { color: #00A63E !important; }
+:host-context(html.dark) .eye-btn    { color: #555555 !important; &:hover { color: #00A63E !important; } }
+
+:host-context(html.dark) .form-footer {
+  color: #555555;
+  border-color: #222222;
+}
+
+:host-context(html.dark) .forgot     { color: #00A63E !important; }
+:host-context(html.dark) .server-error {
+  background: #1a0808;
+  border-color: #5a1a1a;
+  color: #f87171;
+}
+
+:host-context(html.dark) .btn-theme-login {
+  background: rgba(255,255,255,0.04);
+  border-color: #2a2a2a;
+  color: #666666;
+  &:hover { color: #f0f0f0; background: rgba(255,255,255,0.08); }
+}

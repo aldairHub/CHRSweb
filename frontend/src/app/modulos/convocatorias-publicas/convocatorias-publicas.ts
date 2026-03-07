@@ -3,6 +3,7 @@ import { AsyncPipe, CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { ConvocatoriaService, Convocatoria, SolicitudDocente } from '../../services/convocatoria.service';
 import { LogoService } from '../../services/logo.service';
+import { ThemeService } from '../../services/theme.service';
 
 interface ConvocatoriaVM extends Convocatoria {
   expandida:             boolean;
@@ -34,7 +35,8 @@ export class ConvocatoriasPublicasComponent implements OnInit, OnDestroy {
     private router: Router,
     private cdr:    ChangeDetectorRef,
     private el:     ElementRef,
-    public logoService: LogoService
+    public logoService: LogoService,
+    public themeService: ThemeService
   ) {}
 
   ngOnInit(): void {

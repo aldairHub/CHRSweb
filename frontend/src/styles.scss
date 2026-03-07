@@ -1,62 +1,43 @@
 @use "sass:color";
-// src/styles.scss
-/* styles.scss */
 
 // =========================================
 // 1. VARIABLES GLOBALES (TOKENS)
 // =========================================
-$primary: #00A63E;       // Verde UTEQ Principal
-$dark: #016630;          // Verde Oscuro (Hover)
-$light-green: #00D149;   // Verde Brillante
-$light-card-bg: #EEF9EC; // Fondo Verde Clarito (Tarjetas)
-$border: #B9F8CF;        // Bordes suaves
-$text-dark: #1a1a1a;
-$text-gray: #536b50;     // Texto secundario verdoso
-$bg-white: #ffffff;
-$error: #dc2626;
-$error-bg: #fff5f5;
+$primary:        #00A63E;
+$dark:           #016630;
+$light-green:    #00D149;
+$light-card-bg:  #EEF9EC;
+$border:         #B9F8CF;
+$text-dark:      #1a1a1a;
+$text-gray:      #536b50;
+$bg-white:       #ffffff;
+$error:          #dc2626;
+$error-bg:       #fff5f5;
 
 // =========================================
 // 2. ESTRUCTURA GLOBAL Y FONDO
 // =========================================
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  // scroll-behavior: smooth desactivado globalmente — causa jank en Chrome
-  // al combinarse con scroll listeners. El JS smoothScrollTo lo maneja donde se necesita.
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 html, body {
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: #EEF9EC;
-  // Mejora el renderizado de texto y subpixel en todos los navegadores
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-// 🔥 LAYOUT PRINCIPAL (admin, evaluador, postulante) 🔥
 .main-container {
   width: 100%;
-  // Restamos la altura del Navbar para que el footer se vea sin scroll
   min-height: calc(100vh - 85px);
-
-  // El degradado global
   background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
-
   display: flex;
   flex-direction: column;
 }
 
-// Contenedor centrado
 .content-wrapper {
-  flex: 1; // Empuja el footer hacia abajo
+  flex: 1;
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
@@ -64,37 +45,21 @@ html, body {
 }
 
 // =========================================
-// 3. ENCABEZADOS DE DASHBOARD
+// 3. ENCABEZADOS
 // =========================================
 .dashboard-header {
   text-align: center;
   margin-bottom: 1.5rem;
 
-  h1 {
-    color: $dark;
-    font-size: 1.8rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-  }
-
-  p {
-    color: $text-gray;
-    font-size: 1rem;
-    max-width: 700px;
-    margin: 0 auto;
-    line-height: 1.4;
-  }
+  h1 { color: $dark; font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
+  p  { color: $text-gray; font-size: 1rem; max-width: 700px; margin: 0 auto; line-height: 1.4; }
 }
 
 // =========================================
-// 4. TARJETAS (CARDS) GLOBALES
+// 4. TARJETAS
 // =========================================
 .cards-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  justify-content: center;
-  padding-bottom: 1rem;
+  display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: center; padding-bottom: 1rem;
 }
 
 .card {
@@ -102,17 +67,9 @@ html, body {
   border: 1px solid $border;
   border-radius: 12px;
   padding: 1.5rem 1rem;
-  width: 100%;
-  max-width: 260px;
-  min-height: 200px;
-
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  width: 100%; max-width: 260px; min-height: 200px;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  cursor: pointer; transition: all 0.3s ease;
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
 
   &:hover {
@@ -122,326 +79,504 @@ html, body {
     box-shadow: 0 10px 15px rgba(0, 166, 62, 0.15);
   }
 
-  .card-icon {
-    margin-bottom: 1rem;
-    svg {
-      width: 42px;
-      height: 42px;
-      stroke: $primary;
-      transition: transform 0.3s ease;
-    }
-  }
-
-  &:hover .card-icon svg {
-    transform: scale(1.1);
-  }
-
-  h3 {
-    color: $dark;
-    font-size: 1rem;
-    font-weight: 700;
-    margin: 0.5rem 0;
-  }
-
-  span {
-    color: $text-gray;
-    font-size: 0.85rem;
-  }
+  .card-icon { margin-bottom: 1rem; svg { width: 42px; height: 42px; stroke: $primary; transition: transform 0.3s ease; } }
+  &:hover .card-icon svg { transform: scale(1.1); }
+  h3   { color: $dark; font-size: 1rem; font-weight: 700; margin: 0.5rem 0; }
+  span { color: $text-gray; font-size: 0.85rem; }
 }
 
 // =========================================
-// 5. COMPONENTES BASE (BOTONES E INPUTS)
+// 5. BOTONES
 // =========================================
-
-// --- Botones Base ---
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: all 0.2s ease;
-  font-family: inherit;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.95rem;
+  cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; font-family: inherit;
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
 }
 
-// Botón Principal (Verde)
 .btn-primary {
   @extend .btn;
-  background-color: $primary;
-  color: $bg-white;
+  background-color: $primary; color: $bg-white;
   box-shadow: 0 4px 6px rgba(67, 150, 60, 0.2);
-
-  &:hover:not(:disabled) {
-    background-color: $dark;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(67, 150, 60, 0.3);
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(0);
-  }
+  &:hover:not(:disabled) { background-color: $dark; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(67, 150, 60, 0.3); }
+  &:active:not(:disabled) { transform: translateY(0); }
 }
 
-// 🔥 NUEVO: Botón Grande (Para Login) 🔥
-.btn-lg {
-  padding: 14px 24px;
-  font-size: 1.1rem;
-  min-height: 50px; // Altura mínima robusta
-  font-weight: 700;
+.btn-lg    { padding: 14px 24px; font-size: 1.1rem; min-height: 50px; font-weight: 700; }
+.btn-block { width: 100%; display: flex; }
+
+.btn-outline {
+  @extend .btn;
+  background-color: transparent; border: 1px solid $primary; color: $primary;
+  &:hover:not(:disabled) { background-color: rgba(0, 166, 62, 0.1); }
 }
 
-// 🔥 NUEVO: Botón de Bloque (Ancho completo) 🔥
-.btn-block {
-  width: 100%;
-  display: flex;
+.btn-danger {
+  @extend .btn;
+  background-color: $error; color: $bg-white;
+  box-shadow: 0 4px 6px rgba(220, 38, 38, 0.2);
+  &:hover:not(:disabled) { background-color: color.adjust($error, $lightness: -10%); }
 }
 
-// --- Inputs ---
+.btn-sm { padding: 6px 12px; font-size: 0.85rem; gap: 4px; }
+
+// =========================================
+// 6. FORMULARIOS
+// =========================================
 .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 1rem;
-
-  label {
-    font-size: 12px;
-    font-weight: 600;
-    color: $dark;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
+  display: flex; flex-direction: column; gap: 6px; margin-bottom: 1rem;
+  label { font-size: 12px; font-weight: 600; color: $dark; text-transform: uppercase; letter-spacing: 0.3px; }
 }
 
 .form-input {
-  width: 100%;
-  padding: 11px 12px;
-  font-size: 14px;
-  border: 1.5px solid $border;
-  border-radius: 6px;
-  background: $bg-white;
-  color: $text-dark;
-  transition: all 0.2s;
+  width: 100%; padding: 11px 12px; font-size: 14px;
+  border: 1.5px solid $border; border-radius: 6px;
+  background: $bg-white; color: $text-dark; transition: all 0.2s;
 
-  // Clase para cuando el input tiene un icono a la izquierda
-  &.with-icon {
-    padding-left: 40px;
-  }
-
-  &:focus {
-    outline: none;
-    border-color: $primary;
-    box-shadow: 0 0 0 3px rgba($primary, 0.1);
-  }
+  &.with-icon { padding-left: 40px; }
+  &:focus { outline: none; border-color: $primary; box-shadow: 0 0 0 3px rgba($primary, 0.1); }
 }
 
 // =========================================
-// 6. UI KIT EXTRA (TABLAS, BADGES, ALERTAS)
+// 7. TABLAS
 // =========================================
-
-// Botón "Cancelar" (Borde)
-.btn-outline {
-  @extend .btn;
-  background-color: transparent;
-  border: 1px solid $primary;
-  color: $primary;
-
-  &:hover:not(:disabled) {
-    background-color: rgba(0, 166, 62, 0.1);
-  }
-}
-
-// Botón "Eliminar" (Rojo)
-.btn-danger {
-  @extend .btn;
-  background-color: $error;
-  color: $bg-white;
-  box-shadow: 0 4px 6px rgba(220, 38, 38, 0.2);
-
-  &:hover:not(:disabled) {
-    background-color: color.adjust($error, $lightness: -10%);
-  }
-}
-
-// Botón Pequeño
-.btn-sm {
-  padding: 6px 12px;
-  font-size: 0.85rem;
-  gap: 4px;
-}
-
-// Tablas
 .table-container {
-  width: 100%;
-  overflow-x: auto;
-  background: $bg-white;
-  border-radius: 12px;
-  border: 1px solid $border;
-  margin-bottom: 1.5rem;
+  width: 100%; overflow-x: auto;
+  background: $bg-white; border-radius: 12px; border: 1px solid $border; margin-bottom: 1.5rem;
 }
 
 .table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
+  width: 100%; border-collapse: collapse; text-align: left;
 
   th {
-    background-color: #f8fafc;
-    color: $text-gray;
-    font-weight: 600;
-    padding: 1rem;
-    font-size: 0.9rem;
-    border-bottom: 1px solid $border;
+    background-color: #f8fafc; color: $text-gray; font-weight: 600;
+    padding: 1rem; font-size: 0.9rem; border-bottom: 1px solid $border;
   }
-
-  td {
-    padding: 1rem;
-    color: $text-dark;
-    border-bottom: 1px solid #f0f0f0;
-  }
-
-  tr:hover td {
-    background-color: #fcfdfc;
-  }
-}
-
-// Badges (Etiquetas)
-.badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-
-  &.success { background-color: #dcfce7; color: #166534; }
-  &.warning { background-color: #fef9c3; color: #854d0e; }
-  &.danger { background-color: #fee2e2; color: #991b1b; }
-}
-
-// Títulos internos
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-
-  h2 {
-    font-size: 1.5rem;
-    color: $dark;
-    font-weight: 700;
-  }
+  td { padding: 1rem; color: $text-dark; border-bottom: 1px solid #f0f0f0; }
+  tr:hover td { background-color: #fcfdfc; }
 }
 
 // =========================================
-// 7. ESTILOS ESPECÍFICOS DEL LOGIN
-// (Necesarios para el centrado y los iconos)
+// 8. BADGES
+// =========================================
+.badge {
+  display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+  &.success { background-color: #dcfce7; color: #166534; }
+  &.warning { background-color: #fef9c3; color: #854d0e; }
+  &.danger  { background-color: #fee2e2; color: #991b1b; }
+}
+
+.page-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;
+  h2 { font-size: 1.5rem; color: $dark; font-weight: 700; }
+}
+
+// =========================================
+// 9. LOGIN
 // =========================================
 .login-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
 }
 
-.login-content {
-  width: 100%;
-  max-width: 500px;
-}
+.login-content { width: 100%; max-width: 500px; }
 
 .login-card {
-  background: #EEF9EC;
-  border-radius: 12px;
-  padding: 32px 28px;
+  background: #EEF9EC; border-radius: 12px; padding: 32px 28px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 .logo-box {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
-
-  .logo {
-    width: 80px;
-    height: 80px;
-    background: $primary;
-    border-radius: 50%;
-    padding: 10px;
-    object-fit: contain;
-  }
+  display: flex; justify-content: center; margin-bottom: 20px;
+  .logo { width: 80px; height: 80px; background: $primary; border-radius: 50%; padding: 10px; object-fit: contain; }
 }
 
-// Headers del Login
 .login-header {
-  text-align: center;
-  margin-bottom: 40px;
-
-  .title { font-size: 36px; font-weight: 700; color: $dark; margin-bottom: 4px; }
+  text-align: center; margin-bottom: 40px;
+  .title      { font-size: 36px; font-weight: 700; color: $dark; margin-bottom: 4px; }
   .university { font-size: 14px; color: $dark; font-weight: 400; margin-bottom: 4px; }
-  .subtitle { font-size: 13px; color: $primary; font-weight: 400; }
+  .subtitle   { font-size: 13px; color: $primary; font-weight: 400; }
 }
 
-.form-title { font-size: 24px; font-weight: 700; color: $dark; margin-bottom: 8px; text-align: center; }
+.form-title    { font-size: 24px; font-weight: 700; color: $dark; margin-bottom: 8px; text-align: center; }
 .form-subtitle { font-size: 13px; color: $primary; text-align: center; margin-bottom: 20px; }
 
-// Wrapper para posicionar iconos dentro de inputs
 .input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-
-  .input-icon {
-    position: absolute;
-    left: 12px;
-    width: 20px;
-    height: 20px;
-    color: $primary;
-    z-index: 1;
-  }
-
-  // Botón del ojo para password
+  position: relative; display: flex; align-items: center;
+  .input-icon { position: absolute; left: 12px; width: 20px; height: 20px; color: $primary; z-index: 1; }
   .eye-btn {
-    position: absolute;
-    right: 12px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: $primary;
-    display: flex;
-    align-items: center;
-
+    position: absolute; right: 12px; background: none; border: none; cursor: pointer; color: $primary; display: flex; align-items: center;
     svg { width: 20px; height: 20px; }
     &:hover { color: $dark; }
   }
 }
 
-// Acciones (Recordarme / Olvidé contraseña)
 .form-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  margin-bottom: 1rem;
-
+  display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 1rem;
   .forgot { color: $primary; text-decoration: none; }
   .forgot:hover { text-decoration: underline; }
 }
 
 .form-footer {
-  text-align: center;
-  font-size: 11px;
-  color: $primary;
-  margin-top: 28px;
-  padding-top: 20px;
-  border-top: 1px solid $border;
+  text-align: center; font-size: 11px; color: $primary;
+  margin-top: 28px; padding-top: 20px; border-top: 1px solid $border;
 }
+
+// =========================================
+// 10. MODO OSCURO — Premium Black
+// Paleta:
+//   #0a0a0a → body / fondo raíz
+//   #111111 → main-container / inputs
+//   #181818 → cards / paneles / modales
+//   #2a2a2a → bordes
+//   #00D149 → verde brillante (acento)
+// =========================================
+
+html.dark {
+
+  // ─── Base ─────────────────────────────────────────────────
+  background-color: #0a0a0a !important;
+
+  body {
+    background-color: #0a0a0a !important;
+    color: #f0f0f0 !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  // Scrollbar
+  * { scrollbar-color: #2a2a2a #111111; scrollbar-width: thin; }
+  ::-webkit-scrollbar       { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #111111; }
+  ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+
+  // ─── Layout ───────────────────────────────────────────────
+  .main-container {
+    background: #111111 !important;
+  }
+
+  // ─── Tipografía ───────────────────────────────────────────
+  h1, h2, h3, h4, h5, h6 { color: #f0f0f0 !important; }
+  p, span:not(.badge):not([class*="status"]):not([class*="tag"]) { color: #aaaaaa; }
+
+  // ─── Encabezados de página ────────────────────────────────
+  .dashboard-header {
+    h1 { color: #00D149 !important; }
+    p  { color: #888888 !important; }
+  }
+
+  .page-header {
+    h2             { color: #00D149 !important; }
+    .page-subtitle { color: #666666 !important; }
+    p              { color: #666666 !important; }
+  }
+
+  // ─── Cards del home (módulos) ─────────────────────────────
+  .card {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+
+    h3   { color: #f0f0f0 !important; }
+    span { color: #888888 !important; }
+    p    { color: #888888 !important; }
+
+    &:hover {
+      background: #1e1e1e !important;
+      border-color: #00A63E !important;
+      box-shadow: 0 8px 28px rgba(0,166,62,0.2) !important;
+    }
+  }
+
+  // ─── Stat / Summary cards (estadísticas) ──────────────────
+  .stat-card,
+  .summary-card,
+  .summary-item,
+  .stat-item,
+  .kpi-card,
+  .info-card,
+  [class*="stat-card"],
+  [class*="summary-card"],
+  [class*="metric-card"] {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+    color: #f0f0f0 !important;
+
+    .stat-label,
+    .summary-label,
+    [class*="label"]  { color: #666666 !important; }
+
+    .stat-value,
+    .summary-value,
+    [class*="value"]  { color: #f0f0f0 !important; }
+
+    .stat-number      { color: #f0f0f0 !important; }
+
+    .stat-icon,
+    .icon-wrap,
+    .icon-box,
+    [class*="icon-bg"] {
+      background: #222222 !important;
+      border-color: #333333 !important;
+    }
+  }
+
+  // ─── Tablas ───────────────────────────────────────────────
+  .table-container,
+  .table-wrapper,
+  [class*="table-wrap"] {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+  }
+
+  .table,
+  table {
+    background: transparent !important;
+
+    thead, thead tr {
+      background: #111111 !important;
+    }
+
+    th {
+      background: #111111 !important;
+      color: #555555 !important;
+      border-color: #222222 !important;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+
+    td {
+      color: #d0d0d0 !important;
+      border-color: #1e1e1e !important;
+      background: transparent !important;
+    }
+
+    tbody tr {
+      background: transparent !important;
+
+      // SIN hover — desactivado
+      &:hover td { background: transparent !important; }
+
+      &:nth-child(even) td { background: #141414 !important; }
+    }
+  }
+
+  // ─── Paginación (la barra blanca de abajo) ────────────────
+  .pagination,
+  .paginator,
+  .table-footer,
+  .pagination-wrapper,
+  .paginacion,
+  [class*="pagination"],
+  [class*="paginator"],
+  [class*="pager"],
+  [class*="table-footer"],
+  [class*="footer-table"] {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+    border-top: 1px solid #2a2a2a !important;
+    color: #888888 !important;
+
+    span, p, label, .showing-text,
+    [class*="showing"],
+    [class*="total"]     { color: #666666 !important; }
+
+    button,
+    .page-btn,
+    [class*="page-item"],
+    [class*="btn-page"]  {
+      background: #222222 !important;
+      border-color: #333333 !important;
+      color: #888888 !important;
+
+      &:hover         { background: #2a2a2a !important; color: #f0f0f0 !important; }
+      &.active,
+      &.current,
+      &[class*="active"] {
+        background: #00A63E !important;
+        color: #ffffff !important;
+        border-color: #00A63E !important;
+      }
+      &:disabled      { opacity: 0.3 !important; cursor: not-allowed !important; }
+    }
+
+    svg { stroke: #555555 !important; }
+  }
+
+  // ─── Inputs / Selects / Textareas ─────────────────────────
+  input,
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="date"],
+  input[type="tel"],
+  textarea,
+  .form-input,
+  .search-input,
+  .input-field {
+    background: #111111 !important;
+    border-color: #2a2a2a !important;
+    color: #f0f0f0 !important;
+    font-family: 'Inter', sans-serif !important;
+
+    &::placeholder { color: #444444 !important; }
+    &:focus {
+      border-color: #00A63E !important;
+      box-shadow: 0 0 0 3px rgba(0,166,62,0.15) !important;
+      outline: none !important;
+    }
+  }
+
+  select,
+  select.form-input,
+  .filter-select,
+  [class*="select"] {
+    background: #111111 !important;
+    border-color: #2a2a2a !important;
+    color: #f0f0f0 !important;
+    font-family: 'Inter', sans-serif !important;
+
+    option { background: #181818 !important; color: #f0f0f0 !important; }
+
+    &:focus {
+      border-color: #00A63E !important;
+      box-shadow: 0 0 0 3px rgba(0,166,62,0.15) !important;
+      outline: none !important;
+    }
+  }
+
+  label { color: #888888 !important; }
+
+  // ─── Badges / estados ─────────────────────────────────────
+  .badge {
+    &.success { background: #0d2818 !important; color: #4ade80 !important; }
+    &.warning { background: #2a1800 !important; color: #f59e0b !important; }
+    &.danger  { background: #2a0808 !important; color: #f87171 !important; }
+  }
+
+  // ─── Botones en oscuro ────────────────────────────────────
+  .btn-outline {
+    border-color: #00A63E !important;
+    color: #00A63E !important;
+    background: transparent !important;
+    &:hover { background: rgba(0,166,62,0.1) !important; }
+  }
+
+  .btn-danger {
+    background: #7f1d1d !important;
+    &:hover { background: #991b1b !important; }
+  }
+
+  // ─── Modales ──────────────────────────────────────────────
+  .modal-overlay,
+  .overlay,
+  [class*="modal-overlay"] {
+    background: rgba(0,0,0,0.85) !important;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal,
+  .modal-card,
+  .modal-content,
+  .modal-container,
+  .modal-body,
+  .dialog,
+  [class*="modal-card"],
+  [class*="modal-content"],
+  [class*="modal-body"] {
+    background: #181818 !important;
+    border: 1px solid #2a2a2a !important;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.8) !important;
+    color: #f0f0f0 !important;
+
+    h3, h4, .modal-title { color: #f0f0f0 !important; }
+    p, .modal-subtitle   { color: #888888 !important; }
+  }
+
+  .modal-header,
+  [class*="modal-header"] {
+    background: #141414 !important;
+    border-color: #2a2a2a !important;
+    color: #f0f0f0 !important;
+  }
+
+  .modal-footer,
+  [class*="modal-footer"] {
+    background: #141414 !important;
+    border-color: #2a2a2a !important;
+  }
+
+  .modal-close,
+  .btn-close,
+  [class*="close-btn"] {
+    background: #222222 !important;
+    border-color: #333333 !important;
+    color: #888888 !important;
+    &:hover { background: #2a2a2a !important; color: #f0f0f0 !important; }
+  }
+
+  // ─── Paneles / contenedores blancos ───────────────────────
+  .panel,
+  .section-panel,
+  .card-panel,
+  .filter-section,
+  .filters-row,
+  .filters-container,
+  [class*="filter-bar"],
+  [class*="search-bar"],
+  [class*="filter-section"],
+  [class*="filter-panel"] {
+    background: #181818 !important;
+    border-color: #2a2a2a !important;
+  }
+
+  // ─── Login ────────────────────────────────────────────────
+  .login-container { background: #0a0a0a !important; }
+
+  .login-card {
+    background: #181818 !important;
+    border: 1px solid #2a2a2a !important;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.7) !important;
+  }
+
+  .login-header {
+    .title      { color: #00D149 !important; }
+    .university { color: #888888 !important; }
+    .subtitle   { color: #00A63E !important; }
+  }
+
+  .form-title    { color: #f0f0f0 !important; }
+  .form-subtitle { color: #00A63E !important; }
+  .form-footer   { color: #555555 !important; border-color: #222222 !important; }
+  .forgot        { color: #00A63E !important; }
+  .input-icon    { color: #00A63E !important; }
+
+  .server-error {
+    background: #1a0808 !important;
+    border-color: #5a1a1a !important;
+    color: #f87171 !important;
+  }
+}
+
+// Appended: footer dark mode (global override)
+html.dark .app-footer,
+html.dark .footer {
+  background: #111111 !important;
+  border-top: 1px solid #2a2a2a !important;
+  color: #444444 !important;
+}
+
+html.dark .app-footer p,
+html.dark .footer p {
+  color: #444444 !important;
+}
+
+html.dark .copyright { color: #444444 !important; }
+html.dark .copyright strong { color: #00A63E !important; }
+html.dark .version { color: #333333 !important; }

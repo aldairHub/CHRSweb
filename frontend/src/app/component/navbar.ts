@@ -9,6 +9,7 @@ import { LogoService } from '../services/logo.service';
 import { AsyncPipe } from '@angular/common';
 import { NotificacionService } from '../services/notificacion.service';
 import { AuthStateService } from '../services/auth-state.service';  // ← compañero
+import { ThemeService } from '../services/theme.service';            // ← tuyo
 
 @Component({
   selector: 'app-navbar',
@@ -38,7 +39,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     public  logoService: LogoService,
     public  notifService: NotificacionService,
     private authState: AuthStateService,       // ← compañero
-    private cdr: ChangeDetectorRef             // ← tuyo
+    private cdr: ChangeDetectorRef,            // ← tuyo
+    public  themeService: ThemeService         // ← tuyo
   ) {
     this.cargarDatosUsuario();
     this.syncIsHome();
@@ -62,32 +64,32 @@ export class NavbarComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLElement;
     if (!target.closest('.notification-wrapper')) this.showNotifications = false;
     if (!target.closest('.user-profile'))          this.showPerfilMenu   = false;
-    this.cdr.detectChanges();                    // ← tuyo
+    this.cdr.detectChanges();
   }
 
   // ── Acciones de notificaciones ──────────────────────────────
   toggleNotifications(): void {
     this.showNotifications = !this.showNotifications;
-    this.cdr.detectChanges();                    // ← tuyo
+    this.cdr.detectChanges();
   }
 
   marcarLeida(idNotificacion: number, event: MouseEvent): void {
     event.stopPropagation();
     this.notifService.marcarLeida(idNotificacion);
-    this.cdr.detectChanges();                    // ← tuyo
+    this.cdr.detectChanges();
   }
 
   marcarTodasLeidas(event: MouseEvent): void {
     event.stopPropagation();
     this.notifService.marcarTodasLeidas();
-    this.cdr.detectChanges();                    // ← tuyo
+    this.cdr.detectChanges();
   }
 
   irAlHistorial(event: MouseEvent): void {
     event.stopPropagation();
     this.showNotifications = false;
     this.router.navigate(['/notificaciones']);
-    this.cdr.detectChanges();                    // ← tuyo
+    this.cdr.detectChanges();
   }
 
   navegarANotificacion(notif: any, event: MouseEvent): void {
@@ -124,7 +126,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
         break;
       default:
         this.router.navigate(['/' + rol]);
-        this.cdr.detectChanges();                // ← tuyo
+        this.cdr.detectChanges();
     }
   }
 

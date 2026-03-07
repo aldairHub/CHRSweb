@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { LogoService } from '../../services/logo.service';
 import { ConvocatoriaService, Convocatoria } from '../../services/convocatoria.service';
 import { InstitucionAdminService } from '../../services/institucion-admin.service';
+import { ThemeService } from '../../services/theme.service';
 
 // ─── Cache helpers ────────────────────────────────────────────────────────────
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 horas
@@ -72,7 +73,8 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     private router: Router,
     public logoService: LogoService,
     private convocatoriaService: ConvocatoriaService,
-    private institucionService: InstitucionAdminService
+    private institucionService: InstitucionAdminService,
+    public themeService: ThemeService
   ) {}
 
   ngOnDestroy(): void {

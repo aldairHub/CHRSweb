@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { AuthStateService } from '../../services/auth-state.service';
 import { LogoService } from '../../services/logo.service';
 import { AsyncPipe } from '@angular/common';
+import { ThemeService } from '../../services/theme.service';
 
 
 @Component({
@@ -28,7 +29,8 @@ export class LoginComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private authState: AuthStateService,
-    public logoService: LogoService
+    public logoService: LogoService,
+    public themeService: ThemeService
   ) {}
 
   ngOnInit() {

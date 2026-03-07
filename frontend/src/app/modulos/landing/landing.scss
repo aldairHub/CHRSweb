@@ -264,11 +264,7 @@ html {
 
 // Fondo suave debajo del hero
 .landing-container {
-  background: linear-gradient(180deg,
-    #f0fdf4 0%,
-    #e8faf0 30%,
-    #f0fdf4 100%
-  );
+  background: #f8fffe;
 }
 
 // Franja de transición — eliminada, el overlay del hero ya hace el fade
@@ -627,4 +623,141 @@ html {
   z-index: 2;
   opacity: 1;
   visibility: visible;
+}
+
+// ─── Botón de tema en landing ─────────────────────────
+.btn-theme-landing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(4px);
+
+  svg { width: 22px; height: 22px; }
+  &:hover { background: rgba(255,255,255,0.2); transform: scale(1.08); box-shadow: 0 0 14px rgba(255,255,255,0.15); }
+}
+
+// ─── Landing premium oscuro ───────────────────────────
+:host-context(html.dark) .landing-container { background: #0a0a0a; }
+:host-context(html.dark) .hero-transition    { background: linear-gradient(to bottom, transparent, #0a0a0a); }
+
+:host-context(html.dark) .section-convocatorias,
+:host-context(html.dark) .section-info,
+:host-context(html.dark) .section-stats,
+:host-context(html.dark) .section-pasos {
+  background: #0a0a0a !important;
+}
+
+:host-context(html.dark) .section-title    { color: #00D149 !important; }
+:host-context(html.dark) .section-subtitle { color: #888888 !important; }
+
+:host-context(html.dark) .conv-card,
+:host-context(html.dark) .info-card,
+:host-context(html.dark) .paso-card {
+  background: #181818 !important;
+  border-color: #2a2a2a !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5) !important;
+
+  &:hover {
+    background: #1e1e1e !important;
+    border-color: #00A63E !important;
+    box-shadow: 0 8px 32px rgba(0,166,62,0.15) !important;
+  }
+
+  h3, h4, .conv-title { color: #f0f0f0 !important; }
+  p, .conv-faculty, .conv-date, span { color: #888888 !important; }
+}
+
+:host-context(html.dark) .footer-landing {
+  background: #050505 !important;
+  border-color: #1a1a1a !important;
+  color: #444444 !important;
+}
+
+:host-context(html.dark) .stat-number { color: #00D149 !important; }
+:host-context(html.dark) .stat-label  { color: #888888 !important; }
+
+// ─── lnd-cards dark mode ───────────────────────────────
+:host-context(html.dark) .lnd-card {
+  background: #181818 !important;
+  border-color: #2a2a2a !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+
+  &:hover {
+    background: #1e1e1e !important;
+    border-color: #00A63E !important;
+    box-shadow: 0 16px 48px rgba(0,166,62,0.15) !important;
+  }
+}
+
+:host-context(html.dark) .lnd-card-body {
+  background: #181818 !important;
+
+  h3 { color: #f0f0f0 !important; }
+  p  { color: #888888 !important; }
+}
+
+:host-context(html.dark) .lnd-card-footer {
+  border-color: #2a2a2a !important;
+  background: #181818 !important;
+}
+
+:host-context(html.dark) .lnd-card-date {
+  color: #666666 !important;
+  svg { stroke: #00A63E !important; }
+}
+
+:host-context(html.dark) .lnd-card-arrow {
+  background: #222222 !important;
+  border-color: #333333 !important;
+  svg { stroke: #00A63E !important; }
+}
+
+:host-context(html.dark) .lnd-card:hover .lnd-card-arrow {
+  background: #00A63E !important;
+  svg { stroke: white !important; }
+}
+
+// ─── Sección convocatorias (fondo gris en dark) ────────
+:host-context(html.dark) .section-convocatorias,
+:host-context(html.dark) [class*="section-conv"],
+:host-context(html.dark) .convocatorias-section {
+  background: #0a0a0a !important;
+}
+
+// ─── Transición hero → contenido en dark ──────────────
+:host-context(html.dark) .hero-transition {
+  background: linear-gradient(to bottom, transparent, #0a0a0a) !important;
+}
+
+:host-context(html.dark) .landing-container > section:not(.hero),
+:host-context(html.dark) .landing-container > div:not(.hero):not(.hero-transition) {
+  background: #0a0a0a !important;
+}
+
+// ─── lnd-cards en modo CLARO (texto visible) ──────────
+.lnd-card-body h3 { color: #1e293b; }
+.lnd-card-body p  { color: #64748b; }
+
+// ─── Hero ::after en dark (quitar bloque gris) ─────────
+:host-context(html.dark) .hero::after {
+  background: linear-gradient(to bottom, #0a0a0a, #0a0a0a) !important;
+}
+
+// ─── Sección que sigue al hero en dark ─────────────────
+:host-context(html.dark) .landing-body,
+:host-context(html.dark) .landing-main,
+:host-context(html.dark) .sections-wrapper {
+  background: #0a0a0a !important;
+}
+
+:host-context(html.dark) .landing-container {
+  background: #0a0a0a !important;
 }
