@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener, ElementRef } from '@angular/core';
 import { AsyncPipe, CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { ConvocatoriaService, Convocatoria, SolicitudDocente } from '../../services/convocatoria.service';
@@ -18,23 +18,29 @@ interface ConvocatoriaVM extends Convocatoria {
   templateUrl: './convocatorias-publicas.html',
   styleUrls: ['./convocatorias-publicas.scss']
 })
-export class ConvocatoriasPublicasComponent implements OnInit {
+export class ConvocatoriasPublicasComponent implements OnInit, OnDestroy {
 
   convocatorias: ConvocatoriaVM[] = [];
   cargando = true;
 
-  // Modal "¿Primera vez o ya postulé?"
   mostrarModal           = false;
   solicitudParaPostular: SolicitudDocente | null = null;
+
+  private wheelTimeout: any;
+  private lastWheelTime = 0;
 
   constructor(
     private convocatoriaService: ConvocatoriaService,
     private router: Router,
     private cdr:    ChangeDetectorRef,
+    private el:     ElementRef,
     public logoService: LogoService
   ) {}
 
   ngOnInit(): void {
+    // Fuerza recarga de logo/nombre en cada visita
+    this.logoService.cargar();
+
     this.convocatoriaService.listarAbiertas().subscribe({
       next: (data) => {
         this.convocatorias = data.map(c => ({
@@ -51,6 +57,38 @@ export class ConvocatoriasPublicasComponent implements OnInit {
         this.cargando = false;
         this.cdr.detectChanges();
       }
+    });
+  }
+
+  ngOnDestroy(): void {
+    clearTimeout(this.wheelTimeout);
+  }
+
+  /** Scroll con rueda del mouse — navega entre cards */
+  @HostListener('wheel', ['$event'])
+  onWheel(event: WheelEvent): void {
+    const now = Date.now();
+    if (now - this.lastWheelTime < 600) return; // throttle
+    this.lastWheelTime = now;
+
+    const cards = this.el.nativeElement.querySelectorAll('.conv-card');
+    if (!cards.length) return;
+
+    // Encuentra el card más cercano al viewport
+    let closestIdx = 0;
+    let minDist = Infinity;
+    cards.forEach((card: Element, i: number) => {
+      const rect = card.getBoundingClientRect();
+      const dist = Math.abs(rect.top - 120);
+      if (dist < minDist) { minDist = dist; closestIdx = i; }
+    });
+
+    const targetIdx = event.deltaY > 0
+      ? Math.min(closestIdx + 1, cards.length - 1)
+      : Math.max(closestIdx - 1, 0);
+
+    (cards[targetIdx] as HTMLElement).scrollIntoView({
+      behavior: 'smooth', block: 'start'
     });
   }
 
@@ -113,6 +151,7 @@ export class ConvocatoriasPublicasComponent implements OnInit {
 
   volver():   void { this.router.navigate(['/']); }
   irALogin(): void { this.router.navigate(['/login']); }
+
   onLogoError(event: Event): void {
     const img = event.target as HTMLImageElement;
     img.src = 'imgs/logo-uteq.png';

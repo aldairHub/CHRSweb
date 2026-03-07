@@ -9,7 +9,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router    = inject(Router);
   const authState = inject(AuthStateService);
 
-  const rutasPublicas = ['/api/auth/login','/api/registro','/api/auth/recuperar'];
+  const rutasPublicas = ['/api/auth/login','/api/registro','/api/auth/recuperar','/api/convocatorias/activas','/api/instituciones/activa'];
   const esPublica = rutasPublicas.some(r => req.url.includes(r));
 
   const authReq = (token && !esPublica)

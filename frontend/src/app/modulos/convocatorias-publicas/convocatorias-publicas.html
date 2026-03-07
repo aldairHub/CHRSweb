@@ -4,7 +4,7 @@
   <div class="navbar">
     <button class="btn-back" (click)="volver()">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-           stroke="currentColor" width="20" height="20">
+           stroke="currentColor" width="18" height="18">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
       </svg>
       Volver
@@ -21,12 +21,22 @@
 
   <!-- Header -->
   <div class="page-header">
-    <div class="logo-box">
+    <div class="logo-wrap">
       <img [src]="(logoService.getLogo() | async) || 'imgs/logo-uteq.png'"
-           alt="Logo institucional" class="logo" (error)="onLogoError($event)">
+           alt="Logo institucional" class="logo-img" (error)="onLogoError($event)">
     </div>
-    <h1>Convocatorias Activas</h1>
-    <p>Plazas docentes disponibles — Universidad Técnica Estatal de Quevedo</p>
+    <div class="header-text">
+      <p class="inst-name">{{ logoService.getNombre() | async }}</p>
+      <h1>Convocatorias Activas</h1>
+      <p class="inst-sub">Plazas docentes disponibles para concurso de méritos y oposición</p>
+    </div>
+  </div>
+
+  <!-- Scroll hint -->
+  <div class="scroll-hint" *ngIf="!cargando && convocatorias.length > 1">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/>
+    </svg>
   </div>
 
   <!-- Loader -->
@@ -37,82 +47,73 @@
 
   <!-- Sin convocatorias -->
   <div class="empty-state" *ngIf="!cargando && convocatorias.length === 0">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-         stroke="currentColor" width="64" height="64">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-    </svg>
+    <div class="empty-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+           stroke="currentColor" width="36" height="36">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+    </div>
     <h3>No hay convocatorias activas</h3>
     <p>No existen plazas disponibles en este momento. Vuelve pronto.</p>
   </div>
 
   <!-- Lista de convocatorias -->
   <div class="convocatorias-list" *ngIf="!cargando && convocatorias.length > 0">
-    <div class="conv-card" *ngFor="let conv of convocatorias" [class.expandida]="conv.expandida">
+    <div class="conv-card" *ngFor="let conv of convocatorias; let i = index"
+         [class.expandida]="conv.expandida">
 
-      <!-- Cabecera -->
+      <!-- Número + cabecera clickeable -->
       <div class="conv-header" (click)="toggleConvocatoria(conv)">
 
-        <div class="conv-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
-          </svg>
-        </div>
+        <div class="conv-num">{{ i + 1 }}</div>
 
         <div class="conv-info">
-          <div class="conv-top">
+          <div class="conv-title-row">
             <h3>{{ conv.titulo }}</h3>
-            <span class="badge">{{ conv.estadoConvocatoria | uppercase }}</span>
+            <span class="badge-estado">
+              <span class="dot"></span>
+              {{ conv.estadoConvocatoria }}
+            </span>
           </div>
+
           <p class="conv-desc" *ngIf="conv.descripcion">{{ conv.descripcion }}</p>
 
           <div class="conv-fechas">
-            <!-- Fecha inicio -->
-            <span *ngIf="conv.fechaInicio">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <span class="fecha-chip" *ngIf="conv.fechaInicio">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/>
                 <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
-              Inicio: {{ conv.fechaInicio | date:'dd/MM/yyyy' }}
+              {{ conv.fechaInicio | date:'dd MMM yyyy' }}
             </span>
-            <!-- Fecha fin -->
-            <span *ngIf="conv.fechaFin">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
-              Cierre: {{ conv.fechaFin | date:'dd/MM/yyyy' }}
+            <span class="fecha-sep" *ngIf="conv.fechaInicio && conv.fechaFin">→</span>
+            <span class="fecha-chip cierre" *ngIf="conv.fechaFin">
+              {{ conv.fechaFin | date:'dd MMM yyyy' }}
             </span>
-            <!-- NUEVO: Fecha límite documentos con badge de estado -->
-            <span *ngIf="conv.fechaLimiteDocumentos" [style.color]="conv.documentosAbiertos ? '#16a34a' : '#dc2626'">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <span class="fecha-chip docs"
+                  *ngIf="conv.fechaLimiteDocumentos"
+                  [class.docs-cerrado]="!conv.documentosAbiertos">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
               </svg>
-              Docs hasta: {{ conv.fechaLimiteDocumentos | date:'dd/MM/yyyy' }}
-              &nbsp;
-              <span style="display:inline-block;padding:1px 7px;border-radius:20px;font-size:10px;font-weight:700;"
-                    [style.background]="conv.documentosAbiertos ? '#dcfce7' : '#fee2e2'"
-                    [style.color]="conv.documentosAbiertos ? '#166534' : '#991b1b'">
-                {{ conv.documentosAbiertos ? 'Subida abierta' : 'Subida cerrada' }}
-              </span>
+              Docs: {{ conv.fechaLimiteDocumentos | date:'dd MMM' }}
+              &nbsp;·&nbsp;
+              {{ conv.documentosAbiertos ? 'Abierto' : 'Cerrado' }}
             </span>
           </div>
         </div>
 
         <div class="conv-chevron" [class.open]="conv.expandida">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polyline points="6 9 12 15 18 9"/>
           </svg>
         </div>
 
       </div>
 
-      <!-- Panel expandible -->
+      <!-- Panel expandido -->
       <div class="conv-body" *ngIf="conv.expandida">
 
         <div class="sol-loading" *ngIf="conv.cargandoSolicitudes">
@@ -135,32 +136,42 @@
                  (click)="seleccionarSolicitud(conv, s)">
               <div class="sol-check">
                 <svg *ngIf="conv.solicitudSeleccionada?.idSolicitud === s.idSolicitud"
-                     width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                     width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
               </div>
               <div class="sol-data">
                 <strong>{{ s.nombreMateria || s.justificacion }}</strong>
                 <span>{{ s.nivelAcademico }}</span>
-                <span class="sol-plazas">{{ s.cantidadDocentes }} plaza(s)</span>
+                <span class="sol-plazas">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                  </svg>
+                  {{ s.cantidadDocentes }} plaza(s) disponible(s)
+                </span>
               </div>
             </div>
           </div>
 
-          <!-- NUEVO: aviso si subida de docs está cerrada -->
-          <div *ngIf="!conv.documentosAbiertos && conv.fechaLimiteDocumentos"
-               style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#991b1b;">
-            <strong>⚠ El plazo para subir documentos ha vencido</strong> ({{ conv.fechaLimiteDocumentos | date:'dd/MM/yyyy' }}).
-            Puedes postularte pero no podrás cargar documentos en esta convocatoria.
+          <!-- Aviso docs cerrados -->
+          <div class="aviso-docs" *ngIf="!conv.documentosAbiertos && conv.fechaLimiteDocumentos">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            El plazo para subir documentos venció el {{ conv.fechaLimiteDocumentos | date:'dd/MM/yyyy' }}.
+            Puedes postularte pero no podrás cargar documentos.
           </div>
 
           <button class="btn-postular"
                   [disabled]="!conv.solicitudSeleccionada"
                   (click)="abrirModal(conv)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 5v14M5 12l7 7 7-7"/>
-            </svg>
             Postular a esta plaza
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
           </button>
 
         </ng-container>
@@ -173,14 +184,13 @@
   <div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
     <div class="modal-card" (click)="$event.stopPropagation()">
 
-      <button class="modal-close" (click)="cerrarModal()">✕</button>
+      <button class="modal-close" (click)="cerrarModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
 
       <div class="modal-header">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-             stroke="currentColor" width="40" height="40">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
         <h3>¿Cómo deseas postular?</h3>
         <p>Plaza: <strong>{{ solicitudParaPostular?.nombreMateria || solicitudParaPostular?.justificacion }}</strong></p>
       </div>
@@ -189,7 +199,7 @@
         <div class="option-card" (click)="irARegistro()">
           <div class="option-icon new">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                 stroke="currentColor" width="28" height="28">
+                 stroke="currentColor" width="24" height="24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
             </svg>
@@ -198,12 +208,14 @@
             <h4>Es mi primera vez</h4>
             <p>No tengo cuenta. Quiero registrarme para postular.</p>
           </div>
-          <span class="option-arrow">→</span>
+          <svg class="option-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
         </div>
         <div class="option-card" (click)="irARepostulacion()">
           <div class="option-icon returning">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                 stroke="currentColor" width="28" height="28">
+                 stroke="currentColor" width="24" height="24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
             </svg>
@@ -212,12 +224,14 @@
             <h4>Ya postulé antes</h4>
             <p>Fui rechazado y quiero postular con nuevos documentos.</p>
           </div>
-          <span class="option-arrow">→</span>
+          <svg class="option-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="page-footer">© 2026 Universidad Técnica Estatal de Quevedo</div>
+  <div class="page-footer">© 2026 · {{ logoService.getNombre() | async }}</div>
 
 </div>

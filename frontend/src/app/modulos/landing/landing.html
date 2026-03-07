@@ -77,7 +77,7 @@
     </div>
 
     <!-- Cards -->
-    <div class="carousel-wrapper reveal" *ngIf="!cargando && convocatorias.length > 0">
+    <div class="carousel-wrapper" *ngIf="!cargando && convocatorias.length > 0">
       <button class="nav-btn prev" (click)="scrollCarousel('left')" [class.hidden]="!canScrollLeft">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -85,7 +85,7 @@
       </button>
       <div class="cards-track" #carouselTrack (scroll)="onCarouselScroll()">
         <article class="lnd-card" *ngFor="let conv of convocatorias; let i = index"
-                 (click)="verDetalleConvocatoria(conv)" [style.--i]="i">
+                 (click)="verDetalleConvocatoria(conv)" [style.animation-delay]="i * 0.1 + 's'">
           <div class="lnd-card-img">
             <img [src]="conv.imagenUrl || getDefaultImage(i)" [alt]="conv.titulo" (error)="onImageError($event, i)">
             <span class="lnd-badge" [class.activa]="conv.estadoConvocatoria === 'ACTIVA'">

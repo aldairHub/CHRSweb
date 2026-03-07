@@ -5,6 +5,26 @@ import { LogoService } from '../../services/logo.service';
 import { ConvocatoriaService, Convocatoria } from '../../services/convocatoria.service';
 import { InstitucionAdminService } from '../../services/institucion-admin.service';
 
+// ─── Cache helpers ────────────────────────────────────────────────────────────
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+
+function cacheSet(key: string, data: unknown): void {
+  try {
+    localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data }));
+  } catch { /* storage lleno — ignorar */ }
+}
+
+function cacheGet<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const { ts, data } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL_MS) { localStorage.removeItem(key); return null; }
+    return data as T;
+  } catch { return null; }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 
 interface ConvocatoriaVM extends Convocatoria {
   imagenUrl?: string;
@@ -59,7 +79,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.animFrameId) {
       cancelAnimationFrame(this.animFrameId);
     }
-    }
+  }
 
   ngOnInit(): void {
     this.cargarInstitucion();
@@ -116,33 +136,83 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   cargarConvocatorias(): void {
+    const CACHE_KEY = 'cache_conv_activas';
+
+    // ── 1. Mostrar caché inmediatamente si existe ─────────────────────────────
+    const cached = cacheGet<Convocatoria[]>(CACHE_KEY);
+    if (cached) {
+      this.convocatorias = cached.map((c, i) => ({
+        ...c,
+        imagenUrl: (c as any).imagenPortadaUrl || this.getDefaultImage(i)
+      }));
+      this.cargando = false;
+      setTimeout(() => {
+        this.updateScrollButtons();
+        this.revealAll();
+      }, 50);
+    }
+
+    // ── 2. Siempre refrescar en background ────────────────────────────────────
     this.convocatoriaService.listarAbiertas().subscribe({
       next: (data) => {
-        this.convocatorias = data.map((c, i) => ({ ...c, imagenUrl: this.getDefaultImage(i) }));
+        cacheSet(CACHE_KEY, data);
+        this.convocatorias = data.map((c, i) => ({
+          ...c,
+          imagenUrl: (c as any).imagenPortadaUrl || this.getDefaultImage(i)
+        }));
         this.cargando = false;
-        setTimeout(() => this.updateScrollButtons(), 100);
+        setTimeout(() => {
+          this.updateScrollButtons();
+          this.revealAll();
+        }, 150);
       },
       error: () => { this.cargando = false; }
     });
   }
+
   cargarInstitucion(): void {
+    const CACHE_KEY = 'cache_inst_activa';
+
+    // ── 1. Aplicar caché al instante ──────────────────────────────────────────
+    const cached = cacheGet<any>(CACHE_KEY);
+    if (cached) this.aplicarInstitucion(cached);
+
+    // ── 2. Refrescar en background ────────────────────────────────────────────
     this.institucionService.obtenerActiva().subscribe({
       next: (inst) => {
-        if (inst.imagenFondoUrl) this.campusBg = inst.imagenFondoUrl;
-        if (inst.appName) this.appName = inst.appName;
-        if (inst.nombreInstitucion) this.heroSubtitle = inst.nombreInstitucion;
+        cacheSet(CACHE_KEY, inst);
+        this.aplicarInstitucion(inst);
       },
-      error: () => {
-      }
+      error: () => {}
     });
+  }
+
+  private aplicarInstitucion(inst: any): void {
+    if (inst.imagenFondoUrl) this.campusBg = inst.imagenFondoUrl;
+    if (inst.appName)        this.appName  = inst.appName;
+    if (inst.nombreInstitucion) this.heroSubtitle = inst.nombreInstitucion;
+  }
+
+  private revealAll(): void {
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale')
+      .forEach(el => {
+        if (!el.classList.contains('revealed')) el.classList.add('revealed');
+      });
   }
   getDefaultImage(index: number): string {
     return DEFAULT_IMAGES[index % DEFAULT_IMAGES.length];
   }
 
+  private static readonly PLACEHOLDER_IMG =
+    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360"%3E%3Crect width="640" height="360" fill="%23dcfce7"/%3E%3Crect x="270" y="140" width="100" height="80" rx="8" fill="%2386efac"/%3E%3Ccircle cx="320" cy="120" r="30" fill="%2386efac"/%3E%3C/svg%3E';
+
   onImageError(event: Event, index: number): void {
     const img = event.target as HTMLImageElement;
-    img.src = this.getDefaultImage(index);
+    // Prevent infinite loop: only fallback once
+    if (!img.dataset['fallback']) {
+      img.dataset['fallback'] = '1';
+      img.src = LandingComponent.PLACEHOLDER_IMG;
+    }
   }
 
   scrollCarousel(direction: 'left' | 'right'): void {

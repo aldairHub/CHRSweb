@@ -12,6 +12,7 @@ export interface Convocatoria {
   fechaLimiteDocumentos: string | null;  // NUEVO
   estadoConvocatoria:    string;
   documentosAbiertos:    boolean;        // NUEVO — true si hoy <= fechaLimiteDocumentos (o fechaFin)
+  imagenPortadaUrl:      string | null;  // URL de imagen de portada generada o subida
 }
 
 export interface SolicitudDocente {
