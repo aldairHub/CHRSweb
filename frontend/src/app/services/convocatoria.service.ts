@@ -3,13 +3,15 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Convocatoria {
-  idConvocatoria:     number;
-  titulo:             string;
-  descripcion:        string;
-  fechaPublicacion:   string;
-  fechaInicio:        string;
-  fechaFin:           string;
-  estadoConvocatoria: string;
+  idConvocatoria:        number;
+  titulo:                string;
+  descripcion:           string;
+  fechaPublicacion:      string;
+  fechaInicio:           string;
+  fechaFin:              string;
+  fechaLimiteDocumentos: string | null;  // NUEVO
+  estadoConvocatoria:    string;
+  documentosAbiertos:    boolean;        // NUEVO — true si hoy <= fechaLimiteDocumentos (o fechaFin)
 }
 
 export interface SolicitudDocente {

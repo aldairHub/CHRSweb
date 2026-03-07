@@ -3,60 +3,77 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface ConvocatoriaListaResponse {
-  idConvocatoria: number;
-  titulo: string;
-  descripcion: string;
-  fechaPublicacion: string;
-  fechaInicio: string;
-  fechaFin: string;
-  estadoConvocatoria: string;
-  imagenPortadaUrl?: string;
-  totalSolicitudes: number;
+  idConvocatoria:        number;
+  titulo:                string;
+  descripcion:           string;
+  fechaPublicacion:      string;
+  fechaInicio:           string;
+  fechaFin:              string;
+  fechaLimiteDocumentos: string | null;  // NUEVO
+  estadoConvocatoria:    string;
+  imagenPortadaUrl?:     string;
+  totalSolicitudes:      number;
+  documentosAbiertos:    boolean;        // NUEVO
 }
 
 export interface ConvocatoriaDetalleResponse {
-  idConvocatoria: number;
-  titulo: string;
-  descripcion: string;
-  fechaPublicacion: string;
-  fechaInicio: string;
-  fechaFin: string;
-  estadoConvocatoria: string;
-  imagenPortadaUrl?: string;
-  solicitudes: SolicitudResumen[];
+  idConvocatoria:        number;
+  titulo:                string;
+  descripcion:           string;
+  fechaPublicacion:      string;
+  fechaInicio:           string;
+  fechaFin:              string;
+  fechaLimiteDocumentos: string | null;  // NUEVO
+  estadoConvocatoria:    string;
+  imagenPortadaUrl?:     string;
+  documentosAbiertos:    boolean;        // NUEVO
+  solicitudes:           SolicitudResumen[];
+  tiposDocumento:        TipoDocumentoConv[];  // NUEVO
 }
 
 export interface SolicitudResumen {
-  idSolicitud: number;
-  nombreMateria: string;
-  nombreCarrera: string;
-  nombreFacultad: string;
+  idSolicitud:      number;
+  nombreMateria:    string;
+  nombreCarrera:    string;
+  nombreFacultad:   string;
   cantidadDocentes: number;
-  nivelAcademico: string;
-  estadoSolicitud: string;
+  nivelAcademico:   string;
+  estadoSolicitud:  string;
+}
+
+export interface TipoDocumentoConv {  // NUEVO
+  idTipoDocumento: number;
+  nombre:          string;
+  descripcion:     string;
+  obligatorio:     boolean;
+  fuente:          'convocatoria' | 'global';
 }
 
 export interface CrearConvocatoriaRequest {
-  titulo: string;
-  descripcion: string;
-  fechaPublicacion: string;
-  fechaInicio: string;
-  fechaFin: string;
-  idsSolicitudes: number[];
+  titulo:                string;
+  descripcion:           string;
+  fechaPublicacion:      string;
+  fechaInicio:           string;
+  fechaFin:              string;
+  fechaLimiteDocumentos: string | null;  // NUEVO
+  idsSolicitudes:        number[];
+  idsTiposDocumento:     number[];       // NUEVO
 }
 
 export interface ActualizarConvocatoriaRequest {
-  titulo: string;
-  descripcion: string;
-  fechaPublicacion: string;
-  fechaInicio: string;
-  fechaFin: string;
+  titulo:                string;
+  descripcion:           string;
+  fechaPublicacion:      string;
+  fechaInicio:           string;
+  fechaFin:              string;
+  fechaLimiteDocumentos: string | null;  // NUEVO
+  idsTiposDocumento:     number[];       // NUEVO
 }
 
 export interface MensajeResponse {
-  exito: boolean;
+  exito:   boolean;
   mensaje: string;
-  data: any;
+  data:    any;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -92,6 +109,7 @@ export class ConvocatoriaAdminService {
   eliminar(id: number): Observable<MensajeResponse> {
     return this.http.delete<MensajeResponse>(`${this.apiUrl}/${id}`);
   }
+
   generarImagen(id: number): Observable<MensajeResponse> {
     return this.http.post<MensajeResponse>(`${this.apiUrl}/${id}/generar-imagen`, {});
   }

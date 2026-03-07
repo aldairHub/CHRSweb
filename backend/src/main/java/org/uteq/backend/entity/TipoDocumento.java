@@ -1,6 +1,5 @@
 package org.uteq.backend.entity;
 
-
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -17,7 +16,6 @@ public class TipoDocumento {
     @Column(name = "nombre", nullable = false, unique = true)
     private String nombre;
 
-    // Tu BD real tiene "descripcion" (la BD final no la tenía)
     @Column(name = "descripcion")
     private String descripcion;
 

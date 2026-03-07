@@ -25,46 +25,31 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
           </svg>
         </div>
-        <div class="stat-content">
-          <h3>Total</h3>
-          <div class="stat-value">{{ convocatorias.length }}</div>
-        </div>
+        <div class="stat-content"><h3>Total</h3><div class="stat-value">{{ convocatorias.length }}</div></div>
       </div>
-
       <div class="stat-card">
         <div class="stat-icon success">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <div class="stat-content">
-          <h3>Abiertas</h3>
-          <div class="stat-value">{{ totalAbiertas }}</div>
-        </div>
+        <div class="stat-content"><h3>Abiertas</h3><div class="stat-value">{{ totalAbiertas }}</div></div>
       </div>
-
       <div class="stat-card">
         <div class="stat-icon blue">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
         </div>
-        <div class="stat-content">
-          <h3>Cerradas</h3>
-          <div class="stat-value">{{ totalCerradas }}</div>
-        </div>
+        <div class="stat-content"><h3>Cerradas</h3><div class="stat-value">{{ totalCerradas }}</div></div>
       </div>
-
       <div class="stat-card">
         <div class="stat-icon danger">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <div class="stat-content">
-          <h3>Canceladas</h3>
-          <div class="stat-value">{{ totalCanceladas }}</div>
-        </div>
+        <div class="stat-content"><h3>Canceladas</h3><div class="stat-value">{{ totalCanceladas }}</div></div>
       </div>
     </div>
 
@@ -74,15 +59,9 @@
         <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
-        <input
-          type="text"
-          class="form-input with-icon"
-          placeholder="Buscar por título..."
-          [(ngModel)]="search"
-          (input)="applyFilters()"
-        >
+        <input type="text" class="form-input with-icon" placeholder="Buscar por título..."
+               [(ngModel)]="search" (input)="applyFilters()">
       </div>
-
       <select class="form-select" [(ngModel)]="filtroEstado" (change)="applyFilters()">
         <option value="">Todos los Estados</option>
         <option value="abierta">Abierta</option>
@@ -98,9 +77,9 @@
         <tr>
           <th>ID</th>
           <th>Título</th>
-          <th>Fecha Publicación</th>
           <th>Fecha Inicio</th>
           <th>Fecha Fin</th>
+          <th>Límite Docs</th>
           <th>Solicitudes</th>
           <th>Estado</th>
           <th>Acciones</th>
@@ -110,16 +89,23 @@
         <tr *ngFor="let c of convocatoriasPaginadas">
           <td><strong>#{{ c.idConvocatoria }}</strong></td>
           <td>{{ c.titulo }}</td>
-          <td>{{ c.fechaPublicacion }}</td>
           <td>{{ c.fechaInicio }}</td>
           <td>{{ c.fechaFin }}</td>
           <td>
-            <span class="badge-count">{{ c.totalSolicitudes }}</span>
+            <!-- NUEVO: columna fecha límite documentos -->
+            <ng-container *ngIf="c.fechaLimiteDocumentos; else sinLimite">
+              {{ c.fechaLimiteDocumentos }}
+              <span class="badge" style="font-size:10px;margin-left:4px;"
+                    [ngClass]="c.documentosAbiertos ? 'success' : 'warning'">
+                  {{ c.documentosAbiertos ? 'Abierto' : 'Cerrado' }}
+                </span>
+            </ng-container>
+            <ng-template #sinLimite><span style="color:#aaa;">—</span></ng-template>
           </td>
+          <td><span class="badge-count">{{ c.totalSolicitudes }}</span></td>
           <td>
               <span class="badge" [ngClass]="getEstadoClass(c.estadoConvocatoria)">
-                <span class="status-dot"></span>
-                {{ getEstadoLabel(c.estadoConvocatoria) }}
+                <span class="status-dot"></span>{{ getEstadoLabel(c.estadoConvocatoria) }}
               </span>
           </td>
           <td>
@@ -130,19 +116,16 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
               </button>
-
               <button class="btn-icon" (click)="edit(c)" title="Editar" [disabled]="c.estadoConvocatoria !== 'abierta'">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                 </svg>
               </button>
-
               <button class="btn-icon" (click)="openCambiarEstado(c)" title="Cambiar estado">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               </button>
-
               <button class="btn-icon danger" (click)="eliminar(c)" title="Eliminar">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -151,7 +134,6 @@
             </div>
           </td>
         </tr>
-
         <tr *ngIf="convocatoriasFiltradas.length === 0">
           <td colspan="8" class="empty-state">
             <div class="empty-icon">
@@ -174,23 +156,14 @@
       </div>
       <div class="pagination-controls">
         <button class="page-btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
         </button>
-        <button
-          *ngFor="let page of getPageNumbers()"
-          class="page-btn"
-          [class.active]="page === currentPage"
-          [disabled]="page === -1"
-          (click)="page !== -1 && changePage(page)"
-        >
+        <button *ngFor="let page of getPageNumbers()" class="page-btn" [class.active]="page === currentPage"
+                [disabled]="page === -1" (click)="page !== -1 && changePage(page)">
           {{ page === -1 ? '...' : page }}
         </button>
         <button class="page-btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
         </button>
       </div>
     </div>
@@ -198,7 +171,9 @@
   </div>
 </div>
 
-<!-- ===================== MODAL CREAR / EDITAR ===================== -->
+<!-- ============================================================ -->
+<!-- MODAL CREAR / EDITAR -->
+<!-- ============================================================ -->
 <div class="modal-overlay" *ngIf="modalAbierto" (click)="closeModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -218,11 +193,11 @@
         </svg>
         <div>
           <strong>Información Importante</strong>
-          <p>{{ editando ? 'Solo se pueden editar convocatorias con estado abierta.' : 'Selecciona las solicitudes aprobadas que deseas incluir en esta convocatoria.' }}</p>
+          <p>{{ editando ? 'Solo se pueden editar convocatorias con estado abierta.' : 'Selecciona las solicitudes aprobadas que deseas incluir.' }}</p>
         </div>
       </div>
 
-      <!-- Sección datos generales -->
+      <!-- Datos generales -->
       <div class="form-section">
         <div class="section-title">Datos de la Convocatoria</div>
         <div class="section-description">Información principal</div>
@@ -230,23 +205,13 @@
 
       <div class="form-group">
         <label>Título <span class="required">*</span></label>
-        <input
-          type="text"
-          class="form-input"
-          [(ngModel)]="form.titulo"
-          placeholder="Ej: Convocatoria Docente 2025-I"
-        >
+        <input type="text" class="form-input" [(ngModel)]="form.titulo" placeholder="Ej: Convocatoria Docente 2025-I">
         <div class="error-message" *ngIf="submitted && !form.titulo.trim()">El título es obligatorio</div>
       </div>
 
       <div class="form-group">
         <label>Descripción</label>
-        <textarea
-          class="form-input"
-          [(ngModel)]="form.descripcion"
-          placeholder="Descripción de la convocatoria..."
-          rows="3"
-        ></textarea>
+        <textarea class="form-input" [(ngModel)]="form.descripcion" placeholder="Descripción de la convocatoria..." rows="3"></textarea>
       </div>
 
       <div class="form-row">
@@ -261,13 +226,62 @@
         </div>
       </div>
 
-      <div class="form-group">
-        <label>Fecha de Fin <span class="required">*</span></label>
-        <input type="date" class="form-input" [(ngModel)]="form.fechaFin">
-        <div class="error-message" *ngIf="submitted && !form.fechaFin">La fecha de fin es obligatoria</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fecha de Fin <span class="required">*</span></label>
+          <input type="date" class="form-input" [(ngModel)]="form.fechaFin">
+          <div class="error-message" *ngIf="submitted && !form.fechaFin">La fecha de fin es obligatoria</div>
+        </div>
+
+        <!-- NUEVO: Fecha límite documentos -->
+        <div class="form-group">
+          <label>
+            Fecha límite subida de docs
+            <span style="font-size:11px;color:#888;font-weight:400;">(opcional)</span>
+          </label>
+          <input type="date" class="form-input" [(ngModel)]="form.fechaLimiteDocumentos" [max]="form.fechaFin">
+          <small style="color:#888;font-size:11px;">
+            Después de esta fecha los postulantes no podrán subir documentos. Si se deja vacío se usa la fecha de fin.
+          </small>
+        </div>
       </div>
 
-      <!-- Sección solicitudes (solo al crear) -->
+      <!-- NUEVO: Tipos de documento para esta convocatoria -->
+      <div class="form-section">
+        <div class="section-title">Documentos requeridos</div>
+        <div class="section-description">
+          Selecciona los tipos específicos para esta convocatoria. Si no seleccionas ninguno se usarán los globales activos.
+        </div>
+      </div>
+
+      <div *ngIf="tiposDocumentoDisponibles.length > 0" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+        <label
+          *ngFor="let td of tiposDocumentoDisponibles"
+          class="checkbox-item solicitud-item"
+          [class.selected]="isTipoSeleccionado(td.idTipoDocumento)"
+          style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+          <input type="checkbox" [checked]="isTipoSeleccionado(td.idTipoDocumento)"
+                 (change)="toggleTipoDocumento(td.idTipoDocumento)">
+          <div style="flex:1">
+            <span style="font-weight:600;">{{ td.nombre }}</span>
+            <span *ngIf="td.descripcion" style="color:#888;font-size:12px;display:block;">{{ td.descripcion }}</span>
+          </div>
+          <span class="badge" [ngClass]="td.obligatorio ? 'badge-danger' : 'badge-warning'" style="font-size:10px;">
+            {{ td.obligatorio ? 'Obligatorio' : 'Opcional' }}
+          </span>
+        </label>
+      </div>
+
+      <p *ngIf="tiposDocumentoDisponibles.length === 0" style="color:#aaa;font-size:13px;margin-bottom:12px;">
+        No hay tipos activos. Se usarán los tipos globales.
+      </p>
+      <p style="font-size:12px;margin-bottom:16px;" [style.color]="form.idsTiposDocumento.length > 0 ? '#16a34a' : '#aaa'">
+        {{ form.idsTiposDocumento.length > 0
+        ? '✓ ' + form.idsTiposDocumento.length + ' tipo(s) seleccionado(s) para esta convocatoria.'
+        : 'Se usarán los tipos de documento globales activos.' }}
+      </p>
+
+      <!-- Solicitudes (solo al crear) -->
       <ng-container *ngIf="!editando">
         <div class="form-section">
           <div class="section-title">Solicitudes Aprobadas</div>
@@ -275,16 +289,10 @@
         </div>
 
         <div class="solicitudes-list" *ngIf="solicitudesAprobadas.length > 0">
-          <label
-            class="checkbox-item solicitud-item"
-            *ngFor="let s of solicitudesAprobadas"
-            [class.selected]="isSolicitudSeleccionada(s.idSolicitud)"
-          >
-            <input
-              type="checkbox"
-              [checked]="isSolicitudSeleccionada(s.idSolicitud)"
-              (change)="toggleSolicitud(s.idSolicitud)"
-            >
+          <label class="checkbox-item solicitud-item" *ngFor="let s of solicitudesAprobadas"
+                 [class.selected]="isSolicitudSeleccionada(s.idSolicitud)">
+            <input type="checkbox" [checked]="isSolicitudSeleccionada(s.idSolicitud)"
+                   (change)="toggleSolicitud(s.idSolicitud)">
             <div class="solicitud-info">
               <span class="solicitud-materia">{{ s.nombreMateria }}</span>
               <span class="solicitud-detalle">{{ s.nombreCarrera }} · {{ s.cantidadDocentes }} docente(s) · {{ s.nivelAcademico }}</span>
@@ -314,7 +322,9 @@
   </div>
 </div>
 
-<!-- ===================== MODAL CAMBIAR ESTADO ===================== -->
+<!-- ============================================================ -->
+<!-- MODAL CAMBIAR ESTADO -->
+<!-- ============================================================ -->
 <div class="modal-overlay" *ngIf="modalEstadoAbierto" (click)="closeModalEstado()">
   <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -325,7 +335,6 @@
         </svg>
       </button>
     </div>
-
     <div class="modal-body">
       <p class="estado-label">Selecciona el nuevo estado para esta convocatoria:</p>
       <div class="estado-options">
@@ -343,7 +352,6 @@
         </label>
       </div>
     </div>
-
     <div class="modal-footer">
       <button class="btn btn-outline" (click)="closeModalEstado()">Cancelar</button>
       <button class="btn btn-primary" (click)="guardarEstado()" [disabled]="isSaving">
@@ -353,7 +361,9 @@
   </div>
 </div>
 
-<!-- ===================== MODAL DETALLE ===================== -->
+<!-- ============================================================ -->
+<!-- MODAL DETALLE -->
+<!-- ============================================================ -->
 <div class="modal-overlay" *ngIf="modalDetalleAbierto" (click)="closeModalDetalle()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -370,8 +380,7 @@
       <div class="detalle-header">
         <h4>{{ detalleConvocatoria.titulo }}</h4>
         <span class="badge" [ngClass]="getEstadoClass(detalleConvocatoria.estadoConvocatoria)">
-          <span class="status-dot"></span>
-          {{ getEstadoLabel(detalleConvocatoria.estadoConvocatoria) }}
+          <span class="status-dot"></span>{{ getEstadoLabel(detalleConvocatoria.estadoConvocatoria) }}
         </span>
       </div>
 
@@ -390,15 +399,41 @@
           <span class="fecha-label">Fin</span>
           <span class="fecha-valor">{{ detalleConvocatoria.fechaFin }}</span>
         </div>
+        <!-- NUEVO: Límite docs en detalle -->
+        <div class="fecha-item" *ngIf="detalleConvocatoria.fechaLimiteDocumentos">
+          <span class="fecha-label">Límite docs</span>
+          <span class="fecha-valor">
+            {{ detalleConvocatoria.fechaLimiteDocumentos }}
+            <span class="badge" style="font-size:10px;margin-left:6px;"
+                  [ngClass]="detalleConvocatoria.documentosAbiertos ? 'success' : 'warning'">
+              {{ detalleConvocatoria.documentosAbiertos ? 'Abierto' : 'Cerrado' }}
+            </span>
+          </span>
+        </div>
       </div>
 
+      <!-- NUEVO: Tipos de documento de la convocatoria -->
+      <ng-container *ngIf="detalleConvocatoria.tiposDocumento && detalleConvocatoria.tiposDocumento.length > 0">
+        <div class="form-section">
+          <div class="section-title">Documentos requeridos ({{ detalleConvocatoria.tiposDocumento.length }})</div>
+        </div>
+        <div class="solicitudes-detalle">
+          <div class="solicitud-detalle-item" *ngFor="let td of detalleConvocatoria.tiposDocumento">
+            <div class="sd-info">
+              <span class="sd-materia">{{ td.nombre }}</span>
+              <span class="sd-carrera">{{ td.descripcion }}</span>
+            </div>
+            <div class="sd-meta">
+              <span class="role-badge presencial">{{ td.obligatorio ? 'Obligatorio' : 'Opcional' }}</span>
+              <span style="font-size:11px;color:#aaa;">{{ td.fuente }}</span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
       <div class="portada-section">
-        <img
-          *ngIf="detalleConvocatoria.imagenPortadaUrl"
-          [src]="detalleConvocatoria.imagenPortadaUrl"
-          alt="Imagen de portada"
-          class="portada-preview"
-        />
+        <img *ngIf="detalleConvocatoria.imagenPortadaUrl" [src]="detalleConvocatoria.imagenPortadaUrl"
+             alt="Imagen de portada" class="portada-preview" />
         <div *ngIf="!detalleConvocatoria.imagenPortadaUrl" class="portada-vacia">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -406,17 +441,13 @@
           </svg>
           <span>Sin imagen de portada generada</span>
         </div>
-        <button
-          class="btn btn-outline btn-sm portada-btn"
-          (click)="regenerarImagen(detalleConvocatoria.idConvocatoria)"
-          [disabled]="generandoImagen">
+        <button class="btn btn-outline btn-sm portada-btn" (click)="regenerarImagen(detalleConvocatoria.idConvocatoria)" [disabled]="generandoImagen">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
           </svg>
           {{ generandoImagen ? 'Generando...' : (detalleConvocatoria.imagenPortadaUrl ? 'Regenerar imagen' : 'Generar imagen') }}
         </button>
       </div>
-
 
       <div class="form-section">
         <div class="section-title">Solicitudes Incluidas ({{ detalleConvocatoria.solicitudes.length || 0 }})</div>
@@ -444,9 +475,7 @@
     </div>
 
     <ng-template #cargando>
-      <div class="modal-body loading-state">
-        <p>Cargando detalle...</p>
-      </div>
+      <div class="modal-body loading-state"><p>Cargando detalle...</p></div>
     </ng-template>
 
     <div class="modal-footer">
@@ -454,5 +483,5 @@
     </div>
   </div>
 </div>
-<!-- ===================== TOASTS ===================== -->
+
 <app-toast></app-toast>

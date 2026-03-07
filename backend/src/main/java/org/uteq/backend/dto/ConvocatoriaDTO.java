@@ -18,7 +18,9 @@ public class ConvocatoriaDTO {
         @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate fechaPublicacion;
         @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate fechaInicio;
         @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate fechaFin;
+        @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate fechaLimiteDocumentos; // NUEVO
         private List<Long> idsSolicitudes;
+        private List<Long> idsTiposDocumento;  // NUEVO
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -28,6 +30,8 @@ public class ConvocatoriaDTO {
         @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate fechaPublicacion;
         @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate fechaInicio;
         @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate fechaFin;
+        @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate fechaLimiteDocumentos; // NUEVO
+        private List<Long> idsTiposDocumento;  // NUEVO
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor
@@ -47,10 +51,11 @@ public class ConvocatoriaDTO {
         @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate fechaPublicacion;
         @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate fechaInicio;
         @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate fechaFin;
+        @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate fechaLimiteDocumentos; // NUEVO
         private String    estadoConvocatoria;
         private Long      totalSolicitudes;
-        private String imagenPortadaUrl;
-
+        private String    imagenPortadaUrl;
+        private boolean   documentosAbiertos;  // NUEVO
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -61,10 +66,12 @@ public class ConvocatoriaDTO {
         @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate fechaPublicacion;
         @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate fechaInicio;
         @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate fechaFin;
+        @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate fechaLimiteDocumentos; // NUEVO
         private String    estadoConvocatoria;
-        private List<SolicitudResumen> solicitudes;
-        private String imagenPortadaUrl;
-
+        private String    imagenPortadaUrl;
+        private boolean   documentosAbiertos;         // NUEVO
+        private List<SolicitudResumen>    solicitudes;
+        private List<TipoDocumentoConv>   tiposDocumento; // NUEVO
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -76,6 +83,15 @@ public class ConvocatoriaDTO {
         private Long   cantidadDocentes;
         private String nivelAcademico;
         private String estadoSolicitud;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class TipoDocumentoConv {  // NUEVO
+        private Long    idTipoDocumento;
+        private String  nombre;
+        private String  descripcion;
+        private boolean obligatorio;
+        private String  fuente; // 'convocatoria' | 'global'
     }
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder

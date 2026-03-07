@@ -1,12 +1,13 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import {AsyncPipe, CommonModule, DatePipe} from '@angular/common';
+import { AsyncPipe, CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { ConvocatoriaService, Convocatoria, SolicitudDocente } from '../../services/convocatoria.service';
 import { LogoService } from '../../services/logo.service';
+
 interface ConvocatoriaVM extends Convocatoria {
-  expandida:           boolean;
-  cargandoSolicitudes: boolean;
-  solicitudes:         SolicitudDocente[];
+  expandida:             boolean;
+  cargandoSolicitudes:   boolean;
+  solicitudes:           SolicitudDocente[];
   solicitudSeleccionada: SolicitudDocente | null;
 }
 
@@ -23,7 +24,7 @@ export class ConvocatoriasPublicasComponent implements OnInit {
   cargando = true;
 
   // Modal "¿Primera vez o ya postulé?"
-  mostrarModal          = false;
+  mostrarModal           = false;
   solicitudParaPostular: SolicitudDocente | null = null;
 
   constructor(
@@ -54,30 +55,22 @@ export class ConvocatoriasPublicasComponent implements OnInit {
   }
 
   toggleConvocatoria(conv: ConvocatoriaVM): void {
-    // Si ya estaba expandida, solo la colapsa
     if (conv.expandida) {
       conv.expandida             = false;
       conv.solicitudSeleccionada = null;
       return;
     }
-
-    // Colapsar todas las demás
     this.convocatorias.forEach(c => {
       c.expandida             = false;
       c.solicitudSeleccionada = null;
     });
-
     conv.expandida = true;
-
-    // Si ya cargó las solicitudes, no volver a pedir
     if (conv.solicitudes.length > 0) return;
-
     conv.cargandoSolicitudes = true;
     this.convocatoriaService.obtenerSolicitudes(conv.idConvocatoria).subscribe({
       next: (data) => {
         conv.solicitudes           = data;
         conv.cargandoSolicitudes   = false;
-        // Si solo hay una, la preseleccionamos
         if (data.length === 1) conv.solicitudSeleccionada = data[0];
         this.cdr.detectChanges();
       },

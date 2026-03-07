@@ -10,6 +10,7 @@ import {
   SolicitudResumen
 } from '../../../services/convocatoria-admin.service';
 import { SolicitudDocenteService, SolicitudDocenteResponse } from '../../../services/solicitud-docente.service';
+import { TipoDocumentoService, TipoDocumento } from '../../../services/tipo-documento.service';
 import { ToastService } from '../../../services/toast.service';
 import { ToastComponent } from '../../../component/toast.component';
 
@@ -31,6 +32,7 @@ export class ConvocatoriaComponent implements OnInit {
   convocatorias: ConvocatoriaListaResponse[] = [];
   convocatoriasFiltradas: ConvocatoriaListaResponse[] = [];
   solicitudesAprobadas: SolicitudDocenteResponse[] = [];
+  tiposDocumentoDisponibles: TipoDocumento[] = [];   // NUEVO
 
   // ===== Filtros =====
   search = '';
@@ -51,11 +53,9 @@ export class ConvocatoriaComponent implements OnInit {
   get totalAbiertas(): number {
     return this.convocatorias.filter(c => c.estadoConvocatoria === 'abierta').length;
   }
-
   get totalCerradas(): number {
     return this.convocatorias.filter(c => c.estadoConvocatoria === 'cerrada').length;
   }
-
   get totalCanceladas(): number {
     return this.convocatorias.filter(c => c.estadoConvocatoria === 'cancelada').length;
   }
@@ -70,13 +70,15 @@ export class ConvocatoriaComponent implements OnInit {
 
   // ===== Formulario crear/editar =====
   form = {
-    idConvocatoria: 0,
-    titulo: '',
-    descripcion: '',
-    fechaPublicacion: '',
-    fechaInicio: '',
-    fechaFin: '',
-    idsSolicitudes: [] as number[]
+    idConvocatoria:        0,
+    titulo:                '',
+    descripcion:           '',
+    fechaPublicacion:      '',
+    fechaInicio:           '',
+    fechaFin:              '',
+    fechaLimiteDocumentos: null as string | null,  // NUEVO
+    idsSolicitudes:        [] as number[],
+    idsTiposDocumento:     [] as number[]          // NUEVO
   };
 
   // ===== Modal cambiar estado =====
@@ -93,6 +95,7 @@ export class ConvocatoriaComponent implements OnInit {
   constructor(
     private convocatoriaService: ConvocatoriaAdminService,
     private solicitudService: SolicitudDocenteService,
+    private tipoDocumentoService: TipoDocumentoService,   // NUEVO
     private cdr: ChangeDetectorRef,
     private toast: ToastService
   ) {}
@@ -100,6 +103,7 @@ export class ConvocatoriaComponent implements OnInit {
   ngOnInit(): void {
     this.cargarConvocatorias();
     this.cargarSolicitudesAprobadas();
+    this.cargarTiposDocumento();  // NUEVO
   }
 
   // =========================
@@ -113,8 +117,7 @@ export class ConvocatoriaComponent implements OnInit {
         this.calculatePagination();
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('Error al cargar convocatorias:', err);
+      error: () => {
         this.convocatorias = [];
         this.convocatoriasFiltradas = [];
         this.calculatePagination();
@@ -129,10 +132,18 @@ export class ConvocatoriaComponent implements OnInit {
         this.solicitudesAprobadas = Array.isArray(data) ? data : [];
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('Error al cargar solicitudes aprobadas:', err);
-        this.solicitudesAprobadas = [];
-      }
+      error: () => { this.solicitudesAprobadas = []; }
+    });
+  }
+
+  // NUEVO
+  cargarTiposDocumento(): void {
+    this.tipoDocumentoService.listar().subscribe({
+      next: (data) => {
+        this.tiposDocumentoDisponibles = data.filter(t => t.activo);
+        this.cdr.detectChanges();
+      },
+      error: () => {}
     });
   }
 
@@ -141,19 +152,11 @@ export class ConvocatoriaComponent implements OnInit {
   // =========================
   applyFilters(): void {
     const term = (this.search || '').trim().toLowerCase();
-
     this.convocatoriasFiltradas = this.convocatorias.filter(c => {
-      const searchMatch =
-        !term ||
-        c.titulo.toLowerCase().includes(term) ||
-        String(c.idConvocatoria).includes(term);
-
-      const estadoMatch =
-        !this.filtroEstado || c.estadoConvocatoria === this.filtroEstado;
-
+      const searchMatch = !term || c.titulo.toLowerCase().includes(term) || String(c.idConvocatoria).includes(term);
+      const estadoMatch = !this.filtroEstado || c.estadoConvocatoria === this.filtroEstado;
       return searchMatch && estadoMatch;
     });
-
     this.currentPage = 1;
     this.calculatePagination();
   }
@@ -166,27 +169,20 @@ export class ConvocatoriaComponent implements OnInit {
   }
 
   changePage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-    }
+    if (page >= 1 && page <= this.totalPages) this.currentPage = page;
   }
 
   getPageNumbers(): number[] {
     const pages: number[] = [];
-    const maxVisible = 5;
-
-    if (this.totalPages <= maxVisible) {
+    if (this.totalPages <= 5) {
       for (let i = 1; i <= this.totalPages; i++) pages.push(i);
       return pages;
     }
-
     pages.push(1);
     if (this.currentPage > 3) pages.push(-1);
-
     const start = Math.max(2, this.currentPage - 1);
     const end = Math.min(this.totalPages - 1, this.currentPage + 1);
     for (let i = start; i <= end; i++) pages.push(i);
-
     if (this.currentPage < this.totalPages - 2) pages.push(-1);
     pages.push(this.totalPages);
     return pages;
@@ -219,11 +215,20 @@ export class ConvocatoriaComponent implements OnInit {
 
   toggleSolicitud(id: number): void {
     const idx = this.form.idsSolicitudes.indexOf(id);
-    if (idx === -1) {
-      this.form.idsSolicitudes.push(id);
-    } else {
-      this.form.idsSolicitudes.splice(idx, 1);
-    }
+    if (idx === -1) this.form.idsSolicitudes.push(id);
+    else this.form.idsSolicitudes.splice(idx, 1);
+  }
+
+  // NUEVO
+  isTipoSeleccionado(id: number): boolean {
+    return this.form.idsTiposDocumento.includes(id);
+  }
+
+  // NUEVO
+  toggleTipoDocumento(id: number): void {
+    const idx = this.form.idsTiposDocumento.indexOf(id);
+    if (idx === -1) this.form.idsTiposDocumento.push(id);
+    else this.form.idsTiposDocumento.splice(idx, 1);
   }
 
   // =========================
@@ -234,13 +239,15 @@ export class ConvocatoriaComponent implements OnInit {
     this.submitted = false;
     const hoy = new Date().toISOString().split('T')[0];
     this.form = {
-      idConvocatoria: 0,
-      titulo: '',
-      descripcion: '',
-      fechaPublicacion: hoy,
-      fechaInicio: '',
-      fechaFin: '',
-      idsSolicitudes: []
+      idConvocatoria:        0,
+      titulo:                '',
+      descripcion:           '',
+      fechaPublicacion:      hoy,
+      fechaInicio:           '',
+      fechaFin:              '',
+      fechaLimiteDocumentos: null,
+      idsSolicitudes:        [],
+      idsTiposDocumento:     []
     };
     this.modalAbierto = true;
   }
@@ -252,13 +259,15 @@ export class ConvocatoriaComponent implements OnInit {
     this.editando = true;
     this.submitted = false;
     this.form = {
-      idConvocatoria: conv.idConvocatoria,
-      titulo: conv.titulo,
-      descripcion: conv.descripcion,
-      fechaPublicacion: conv.fechaPublicacion,
-      fechaInicio: conv.fechaInicio,
-      fechaFin: conv.fechaFin,
-      idsSolicitudes: []
+      idConvocatoria:        conv.idConvocatoria,
+      titulo:                conv.titulo,
+      descripcion:           conv.descripcion,
+      fechaPublicacion:      conv.fechaPublicacion,
+      fechaInicio:           conv.fechaInicio,
+      fechaFin:              conv.fechaFin,
+      fechaLimiteDocumentos: conv.fechaLimiteDocumentos ?? null,
+      idsSolicitudes:        [],
+      idsTiposDocumento:     []
     };
     this.modalAbierto = true;
   }
@@ -269,14 +278,6 @@ export class ConvocatoriaComponent implements OnInit {
   guardar(): void {
     this.submitted = true;
 
-    // if (!this.form.titulo.trim()) {
-    //   alert('El título es obligatorio.');
-    //   return;
-    // }
-    // if (!this.form.fechaInicio || !this.form.fechaFin) {
-    //   alert('Las fechas de inicio y fin son obligatorias.');
-    //   return;
-    // }
     if (!this.form.titulo.trim()) {
       this.toast.warning('Campo requerido', 'El título de la convocatoria es obligatorio.');
       return;
@@ -285,29 +286,25 @@ export class ConvocatoriaComponent implements OnInit {
       this.toast.warning('Campos requeridos', 'Las fechas de inicio y fin son obligatorias.');
       return;
     }
+    // Validar que fecha límite docs no supere fecha fin
+    if (this.form.fechaLimiteDocumentos && this.form.fechaFin &&
+      this.form.fechaLimiteDocumentos > this.form.fechaFin) {
+      this.toast.warning('Fecha inválida', 'La fecha límite de documentos no puede ser posterior a la fecha de fin.');
+      return;
+    }
+
     this.isSaving = true;
 
     if (this.editando) {
       this.convocatoriaService.actualizar(this.form.idConvocatoria, {
-        titulo: this.form.titulo,
-        descripcion: this.form.descripcion,
-        fechaPublicacion: this.form.fechaPublicacion,
-        fechaInicio: this.form.fechaInicio,
-        fechaFin: this.form.fechaFin
+        titulo:                this.form.titulo,
+        descripcion:           this.form.descripcion,
+        fechaPublicacion:      this.form.fechaPublicacion,
+        fechaInicio:           this.form.fechaInicio,
+        fechaFin:              this.form.fechaFin,
+        fechaLimiteDocumentos: this.form.fechaLimiteDocumentos || null,
+        idsTiposDocumento:     this.form.idsTiposDocumento
       }).subscribe({
-        // next: (resp) => {
-        //   this.isSaving = false;
-        //   this.closeModal();
-        //   alert('✅ Convocatoria actualizada con éxito.');
-        //   this.cargarConvocatorias();
-        //   this.cdr.detectChanges();
-        //
-        // },
-        // error: (err) => {
-        //   this.isSaving = false;
-        //   const msg = err?.error?.mensaje || err?.error?.message || 'Error desconocido';
-        //   alert('❌ No se pudo actualizar: ' + msg);
-        // }
         next: (resp) => {
           this.isSaving = false;
           this.closeModal();
@@ -323,36 +320,24 @@ export class ConvocatoriaComponent implements OnInit {
       });
     } else {
       this.convocatoriaService.crear({
-        titulo: this.form.titulo,
-        descripcion: this.form.descripcion,
-        fechaPublicacion: this.form.fechaPublicacion,
-        fechaInicio: this.form.fechaInicio,
-        fechaFin: this.form.fechaFin,
-        idsSolicitudes: this.form.idsSolicitudes
+        titulo:                this.form.titulo,
+        descripcion:           this.form.descripcion,
+        fechaPublicacion:      this.form.fechaPublicacion,
+        fechaInicio:           this.form.fechaInicio,
+        fechaFin:              this.form.fechaFin,
+        fechaLimiteDocumentos: this.form.fechaLimiteDocumentos || null,
+        idsSolicitudes:        this.form.idsSolicitudes,
+        idsTiposDocumento:     this.form.idsTiposDocumento
       }).subscribe({
-        // next: (resp) => {
-        //   this.isSaving = false;
-        //   this.closeModal();
-        //   alert('✅ Convocatoria creada con éxito.');
-        //   this.cargarConvocatorias();
-        //   this.cdr.detectChanges();
-        //
-        // },
-        // error: (err) => {
-        //   this.isSaving = false;
-        //   const msg = err?.error?.mensaje || err?.error?.message || 'Error desconocido';
-        //   alert('❌ No se pudo crear: ' + msg);
-        // }
         next: (resp) => {
           this.isSaving = false;
           if (resp.exito && resp.data) {
-            const idNueva = resp.data as number;
+            const idNueva = typeof resp.data === 'object'
+              ? resp.data['idConvocatoria'] as number
+              : resp.data as number;
             this.closeModal();
             this.generandoImagen = true;
-            this.toastImagenId = this.toast.loading(
-              'Generando imagen de portada...',
-              'Esto puede tomar hasta 60 segundos'
-            );
+            this.toastImagenId = this.toast.loading('Generando imagen de portada...', 'Esto puede tomar hasta 60 segundos');
             this.cdr.detectChanges();
             this.convocatoriaService.generarImagen(idNueva).subscribe({
               next: (r) => {
@@ -369,7 +354,7 @@ export class ConvocatoriaComponent implements OnInit {
               error: () => {
                 if (this.toastImagenId) this.toast.remove(this.toastImagenId);
                 this.generandoImagen = false;
-                this.toast.warning('Convocatoria creada sin imagen', 'Puedes regenerarla desde el detalle cuando el modelo esté disponible.');
+                this.toast.warning('Convocatoria creada sin imagen', 'Puedes regenerarla desde el detalle.');
                 this.cargarConvocatorias();
                 this.cdr.detectChanges();
               }
@@ -397,19 +382,6 @@ export class ConvocatoriaComponent implements OnInit {
   guardarEstado(): void {
     this.isSaving = true;
     this.convocatoriaService.cambiarEstado(this.convocatoriaSeleccionadaId, this.nuevoEstado).subscribe({
-      // next: () => {
-      //   this.isSaving = false;
-      //   this.modalEstadoAbierto = false;
-      //   alert('✅ Estado actualizado con éxito.');
-      //   this.cargarConvocatorias();
-      //   this.cdr.detectChanges();
-      //
-      // },
-      // error: (err) => {
-      //   this.isSaving = false;
-      //   const msg = err?.error?.mensaje || err?.error?.message || 'Error desconocido';
-      //   alert('❌ No se pudo cambiar el estado: ' + msg);
-      // }
       next: () => {
         this.isSaving = false;
         this.modalEstadoAbierto = false;
@@ -436,13 +408,7 @@ export class ConvocatoriaComponent implements OnInit {
         this.detalleConvocatoria = data;
         this.cdr.detectChanges();
       },
-      // error: (err) => {
-      //   console.error('Error al cargar detalle:', err);
-      //   this.modalDetalleAbierto = false;
-      //   alert('❌ No se pudo cargar el detalle.');
-      // }
-      error: (err) => {
-        console.error('Error al cargar detalle:', err);
+      error: () => {
         this.modalDetalleAbierto = false;
         this.toast.error('Error', 'No se pudo cargar el detalle de la convocatoria.');
       }
@@ -454,19 +420,6 @@ export class ConvocatoriaComponent implements OnInit {
   // =========================
   eliminar(conv: ConvocatoriaListaResponse): void {
     if (!confirm(`¿Seguro que deseas eliminar la convocatoria "${conv.titulo}"? Esta acción no se puede deshacer.`)) return;
-
-    // this.convocatoriaService.eliminar(conv.idConvocatoria).subscribe({
-    //   next: () => {
-    //     alert('✅ Convocatoria eliminada.');
-    //     this.cargarConvocatorias();
-    //     this.cdr.detectChanges();
-    //
-    //   },
-    //   error: (err) => {
-    //     const msg = err?.error?.mensaje || err?.error?.message || 'Error desconocido';
-    //     alert('❌ No se pudo eliminar: ' + msg);
-    //   }
-    // });
     this.convocatoriaService.eliminar(conv.idConvocatoria).subscribe({
       next: () => {
         this.toast.success('Convocatoria eliminada', `"${conv.titulo}" fue eliminada correctamente.`);
@@ -487,34 +440,29 @@ export class ConvocatoriaComponent implements OnInit {
     this.modalAbierto = false;
     this.submitted = false;
     this.cdr.detectChanges();
-
   }
 
   closeModalEstado(): void {
     this.modalEstadoAbierto = false;
     this.cdr.detectChanges();
-
   }
 
   closeModalDetalle(): void {
     this.modalDetalleAbierto = false;
     this.detalleConvocatoria = null;
     this.cdr.detectChanges();
-
   }
+
   regenerarImagen(id: number): void {
     this.generandoImagen = true;
     this.toastImagenId = this.toast.loading('Regenerando imagen...', 'Puede tomar hasta 60 segundos');
     this.cdr.detectChanges();
-
     this.convocatoriaService.generarImagen(id).subscribe({
       next: (resp) => {
         if (this.toastImagenId) this.toast.remove(this.toastImagenId);
         this.generandoImagen = false;
         if (resp.exito && resp.data) {
-          if (this.detalleConvocatoria) {
-            this.detalleConvocatoria.imagenPortadaUrl = resp.data as string;
-          }
+          if (this.detalleConvocatoria) this.detalleConvocatoria.imagenPortadaUrl = resp.data as string;
           this.toast.success('¡Imagen regenerada!', 'La nueva portada se asignó a la convocatoria.');
         } else {
           this.toast.warning('No se pudo regenerar', resp.mensaje);

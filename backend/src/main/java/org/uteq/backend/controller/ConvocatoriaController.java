@@ -1,7 +1,6 @@
 package org.uteq.backend.controller;
-import org.springframework.transaction.annotation.Transactional;
 
-//import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,10 +9,14 @@ import org.uteq.backend.dto.ConvocatoriaDTO.*;
 import org.uteq.backend.dto.SolicitudDocenteDTO;
 import org.uteq.backend.entity.Convocatoria;
 import org.uteq.backend.entity.ConvocatoriaSolicitud;
+import org.uteq.backend.entity.ConvocatoriaTipoDocumento;
 import org.uteq.backend.entity.SolicitudDocente;
+import org.uteq.backend.entity.TipoDocumento;
 import org.uteq.backend.repository.ConvocatoriaRepository;
 import org.uteq.backend.repository.ConvocatoriaSolicitudRepository;
+import org.uteq.backend.repository.ConvocatoriaTipoDocumentoRepository;
 import org.uteq.backend.repository.SolicitudDocenteRepository;
+import org.uteq.backend.repository.TipoDocumentoRepository;
 import org.uteq.backend.service.ConvocatoriaImagenService;
 
 import java.time.LocalDate;
@@ -25,19 +28,26 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ConvocatoriaController {
 
-    private final ConvocatoriaRepository          convocatoriaRepository;
-    private final ConvocatoriaSolicitudRepository convocatoriaSolicitudRepository;
-    private final SolicitudDocenteRepository      solicitudDocenteRepository;
-    private final ConvocatoriaImagenService convocatoriaImagenService;
+    private final ConvocatoriaRepository              convocatoriaRepository;
+    private final ConvocatoriaSolicitudRepository     convocatoriaSolicitudRepository;
+    private final ConvocatoriaTipoDocumentoRepository convocatoriaTipoDocumentoRepository; // NUEVO
+    private final SolicitudDocenteRepository          solicitudDocenteRepository;
+    private final TipoDocumentoRepository             tipoDocumentoRepository;             // NUEVO
+    private final ConvocatoriaImagenService           convocatoriaImagenService;
 
     // ─── PÚBLICO ────────────────────────────────────────────────────────────
 
     @GetMapping("/api/convocatorias/activas")
     @Transactional
     public ResponseEntity<List<ListaResponse>> listarAbiertas() {
+        LocalDate hoy = LocalDate.now();
+        // Solo devuelve convocatorias cuya fechaInicio <= hoy <= fechaFin y estado 'abierta'
         List<ListaResponse> lista = convocatoriaRepository
                 .findByEstadoConvocatoriaOrderByFechaPublicacionDesc("abierta")
-                .stream().map(this::toListaResponse).collect(Collectors.toList());
+                .stream()
+                .filter(c -> !c.getFechaInicio().isAfter(hoy) && !c.getFechaFin().isBefore(hoy))
+                .map(this::toListaResponse)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(lista);
     }
 
@@ -57,14 +67,11 @@ public class ConvocatoriaController {
                 .findByIdConvocatoria(id)
                 .stream().map(ConvocatoriaSolicitud::getIdSolicitud)
                 .collect(Collectors.toList());
-
         if (ids.isEmpty()) return ResponseEntity.ok(List.of());
-
         List<SolicitudDocenteDTO> solicitudes = solicitudDocenteRepository
                 .findAllById(ids)
                 .stream().map(this::toSolicitudDTO)
                 .collect(Collectors.toList());
-
         return ResponseEntity.ok(solicitudes);
     }
 
@@ -77,7 +84,6 @@ public class ConvocatoriaController {
             @RequestParam(required = false) String titulo
     ) {
         List<Convocatoria> todas = convocatoriaRepository.findAllByOrderByFechaPublicacionDesc();
-
         if (estado != null && !estado.isBlank()) {
             todas = todas.stream()
                     .filter(c -> estado.equalsIgnoreCase(c.getEstadoConvocatoria()))
@@ -89,7 +95,6 @@ public class ConvocatoriaController {
                     .filter(c -> c.getTitulo().toLowerCase().contains(filtro))
                     .collect(Collectors.toList());
         }
-
         return ResponseEntity.ok(todas.stream().map(this::toListaResponse).collect(Collectors.toList()));
     }
 
@@ -103,7 +108,7 @@ public class ConvocatoriaController {
     }
 
     @PostMapping("/api/admin/convocatorias")
-    @Transactional  // ← AGREGADO: sin esto el save de ConvocatoriaSolicitud falla
+    @Transactional
     public ResponseEntity<MensajeResponse> crear(@RequestBody CrearRequest req) {
         try {
             Convocatoria c = new Convocatoria();
@@ -112,15 +117,30 @@ public class ConvocatoriaController {
             c.setFechaPublicacion(req.getFechaPublicacion() != null ? req.getFechaPublicacion() : LocalDate.now());
             c.setFechaInicio(req.getFechaInicio());
             c.setFechaFin(req.getFechaFin());
+            c.setFechaLimiteDocumentos(req.getFechaLimiteDocumentos()); // NUEVO
             c.setEstadoConvocatoria("abierta");
             Convocatoria saved = convocatoriaRepository.save(c);
 
+            // Solicitudes
             if (req.getIdsSolicitudes() != null && !req.getIdsSolicitudes().isEmpty()) {
                 for (Long idSolicitud : req.getIdsSolicitudes()) {
                     ConvocatoriaSolicitud cs = new ConvocatoriaSolicitud();
                     cs.setIdConvocatoria(saved.getIdConvocatoria());
                     cs.setIdSolicitud(idSolicitud);
                     convocatoriaSolicitudRepository.save(cs);
+                }
+            }
+
+            // NUEVO: Tipos de documento
+            if (req.getIdsTiposDocumento() != null && !req.getIdsTiposDocumento().isEmpty()) {
+                for (Long idTipo : req.getIdsTiposDocumento()) {
+                    tipoDocumentoRepository.findById(idTipo).ifPresent(td -> {
+                        ConvocatoriaTipoDocumento ctd = new ConvocatoriaTipoDocumento();
+                        ctd.setConvocatoria(saved);
+                        ctd.setTipoDocumento(td);
+                        ctd.setObligatorio(td.getObligatorio());
+                        convocatoriaTipoDocumentoRepository.save(ctd);
+                    });
                 }
             }
 
@@ -148,7 +168,23 @@ public class ConvocatoriaController {
             if (req.getFechaPublicacion() != null) c.setFechaPublicacion(req.getFechaPublicacion());
             c.setFechaInicio(req.getFechaInicio());
             c.setFechaFin(req.getFechaFin());
+            c.setFechaLimiteDocumentos(req.getFechaLimiteDocumentos()); // NUEVO
             convocatoriaRepository.save(c);
+
+            // NUEVO: reemplazar tipos de documento si se enviaron
+            if (req.getIdsTiposDocumento() != null) {
+                convocatoriaTipoDocumentoRepository.deleteByConvocatoriaIdConvocatoria(id);
+                for (Long idTipo : req.getIdsTiposDocumento()) {
+                    tipoDocumentoRepository.findById(idTipo).ifPresent(td -> {
+                        ConvocatoriaTipoDocumento ctd = new ConvocatoriaTipoDocumento();
+                        ctd.setConvocatoria(c);
+                        ctd.setTipoDocumento(td);
+                        ctd.setObligatorio(td.getObligatorio());
+                        convocatoriaTipoDocumentoRepository.save(ctd);
+                    });
+                }
+            }
+
             return ResponseEntity.ok(new MensajeResponse(true, "Convocatoria actualizada correctamente", null));
         }).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new MensajeResponse(false, "Convocatoria no encontrada", null)));
@@ -174,7 +210,7 @@ public class ConvocatoriaController {
                 .body(new MensajeResponse(false, "Convocatoria no encontrada", null)));
     }
 
-    @DeleteMapping("/api/admin/convocatorias/{id}")  // ← paréntesis corregido
+    @DeleteMapping("/api/admin/convocatorias/{id}")
     @Transactional
     public ResponseEntity<MensajeResponse> eliminar(@PathVariable Long id) {
         if (!convocatoriaRepository.existsById(id)) {
@@ -182,9 +218,11 @@ public class ConvocatoriaController {
                     .body(new MensajeResponse(false, "Convocatoria no encontrada", null));
         }
         convocatoriaSolicitudRepository.deleteByIdConvocatoria(id);
+        convocatoriaTipoDocumentoRepository.deleteByConvocatoriaIdConvocatoria(id); // NUEVO
         convocatoriaRepository.deleteById(id);
         return ResponseEntity.ok(new MensajeResponse(true, "Convocatoria eliminada correctamente", null));
     }
+
     @PostMapping("/api/admin/convocatorias/{id}/generar-imagen")
     public ResponseEntity<MensajeResponse> generarImagen(@PathVariable Long id) {
         try {
@@ -197,6 +235,7 @@ public class ConvocatoriaController {
                     .body(new MensajeResponse(false, "Error interno: " + e.getMessage(), null));
         }
     }
+
     // ─── Mappers ────────────────────────────────────────────────────────────
 
     private ListaResponse toListaResponse(Convocatoria c) {
@@ -208,9 +247,11 @@ public class ConvocatoriaController {
                 .fechaPublicacion(c.getFechaPublicacion())
                 .fechaInicio(c.getFechaInicio())
                 .fechaFin(c.getFechaFin())
+                .fechaLimiteDocumentos(c.getFechaLimiteDocumentos())          // NUEVO
                 .estadoConvocatoria(c.getEstadoConvocatoria())
                 .imagenPortadaUrl(c.getImagenPortadaUrl())
                 .totalSolicitudes(totalSolicitudes)
+                .documentosAbiertos(c.isDocumentosAbiertos())                 // NUEVO
                 .build();
     }
 
@@ -225,6 +266,19 @@ public class ConvocatoriaController {
                         .stream().map(this::toSolicitudResumen)
                         .collect(Collectors.toList());
 
+        // NUEVO: Tipos de documento de la convocatoria
+        List<TipoDocumentoConv> tiposDocumento = convocatoriaTipoDocumentoRepository
+                .findByConvocatoriaIdConvocatoria(c.getIdConvocatoria())
+                .stream()
+                .map(ctd -> TipoDocumentoConv.builder()
+                        .idTipoDocumento(ctd.getTipoDocumento().getIdTipoDocumento())
+                        .nombre(ctd.getTipoDocumento().getNombre())
+                        .descripcion(ctd.getTipoDocumento().getDescripcion())
+                        .obligatorio(ctd.getObligatorio())
+                        .fuente("convocatoria")
+                        .build())
+                .collect(Collectors.toList());
+
         return DetalleResponse.builder()
                 .idConvocatoria(c.getIdConvocatoria())
                 .titulo(c.getTitulo())
@@ -232,9 +286,12 @@ public class ConvocatoriaController {
                 .fechaPublicacion(c.getFechaPublicacion())
                 .fechaInicio(c.getFechaInicio())
                 .fechaFin(c.getFechaFin())
+                .fechaLimiteDocumentos(c.getFechaLimiteDocumentos())   // NUEVO
                 .estadoConvocatoria(c.getEstadoConvocatoria())
                 .imagenPortadaUrl(c.getImagenPortadaUrl())
+                .documentosAbiertos(c.isDocumentosAbiertos())          // NUEVO
                 .solicitudes(solicitudes)
+                .tiposDocumento(tiposDocumento)                        // NUEVO
                 .build();
     }
 
@@ -243,7 +300,6 @@ public class ConvocatoriaController {
         String nombreCarrera  = s.getCarrera()  != null ? s.getCarrera().getNombreCarrera()  : "";
         String nombreFacultad = (s.getCarrera() != null && s.getCarrera().getFacultad() != null)
                 ? s.getCarrera().getFacultad().getNombreFacultad() : "";
-
         return SolicitudResumen.builder()
                 .idSolicitud(s.getIdSolicitud())
                 .nombreMateria(nombreMateria)
