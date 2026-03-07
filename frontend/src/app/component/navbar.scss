@@ -14,15 +14,16 @@ $border:    #e2e8f0;
 }
 
 .navbar {
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  background-color: rgba(0, 166, 62, 0.88);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  background-color: rgba(0, 166, 62, 0.50);
   height: 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 16px rgba(0, 100, 30, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   color: $white;
 }
 
