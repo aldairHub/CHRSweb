@@ -16,14 +16,25 @@ public class EvaluadoresController {
 
     private final JdbcTemplate jdbc;
 
+    /** GET /api/evaluacion/evaluadores?rol=EVALUADOR */
     @GetMapping
     public ResponseEntity<List<Map<String, Object>>> listar(
             @RequestParam(defaultValue = "EVALUADOR") String rol) {
 
         List<Map<String, Object>> evaluadores = jdbc.queryForList(
-                "select * from get_evaluadores_por_rol(?)", rol
+                "SELECT * FROM get_evaluadores_por_rol(?)", rol
         );
+        return ResponseEntity.ok(evaluadores);
+    }
 
+    /** GET /api/evaluacion/evaluadores/por-fase/{idFase} */
+    @GetMapping("/por-fase/{idFase}")
+    public ResponseEntity<List<Map<String, Object>>> listarPorFase(
+            @PathVariable Long idFase) {
+
+        List<Map<String, Object>> evaluadores = jdbc.queryForList(
+                "SELECT * FROM get_evaluadores_por_fase(?)", idFase
+        );
         return ResponseEntity.ok(evaluadores);
     }
 }

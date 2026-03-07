@@ -19,11 +19,9 @@ export class ConfigCriteriosService {
     return this.http.get<CriterioResponse[]>(`${this.base}/plantillas/${idPlantilla}/criterios`);
   }
 
-  /** GET /api/evaluacion/criterios?idFase=X  (usado en evaluacion.component) */
+  /** GET /api/evaluacion/criterios/por-fase/{idFase} */
   listarPorFase(idFase: number): Observable<CriterioResponse[]> {
-    return this.http.get<CriterioResponse[]>(`${this.base}/criterios`, {
-      params: { idFase: String(idFase) }
-    });
+    return this.http.get<CriterioResponse[]>(`${this.base}/criterios/por-fase/${idFase}`);
   }
 
   /** GET /api/evaluacion/criterios/{id} */
