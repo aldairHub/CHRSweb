@@ -428,3 +428,24 @@ $border: #e2e8f0;
 }
 
 .rol-dot--activo { background: #00A63E; }
+
+dropdown-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+
+  button {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .ver-historial {
+    background: transparent;
+    color: #2563eb;
+    font-weight: 600;
+  }
+}

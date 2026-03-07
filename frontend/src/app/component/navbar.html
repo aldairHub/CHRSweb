@@ -112,11 +112,19 @@
         </div>
 
         <div class="dropdown-footer">
+
           <button
             (click)="marcarTodasLeidas($event)"
             [disabled]="notifService.noLeidas() === 0">
             Marcar todo como leído
           </button>
+
+          <button
+            class="ver-historial"
+            (click)="irAlHistorial($event)">
+            Ver todo el historial
+          </button>
+
         </div>
 
       </div>

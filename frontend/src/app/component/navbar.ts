@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -8,7 +8,8 @@ import { filter } from 'rxjs/operators';
 import { LogoService } from '../services/logo.service';
 import { AsyncPipe } from '@angular/common';
 import { NotificacionService } from '../services/notificacion.service';
-import { AuthStateService } from '../services/auth-state.service';
+import { AuthStateService } from '../services/auth-state.service';  // ← compañero
+
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -36,7 +37,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     public  logoService: LogoService,
     public  notifService: NotificacionService,
-    private authState: AuthStateService
+    private authState: AuthStateService,       // ← compañero
+    private cdr: ChangeDetectorRef             // ← tuyo
   ) {
     this.cargarDatosUsuario();
     this.syncIsHome();
@@ -47,7 +49,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Iniciar polling al cargar el navbar (usuario ya autenticado)
     this.notifService.iniciarPolling();
   }
 
@@ -61,27 +62,32 @@ export class NavbarComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLElement;
     if (!target.closest('.notification-wrapper')) this.showNotifications = false;
     if (!target.closest('.user-profile'))          this.showPerfilMenu   = false;
+    this.cdr.detectChanges();                    // ← tuyo
   }
 
   // ── Acciones de notificaciones ──────────────────────────────
   toggleNotifications(): void {
     this.showNotifications = !this.showNotifications;
+    this.cdr.detectChanges();                    // ← tuyo
   }
 
   marcarLeida(idNotificacion: number, event: MouseEvent): void {
     event.stopPropagation();
     this.notifService.marcarLeida(idNotificacion);
+    this.cdr.detectChanges();                    // ← tuyo
   }
 
   marcarTodasLeidas(event: MouseEvent): void {
     event.stopPropagation();
     this.notifService.marcarTodasLeidas();
+    this.cdr.detectChanges();                    // ← tuyo
   }
 
   irAlHistorial(event: MouseEvent): void {
     event.stopPropagation();
     this.showNotifications = false;
     this.router.navigate(['/notificaciones']);
+    this.cdr.detectChanges();                    // ← tuyo
   }
 
   navegarANotificacion(notif: any, event: MouseEvent): void {
@@ -118,6 +124,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
         break;
       default:
         this.router.navigate(['/' + rol]);
+        this.cdr.detectChanges();                // ← tuyo
     }
   }
 
@@ -141,10 +148,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   cargarDatosUsuario(): void {
-    this.nombreUsuario   = localStorage.getItem('usuario') || 'Usuario';
-    this.rolUsuario      = this.authService.getRolNombre() || 'Sin rol';
+    this.nombreUsuario    = localStorage.getItem('usuario') || 'Usuario';
+    this.rolUsuario       = this.authService.getRolNombre() || 'Sin rol';
     this.rolesDisponibles = this.authService.getRolesDisponibles();
-    this.iniciales       = this.obtenerIniciales(this.nombreUsuario);
+    this.iniciales        = this.obtenerIniciales(this.nombreUsuario);
   }
 
   obtenerIniciales(nombre: string): string {
@@ -152,24 +159,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     if (palabras.length >= 2) return (palabras[0][0] + palabras[1][0]).toUpperCase();
     return nombre.substring(0, 2).toUpperCase();
   }
-  //
-  // cambiarRolActivo(rol: any): void {
-  //   this.showPerfilMenu = false;
-  //   localStorage.setItem('rolNombre', rol.nombre);
-  //   this.rolUsuario = rol.nombre;
-  //
-  //   this.authService.obtenerMenuPorRol(rol.idRolApp).subscribe({
-  //     next: (modulo: any) => {
-  //       localStorage.setItem('modulo', JSON.stringify(modulo));
-  //       const ruta = modulo?.moduloRuta?.replace(/^\//, '') ?? null;
-  //       if (ruta) {
-  //         localStorage.setItem('rol', ruta);
-  //         this.router.navigate([`/${ruta}`], { replaceUrl: true });
-  //       }
-  //     },
-  //     error: () => alert('No se pudo cambiar el rol. Intente de nuevo.')
-  //   });
-  // }
+
   cambiarRolActivo(rol: any): void {
     this.showPerfilMenu = false;
     localStorage.setItem('rolNombre', rol.nombre);
@@ -182,13 +172,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
         if (ruta) {
           localStorage.setItem('rol', ruta);
 
-          // actualizar el BehaviorSubject con el nuevo estado
+          // Actualizar BehaviorSubject con el nuevo estado  ← compañero
           const estadoActual = this.authState.getEstado();
           this.authState.setEstado({
             ...estadoActual,
             moduloNombre: modulo.moduloNombre,
-            moduloRuta: modulo.moduloRuta,
-            opciones: modulo.opciones ?? [],
+            moduloRuta:   modulo.moduloRuta,
+            opciones:     modulo.opciones ?? [],
             nombreRolApp: rol.nombre
           });
 

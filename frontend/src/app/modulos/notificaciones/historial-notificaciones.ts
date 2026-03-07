@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef} from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -37,12 +37,13 @@ export class HistorialNotificacionesComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private router: Router,
+    private router: Router,private cdr: ChangeDetectorRef,
     public notifService: NotificacionService
   ) {}
 
   ngOnInit(): void {
     this.cargarTodas();
+    this.cdr.detectChanges();
   }
 
   // ── Carga todas desde el backend (leídas + no leídas) ───────
@@ -50,16 +51,18 @@ export class HistorialNotificacionesComponent implements OnInit {
     this.cargando = true;
     const token = localStorage.getItem('token') ?? '';
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-
+    this.cdr.detectChanges();
     this.http.get<any>('/api/notificaciones/historial', { headers })
       .pipe(catchError(() => {
         // Si no existe el endpoint de historial, usa el resumen normal
         return this.http.get<any>('/api/notificaciones', { headers });
+        this.cdr.detectChanges();
       }))
       .subscribe(data => {
         this.todas = data.notificaciones ?? [];
         this.aplicarFiltros();
         this.cargando = false;
+        this.cdr.detectChanges();
       });
   }
 
@@ -70,7 +73,7 @@ export class HistorialNotificacionesComponent implements OnInit {
     if (this.filtroEstado === 'leidas')    resultado = resultado.filter(n => n.leida);
     if (this.filtroEstado === 'no_leidas') resultado = resultado.filter(n => !n.leida);
     if (this.filtroTipo !== 'todos')       resultado = resultado.filter(n => n.tipo === this.filtroTipo);
-
+    this.cdr.detectChanges();
     if (this.busqueda.trim()) {
       const q = this.busqueda.toLowerCase();
       resultado = resultado.filter(n =>
@@ -78,24 +81,28 @@ export class HistorialNotificacionesComponent implements OnInit {
         (n.mensaje ?? '').toLowerCase().includes(q)
       );
     }
-
+    this.cdr.detectChanges();
     this.filtradas    = resultado;
     this.totalPaginas = Math.max(1, Math.ceil(resultado.length / this.itemsPorPagina));
     this.paginaActual = 1;
     this.paginar();
+    this.cdr.detectChanges();
   }
 
   paginar(): void {
     const inicio  = (this.paginaActual - 1) * this.itemsPorPagina;
     this.paginadas = this.filtradas.slice(inicio, inicio + this.itemsPorPagina);
+    this.cdr.detectChanges();
   }
 
   paginaAnterior(): void {
     if (this.paginaActual > 1) { this.paginaActual--; this.paginar(); }
+    this.cdr.detectChanges();
   }
 
   paginaSiguiente(): void {
     if (this.paginaActual < this.totalPaginas) { this.paginaActual++; this.paginar(); }
+    this.cdr.detectChanges();
   }
 
   // ── Acciones ─────────────────────────────────────────────────
@@ -103,12 +110,14 @@ export class HistorialNotificacionesComponent implements OnInit {
     if (notif.leida) return;
     this.notifService.marcarLeida(notif.idNotificacion);
     notif.leida = true;
+    this.cdr.detectChanges();
   }
 
   marcarTodasLeidas(): void {
     this.notifService.marcarTodasLeidas();
     this.todas = this.todas.map(n => ({ ...n, leida: true }));
     this.aplicarFiltros();
+    this.cdr.detectChanges();
   }
 
   // ── Navegación al módulo ─────────────────────────────────────
@@ -143,12 +152,14 @@ export class HistorialNotificacionesComponent implements OnInit {
         break;
       default:
         this.router.navigate(['/' + rol]);
+        this.cdr.detectChanges();
     }
   }
 
   // ── Helpers ──────────────────────────────────────────────────
   get noLeidasCount(): number {
     return this.todas.filter(n => !n.leida).length;
+    this.cdr.detectChanges();
   }
 
   iconoPorTipo(tipo: string): string {
