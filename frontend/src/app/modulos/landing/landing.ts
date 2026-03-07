@@ -6,7 +6,7 @@ import { ConvocatoriaService, Convocatoria } from '../../services/convocatoria.s
 import { InstitucionAdminService } from '../../services/institucion-admin.service';
 
 // ─── Cache helpers ────────────────────────────────────────────────────────────
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 horas
 
 function cacheSet(key: string, data: unknown): void {
   try {

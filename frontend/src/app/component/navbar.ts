@@ -8,7 +8,7 @@ import { filter } from 'rxjs/operators';
 import { LogoService } from '../services/logo.service';
 import { AsyncPipe } from '@angular/common';
 import { NotificacionService } from '../services/notificacion.service';
-
+import { AuthStateService } from '../services/auth-state.service';
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -35,7 +35,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private location: Location,
     private activatedRoute: ActivatedRoute,
     public  logoService: LogoService,
-    public  notifService: NotificacionService   // ← inyectado
+    public  notifService: NotificacionService,
+    private authState: AuthStateService
   ) {
     this.cargarDatosUsuario();
     this.syncIsHome();
@@ -151,7 +152,24 @@ export class NavbarComponent implements OnInit, OnDestroy {
     if (palabras.length >= 2) return (palabras[0][0] + palabras[1][0]).toUpperCase();
     return nombre.substring(0, 2).toUpperCase();
   }
-
+  //
+  // cambiarRolActivo(rol: any): void {
+  //   this.showPerfilMenu = false;
+  //   localStorage.setItem('rolNombre', rol.nombre);
+  //   this.rolUsuario = rol.nombre;
+  //
+  //   this.authService.obtenerMenuPorRol(rol.idRolApp).subscribe({
+  //     next: (modulo: any) => {
+  //       localStorage.setItem('modulo', JSON.stringify(modulo));
+  //       const ruta = modulo?.moduloRuta?.replace(/^\//, '') ?? null;
+  //       if (ruta) {
+  //         localStorage.setItem('rol', ruta);
+  //         this.router.navigate([`/${ruta}`], { replaceUrl: true });
+  //       }
+  //     },
+  //     error: () => alert('No se pudo cambiar el rol. Intente de nuevo.')
+  //   });
+  // }
   cambiarRolActivo(rol: any): void {
     this.showPerfilMenu = false;
     localStorage.setItem('rolNombre', rol.nombre);
@@ -163,6 +181,17 @@ export class NavbarComponent implements OnInit, OnDestroy {
         const ruta = modulo?.moduloRuta?.replace(/^\//, '') ?? null;
         if (ruta) {
           localStorage.setItem('rol', ruta);
+
+          // actualizar el BehaviorSubject con el nuevo estado
+          const estadoActual = this.authState.getEstado();
+          this.authState.setEstado({
+            ...estadoActual,
+            moduloNombre: modulo.moduloNombre,
+            moduloRuta: modulo.moduloRuta,
+            opciones: modulo.opciones ?? [],
+            nombreRolApp: rol.nombre
+          });
+
           this.router.navigate([`/${ruta}`], { replaceUrl: true });
         }
       },

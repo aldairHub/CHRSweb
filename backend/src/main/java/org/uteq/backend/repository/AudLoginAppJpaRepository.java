@@ -22,4 +22,16 @@ public interface AudLoginAppJpaRepository extends JpaRepository<AudLoginApp, Lon
         ORDER BY dia
     """, nativeQuery = true)
     List<Object[]> statsUltimos7Dias();
+
+    long countByResultado(String resultado);
+
+    @Query(value = """
+        SELECT usuario_app, COUNT(*) AS intentos
+        FROM public.aud_login_app
+        WHERE resultado = 'FAIL'
+        GROUP BY usuario_app
+        ORDER BY intentos DESC
+        LIMIT 10
+    """, nativeQuery = true)
+    List<Object[]> top10UsuariosFallidos();
 }

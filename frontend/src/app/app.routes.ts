@@ -189,6 +189,18 @@ export const routes: Routes = [
           .then(m => m.GestionNivelesComponent)
       },
       {
+        path: 'auditoria/historial',
+        title: 'SSDC - Historial de acciones',
+        canActivate: [NoPrimerLoginGuard],
+        loadComponent: () => import('./modulos/admin/auditoria/historial-acciones/historial-acciones').then(m => m.HistorialAccionesComponent)
+      },
+      {
+        path: 'auditoria/estadisticas',
+        title: 'SSDC - Estadísticas de auditoría',
+        canActivate: [NoPrimerLoginGuard],
+        loadComponent: () => import('./modulos/admin/auditoria/estadisticas/estadisticas').then(m => m.EstadisticasAuditoriaComponent)
+      },
+      {
         path: 'gestion-opciones',
         title: 'SSDC - Configuración de opciones',
         loadComponent: () => import('./modulos/admin/gestion-opciones/gestion-opciones').then(m => m.GestionOpcionesComponent)

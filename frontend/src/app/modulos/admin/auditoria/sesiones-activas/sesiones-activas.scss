@@ -10,6 +10,7 @@ $bg:         #f5f7f5;
 $white:      #ffffff;
 $error:      #dc2626;
 
+
 // ─── Layout ────────────────────────────────────────────────────
 .main-container {
   min-height: 100vh;
@@ -229,8 +230,60 @@ table {
     width: 56px;
     height: 56px;
     margin: 0 auto 1rem;
-    color: color.adjust($text-gray, $lightness: 15%); 
+    color: color.adjust($text-gray, $lightness: 15%);
   }
 
   p { margin: 0 0 0.25rem; font-size: 0.95rem; }
+}
+// Tabs de submódulos (reemplaza .submodule-nav)
+.submodule-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.75rem;
+  background: $white;
+  border: 1px solid $border;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+
+.tab-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $text-gray;
+  text-decoration: none;
+  border-right: 1px solid $border;
+  transition: all 0.2s;
+  position: relative;
+
+  svg { flex-shrink: 0; stroke: $text-gray; transition: stroke 0.2s; }
+  &:last-child { border-right: none; }
+
+  &:hover {
+    background: $card-bg;
+    color: $dark;
+    svg { stroke: $dark; }
+  }
+
+  &.tab-active {
+    background: $card-bg;
+    color: $primary;
+    font-weight: 700;
+    svg { stroke: $primary; }
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: $primary;
+      border-radius: 3px 3px 0 0;
+    }
+  }
 }

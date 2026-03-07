@@ -1,0 +1,433 @@
+// Reutiliza la base de auditoria.scss + estilos de charts propios
+
+@use 'sass:color';
+
+$primary: #00A63E;
+$success: #16a34a;
+$danger:  #dc2626;
+$blue:    #2563eb;
+$gray:    #6b7280;
+
+.main-container {
+  min-height: 100vh;
+  background: #f3f4f6;
+  padding: 1.5rem;
+}
+
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  h2 { margin: 0; font-size: 1.5rem; font-weight: 700; color: #111827; }
+  .page-subtitle { margin: 0.25rem 0 0; color: $gray; font-size: 0.875rem; }
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+// ── Stats grid ──────────────────────────────────────────────────────────────
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+
+.stat-icon {
+  width: 48px; height: 48px;
+  border-radius: 10px;
+  background: #f3f4f6;
+  display: flex; align-items: center; justify-content: center;
+  color: $gray;
+  svg { width: 24px; height: 24px; }
+
+  &.success { background: #dcfce7; color: $success; }
+  &.danger  { background: #fee2e2; color: $danger; }
+  &.blue    { background: #dbeafe; color: $blue; }
+}
+
+.stat-content {
+  h3 { margin: 0 0 0.25rem; font-size: 0.8rem; font-weight: 500; color: $gray; text-transform: uppercase; letter-spacing: .04em; }
+  .stat-value { font-size: 1.75rem; font-weight: 700; color: #111827; line-height: 1; }
+}
+
+// ── Chart card ──────────────────────────────────────────────────────────────
+.chart-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+
+.chart-title {
+  margin: 0 0 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  height: 180px;
+  padding-bottom: 0.5rem;
+}
+
+.bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.bars {
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+  width: 100%;
+  height: 130px;
+}
+
+.bar {
+  flex: 1;
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  transition: height 0.4s ease;
+
+  &.bar-success { background: $success; }
+  &.bar-danger  { background: $danger; }
+}
+
+.bar-totals {
+  margin-top: 4px;
+  .bar-total-num {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #374151;
+  }
+}
+
+.bar-label {
+  font-size: 0.7rem;
+  color: $gray;
+  margin-top: 4px;
+  text-align: center;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  color: #4b5563;
+}
+
+.legend-dot {
+  width: 12px; height: 12px;
+  border-radius: 3px;
+  &.success { background: $success; }
+  &.danger  { background: $danger; }
+}
+
+.empty-chart {
+  text-align: center;
+  padding: 2rem;
+  color: $gray;
+}
+
+// ── Ranking ──────────────────────────────────────────────────────────────────
+.table-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+
+.table-header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  margin-bottom: 1rem;
+}
+
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ranking-pos {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  color: $gray;
+  font-weight: 700;
+  font-size: 0.875rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+
+  &.gold   { background: #fef9c3; color: #854d0e; }
+  &.silver { background: #f3f4f6; color: #374151; }
+  &.bronze { background: #fef3c7; color: #92400e; }
+}
+
+.ranking-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.ranking-nombre {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.ranking-bar-bg {
+  height: 6px;
+  background: #f3f4f6;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.ranking-bar {
+  height: 100%;
+  background: $danger;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.ranking-intentos { flex-shrink: 0; }
+
+.badge {
+  display: inline-flex;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &.badge-fail  { background: #fee2e2; color: $danger; }
+  &.badge-info  { background: #dbeafe; color: $blue; }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+.empty-state-card {
+  background: white;
+  border-radius: 12px;
+  padding: 3rem;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+
+  svg { width: 48px; height: 48px; color: $success; margin-bottom: 1rem; }
+  p { margin: 0; color: $gray; font-size: 0.9375rem; }
+}
+
+// ── Botones ───────────────────────────────────────────────────────────────────
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 1rem; border-radius: 8px;
+  font-size: 0.875rem; font-weight: 500;
+  cursor: pointer; border: 1px solid transparent;
+  transition: all 0.15s;
+
+  &.btn-outline {
+    background: white; border-color: #d1d5db; color: #374151;
+    &:hover { background: #f9fafb; }
+  }
+
+  &.btn-outline-secondary {
+    background: white; border-color: #d1d5db; color: #374151;
+    &:hover { background: #f9fafb; }
+    text-decoration: none;
+  }
+
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+// ─── Tabs ───────────────────────────────────────────────────────
+.submodule-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.75rem;
+  background: white;
+  border: 1px solid #B9F8CF;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+
+.tab-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #536b50;
+  text-decoration: none;
+  border-right: 1px solid #B9F8CF;
+  transition: all 0.2s;
+  position: relative;
+
+  svg { flex-shrink: 0; stroke: #536b50; transition: stroke 0.2s; }
+  &:last-child { border-right: none; }
+  &:hover { background: #EEF9EC; color: #016630; svg { stroke: #016630; } }
+
+  &.tab-active {
+    background: #EEF9EC;
+    color: #00A63E;
+    font-weight: 700;
+    svg { stroke: #00A63E; }
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: #00A63E;
+      border-radius: 3px 3px 0 0;
+    }
+  }
+}
+
+// ─── Chart config ───────────────────────────────────────────────
+.chart-config-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+
+.chart-config-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.chart-controls {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.control-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.toggle-group {
+  display: flex;
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.toggle-btn {
+  padding: 0.3rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: transparent;
+  color: #6b7280;
+  transition: all 0.15s;
+
+  &:hover { background: #e5e7eb; color: #374151; }
+  &.active { background: white; color: #016630; font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+}
+
+// ─── Bar chart mejorado ──────────────────────────────────────────
+.bar.bar-wide { flex: 2; }
+
+// ─── Stat bar ────────────────────────────────────────────────────
+.stat-bar-bg {
+  height: 4px;
+  background: #f3f4f6;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s ease;
+  &.fill-success { background: #16a34a; }
+  &.fill-warning  { background: #f59e0b; }
+  &.fill-danger   { background: #dc2626; }
+}
+
+// ─── Table header mejorado ──────────────────────────────────────
+.table-header-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  h3 { margin: 0; font-size: 1rem; font-weight: 600; color: #111827; }
+}
+
+.table-header-sub {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.empty-state-card {
+  small { display: block; margin-top: 0.35rem; color: #9ca3af; font-size: 0.85rem; }
+}

@@ -17,6 +17,7 @@ import {
 import { RolesAppService, RolAppConRolesBdDTO } from '../../../services/roles-app.service';
 import { FacultadService } from '../../../services/facultad.service';
 import { ToastService } from '../../../services/toast.service';
+import {ToastComponent} from '../../../component/toast.component';
 
 interface InstitucionDTO {
   idInstitucion: number;
@@ -26,7 +27,7 @@ interface InstitucionDTO {
 @Component({
   selector: 'app-gestion-usuarios',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, ToastComponent],
   templateUrl: './gestion-usuarios.html',
   styleUrls: ['./gestion-usuarios.scss']
 })
