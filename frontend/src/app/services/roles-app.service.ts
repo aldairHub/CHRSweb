@@ -77,4 +77,10 @@ export class RolesAppService {
   listarRolesBdConDescripcion(): Observable<RolBdDescripcion[]> {
     return this.http.get<RolBdDescripcion[]>(`${this.api}/roles-bd-con-descripcion`);
   }
+
+  /** Roles permitidos para AutoridadAcademica (solo Revisor/Evaluador, sin Postulante). */
+  listarParaAutoridad(): Observable<RolAppConRolesBdDTO[]> {
+    return this.http.get<RolAppConRolesBdDTO[]>(`${this.api}/para-autoridad`);
+  }
+
 }

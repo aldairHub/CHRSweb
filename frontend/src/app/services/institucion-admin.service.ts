@@ -15,6 +15,7 @@ export interface InstitucionConfig {
   emailPort: number;
   emailSsl: boolean;
   tienePasswordConfigurado: boolean;
+  imagenFondoUrl: string | null;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -31,6 +31,8 @@ export interface AutoridadRegistroPayload {
   correo: string;
   fechaNacimiento: string; // YYYY-MM-DD
   idInstitucion: number;
+  idFacultad?: number | null;
+  rolesApp: string[];
   idsRolAutoridad: number[];
 }
 
@@ -89,5 +91,8 @@ export class AutoridadAcademicaService {
       { idsRolAutoridad }
     );
   }
-}
 
+  listarUsuariosDisponibles(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/autoridades-academicas/usuarios-disponibles`);
+  }
+}

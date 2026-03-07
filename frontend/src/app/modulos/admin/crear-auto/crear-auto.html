@@ -1,77 +1,194 @@
 <div class="main-container">
-  <div class="content-wrapper" style="max-width: 900px;">
+  <div class="content-wrapper" style="max-width: 950px;">
 
     <header class="page-header">
       <div>
-        <h2>Nuevo Evaluador</h2>
-        <p style="color: #536b50; font-size: 0.9rem;">Registre los datos de la Autoridad Académica</p>
+        <h2>Nueva Autoridad Académica</h2>
+        <p style="color: #536b50; font-size: 0.9rem;">Registre o vincule una autoridad al sistema</p>
       </div>
-      <button class="btn btn-outline btn-sm" (click)="cancelar()">
-        Cancelar
-      </button>
+      <button class="btn btn-outline btn-sm" (click)="cancelar()">Cancelar</button>
     </header>
 
-    <div class="card form-card">
+    <!-- Mensajes -->
+    <!-- Selector de modo -->
+    <div class="card" style="padding:20px;margin-bottom:20px;">
+      <h4 class="section-title" style="margin-bottom:14px;">¿Cómo desea crear la autoridad?</h4>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:14px 20px;border-radius:10px;border:2px solid;"
+               [style.border-color]="modoCreacion === 'nuevo' ? '#00A63E' : '#ddd'"
+               [style.background]="modoCreacion === 'nuevo' ? '#f0fdf4' : '#fafafa'">
+          <input type="radio" [(ngModel)]="modoCreacion" value="nuevo" name="modo">
+          <div>
+            <strong>Crear nuevo usuario automáticamente</strong>
+            <p style="font-size:0.82rem;color:#666;margin:2px 0 0;">Se genera usuario y contraseña, se envía al correo</p>
+          </div>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:14px 20px;border-radius:10px;border:2px solid;"
+               [style.border-color]="modoCreacion === 'existente' ? '#00A63E' : '#ddd'"
+               [style.background]="modoCreacion === 'existente' ? '#f0fdf4' : '#fafafa'">
+          <input type="radio" [(ngModel)]="modoCreacion" value="existente" name="modo">
+          <div>
+            <strong>Vincular usuario existente</strong>
+            <p style="font-size:0.82rem;color:#666;margin:2px 0 0;">El usuario ya existe en el sistema (sin rol postulante ni autoridad)</p>
+          </div>
+        </label>
+      </div>
+    </div>
 
+    <!-- ═══════════════════ MODO NUEVO ═══════════════════ -->
+    <div *ngIf="modoCreacion === 'nuevo'" class="card form-card">
       <form (ngSubmit)="guardar()">
 
         <h4 class="section-title">Información Personal</h4>
         <div class="form-grid">
-
           <div class="form-group">
             <label>Nombres *</label>
-            <input type="text" class="form-input" [(ngModel)]="evaluador.nombres" name="nombres" placeholder="Ej: Roberto Andrés" required>
+            <input type="text" class="form-input" [(ngModel)]="formNuevo.nombres" name="nombres" placeholder="Ej: Roberto Andrés" required>
           </div>
-
           <div class="form-group">
             <label>Apellidos *</label>
-            <input type="text" class="form-input" [(ngModel)]="evaluador.apellidos" name="apellidos" placeholder="Ej: Gómez Loor" required>
+            <input type="text" class="form-input" [(ngModel)]="formNuevo.apellidos" name="apellidos" placeholder="Ej: Gómez Loor" required>
           </div>
-
+          <div class="form-group">
+            <label>Correo Electrónico *</label>
+            <input type="email" class="form-input" [(ngModel)]="formNuevo.correo" name="correo" placeholder="usuario@institucion.edu.ec" required>
+          </div>
           <div class="form-group">
             <label>Fecha de Nacimiento *</label>
-            <input type="date" class="form-input" [(ngModel)]="evaluador.fechaNacimiento" name="fechaNacimiento" required>
+            <input type="date" class="form-input" [(ngModel)]="formNuevo.fechaNacimiento" name="fechaNacimiento" required>
           </div>
-
           <div class="form-group">
-            <label>Institución de Origen *</label>
-            <select class="form-input" [(ngModel)]="evaluador.idInstitucion" name="institucion" required>
-              <option [ngValue]="null" disabled selected>Seleccione...</option>
-              <option *ngFor="let inst of instituciones" [value]="inst.id">{{ inst.nombre }}</option>
+            <label>Institución *</label>
+            <select class="form-input" [(ngModel)]="formNuevo.idInstitucion" name="idInstitucion" required>
+              <option [ngValue]="null" disabled>Seleccione...</option>
+              <option *ngFor="let i of instituciones" [value]="i.idInstitucion">{{ i.nombre }}</option>
             </select>
           </div>
-
+          <!-- REQUERIMIENTO 1: Facultad -->
+          <div class="form-group">
+            <label>Facultad</label>
+            <select class="form-input" [(ngModel)]="formNuevo.idFacultad" name="idFacultad">
+              <option [ngValue]="null">Sin facultad asignada</option>
+              <option *ngFor="let f of facultades" [value]="f.idFacultad">{{ f.nombreFacultad }}</option>
+            </select>
+          </div>
         </div>
 
-        <h4 class="section-title" style="margin-top: 20px;">Credenciales de Acceso</h4>
+        <!-- REQUERIMIENTO 3: Roles solo Revisor/Evaluador -->
+        <h4 class="section-title" style="margin-top:20px;">Roles de Acceso</h4>
+        <p style="font-size:0.83rem;color:#666;margin-bottom:10px;">
+          Solo se muestran roles con acceso a módulo <strong>Revisor</strong> o <strong>Evaluador</strong>.
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;" *ngIf="rolesDisponibles.length > 0; else sinRoles">
+          <label *ngFor="let rol of rolesDisponibles"
+                 style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border-radius:8px;border:2px solid;"
+                 [style.border-color]="isRolSeleccionadoNuevo(rol.nombre) ? '#00A63E' : '#ddd'"
+                 [style.background]="isRolSeleccionadoNuevo(rol.nombre) ? '#f0fdf4' : '#fafafa'">
+            <input type="checkbox"
+                   [checked]="isRolSeleccionadoNuevo(rol.nombre)"
+                   (change)="toggleRolNuevo(rol.nombre)">
+            <div>
+              <strong>{{ rol.nombre }}</strong>
+              <span style="font-size:0.78rem;color:#666;display:block;">{{ rol.nombreModulo }}</span>
+            </div>
+          </label>
+        </div>
+        <ng-template #sinRoles>
+          <p style="color:#999;font-style:italic;">No hay roles disponibles cargados.</p>
+        </ng-template>
+
+        <div class="form-actions-footer">
+          <button type="button" class="btn btn-outline" (click)="cancelar()">Descartar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+            {{ isLoading ? 'Guardando...' : 'Crear Autoridad' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ═══════════════════ MODO EXISTENTE ═══════════════════ -->
+    <div *ngIf="modoCreacion === 'existente'" class="card form-card">
+      <form (ngSubmit)="guardar()">
+
+        <h4 class="section-title">Seleccionar Usuario Existente</h4>
         <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Usuario del sistema *</label>
+            <select class="form-input" [(ngModel)]="formExistente.idUsuario" name="idUsuario" (change)="onUsuarioSeleccionado()" required>
+              <option [ngValue]="null" disabled>Seleccione un usuario...</option>
+              <option *ngFor="let u of usuariosDisponibles" [value]="u.idUsuario">
+                {{ u.usuarioApp }} — {{ u.correo }}
+              </option>
+            </select>
+            <small style="color:#666;margin-top:4px;display:block;">
+              Solo se listan usuarios que no son ya autoridad ni postulante.
+            </small>
+          </div>
+        </div>
 
+        <h4 class="section-title" style="margin-top:16px;">Datos de la Autoridad</h4>
+        <div class="form-grid">
           <div class="form-group">
-            <label>Correo Electrónico (Usuario) *</label>
-            <input type="email" class="form-input" [(ngModel)]="evaluador.correo" (input)="generarUsuario()" name="correo" placeholder="usuario@institucion.edu.ec" required>
+            <label>Nombres *</label>
+            <input type="text" class="form-input" [(ngModel)]="formExistente.nombres" name="nombresE" required>
           </div>
-
           <div class="form-group">
-            <label>Contraseña Temporal *</label>
-            <input type="password" class="form-input" [(ngModel)]="evaluador.password" name="password" placeholder="••••••••" required>
+            <label>Apellidos *</label>
+            <input type="text" class="form-input" [(ngModel)]="formExistente.apellidos" name="apellidosE" required>
           </div>
-
-          <div class="form-group full-width" style="background: #f0fdf4; padding: 10px; border-radius: 8px; border: 1px dashed #00A63E;">
-            <label style="color: #00A63E;">Usuario generado:</label>
-            <strong style="font-size: 1.1rem; color: #1a1a1a;">{{ evaluador.usuario || '...' }}</strong>
-            <p style="font-size: 0.8rem; color: #536b50; margin-top: 4px;">Este usuario tendrá rol <strong>EVALUADOR</strong> automáticamente.</p>
+          <div class="form-group">
+            <label>Correo (referencia)</label>
+            <input type="email" class="form-input" [(ngModel)]="formExistente.correo" name="correoE" [readonly]="!!formExistente.idUsuario">
           </div>
+          <div class="form-group">
+            <label>Fecha de Nacimiento *</label>
+            <input type="date" class="form-input" [(ngModel)]="formExistente.fechaNacimiento" name="fechaNacimientoE" required>
+          </div>
+          <div class="form-group">
+            <label>Institución *</label>
+            <select class="form-input" [(ngModel)]="formExistente.idInstitucion" name="idInstitucionE" required>
+              <option [ngValue]="null" disabled>Seleccione...</option>
+              <option *ngFor="let i of instituciones" [value]="i.idInstitucion">{{ i.nombre }}</option>
+            </select>
+          </div>
+          <!-- REQUERIMIENTO 1: Facultad -->
+          <div class="form-group">
+            <label>Facultad</label>
+            <select class="form-input" [(ngModel)]="formExistente.idFacultad" name="idFacultadE">
+              <option [ngValue]="null">Sin facultad asignada</option>
+              <option *ngFor="let f of facultades" [value]="f.idFacultad">{{ f.nombreFacultad }}</option>
+            </select>
+          </div>
+        </div>
 
+        <!-- REQUERIMIENTO 3: Roles solo Revisor/Evaluador -->
+        <h4 class="section-title" style="margin-top:20px;">Roles de Acceso</h4>
+        <p style="font-size:0.83rem;color:#666;margin-bottom:10px;">
+          Solo se muestran roles con acceso a módulo <strong>Revisor</strong> o <strong>Evaluador</strong>.
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;" *ngIf="rolesDisponibles.length > 0">
+          <label *ngFor="let rol of rolesDisponibles"
+                 style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border-radius:8px;border:2px solid;"
+                 [style.border-color]="isRolSeleccionadoExistente(rol.nombre) ? '#00A63E' : '#ddd'"
+                 [style.background]="isRolSeleccionadoExistente(rol.nombre) ? '#f0fdf4' : '#fafafa'">
+            <input type="checkbox"
+                   [checked]="isRolSeleccionadoExistente(rol.nombre)"
+                   (change)="toggleRolExistente(rol.nombre)">
+            <div>
+              <strong>{{ rol.nombre }}</strong>
+              <span style="font-size:0.78rem;color:#666;display:block;">{{ rol.nombreModulo }}</span>
+            </div>
+          </label>
         </div>
 
         <div class="form-actions-footer">
           <button type="button" class="btn btn-outline" (click)="cancelar()">Descartar</button>
-          <button type="submit" class="btn btn-primary">
-            {{ isLoading ? 'Guardando...' : 'Crear Usuario evaluador' }}
+          <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+            {{ isLoading ? 'Vinculando...' : 'Vincular como Autoridad' }}
           </button>
         </div>
-
       </form>
     </div>
+
   </div>
 </div>

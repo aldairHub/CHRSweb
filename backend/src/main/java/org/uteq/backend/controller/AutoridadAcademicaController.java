@@ -11,6 +11,8 @@ import org.uteq.backend.dto.AutoridadAcademicaRequestDTO;
 import org.uteq.backend.dto.AutoridadAcademicaResponseDTO;
 import org.uteq.backend.dto.AutoridadEstadoRequestDTO;
 import org.uteq.backend.dto.AutoridadRegistroRequestDTO;
+import org.uteq.backend.dto.AutoridadDesdeUsuarioRequestDTO;
+import org.uteq.backend.repository.UsuarioRepository;
 
 @RestController
 @RequestMapping("/api/autoridades-academicas")
@@ -18,9 +20,12 @@ import org.uteq.backend.dto.AutoridadRegistroRequestDTO;
 public class AutoridadAcademicaController {
 
     private final AutoridadAcademicaService autoridadService;
+    private final UsuarioRepository usuarioRepository;
 
-    public AutoridadAcademicaController(AutoridadAcademicaService autoridadService) {
+    public AutoridadAcademicaController(AutoridadAcademicaService autoridadService,
+                                        UsuarioRepository usuarioRepository) {
         this.autoridadService = autoridadService;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @PostMapping
@@ -65,4 +70,25 @@ public class AutoridadAcademicaController {
         autoridadService.cambiarEstado(idAutoridad, dto.estado());
         return ResponseEntity.ok().build();
     }
+
+    /** Crea autoridad vinculando un usuario existente (no postulante ni autoridad ya). */
+    @PostMapping("/desde-usuario")
+    public ResponseEntity<?> registrarDesdeUsuario(@RequestBody AutoridadDesdeUsuarioRequestDTO dto) {
+        return ResponseEntity.ok(autoridadService.registrarDesdeUsuario(dto));
+    }
+
+    /** Lista usuarios disponibles (no son autoridad ni postulante) para vincular. */
+    @GetMapping("/usuarios-disponibles")
+    public ResponseEntity<?> usuariosDisponibles() {
+        var usuarios = usuarioRepository.findUsuariosDisponiblesParaAutoridad();
+        var result = usuarios.stream().map(u -> {
+            var map = new java.util.LinkedHashMap<String, Object>();
+            map.put("idUsuario", u.getIdUsuario());
+            map.put("usuarioApp", u.getUsuarioApp());
+            map.put("correo", u.getCorreo());
+            return map;
+        }).toList();
+        return ResponseEntity.ok(result);
+    }
+
 }

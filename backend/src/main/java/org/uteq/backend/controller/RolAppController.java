@@ -10,7 +10,7 @@ import org.uteq.backend.service.RolAppService;
 
 import java.util.List;
 
- //Controlador para Gestión General de Roles (roles_app ↔ roles_bd).
+//Controlador para Gestión General de Roles (roles_app ↔ roles_bd).
 @RestController
 @RequestMapping("/api/roles-app")
 @CrossOrigin(origins = "*")
@@ -62,9 +62,20 @@ public class RolAppController {
         rolAppService.cambiarEstado(id, activo);
         return ResponseEntity.ok().build();
     }
-     @GetMapping("/roles-bd-con-descripcion")
-     public List<RolBdDescripcionDTO> rolesBdConDescripcion() {
-         return rolAppService.listarRolesBdConDescripcion();
-     }
+    @GetMapping("/roles-bd-con-descripcion")
+    public List<RolBdDescripcionDTO> rolesBdConDescripcion() {
+        return rolAppService.listarRolesBdConDescripcion();
+    }
 
- }
+
+    /**
+     * Lista roles_app que pertenecen a módulos Revisor o Evaluador.
+     * Usado al asignar roles a una AutoridadAcademica para impedir
+     * que se le asigne rol Postulante u otros módulos no permitidos.
+     */
+    @GetMapping("/para-autoridad")
+    public List<RolAppConRolesBdDTO> rolesParaAutoridad() {
+        return rolAppService.listarParaAutoridad();
+    }
+
+}

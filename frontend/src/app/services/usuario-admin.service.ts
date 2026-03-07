@@ -36,6 +36,7 @@ export interface AutoridadCreatePayload {
   correo: string;
   fechaNacimiento: string | null;
   idInstitucion: number | null;
+  idFacultad?: number | null;
   rolesApp: string[];        // nombres de roles, no IDs
   idsRolAutoridad: number[];
 }

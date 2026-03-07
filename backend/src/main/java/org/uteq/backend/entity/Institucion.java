@@ -52,4 +52,6 @@ public class Institucion {
     @Column(name = "email_ssl", nullable = false)
     private Boolean emailSsl = false;
 
+    @Column(name = "imagen_fondo_url", columnDefinition = "TEXT")
+    private String imagenFondoUrl;
 }

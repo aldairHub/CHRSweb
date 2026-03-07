@@ -55,6 +55,14 @@
             <span class="form-hint">Aparece en los correos y encabezados del sistema.</span>
           </div>
 
+          <div class="form-group col-span-2">
+            <label>URL imagen de fondo del landing</label>
+            <input type="text" class="form-input"
+                   [(ngModel)]="form.imagenFondoUrl"
+                   placeholder="https://ejemplo.com/imagen-campus.jpg" />
+            <span class="form-hint">Imagen de fondo del hero en el landing público. Deja vacío para usar la imagen por defecto.</span>
+          </div>
+
           <div class="form-group">
             <label>Teléfono</label>
             <input type="text" class="form-input"

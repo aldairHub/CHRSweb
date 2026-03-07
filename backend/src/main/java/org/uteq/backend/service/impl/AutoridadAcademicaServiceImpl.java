@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.uteq.backend.dto.*;
+import org.uteq.backend.repository.FacultadRepository;
 import org.uteq.backend.entity.AutoridadAcademica;
 import org.uteq.backend.entity.Usuario;
 
@@ -40,6 +41,7 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
     private final DbRoleSyncService dbRoleSyncService;
     private final PostgresProcedureRepository postgresProcedureRepository;
     private final AesCipherService aesCipherService;
+    private final FacultadRepository facultadRepository;
     private static final Logger log =
             LoggerFactory.getLogger(AutoridadAcademicaServiceImpl.class);
 
@@ -51,7 +53,8 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
             PasswordEncoder passwordEncoder,
             EmailService emailService,
             DbRoleSyncService dbRolSyncService,
-            PostgresProcedureRepository postgresProcedureRepository, AesCipherService aesCipherService) {
+            PostgresProcedureRepository postgresProcedureRepository, AesCipherService aesCipherService,
+            FacultadRepository facultadRepository) {
         this.notifService = notifService;
         this.autoridadRepository = autoridadRepository;
         this.usuarioRepository = usuarioRepository;
@@ -62,6 +65,7 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         this.dbRoleSyncService = dbRolSyncService;
         this.postgresProcedureRepository = postgresProcedureRepository;
         this.aesCipherService = aesCipherService;
+        this.facultadRepository = facultadRepository;
     }
 
     // -------------------------
@@ -85,6 +89,7 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         autoridad.setFechaNacimiento(dto.getFechaNacimiento());
         autoridad.setEstado(dto.getEstado() != null ? dto.getEstado() : true);
         autoridad.setIdInstitucion(dto.getIdInstitucion());
+        autoridad.setIdFacultad(dto.getIdFacultad());
         autoridad.setUsuario(usuario);
 
         // MULTI CARGOS
@@ -137,6 +142,7 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         autoridad.setEstado(dto.getEstado());
         autoridad.setUsuario(usuario);
         autoridad.setIdInstitucion(dto.getIdInstitucion());
+        autoridad.setIdFacultad(dto.getIdFacultad());
 
         // Si vienen cargos, actualiza cargos y roles
         if (dto.getIdsRolAutoridad() != null) {
@@ -255,6 +261,7 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
         dto.setEstado(autoridad.getEstado());
         dto.setIdUsuario(autoridad.getUsuario().getIdUsuario());
         dto.setIdInstitucion(autoridad.getIdInstitucion());
+        dto.setIdFacultad(autoridad.getIdFacultad());
 
         // ya no existe setRolesAutoridad() → usamos setRolesApp()
         // Mapeamos los roles_app del usuario asociado a la autoridad
@@ -358,6 +365,69 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
                 );
 
         return autoridad.getIdAutoridad();
+    }
+
+
+    /**
+     * Crea una AutoridadAcademica vinculando un usuario EXISTENTE.
+     * Valida que el usuario no esté ya en autoridad_academica ni en postulante.
+     * Asigna los roles indicados al usuario.
+     */
+    @Override
+    @Transactional
+    public AutoridadRegistroResponseDTO registrarDesdeUsuario(AutoridadDesdeUsuarioRequestDTO dto) {
+        if (dto.getIdUsuario() == null)
+            throw new RuntimeException("idUsuario es obligatorio");
+        if (dto.getIdInstitucion() == null)
+            throw new RuntimeException("idInstitucion es obligatorio");
+        if (dto.getRolesApp() == null || dto.getRolesApp().isEmpty())
+            throw new RuntimeException("Debe especificar al menos un rolApp");
+
+        // Validar que el usuario existe
+        Usuario usuario = usuarioRepository.findById(dto.getIdUsuario())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Validar que NO es ya una autoridad
+        if (autoridadRepository.findByUsuario_UsuarioApp(usuario.getUsuarioApp()).isPresent())
+            throw new RuntimeException("El usuario ya está registrado como autoridad académica");
+
+        // Validar que NO tiene rol postulante
+        boolean esPostulante = usuario.getRolesApp() != null &&
+                usuario.getRolesApp().stream()
+                        .anyMatch(r -> r.getNombre().equalsIgnoreCase("postulante"));
+        if (esPostulante)
+            throw new RuntimeException("No se puede asignar como autoridad a un usuario con rol postulante");
+
+        // Validar institución
+        institucionRepository.findById(dto.getIdInstitucion())
+                .orElseThrow(() -> new RuntimeException("Institución no encontrada"));
+
+        // Validar facultad si se especifica
+        if (dto.getIdFacultad() != null) {
+            facultadRepository.findById(dto.getIdFacultad())
+                    .orElseThrow(() -> new RuntimeException("Facultad no encontrada"));
+        }
+
+        // Crear la autoridad
+        AutoridadAcademica autoridad = new AutoridadAcademica();
+        autoridad.setNombres(dto.getNombres() != null ? dto.getNombres() : usuario.getCorreo());
+        autoridad.setApellidos(dto.getApellidos() != null ? dto.getApellidos() : "");
+        autoridad.setCorreo(dto.getCorreo() != null ? dto.getCorreo() : usuario.getCorreo());
+        autoridad.setFechaNacimiento(dto.getFechaNacimiento());
+        autoridad.setEstado(true);
+        autoridad.setIdInstitucion(dto.getIdInstitucion());
+        autoridad.setIdFacultad(dto.getIdFacultad());
+        autoridad.setUsuario(usuario);
+        autoridadRepository.save(autoridad);
+
+        log.info("✅ Autoridad creada desde usuario existente: {}", usuario.getUsuarioApp());
+
+        AutoridadRegistroResponseDTO resp = new AutoridadRegistroResponseDTO();
+        resp.setIdUsuario(usuario.getIdUsuario());
+        resp.setIdAutoridad(autoridad.getIdAutoridad());
+        resp.setUsuarioApp(usuario.getUsuarioApp());
+        resp.setUsuarioBd(usuario.getUsuarioBd());
+        return resp;
     }
 
 }

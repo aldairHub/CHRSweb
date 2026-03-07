@@ -7,12 +7,12 @@
         <img [src]="(logoService.getLogo() | async) || 'imgs/logo-uteq.png'"
              alt="Logo UTEQ" class="logo" (error)="onLogoError($event)">
         <div class="logo-text">
-          <span class="logo-name">UTEQ</span>
-          <span class="logo-sub">Portal de Méritos</span>
+          <span class="logo-name">{{ appName }}</span>
+          <span class="logo-sub">{{ heroSubtitle }}</span>
         </div>
       </div>
       <button class="btn-login" (click)="irALogin()">
-        Iniciar Sesión
+        Iniciar sesión
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
         </svg>
@@ -27,8 +27,8 @@
     <div class="hero-overlay"></div>
     <div class="hero-content">
       <div class="hero-badge">Sistema de Selección Docente</div>
-      <h1 class="hero-title">Portal de <span>Méritos</span><br>y Oposición</h1>
-      <p class="hero-subtitle">Universidad Técnica Estatal de Quevedo</p>
+      <h1 class="hero-title">{{ appName }}</h1>
+      <p class="hero-subtitle">{{ heroSubtitle }}</p>
       <div class="hero-actions">
         <button class="btn-hero-primary" (click)="scrollAConvocatorias()">
           Ver convocatorias

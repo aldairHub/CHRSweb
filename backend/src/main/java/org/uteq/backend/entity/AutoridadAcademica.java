@@ -39,6 +39,9 @@ public class AutoridadAcademica {
     @Column(name = "id_institucion", nullable = false)
     private Long idInstitucion;
 
+    @Column(name = "id_facultad", nullable = true)
+    private Long idFacultad;
+
     // 1 autoridad pertenece a 1 usuario
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_usuario", nullable = false)

@@ -3,6 +3,8 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { LogoService } from '../../services/logo.service';
 import { ConvocatoriaService, Convocatoria } from '../../services/convocatoria.service';
+import { InstitucionAdminService } from '../../services/institucion-admin.service';
+
 
 interface ConvocatoriaVM extends Convocatoria {
   imagenUrl?: string;
@@ -29,7 +31,11 @@ export const CAMPUS_BG = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wB
 export class LandingComponent implements OnInit, AfterViewInit {
   @ViewChild('carouselTrack') carouselTrack!: ElementRef<HTMLDivElement>;
 
-  readonly campusBg = CAMPUS_BG;
+  // readonly campusBg = CAMPUS_BG;
+  campusBg: string = CAMPUS_BG;   // fallback si no hay config
+  heroTitle = 'Portal de Méritos y Oposición';
+  heroSubtitle = 'Universidad Técnica Estatal de Quevedo';
+  appName = 'Portal de Méritos';
 
   convocatorias: ConvocatoriaVM[] = [];
   cargando = true;
@@ -40,10 +46,12 @@ export class LandingComponent implements OnInit, AfterViewInit {
   constructor(
     private router: Router,
     public logoService: LogoService,
-    private convocatoriaService: ConvocatoriaService
+    private convocatoriaService: ConvocatoriaService,
+    private institucionService: InstitucionAdminService
   ) {}
 
   ngOnInit(): void {
+    this.cargarInstitucion();
     this.cargarConvocatorias();
   }
 
@@ -128,7 +136,17 @@ export class LandingComponent implements OnInit, AfterViewInit {
       error: () => { this.cargando = false; }
     });
   }
-
+  cargarInstitucion(): void {
+    this.institucionService.obtenerActiva().subscribe({
+      next: (inst) => {
+        if (inst.imagenFondoUrl) this.campusBg = inst.imagenFondoUrl;
+        if (inst.appName) this.appName = inst.appName;
+        if (inst.nombreInstitucion) this.heroSubtitle = inst.nombreInstitucion;
+      },
+      error: () => {
+      }
+    });
+  }
   getDefaultImage(index: number): string {
     return DEFAULT_IMAGES[index % DEFAULT_IMAGES.length];
   }

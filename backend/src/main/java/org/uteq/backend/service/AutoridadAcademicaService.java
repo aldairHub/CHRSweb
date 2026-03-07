@@ -7,6 +7,7 @@ import org.uteq.backend.dto.AutoridadRegistroRequestDTO;
 import org.uteq.backend.dto.AutoridadRegistroResponseDTO;
 import org.uteq.backend.dto.RegistroResponseDTO;
 import org.uteq.backend.dto.RegistroUsuarioDTO;
+import org.uteq.backend.dto.AutoridadDesdeUsuarioRequestDTO;
 
 public interface AutoridadAcademicaService {
 
@@ -27,4 +28,6 @@ public interface AutoridadAcademicaService {
 
     void cambiarEstado(Long idAutoridad, Boolean estado);
     Long obtenerIdAutoridadPorUsuarioApp(String usuarioApp);
+
+    AutoridadRegistroResponseDTO registrarDesdeUsuario(AutoridadDesdeUsuarioRequestDTO dto);
 }

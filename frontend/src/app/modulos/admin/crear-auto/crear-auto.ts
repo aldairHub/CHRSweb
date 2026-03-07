@@ -1,7 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { AutoridadAcademicaService } from '../../../services/autoridad-academica.service';
+import { RolesAppService, RolAppConRolesBdDTO } from '../../../services/roles-app.service';
+import { FacultadService } from '../../../services/facultad.service';
+import { ToastService } from '../../../services/toast.service';
+
+interface UsuarioDisponible {
+  idUsuario: number;
+  usuarioApp: string;
+  correo: string;
+}
 
 @Component({
   selector: 'app-crear-evaluador',
@@ -10,62 +21,178 @@ import { Router } from '@angular/router';
   templateUrl: './crear-auto.html',
   styleUrls: ['./crear-auto.scss']
 })
-export class CrearEvaluadorComponent {
+export class CrearEvaluadorComponent implements OnInit {
 
-  // Modelo de datos (Coincide con tu tabla autoridad_academica)
-  evaluador = {
+  modoCreacion: 'nuevo' | 'existente' = 'nuevo';
+
+  formNuevo = {
     nombres: '',
     apellidos: '',
     correo: '',
     fechaNacimiento: '',
-    idInstitucion: null,
-    // Datos para la tabla usuario
-    usuario: '',
-    password: ''
+    idInstitucion: null as number | null,
+    idFacultad: null as number | null,
+    rolesApp: [] as string[]
   };
 
-  isLoading: boolean = false;
+  formExistente = {
+    idUsuario: null as number | null,
+    nombres: '',
+    apellidos: '',
+    correo: '',
+    fechaNacimiento: '',
+    idInstitucion: null as number | null,
+    idFacultad: null as number | null,
+    rolesApp: [] as string[]
+  };
 
-  // Lista simulada de instituciones (Esto vendría de tu BD: public.institucion)
-  instituciones = [
-    { id: 1, nombre: 'Universidad Técnica Estatal de Quevedo' },
-    { id: 2, nombre: 'Universidad de Guayaquil' },
-    { id: 3, nombre: 'Pontificia Universidad Católica' }
-  ];
+  instituciones: any[] = [];
+  facultades: any[] = [];
+  rolesDisponibles: RolAppConRolesBdDTO[] = [];
+  usuariosDisponibles: UsuarioDisponible[] = [];
 
-  constructor(private router: Router) {}
+  isLoading = false;
 
-  generarUsuario() {
-    // Pequeña utilidad: genera usuario automático basado en el correo
-    if (this.evaluador.correo) {
-      this.evaluador.usuario = this.evaluador.correo.split('@')[0];
+  private readonly api = 'http://localhost:8080/api';
+
+  constructor(
+    private router: Router,
+    private http: HttpClient,
+    private autoridadService: AutoridadAcademicaService,
+    private rolesAppService: RolesAppService,
+    private facultadService: FacultadService,
+    private toast: ToastService
+  ) {}
+
+  ngOnInit(): void {
+    this.autoridadService.listarInstituciones().subscribe({
+      next: (d) => this.instituciones = d,
+      error: () => this.toast.error('Error', 'No se pudieron cargar las instituciones')
+    });
+    this.facultadService.listar().subscribe({
+      next: (d) => this.facultades = d.filter((f: any) => f.estado),
+      error: () => this.toast.error('Error', 'No se pudieron cargar las facultades')
+    });
+    this.rolesAppService.listarParaAutoridad().subscribe({
+      next: (d) => this.rolesDisponibles = d.filter(r => r.activo),
+      error: () => this.toast.error('Error', 'No se pudieron cargar los roles')
+    });
+    this.http.get<UsuarioDisponible[]>(`${this.api}/autoridades-academicas/usuarios-disponibles`).subscribe({
+      next: (d) => this.usuariosDisponibles = d,
+      error: () => this.toast.error('Error', 'No se pudieron cargar los usuarios disponibles')
+    });
+  }
+
+  toggleRolNuevo(nombre: string): void {
+    const idx = this.formNuevo.rolesApp.indexOf(nombre);
+    if (idx >= 0) this.formNuevo.rolesApp.splice(idx, 1);
+    else this.formNuevo.rolesApp.push(nombre);
+  }
+
+  isRolSeleccionadoNuevo(nombre: string): boolean {
+    return this.formNuevo.rolesApp.includes(nombre);
+  }
+
+  toggleRolExistente(nombre: string): void {
+    const idx = this.formExistente.rolesApp.indexOf(nombre);
+    if (idx >= 0) this.formExistente.rolesApp.splice(idx, 1);
+    else this.formExistente.rolesApp.push(nombre);
+  }
+
+  isRolSeleccionadoExistente(nombre: string): boolean {
+    return this.formExistente.rolesApp.includes(nombre);
+  }
+
+  onUsuarioSeleccionado(): void {
+    const u = this.usuariosDisponibles.find(x => x.idUsuario === Number(this.formExistente.idUsuario));
+    if (u) this.formExistente.correo = u.correo;
+  }
+
+  guardar(): void {
+    if (this.modoCreacion === 'nuevo') {
+      this.guardarNuevo();
+    } else {
+      this.guardarExistente();
     }
   }
 
-  guardar() {
-    if (!this.validar()) return;
+  private guardarNuevo(): void {
+    const f = this.formNuevo;
+    if (!f.nombres || !f.apellidos || !f.correo || !f.fechaNacimiento || !f.idInstitucion) {
+      this.toast.warning('Campos incompletos', 'Complete todos los campos obligatorios.');
+      return;
+    }
+    if (f.rolesApp.length === 0) {
+      this.toast.warning('Sin rol', 'Debe seleccionar al menos un rol.');
+      return;
+    }
 
     this.isLoading = true;
+    const loadingId = this.toast.loading('Guardando...', 'Creando autoridad académica');
 
-    // Simulamos la petición al Backend (INSERT en tablas usuario y autoridad_academica)
-    setTimeout(() => {
-      this.isLoading = false;
-      console.log('Enviando a BD:', this.evaluador);
-      alert('evaluador creado correctamente. Se han enviado las credenciales al correo.');
-      this.router.navigate(['/admin']); // Vuelve al dashboard admin
-    }, 1000);
+    this.autoridadService.registrarAutoridad({
+      nombres: f.nombres,
+      apellidos: f.apellidos,
+      correo: f.correo,
+      fechaNacimiento: f.fechaNacimiento,
+      idInstitucion: f.idInstitucion!,
+      idFacultad: f.idFacultad,
+      rolesApp: f.rolesApp,
+      idsRolAutoridad: []
+    }).subscribe({
+      next: (res: any) => {
+        this.isLoading = false;
+        this.toast.remove(loadingId);
+        this.toast.success('Autoridad creada', `Usuario: ${res.usuarioApp}. Credenciales enviadas al correo.`);
+        setTimeout(() => this.router.navigate(['/admin']), 2500);
+      },
+      error: (err: any) => {
+        this.isLoading = false;
+        this.toast.remove(loadingId);
+        this.toast.error('Error al crear', err?.error?.message || 'No se pudo crear la autoridad.');
+      }
+    });
   }
 
-  validar(): boolean {
-    if (!this.evaluador.nombres || !this.evaluador.apellidos || !this.evaluador.correo ||
-      !this.evaluador.fechaNacimiento || !this.evaluador.idInstitucion || !this.evaluador.password) {
-      alert('Por favor complete todos los campos obligatorios.');
-      return false;
+  private guardarExistente(): void {
+    const f = this.formExistente;
+    if (!f.idUsuario || !f.nombres || !f.apellidos || !f.fechaNacimiento || !f.idInstitucion) {
+      this.toast.warning('Campos incompletos', 'Complete todos los campos obligatorios.');
+      return;
     }
-    return true;
+    if (f.rolesApp.length === 0) {
+      this.toast.warning('Sin rol', 'Debe seleccionar al menos un rol.');
+      return;
+    }
+
+    this.isLoading = true;
+    const loadingId = this.toast.loading('Vinculando...', 'Asociando usuario como autoridad académica');
+
+    this.http.post<any>(`${this.api}/autoridades-academicas/desde-usuario`, {
+      idUsuario: Number(f.idUsuario),
+      nombres: f.nombres,
+      apellidos: f.apellidos,
+      correo: f.correo,
+      fechaNacimiento: f.fechaNacimiento,
+      idInstitucion: f.idInstitucion,
+      idFacultad: f.idFacultad,
+      rolesApp: f.rolesApp
+    }).subscribe({
+      next: (res: any) => {
+        this.isLoading = false;
+        this.toast.remove(loadingId);
+        this.toast.success('Autoridad vinculada', `Usuario: ${res.usuarioApp}.`);
+        setTimeout(() => this.router.navigate(['/admin']), 2500);
+      },
+      error: (err: any) => {
+        this.isLoading = false;
+        this.toast.remove(loadingId);
+        this.toast.error('Error al vincular', err?.error?.message || 'No se pudo vincular la autoridad.');
+      }
+    });
   }
 
-  cancelar() {
+  cancelar(): void {
     this.router.navigate(['/admin']);
   }
 }

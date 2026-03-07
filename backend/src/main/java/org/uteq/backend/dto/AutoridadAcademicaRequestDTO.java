@@ -16,6 +16,7 @@ public class AutoridadAcademicaRequestDTO {
 
     private Long idUsuario;
     private Long idInstitucion;
+    private Long idFacultad;
 
     // Múltiples cargos seleccionados (rol_autoridad)
     private List<Long> idsRolAutoridad;

@@ -140,4 +140,19 @@ public class RolAppService {
     }
 
 
+
+    /**
+     * Roles permitidos para AutoridadAcademica:
+     * solo los que pertenecen al módulo "revisor" o "evaluador" (case-insensitive).
+     * Impide asignar el módulo "postulante" u otros no autorizados.
+     */
+    public List<RolAppConRolesBdDTO> listarParaAutoridad() {
+        return rolAppRepository.findAll().stream()
+                .filter(r -> r.getModulo() != null &&
+                        (r.getModulo().getNombre().equalsIgnoreCase("revisor") ||
+                                r.getModulo().getNombre().equalsIgnoreCase("evaluador")))
+                .map(this::toConRolesBd)
+                .collect(Collectors.toList());
+    }
+
 }

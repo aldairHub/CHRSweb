@@ -32,6 +32,7 @@ export class ConfigInstitucionComponent implements OnInit {
     emailHost: 'smtp.gmail.com',
     emailPort: 587,
     emailSsl: false,
+    imagenFondoUrl: '',
   };
 
   logoFile: File | null = null;
@@ -75,6 +76,7 @@ export class ConfigInstitucionComponent implements OnInit {
     this.form.emailPort         = data.emailPort         ?? 587;
     this.form.emailSsl          = data.emailSsl          ?? false;
     this.form.gmailPassword     = '';
+    this.form.imagenFondoUrl = data.imagenFondoUrl ?? '';
   }
 
   onLogoSeleccionado(event: Event): void {

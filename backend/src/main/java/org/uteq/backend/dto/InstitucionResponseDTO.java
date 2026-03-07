@@ -16,5 +16,8 @@ public class InstitucionResponseDTO {
     private Integer emailPort;
     private Boolean emailSsl;
     private Boolean tienePasswordConfigurado;
+
+    private String imagenFondoUrl;
+
 }
 

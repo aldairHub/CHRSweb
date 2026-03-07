@@ -18,6 +18,7 @@ public class AutoridadAcademicaResponseDTO {
 
     private Long idUsuario;
     private Long idInstitucion;
+    private Long idFacultad;
 
     private List<RolAppDTO> rolesApp;
 }

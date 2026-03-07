@@ -78,7 +78,7 @@
           <thead>
           <tr>
             <th>Autoridad</th><th>Correo</th><th>Usuario App</th>
-            <th>Roles de Aplicación</th><th>Estado</th><th>Acciones</th>
+            <th>Roles de aplicación</th><th>Estado</th><th>Acciones</th>
           </tr>
           </thead>
           <tbody>
@@ -194,7 +194,7 @@
           <thead>
           <tr>
             <th>Usuario App</th><th>Usuario BD</th><th>Correo</th>
-            <th>Roles de Aplicación</th><th>Estado</th><th>Acciones</th>
+            <th>Roles de aplicación</th><th>Estado</th><th>Acciones</th>
           </tr>
           </thead>
           <tbody>
@@ -272,7 +272,7 @@
   <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
 
     <div class="modal-header">
-      <h3>Editar Roles de Aplicación</h3>
+      <h3>Editar roles de aplicación</h3>
       <button class="close-btn" (click)="closeRolesModal()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -301,12 +301,13 @@
       </div>
 
       <div class="form-section">
-        <div class="section-title">Roles Disponibles</div>
+        <div class="section-title">Roles disponibles</div>
         <div class="section-description">Selecciona los roles de aplicación a asignar:</div>
       </div>
 
-      <div class="roles-app-list" *ngIf="rolesAppDisponibles.length > 0; else sinRolesEdit">
-        <label class="rol-app-item" *ngFor="let r of rolesAppDisponibles">
+      <p *ngIf="rolesModalTipo === 'autoridad'" class="field-hint" style="color:#d97706;margin-bottom:8px;">Solo se muestran roles con acceso a módulo Revisor o Evaluador.</p>
+      <div class="roles-app-list" *ngIf="(rolesModalTipo === 'autoridad' ? rolesAppParaAutoridad : rolesAppDisponibles).length > 0; else sinRolesEdit">
+        <label class="rol-app-item" *ngFor="let r of (rolesModalTipo === 'autoridad' ? rolesAppParaAutoridad : rolesAppDisponibles)">
           <input type="checkbox" [checked]="isRolSelected(r.idRolApp)" (change)="toggleRolApp(r.idRolApp, $event)" />
           <div class="rol-app-info">
             <div class="rol-app-nombre">{{ r.nombre }}</div>
@@ -325,7 +326,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
         </svg>
-        {{ isSaving ? 'Guardando...' : 'Guardar Roles' }}
+        {{ isSaving ? 'Guardando...' : 'Guardar roles' }}
       </button>
     </div>
 
@@ -339,7 +340,7 @@
   <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
 
     <div class="modal-header">
-      <h3>{{ createModalTipo === 'autoridad' ? 'Nueva Autoridad Académica' : 'Nuevo Usuario' }}</h3>
+      <h3>{{ createModalTipo === 'autoridad' ? 'Nueva autoridad académica' : 'Nuevo usuario' }}</h3>
       <button class="close-btn" (click)="closeCreateModal()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -352,37 +353,113 @@
       <!-- ── Formulario AUTORIDAD ─────────────────────────────── -->
       <ng-container *ngIf="createModalTipo === 'autoridad'">
 
-        <div class="form-group">
-          <label>Nombres <span class="required">*</span></label>
-          <input type="text" class="form-input" [(ngModel)]="formAutoridad.nombres" placeholder="Ej: Juan Carlos" />
+        <!-- Selector de modo -->
+        <div style="display:flex;gap:10px;margin-bottom:16px;">
+          <label style="flex:1;display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border-radius:8px;border:2px solid;"
+                 [style.border-color]="modoAutoridad === 'nuevo' ? '#00A63E' : '#ddd'"
+                 [style.background]="modoAutoridad === 'nuevo' ? '#f0fdf4' : '#fafafa'">
+            <input type="radio" [(ngModel)]="modoAutoridad" value="nuevo" name="modoAut" (change)="createRolIds=[]">
+            <div>
+              <strong style="font-size:0.85rem;">Crear nuevo usuario</strong>
+              <p style="font-size:0.75rem;color:#666;margin:0;">Se genera usuario y contraseña</p>
+            </div>
+          </label>
+          <label style="flex:1;display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border-radius:8px;border:2px solid;"
+                 [style.border-color]="modoAutoridad === 'existente' ? '#00A63E' : '#ddd'"
+                 [style.background]="modoAutoridad === 'existente' ? '#f0fdf4' : '#fafafa'">
+            <input type="radio" [(ngModel)]="modoAutoridad" value="existente" name="modoAut" (change)="createRolIds=[]">
+            <div>
+              <strong style="font-size:0.85rem;">Vincular usuario existente</strong>
+              <p style="font-size:0.75rem;color:#666;margin:0;">El usuario ya existe en el sistema</p>
+            </div>
+          </label>
         </div>
-        <div class="form-group">
-          <label>Apellidos <span class="required">*</span></label>
-          <input type="text" class="form-input" [(ngModel)]="formAutoridad.apellidos" placeholder="Ej: Pérez López" />
-        </div>
-        <div class="form-group">
-          <label>Correo electrónico <span class="required">*</span></label>
-          <input type="email" class="form-input" [(ngModel)]="formAutoridad.correo" placeholder="correo@universidad.edu.ec" />
-        </div>
-        <div class="form-group">
-          <label>Fecha de nacimiento</label>
-          <input type="date" class="form-input" [(ngModel)]="formAutoridad.fechaNacimiento" />
-        </div>
-        <div class="form-group">
-          <label>Institución <span class="required">*</span></label>
-          <select class="form-input" [(ngModel)]="formAutoridad.idInstitucion">
-            <option [ngValue]="null" disabled>— Seleccione una institución —</option>
-            <option *ngFor="let inst of instituciones" [ngValue]="inst.idInstitucion">
-              {{ inst.nombreInstitucion }}
-            </option>
-          </select>
-          <small class="text-muted" *ngIf="!instituciones.length">Cargando instituciones…</small>
-        </div>
+
+        <!-- MODO NUEVO -->
+        <ng-container *ngIf="modoAutoridad === 'nuevo'">
+          <div class="form-group">
+            <label>Nombres <span class="required">*</span></label>
+            <input type="text" class="form-input" [(ngModel)]="formAutoridad.nombres" placeholder="Ej: Juan Carlos" />
+          </div>
+          <div class="form-group">
+            <label>Apellidos <span class="required">*</span></label>
+            <input type="text" class="form-input" [(ngModel)]="formAutoridad.apellidos" placeholder="Ej: Pérez López" />
+          </div>
+          <div class="form-group">
+            <label>Correo electrónico <span class="required">*</span></label>
+            <input type="email" class="form-input" [(ngModel)]="formAutoridad.correo" placeholder="correo@universidad.edu.ec" />
+          </div>
+          <div class="form-group">
+            <label>Fecha de nacimiento</label>
+            <input type="date" class="form-input" [(ngModel)]="formAutoridad.fechaNacimiento" />
+          </div>
+          <div class="form-group">
+            <label>Institución <span class="required">*</span></label>
+            <select class="form-input" [(ngModel)]="formAutoridad.idInstitucion">
+              <option [ngValue]="null" disabled>— Seleccione una institución —</option>
+              <option *ngFor="let inst of instituciones" [ngValue]="inst.idInstitucion">{{ inst.nombreInstitucion }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Facultad</label>
+            <select class="form-input" [(ngModel)]="formAutoridad.idFacultad">
+              <option [ngValue]="null">Sin facultad asignada</option>
+              <option *ngFor="let f of facultades" [ngValue]="f.idFacultad">{{ f.nombreFacultad }}</option>
+            </select>
+          </div>
+        </ng-container>
+
+        <!-- MODO EXISTENTE -->
+        <ng-container *ngIf="modoAutoridad === 'existente'">
+          <div class="form-group">
+            <label>Usuario del sistema <span class="required">*</span></label>
+            <select class="form-input" [(ngModel)]="formAutoridad_existente.idUsuario" (change)="onUsuarioExistenteSeleccionado()">
+              <option [ngValue]="null" disabled>— Seleccione un usuario —</option>
+              <option *ngFor="let u of usuariosDisponibles" [ngValue]="u.idUsuario">
+                {{ u.usuarioApp }} — {{ u.correo }}
+              </option>
+            </select>
+            <small class="text-muted">Solo usuarios sin rol de autoridad ni postulante.</small>
+          </div>
+          <div class="form-group">
+            <label>Nombres <span class="required">*</span></label>
+            <input type="text" class="form-input" [(ngModel)]="formAutoridad_existente.nombres" placeholder="Ej: Juan Carlos" />
+          </div>
+          <div class="form-group">
+            <label>Apellidos <span class="required">*</span></label>
+            <input type="text" class="form-input" [(ngModel)]="formAutoridad_existente.apellidos" placeholder="Ej: Pérez López" />
+          </div>
+          <div class="form-group">
+            <label>Correo (referencia)</label>
+            <input type="email" class="form-input" [(ngModel)]="formAutoridad_existente.correo" [readOnly]="!!formAutoridad_existente.idUsuario" />
+          </div>
+          <div class="form-group">
+            <label>Fecha de nacimiento <span class="required">*</span></label>
+            <input type="date" class="form-input" [(ngModel)]="formAutoridad_existente.fechaNacimiento" />
+          </div>
+          <div class="form-group">
+            <label>Institución <span class="required">*</span></label>
+            <select class="form-input" [(ngModel)]="formAutoridad_existente.idInstitucion">
+              <option [ngValue]="null" disabled>— Seleccione una institución —</option>
+              <option *ngFor="let inst of instituciones" [ngValue]="inst.idInstitucion">{{ inst.nombreInstitucion }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Facultad</label>
+            <select class="form-input" [(ngModel)]="formAutoridad_existente.idFacultad">
+              <option [ngValue]="null">Sin facultad asignada</option>
+              <option *ngFor="let f of facultades" [ngValue]="f.idFacultad">{{ f.nombreFacultad }}</option>
+            </select>
+          </div>
+        </ng-container>
+
+        <!-- Roles (común a ambos modos) -->
         <div class="form-group">
           <label>Roles de Aplicación <span class="required">*</span></label>
-          <p class="field-hint">Las credenciales se generarán automáticamente y se enviarán al correo.</p>
-          <div class="roles-app-list" *ngIf="rolesAppDisponibles.length > 0; else sinRolesA">
-            <label class="rol-app-item" *ngFor="let r of rolesAppDisponibles">
+          <p class="field-hint" *ngIf="modoAutoridad === 'nuevo'">Las credenciales se generarán automáticamente y se enviarán al correo.</p>
+          <p class="field-hint" style="color:#d97706;">Solo se muestran roles con acceso a módulo Revisor o Evaluador.</p>
+          <div class="roles-app-list" *ngIf="rolesAppParaAutoridad.length > 0; else sinRolesA">
+            <label class="rol-app-item" *ngFor="let r of rolesAppParaAutoridad">
               <input type="checkbox" [checked]="isCreateRolSelected(r.idRolApp)" (change)="toggleCreateRol(r.idRolApp, $event)" />
               <div class="rol-app-info">
                 <div class="rol-app-nombre">{{ r.nombre }}</div>
@@ -447,7 +524,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
         </svg>
-        {{ isCreating ? 'Creando...' : (createModalTipo === 'autoridad' ? 'Crear Autoridad' : 'Crear Usuario') }}
+        {{ isCreating ? 'Creando...' : (createModalTipo === 'autoridad' ? 'Crear autoridad' : 'Crear usuario') }}
       </button>
     </div>
 

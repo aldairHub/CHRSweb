@@ -15,6 +15,8 @@ import {
 } from '../../../services/usuario-admin.service';
 
 import { RolesAppService, RolAppConRolesBdDTO } from '../../../services/roles-app.service';
+import { FacultadService } from '../../../services/facultad.service';
+import { ToastService } from '../../../services/toast.service';
 
 interface InstitucionDTO {
   idInstitucion: number;
@@ -40,7 +42,9 @@ export class GestionUsuariosComponent implements OnInit {
   usuariosFiltrados: UsuarioConRolesDTO[] = [];
 
   // --- Catalogos -----------------------------------------------
-  rolesAppDisponibles: RolAppConRolesBdDTO[] = [];
+  facultades: any[] = [];
+  rolesAppDisponibles: RolAppConRolesBdDTO[] = [];      // todos los roles (para usuarios)
+  rolesAppParaAutoridad: RolAppConRolesBdDTO[] = [];  // solo Revisor/Evaluador (para autoridades)
   instituciones: InstitucionDTO[] = [];
 
   // --- Filtros -------------------------------------------------
@@ -91,19 +95,36 @@ export class GestionUsuariosComponent implements OnInit {
   /** Permisos BD de los roles seleccionados en el modal de creacion */
   get permisosBdDeSeleccionados(): string[] {
     const set = new Set<string>();
-    this.rolesAppDisponibles
+    const lista = this.createModalTipo === 'autoridad' ? this.rolesAppParaAutoridad : this.rolesAppDisponibles;
+    lista
       .filter(r => this.createRolIds.includes(r.idRolApp))
       .forEach(r => (r.rolesBd ?? []).forEach(bd => set.add(bd)));
     return Array.from(set).sort();
   }
 
+  // Modo dentro del modal de nueva autoridad
+  modoAutoridad: 'nuevo' | 'existente' = 'nuevo';
+
   formAutoridad = {
     nombres:          '',
     apellidos:        '',
     correo:           '',
-    fechaNacimiento:  '',      // string YYYY-MM-DD del input[type=date]
-    idInstitucion:    null as number | null
+    fechaNacimiento:  '',
+    idInstitucion:    null as number | null,
+    idFacultad:       null as number | null
   };
+
+  formAutoridad_existente = {
+    idUsuario:        null as number | null,
+    nombres:          '',
+    apellidos:        '',
+    correo:           '',
+    fechaNacimiento:  '',
+    idInstitucion:    null as number | null,
+    idFacultad:       null as number | null
+  };
+
+  usuariosDisponibles: { idUsuario: number; usuarioApp: string; correo: string }[] = [];
 
   formUsuario = {
     nombres:   '',
@@ -115,14 +136,18 @@ export class GestionUsuariosComponent implements OnInit {
     private svc:      UsuarioAdminService,
     private rolesSvc: RolesAppService,
     private http:     HttpClient,
-    private cdr:      ChangeDetectorRef
+    private cdr:      ChangeDetectorRef,
+    private toast:    ToastService,
+    private facultadSvc: FacultadService
   ) {}
 
   ngOnInit(): void {
     this.loadRolesApp();
+    this.loadFacultades();
     this.loadInstituciones();
     this.loadAutoridades();
     this.loadUsuarios();
+    this.loadUsuariosDisponibles();
   }
 
   // --- Loaders ------------------------------------------------
@@ -131,6 +156,17 @@ export class GestionUsuariosComponent implements OnInit {
     this.rolesSvc.listar().subscribe({
       next: data => { this.rolesAppDisponibles = Array.isArray(data) ? data : []; this.cdr.detectChanges(); },
       error: (err: any) => console.error('Error roles_app:', err)
+    });
+    this.rolesSvc.listarParaAutoridad().subscribe({
+      next: data => { this.rolesAppParaAutoridad = Array.isArray(data) ? data : []; this.cdr.detectChanges(); },
+      error: (err: any) => console.error('Error roles_app para autoridad:', err)
+    });
+  }
+
+  loadFacultades(): void {
+    this.facultadSvc.listar().subscribe({
+      next: data => { this.facultades = (Array.isArray(data) ? data : []).filter((f: any) => f.estado); this.cdr.detectChanges(); },
+      error: (err: any) => console.error('Error facultades:', err)
     });
   }
 
@@ -159,6 +195,20 @@ export class GestionUsuariosComponent implements OnInit {
       next: data => { this.usuarios = Array.isArray(data) ? data : []; this.applyFiltersUsuarios(); this.cdr.detectChanges(); },
       error: (err: any) => console.error('Error usuarios:', err)
     });
+  }
+
+  loadUsuariosDisponibles(): void {
+    this.http.get<{ idUsuario: number; usuarioApp: string; correo: string }[]>(
+      'http://localhost:8080/api/autoridades-academicas/usuarios-disponibles'
+    ).subscribe({
+      next: data => { this.usuariosDisponibles = Array.isArray(data) ? data : []; this.cdr.detectChanges(); },
+      error: (err: any) => console.error('Error usuarios disponibles:', err)
+    });
+  }
+
+  onUsuarioExistenteSeleccionado(): void {
+    const u = this.usuariosDisponibles.find(x => x.idUsuario === Number(this.formAutoridad_existente.idUsuario));
+    if (u) this.formAutoridad_existente.correo = u.correo;
   }
 
   // --- Filtros ------------------------------------------------
@@ -194,7 +244,7 @@ export class GestionUsuariosComponent implements OnInit {
     a.estado = nuevo;
     this.svc.cambiarEstadoAutoridad(a.idAutoridad, nuevo).subscribe({
       next: () => this.cdr.detectChanges(),
-      error: (err: any) => { a.estado = prev; console.error(err); alert('No se pudo cambiar el estado.'); this.cdr.detectChanges(); }
+      error: (err: any) => { a.estado = prev; console.error(err); this.toast.error('Error', 'No se pudo cambiar el estado.'); this.cdr.detectChanges(); }
     });
   }
 
@@ -205,7 +255,7 @@ export class GestionUsuariosComponent implements OnInit {
     u.activo = nuevo;
     this.svc.cambiarEstadoUsuario(u.idUsuario, nuevo).subscribe({
       next: () => this.cdr.detectChanges(),
-      error: (err: any) => { u.activo = prev; console.error(err); alert('No se pudo cambiar el estado.'); this.cdr.detectChanges(); }
+      error: (err: any) => { u.activo = prev; console.error(err); this.toast.error('Error', 'No se pudo cambiar el estado.'); this.cdr.detectChanges(); }
     });
   }
 
@@ -252,9 +302,9 @@ export class GestionUsuariosComponent implements OnInit {
           const idx = this.autoridades.findIndex(a => a.idAutoridad === updated.idAutoridad);
           if (idx >= 0) this.autoridades[idx] = updated;
           this.applyFiltersAutoridades();
-          this.isSaving = false; this.closeRolesModal(); alert('Roles actualizados.'); this.cdr.detectChanges();
+          this.isSaving = false; this.closeRolesModal(); this.toast.success('Roles actualizados', 'Los cambios se guardaron correctamente.'); this.cdr.detectChanges();
         },
-        error: (err: any) => { this.isSaving = false; console.error(err); alert('Error actualizando roles.'); this.cdr.detectChanges(); }
+        error: (err: any) => { this.isSaving = false; console.error(err); this.toast.error('Error', 'No se pudieron actualizar los roles.'); this.cdr.detectChanges(); }
       });
     } else if (this.rolesModalTipo === 'usuario' && this.selectedUsuario) {
       this.svc.actualizarRolesUsuario(this.selectedUsuario.idUsuario, ids).subscribe({
@@ -262,9 +312,9 @@ export class GestionUsuariosComponent implements OnInit {
           const idx = this.usuarios.findIndex(u => u.idUsuario === updated.idUsuario);
           if (idx >= 0) this.usuarios[idx] = updated;
           this.applyFiltersUsuarios();
-          this.isSaving = false; this.closeRolesModal(); alert('Roles actualizados.'); this.cdr.detectChanges();
+          this.isSaving = false; this.closeRolesModal(); this.toast.success('Roles actualizados', 'Los cambios se guardaron correctamente.'); this.cdr.detectChanges();
         },
-        error: (err: any) => { this.isSaving = false; console.error(err); alert('Error actualizando roles.'); this.cdr.detectChanges(); }
+        error: (err: any) => { this.isSaving = false; console.error(err); this.toast.error('Error', 'No se pudieron actualizar los roles.'); this.cdr.detectChanges(); }
       });
     }
   }
@@ -273,12 +323,16 @@ export class GestionUsuariosComponent implements OnInit {
 
   openCreate(): void {
     this.createModalTipo = this.activeTab === 'autoridades' ? 'autoridad' : 'usuario';
+    this.modoAutoridad   = 'nuevo';
     this.formAutoridad   = { nombres: '', apellidos: '', correo: '', fechaNacimiento: '',
-      idInstitucion: this.instituciones.length === 1 ? this.instituciones[0].idInstitucion : null };
+      idInstitucion: this.instituciones.length === 1 ? this.instituciones[0].idInstitucion : null,
+      idFacultad: null };
+    this.formAutoridad_existente = { idUsuario: null, nombres: '', apellidos: '', correo: '', fechaNacimiento: '', idInstitucion: null, idFacultad: null as number | null };
     this.formUsuario     = { nombres: '', apellidos: '', correo: '' };
     this.createRolIds    = [];
     this.isCreating      = false;
     this.showCreateModal = true;
+    this.loadUsuariosDisponibles();
     this.cdr.detectChanges();
   }
 
@@ -296,20 +350,25 @@ export class GestionUsuariosComponent implements OnInit {
   isCreateRolSelected(id: number): boolean { return this.createRolIds.includes(id); }
 
   saveCreate(): void {
-    this.createModalTipo === 'autoridad' ? this._crearAutoridad() : this._crearUsuario();
+    if (this.createModalTipo === 'autoridad') {
+      this.modoAutoridad === 'nuevo' ? this._crearAutoridad() : this._vincularUsuarioExistente();
+    } else {
+      this._crearUsuario();
+    }
   }
 
   private _crearAutoridad(): void {
     const { nombres, apellidos, correo, fechaNacimiento, idInstitucion } = this.formAutoridad;
-    if (!nombres.trim())   { alert('Los nombres son obligatorios.');    return; }
-    if (!apellidos.trim()) { alert('Los apellidos son obligatorios.');  return; }
-    if (!correo.trim())    { alert('El correo es obligatorio.');        return; }
-    if (!idInstitucion)    { alert('Selecciona una institucion.');      return; }
-    if (!this.createRolIds.length) { alert('Selecciona al menos un rol.'); return; }
+    if (!nombres.trim())   { this.toast.warning('Campo requerido', 'Los nombres son obligatorios.');    return; }
+    if (!apellidos.trim()) { this.toast.warning('Campo requerido', 'Los apellidos son obligatorios.');  return; }
+    if (!correo.trim())    { this.toast.warning('Campo requerido', 'El correo es obligatorio.');        return; }
+    if (!idInstitucion)    { this.toast.warning('Campo requerido', 'Selecciona una institución.');      return; }
+    if (!this.createRolIds.length) { this.toast.warning('Sin rol', 'Selecciona al menos un rol.'); return; }
 
     this.isCreating = true;
+    const loadingId = this.toast.loading('Creando autoridad...');
 
-    const rolesNombres = this.rolesAppDisponibles
+    const rolesNombres = this.rolesAppParaAutoridad
       .filter(r => this.createRolIds.includes(r.idRolApp))
       .map(r => r.nombre);
 
@@ -319,28 +378,30 @@ export class GestionUsuariosComponent implements OnInit {
       correo: correo.trim(),
       fechaNacimiento: fechaNacimiento || null,
       idInstitucion,
+      idFacultad: this.formAutoridad.idFacultad,
       rolesApp: rolesNombres,
       idsRolAutoridad: []
     };
 
     this.svc.crearAutoridad(payload).subscribe({
-      next: () => { this.loadAutoridades(); this.closeCreateModal(); alert('Autoridad creada. Se enviaron las credenciales por correo.'); this.cdr.detectChanges(); },
+      next: () => { this.toast.remove(loadingId); this.toast.success('Autoridad creada', 'Las credenciales fueron enviadas al correo.'); this.loadAutoridades(); this.closeCreateModal(); this.cdr.detectChanges(); },
       error: (err: any) => {
-        this.isCreating = false;
+        this.isCreating = false; this.toast.remove(loadingId);
         const msg = err.error?.mensaje || err.error?.message || err.message || 'Error desconocido';
-        console.error(err); alert('Error al crear la autoridad: ' + msg); this.cdr.detectChanges();
+        console.error(err); this.toast.error('Error al crear', msg); this.cdr.detectChanges();
       }
     });
   }
 
   private _crearUsuario(): void {
     const { nombres, apellidos, correo } = this.formUsuario;
-    if (!nombres.trim())   { alert('Los nombres son obligatorios.');   return; }
-    if (!apellidos.trim()) { alert('Los apellidos son obligatorios.'); return; }
-    if (!correo.trim())    { alert('El correo es obligatorio.');       return; }
-    if (!this.createRolIds.length) { alert('Selecciona al menos un rol.'); return; }
+    if (!nombres.trim())   { this.toast.warning('Campo requerido', 'Los nombres son obligatorios.');   return; }
+    if (!apellidos.trim()) { this.toast.warning('Campo requerido', 'Los apellidos son obligatorios.'); return; }
+    if (!correo.trim())    { this.toast.warning('Campo requerido', 'El correo es obligatorio.');       return; }
+    if (!this.createRolIds.length) { this.toast.warning('Sin rol', 'Selecciona al menos un rol.'); return; }
 
     this.isCreating = true;
+    const loadingIdU = this.toast.loading('Creando usuario...');
 
     const rolesNombres = this.rolesAppDisponibles
       .filter(r => this.createRolIds.includes(r.idRolApp))
@@ -356,11 +417,11 @@ export class GestionUsuariosComponent implements OnInit {
     // POST /api/admin/usuarios → UsuarioAdminController.crearUsuario()
     // → AutoridadAcademicaService.registrarUsuario() → sp_registrar_usuario_simple
     this.svc.crearUsuario(payload).subscribe({
-      next: () => { this.loadUsuarios(); this.closeCreateModal(); alert('Usuario creado. Se enviaron las credenciales por correo.'); this.cdr.detectChanges(); },
+      next: () => { this.toast.remove(loadingIdU); this.toast.success('Usuario creado', 'Las credenciales fueron enviadas al correo.'); this.loadUsuarios(); this.closeCreateModal(); this.cdr.detectChanges(); },
       error: (err: any) => {
-        this.isCreating = false;
+        this.isCreating = false; this.toast.remove(loadingIdU);
         const msg = err.error?.mensaje || err.error?.message || err.message || 'Error desconocido';
-        console.error(err); alert('Error al crear el usuario: ' + msg); this.cdr.detectChanges();
+        console.error(err); this.toast.error('Error al crear', msg); this.cdr.detectChanges();
       }
     });
   }
@@ -372,4 +433,48 @@ export class GestionUsuariosComponent implements OnInit {
     for (let i = 1; i <= total; i++) arr.push(i);
     return arr;
   }
+
+  private _vincularUsuarioExistente(): void {
+    const f = this.formAutoridad_existente;
+    if (!f.idUsuario)        { this.toast.warning('Campo requerido', 'Selecciona un usuario.');               return; }
+    if (!f.nombres.trim())   { this.toast.warning('Campo requerido', 'Los nombres son obligatorios.');        return; }
+    if (!f.apellidos.trim()) { this.toast.warning('Campo requerido', 'Los apellidos son obligatorios.');      return; }
+    if (!f.fechaNacimiento)  { this.toast.warning('Campo requerido', 'La fecha de nacimiento es obligatoria.'); return; }
+    if (!f.idInstitucion)    { this.toast.warning('Campo requerido', 'Selecciona una institución.');          return; }
+    if (!this.createRolIds.length) { this.toast.warning('Sin rol', 'Selecciona al menos un rol.');           return; }
+
+    this.isCreating = true;
+    const loadingIdE = this.toast.loading('Vinculando usuario...');
+
+    const rolesNombres = this.rolesAppParaAutoridad
+      .filter(r => this.createRolIds.includes(r.idRolApp))
+      .map(r => r.nombre);
+
+    this.http.post<any>('http://localhost:8080/api/autoridades-academicas/desde-usuario', {
+      idUsuario:       Number(f.idUsuario),
+      nombres:         f.nombres.trim(),
+      apellidos:       f.apellidos.trim(),
+      correo:          f.correo.trim(),
+      fechaNacimiento: f.fechaNacimiento,
+      idInstitucion:   f.idInstitucion,
+      idFacultad:      f.idFacultad,
+      rolesApp:        rolesNombres
+    }).subscribe({
+      next: () => {
+        this.toast.remove(loadingIdE);
+        this.toast.success('Autoridad vinculada', 'El usuario fue registrado como autoridad académica.');
+        this.loadAutoridades();
+        this.loadUsuariosDisponibles();
+        this.closeCreateModal();
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.isCreating = false; this.toast.remove(loadingIdE);
+        const msg = err.error?.mensaje || err.error?.message || err.message || 'Error desconocido';
+        this.toast.error('Error al vincular', msg);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
 }

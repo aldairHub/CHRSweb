@@ -14,6 +14,7 @@ public class AutoridadRegistroRequestDTO {
     private LocalDate fechaNacimiento;
 
     private Long idInstitucion;
+    private Long idFacultad;
     private List<String> rolesApp;
     // Cargos seleccionados (rol_autoridad)
     private List<Long> idsRolAutoridad;

@@ -15,4 +15,7 @@ public class InstitucionRequestDTO {
     private Integer emailPort;
     private Boolean emailSsl;   // true = SSL (465) | false = STARTTLS (587)
 
+    private String imagenFondoUrl;
+
+
 }
