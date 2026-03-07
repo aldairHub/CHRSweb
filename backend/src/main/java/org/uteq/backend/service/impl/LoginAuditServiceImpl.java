@@ -6,14 +6,16 @@ import org.uteq.backend.repository.AuditLoginRepository;
 import org.uteq.backend.dto.AuditLoginMotivo;
 import org.uteq.backend.dto.AuditLoginResultado;
 import org.uteq.backend.service.LoginAuditService;
+import org.uteq.backend.service.NotificacionService;
 
 @Service
 public class LoginAuditServiceImpl implements LoginAuditService {
 
     private final AuditLoginRepository auditLoginRepository;
-
-    public LoginAuditServiceImpl(AuditLoginRepository auditLoginRepository) {
+    private final NotificacionService notifService;
+    public LoginAuditServiceImpl(AuditLoginRepository auditLoginRepository, NotificacionService notifService) {
         this.auditLoginRepository = auditLoginRepository;
+        this.notifService = notifService;
     }
 
     @Override

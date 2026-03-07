@@ -27,6 +27,7 @@ public class ProcesoEvaluacionService {
     private final FaseEvaluacionRepository faseRepository;
     private final ReunionRepository reunionRepository;
     private final HistorialAccionRepository historialRepository;
+    private final NotificacionService notifService;
 
     private static final DateTimeFormatter DT_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final DateTimeFormatter D_FMT   = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -142,6 +143,14 @@ public class ProcesoEvaluacionService {
         registrarHistorial(proceso, "Proceso Iniciado",
                 "postulante ingresado al sistema de evaluación", "Sistema");
 
+        // Notificar al admin que hay un nuevo postulante en proceso
+        notifService.notifAdminUsuarioCreado(
+                proceso.getPostulante().getUsuario() != null
+                        ? proceso.getPostulante().getUsuario().getIdUsuario() : null,
+                proceso.getPostulante().getNombresPostulante() + " " + proceso.getPostulante().getApellidosPostulante(),
+                "postulante"
+        );
+
         return obtenerDetalle(proceso.getIdProceso());
     }
 
@@ -201,6 +210,15 @@ public class ProcesoEvaluacionService {
         registrarHistorial(proceso, "Decisión Final Registrada",
                 "Decisión: " + dto.getDecision() + " - " + dto.getJustificacion(),
                 "Comité");
+
+        // Notificar al postulante que el proceso fue cerrado
+        if (proceso.getPostulante().getUsuario() != null) {
+            notifService.notifPostulanteProcesoCerrado(
+                    proceso.getPostulante().getUsuario().getIdUsuario(),
+                    proceso.getIdProceso(),
+                    dto.getDecision()
+            );
+        }
     }
 
     // ─── Helpers ───────────────────────────────────────────────

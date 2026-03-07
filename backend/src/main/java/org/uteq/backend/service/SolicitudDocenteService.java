@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.uteq.backend.entity.*;
 import org.uteq.backend.repository.*;
+import org.uteq.backend.service.NotificacionService;
 import org.uteq.backend.dto.SolicitudDocenteRequestDTO;
 import org.uteq.backend.dto.SolicitudDocenteResponseDTO;
 import org.xhtmlrenderer.pdf.ITextRenderer;
@@ -28,6 +29,7 @@ public class SolicitudDocenteService {
     private final CarreraRepository carreraRepository;
     private final MateriaRepository materiaRepository;
     private final AreaConocimientoRepository areaRepository;
+    private final NotificacionService notifService;
 
     @Transactional
     public SolicitudDocenteResponseDTO crearSolicitud(SolicitudDocenteRequestDTO request, Long idAutoridad) {
@@ -55,6 +57,14 @@ public class SolicitudDocenteService {
         solicitud.setObservaciones(request.getObservaciones());
 
         SolicitudDocente savedSolicitud = solicitudRepository.save(solicitud);
+
+        // Notificar a todos los revisores que hay nueva solicitud de docente
+        notifService.notifRevisorNuevaSolicitudDocente(
+                savedSolicitud.getIdSolicitud(),
+                materia.getNombreMateria(),
+                carrera.getNombreCarrera()
+        );
+
         return convertToDTO(savedSolicitud);
     }
 

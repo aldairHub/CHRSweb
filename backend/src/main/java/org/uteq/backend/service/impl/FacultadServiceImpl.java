@@ -11,14 +11,16 @@ import org.uteq.backend.repository.FacultadRepository;
 import org.uteq.backend.service.FacultadService;
 import org.uteq.backend.dto.FacultadRequestDTO;
 import org.uteq.backend.dto.FacultadResponseDTO;
+import org.uteq.backend.service.NotificacionService;
 
 @Service
 @Transactional
 public class FacultadServiceImpl implements FacultadService {
-
+    private final NotificacionService notifService;
     private final FacultadRepository facultadRepository;
 
-    public FacultadServiceImpl(FacultadRepository facultadRepository) {
+    public FacultadServiceImpl(NotificacionService notifService, FacultadRepository facultadRepository) {
+        this.notifService = notifService;
         this.facultadRepository = facultadRepository;
     }
 

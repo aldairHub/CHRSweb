@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class PrepostulacionService {
     private static final Logger log =
             LoggerFactory.getLogger(PrepostulacionService.class);
-
+    private final NotificacionService notifService;
     private final PrepostulacionRepository prepostulacionRepository;
     private final SupabaseStorageService supabaseService;
     private final UsuarioRepository usuarioRepository;
@@ -30,7 +30,7 @@ public class PrepostulacionService {
     private final AesCipherService aesCipherService;
     private final PrepostulacionDocumentoRepository documentoRepository;
     public PrepostulacionService(
-            PrepostulacionRepository prepostulacionRepository,
+            NotificacionService notifService, PrepostulacionRepository prepostulacionRepository,
             SupabaseStorageService supabaseService,
             UsuarioRepository usuarioRepository,
             EmailService emailService,
@@ -40,6 +40,7 @@ public class PrepostulacionService {
             AesCipherService aesCipherService,
             PrepostulacionDocumentoRepository documentoRepository
     ) {
+        this.notifService = notifService;
         this.prepostulacionRepository = prepostulacionRepository;
         this.supabaseService = supabaseService;
         this.usuarioRepository = usuarioRepository;
@@ -129,6 +130,12 @@ public class PrepostulacionService {
 
         log.info("Prepostulacion {} completada con {} documento(s) academico(s)",
                 idPrepostulacion, archivosDocumentos.size());
+
+        // Notificar a todos los revisores que llegó nueva prepostulación
+        notifService.notifRevisorNuevaPrepostulacion(
+                idPrepostulacion,
+                nombres + " " + apellidos
+        );
 
         return new PrepostulacionResponseDTO(
                 "Solicitud registrada exitosamente",
@@ -359,7 +366,13 @@ public class PrepostulacionService {
                 log.info("Postulante registrado con ID: {}", resultado.getIdUsuario());
                 emailService.enviarCredenciales(correo, usuarioApp, claveTemporal);
 //                System.out.println("✅ Correo enviado exitosamente");
-                 log.info("Correo de credenciales enviado a {}", correo);
+                log.info("Correo de credenciales enviado a {}", correo);
+
+                // Notificar al postulante (usa el id_usuario recién creado)
+                notifService.notifPostulanteAprobado(
+                        resultado.getIdUsuario(),
+                        prepostulacion.getIdPrepostulacion()
+                );
             } catch (Exception e) {
 //                System.err.println("❌ ERROR al crear usuario: " + e.getMessage());
                 log.error("Error al crear usuario para prepostulacion {}: {}", id, e.getMessage(), e);
@@ -379,6 +392,15 @@ public class PrepostulacionService {
                 );
 //                System.out.println("✅ Correo de rechazo enviado");
                 log.info("Correo de rechazo enviado para prepostulacion {}", id);
+
+                // Si el postulante ya tenía usuario (repostulación rechazada), notificarle
+                usuarioRepository.findByCorreo(prepostulacion.getCorreo()).ifPresent(u ->
+                        notifService.notifPostulanteRechazado(
+                                u.getIdUsuario(),
+                                prepostulacion.getIdPrepostulacion(),
+                                observaciones
+                        )
+                );
             } catch (Exception e) {
 //                System.err.println("❌ ERROR al enviar correo de rechazo: " + e.getMessage());
                 log.error("Error al enviar correo de rechazo {}: {}", id, e.getMessage(), e);

@@ -24,6 +24,7 @@ public class ReunionService {
     private final ProcesoEvaluacionRepository procesoRepository;
     private final UsuarioRepository usuarioRepository;
     private final ProcesoEvaluacionService procesoService;
+    private final NotificacionService notifService;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -78,6 +79,40 @@ public class ReunionService {
                 "Reunión programada para el " + dto.getFecha() + " a las " + dto.getHora()
                         + " por modalidad " + dto.getModalidad(),
                 "admin Sistema");
+
+        // Notificar al postulante sobre la entrevista
+        Postulante postulante = proceso.getPostulante();
+        Long idUsuarioPostulante = postulante.getUsuario() != null
+                ? postulante.getUsuario().getIdUsuario() : null;
+        if (idUsuarioPostulante != null) {
+            notifService.notifPostulanteEntrevistaProgramada(
+                    idUsuarioPostulante,
+                    reunion.getIdReunion(),
+                    dto.getFecha(),
+                    dto.getHora(),
+                    dto.getModalidad()
+            );
+        }
+
+        // Notificar a cada evaluador de la reunión
+        if (reunion.getEvaluadoresIds() != null && !reunion.getEvaluadoresIds().isBlank()) {
+            String nombrePostulante = postulante.getNombresPostulante() + " " + postulante.getApellidosPostulante();
+            Reunion finalReunion = reunion;
+            java.util.Arrays.stream(reunion.getEvaluadoresIds().split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .forEach(idStr -> {
+                        try {
+                            Long idEval = Long.parseLong(idStr);
+                            notifService.notifEvaluadorReunionProgramada(
+                                    idEval, finalReunion.getIdReunion(),
+                                    nombrePostulante,
+                                    dto.getFecha(),
+                                    dto.getHora()
+                            );
+                        } catch (NumberFormatException ignored) {}
+                    });
+        }
 
         return toDTO(reunion, proceso.getIdProceso());
     }

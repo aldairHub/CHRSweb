@@ -12,6 +12,7 @@ import org.uteq.backend.repository.MateriaRepository;
 import org.uteq.backend.service.MateriaService;
 import org.uteq.backend.dto.MateriaRequestDTO;
 import org.uteq.backend.dto.MateriaResponseDTO;
+import org.uteq.backend.service.NotificacionService;
 
 @Service
 @Transactional
@@ -19,12 +20,13 @@ public class MateriaServiceImpl implements MateriaService {
 
     private final MateriaRepository materiaRepository;
     private final CarreraRepository carreraRepository;
-
+    private final NotificacionService notifService;
     public MateriaServiceImpl(
             MateriaRepository materiaRepository,
-            CarreraRepository carreraRepository) {
+            CarreraRepository carreraRepository, NotificacionService notifService) {
         this.materiaRepository = materiaRepository;
         this.carreraRepository = carreraRepository;
+        this.notifService = notifService;
     }
 
     @Override

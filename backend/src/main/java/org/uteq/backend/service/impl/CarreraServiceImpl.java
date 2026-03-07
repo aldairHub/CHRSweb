@@ -13,17 +13,19 @@ import org.uteq.backend.repository.FacultadRepository;
 import org.uteq.backend.service.CarreraService;
 import org.uteq.backend.dto.CarreraRequestDTO;
 import org.uteq.backend.dto.CarreraResponseDTO;
+import org.uteq.backend.service.NotificacionService;
 
 @Service
 @Transactional
 public class CarreraServiceImpl implements CarreraService {
-
+    private final NotificacionService notifService;
     private final CarreraRepository carreraRepository;
     private final FacultadRepository facultadRepository;
 
     public CarreraServiceImpl(
-            CarreraRepository carreraRepository,
+            NotificacionService notifService, CarreraRepository carreraRepository,
             FacultadRepository facultadRepository) {
+        this.notifService = notifService;
         this.carreraRepository = carreraRepository;
         this.facultadRepository = facultadRepository;
     }

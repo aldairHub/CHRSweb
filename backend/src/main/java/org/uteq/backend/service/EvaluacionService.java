@@ -25,6 +25,7 @@ public class EvaluacionService {
     private final ReunionRepository reunionRepository;
     private final ProcesoEvaluacionService procesoService;
     private final UsuarioRepository usuarioRepository;
+    private final NotificacionService notifService;
 
     private static final DateTimeFormatter DT_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
@@ -77,6 +78,15 @@ public class EvaluacionService {
 
         evaluacion.setCalificacionFinal(Math.round(calificacionFinal * 100.0) / 100.0);
         evaluacion = evaluacionRepository.save(evaluacion);
+
+        // Notificar al evaluador que su evaluación fue registrada
+        String nombrePostulante = reunion.getFaseProceso().getProceso().getPostulante().getNombresPostulante()
+                + " " + reunion.getFaseProceso().getProceso().getPostulante().getApellidosPostulante();
+        notifService.notifEvaluadorEvaluacionPendiente(
+                idEvaluador,
+                reunion.getIdReunion(),
+                nombrePostulante
+        );
 
         // Verificar si TODOS los evaluadores de la reunión ya enviaron su evaluación
         // y si es así, calcular promedio de fase y avanzar

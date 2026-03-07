@@ -13,6 +13,7 @@ import org.uteq.backend.service.AesCipherService;
 import org.uteq.backend.service.InstitucionService;
 import org.uteq.backend.dto.InstitucionRequestDTO;
 import org.uteq.backend.dto.InstitucionResponseDTO;
+import org.uteq.backend.service.NotificacionService;
 import org.uteq.backend.service.SupabaseStorageService;
 
 @Service
@@ -22,12 +23,13 @@ public class InstitucionServiceImpl implements InstitucionService {
     private final InstitucionRepository institucionRepository;
     private final AesCipherService aesCipherService;
     private final SupabaseStorageService storageService;
-
+    private final NotificacionService notifService;
     // Constructor actualizado
-    public InstitucionServiceImpl(InstitucionRepository r, AesCipherService aes, SupabaseStorageService sto) {
+    public InstitucionServiceImpl(InstitucionRepository r, AesCipherService aes, SupabaseStorageService sto, NotificacionService notifService) {
         this.institucionRepository = r;
         this.aesCipherService = aes;
         this.storageService = sto;
+        this.notifService = notifService;
     }
 
     // obtener la institución activa

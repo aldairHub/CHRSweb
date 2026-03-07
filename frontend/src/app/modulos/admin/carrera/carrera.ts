@@ -10,7 +10,7 @@ import { FacultadService } from '../../../services/facultad.service';
 @Component({
   selector: 'app-carrera',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent, ToastComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, ToastComponent],
   templateUrl: './carrera.html',
   styleUrls: ['./carrera.scss']
 })

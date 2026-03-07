@@ -1,72 +1,127 @@
 <nav class="navbar">
 
-  <div class="navbar-brand" (click)="irAlHome()" style="cursor:pointer;" title="Ir al inicio">
+  <div class="navbar-brand">
     <img
-      *ngIf="logoService.getLogo() | async as logoUrl"
-      [src]="logoUrl"
+      [src]="(logoService.getLogo() | async) || 'imgs/logo-uteq.png'"
       alt="Logo institucional"
-      class="logo">
+      class="logo"
+      (error)="onLogoError($event)">
     <div class="brand-text">
-      <h1>{{ (logoService.getNombre() | async) || 'SSDC' }}</h1>
+      <h1>UTEQ</h1>
       <span>Sistema de selección docente</span>
     </div>
   </div>
 
   <div class="navbar-actions">
 
-    <!-- BOTÓN VOLVER (no se muestra en dashboard) -->
+    <!-- BOTÓN VOLVER -->
     <button
       *ngIf="!isDashboard"
       class="btn-back"
       (click)="goBack()"
       title="Volver"
       aria-label="Volver"
-      type="button"
-    >
+      type="button">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
     </button>
 
-    <!-- NOTIFICACIONES -->
+    <!-- ══ NOTIFICACIONES ══════════════════════════════════════ -->
     <div class="notification-wrapper" (click)="toggleNotifications()">
+
       <div class="bell-icon">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
         </svg>
-        <span *ngIf="unreadCount > 0" class="badge-dot"></span>
+        <!-- Badge: muestra el conteo real del signal -->
+        <span *ngIf="notifService.noLeidas() > 0" class="badge-dot">
+          {{ notifService.noLeidas() > 9 ? '9+' : notifService.noLeidas() }}
+        </span>
       </div>
 
+      <!-- Dropdown -->
       <div class="notification-dropdown" *ngIf="showNotifications" (click)="$event.stopPropagation()">
+
         <div class="dropdown-header">
           <h3>Notificaciones</h3>
-          <span class="count" *ngIf="unreadCount > 0">{{ unreadCount }} nuevas</span>
+          <span class="count" *ngIf="notifService.noLeidas() > 0">
+            {{ notifService.noLeidas() }} nueva(s)
+          </span>
         </div>
 
         <div class="dropdown-body">
-          <div *ngFor="let notif of notificaciones" class="notif-item" [class.unread]="!notif.leida">
-            <div class="notif-icon" [ngClass]="notif.tipo">
-              <span *ngIf="notif.tipo === 'success'">✓</span>
-              <span *ngIf="notif.tipo === 'warning'">!</span>
-              <span *ngIf="notif.tipo === 'info'">i</span>
-            </div>
-            <div class="notif-content">
-              <div class="notif-title">{{ notif.titulo }}</div>
-              <div class="notif-msg">{{ notif.mensaje }}</div>
-              <div class="notif-time">{{ notif.hora }}</div>
-            </div>
-          </div>
 
-          <div *ngIf="notificaciones.length === 0" class="empty-state">
-            No tienes notificaciones nuevas
-          </div>
+          <!-- Lista real desde el signal -->
+          <ng-container *ngIf="notifService.notificaciones().length > 0; else sinNotifs">
+            <div
+              *ngFor="let notif of notifService.notificaciones()"
+              class="notif-item"
+              [class.unread]="!notif.leida"
+              (click)="marcarLeida(notif.idNotificacion, $event)">
+
+              <div class="notif-icon" [ngClass]="notif.tipo">
+                <!-- success -->
+                <svg *ngIf="notif.tipo === 'success'" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <!-- error -->
+                <svg *ngIf="notif.tipo === 'error'" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <!-- warning -->
+                <svg *ngIf="notif.tipo === 'warning'" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <!-- info -->
+                <svg *ngIf="notif.tipo === 'info'" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+
+              <div class="notif-content">
+                <div class="notif-title">{{ notif.titulo }}</div>
+                <div class="notif-msg" *ngIf="notif.mensaje">{{ notif.mensaje }}</div>
+                <div class="notif-time">{{ notif.tiempoRelativo }}</div>
+              </div>
+
+              <!-- Punto azul de no leída -->
+              <span class="notif-unread-dot" *ngIf="!notif.leida"></span>
+            </div>
+          </ng-container>
+
+          <ng-template #sinNotifs>
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+              </svg>
+              <p>No tienes notificaciones nuevas</p>
+            </div>
+          </ng-template>
+
         </div>
 
         <div class="dropdown-footer">
-          <button>Marcar todo como leído</button>
+          <button
+            (click)="marcarTodasLeidas($event)"
+            [disabled]="notifService.noLeidas() === 0">
+            Marcar todo como leído
+          </button>
         </div>
+
       </div>
     </div>
+    <!-- ═══════════════════════════════════════════════════════ -->
 
     <!-- PERFIL CON DROPDOWN -->
     <div class="user-profile" (click)="togglePerfilMenu()">
@@ -76,14 +131,11 @@
         <span class="role">{{ rolUsuario }}</span>
       </div>
 
-      <!-- Dropdown perfil -->
       <div class="perfil-dropdown" *ngIf="showPerfilMenu" (click)="$event.stopPropagation()">
-
         <button class="perfil-item" (click)="irAlPerfil()">
           Cambiar contraseña
         </button>
 
-        <!-- Selector de rol: solo si tiene más de 1 rol disponible -->
         <ng-container *ngIf="rolesDisponibles.length > 1">
           <hr class="perfil-divider">
           <p class="perfil-label">Cambiar rol activo</p>
@@ -91,20 +143,19 @@
             *ngFor="let rol of rolesDisponibles"
             class="perfil-item perfil-item--rol"
             [class.perfil-item--activo]="rol.nombre === rolUsuario"
-            (click)="cambiarRolActivo(rol)"
-          >
+            (click)="cambiarRolActivo(rol)">
             <span class="rol-dot" [class.rol-dot--activo]="rol.nombre === rolUsuario"></span>
             {{ rol.nombre }}
           </button>
         </ng-container>
-
       </div>
     </div>
 
-    <!-- BOTÓN LOGOUT -->
+    <!-- LOGOUT -->
     <button class="btn-logout" (click)="logout()" title="Cerrar sesión">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
       </svg>
     </button>
 

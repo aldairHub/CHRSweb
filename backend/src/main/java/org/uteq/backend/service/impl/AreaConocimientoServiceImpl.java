@@ -11,15 +11,18 @@ import org.uteq.backend.dto.AreaConocimientoResponseDTO;
 import org.uteq.backend.entity.AreaConocimiento;
 import org.uteq.backend.repository.AreaConocimientoRepository;
 import org.uteq.backend.service.AreaConocimientoService;
+import org.uteq.backend.service.NotificacionService;
 
 @Service
 @Transactional
 public class AreaConocimientoServiceImpl implements AreaConocimientoService {
 
     private final AreaConocimientoRepository repository;
+    private final NotificacionService notifService;
 
-    public AreaConocimientoServiceImpl(AreaConocimientoRepository repository) {
+    public AreaConocimientoServiceImpl(AreaConocimientoRepository repository, NotificacionService notifService) {
         this.repository = repository;
+        this.notifService = notifService;
     }
 
     @Override

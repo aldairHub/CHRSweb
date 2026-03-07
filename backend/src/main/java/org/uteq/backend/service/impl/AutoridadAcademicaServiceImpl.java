@@ -14,10 +14,7 @@ import org.uteq.backend.repository.InstitucionRepository;
 import org.uteq.backend.repository.PostgresProcedureRepository;
 import org.uteq.backend.repository.UsuarioRepository;
 
-import org.uteq.backend.service.AesCipherService;
-import org.uteq.backend.service.AutoridadAcademicaService;
-import org.uteq.backend.service.DbRoleSyncService;
-import org.uteq.backend.service.EmailService;
+import org.uteq.backend.service.*;
 
 import java.security.SecureRandom;
 import java.util.*;
@@ -33,7 +30,7 @@ import org.uteq.backend.util.CredencialesGenerator;
 @Service
 @Transactional
 public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService {
-
+    private final NotificacionService notifService;
     private final AutoridadAcademicaRepository autoridadRepository;
     private final UsuarioRepository usuarioRepository;
     private final InstitucionRepository institucionRepository;
@@ -47,7 +44,7 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
             LoggerFactory.getLogger(AutoridadAcademicaServiceImpl.class);
 
     public AutoridadAcademicaServiceImpl(
-            AutoridadAcademicaRepository autoridadRepository,
+            NotificacionService notifService, AutoridadAcademicaRepository autoridadRepository,
             UsuarioRepository usuarioRepository,
             InstitucionRepository institucionRepository,
 //            IRolAutoridadRepository rolAutoridadRepository,
@@ -55,6 +52,7 @@ public class AutoridadAcademicaServiceImpl implements AutoridadAcademicaService 
             EmailService emailService,
             DbRoleSyncService dbRolSyncService,
             PostgresProcedureRepository postgresProcedureRepository, AesCipherService aesCipherService) {
+        this.notifService = notifService;
         this.autoridadRepository = autoridadRepository;
         this.usuarioRepository = usuarioRepository;
         this.institucionRepository = institucionRepository;
