@@ -2,11 +2,14 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../../component/navbar';
-import { PrepostulacionService, Prepostulacion } from '../../../services/prepostulacion.service';
+import {
+  PrepostulacionService,
+  Prepostulacion,
+  Convocatoria,
+  SolicitudDocente,
+  DetallePostulacion
+} from '../../../services/prepostulacion.service';
 
-// ==========================================
-// INTERFACES
-// ==========================================
 export interface DocumentoAcademico {
   idDocumento: number;
   descripcion: string;
@@ -29,7 +32,12 @@ export class GestionPostulanteComponent implements OnInit {
   selectedDocumento: any = null;
   showDocumentosModal = false;
   showRechazarModal = false;
+  showDetalleModal = false;
   motivoRechazo = '';
+
+  // Detalle convocatoria/solicitud
+  detallePostulacion: DetallePostulacion | null = null;
+  cargandoDetalle = false;
 
   totalDocumentos = 0;
   documentosPendientes = 0;
@@ -38,8 +46,17 @@ export class GestionPostulanteComponent implements OnInit {
 
   searchTerm = '';
   filterEstado = '';
-  filterPostulacion = '';
-  postulaciones: any[] = [];
+  filterConvocatoria = '';
+  filterSolicitud = '';
+
+  convocatorias: Convocatoria[] = [];
+  solicitudes: SolicitudDocente[] = [];
+
+  // Modal filtro avanzado
+  showFiltroModal = false;
+  filtroModalConvocatoria = '';
+  filtroModalSolicitud = '';
+  String = String;
 
   currentPage = 1;
   pageSize = 10;
@@ -47,7 +64,6 @@ export class GestionPostulanteComponent implements OnInit {
   Math = Math;
   cargando = true;
 
-  // ── Toast ──────────────────────────────────────────────
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
@@ -60,7 +76,10 @@ export class GestionPostulanteComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarDesdeBackend();
+    this.cargarFiltros();
   }
+
+  // ── Carga inicial ─────────────────────────────────────────
 
   cargarDesdeBackend(): void {
     this.cargando = true;
@@ -71,12 +90,15 @@ export class GestionPostulanteComponent implements OnInit {
           nombreCompleto: `${p.nombres} ${p.apellidos}`,
           cedula: p.identificacion,
           correo: p.correo,
-          postulacion: 'N/A',
           estado: this.mapEstado(p.estadoRevision),
           fechaEnvio: new Date(p.fechaEnvio),
           urlCedula: p.urlCedula || '',
           urlFoto: p.urlFoto || '',
-          documentosAcademicos: []  // Se carga al abrir el modal
+          documentosAcademicos: [],
+          idConvocatoria: (p as any).idConvocatoria || null,
+          idSolicitud: (p as any).idSolicitud || null,
+          tituloConvocatoria: (p as any).tituloConvocatoria || '',
+          nombreSolicitud: (p as any).nombreSolicitud || ''
         }));
         this.applyFilters();
         this.calcularEstadisticas();
@@ -90,17 +112,28 @@ export class GestionPostulanteComponent implements OnInit {
     });
   }
 
+  cargarFiltros(): void {
+    this.prepostulacionService.listarConvocatorias().subscribe({
+      next: (data) => { this.convocatorias = data; this.cdr.detectChanges(); },
+      error: () => {}
+    });
+    this.prepostulacionService.listarSolicitudes().subscribe({
+      next: (data) => { this.solicitudes = data; this.cdr.detectChanges(); },
+      error: () => {}
+    });
+  }
+
   mapEstado(estado: string): string {
     if (estado === 'APROBADO') return 'validado';
     if (estado === 'RECHAZADO') return 'rechazado';
     return 'pendiente';
   }
 
+  // ── Modal documentos ──────────────────────────────────────
+
   verDocumentos(doc: any): void {
     this.selectedDocumento = { ...doc };
     this.showDocumentosModal = true;
-
-    // Cargar cédula, foto y documentos académicos via API
     this.prepostulacionService.obtenerDocumentos(doc.id).subscribe({
       next: (data: any) => {
         this.selectedDocumento.urlCedula = data.cedula || '';
@@ -118,41 +151,90 @@ export class GestionPostulanteComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  // ── Modal detalle convocatoria/solicitud ──────────────────
+
+  verDetalle(doc: any): void {
+    this.selectedDocumento = { ...doc };
+    this.detallePostulacion = null;
+    this.cargandoDetalle = true;
+    this.showDetalleModal = true;
+    this.cdr.detectChanges();
+
+    this.prepostulacionService.obtenerDetalle(doc.id).subscribe({
+      next: (data: DetallePostulacion) => {
+        this.detallePostulacion = data;
+        this.cargandoDetalle = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cargandoDetalle = false;
+        this.mostrarToast('error', 'Error al cargar el detalle');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  closeDetalleModal(): void {
+    this.showDetalleModal = false;
+    this.detallePostulacion = null;
+    this.selectedDocumento = null;
+    this.cdr.detectChanges();
+  }
+
+  // ── Documentos ────────────────────────────────────────────
+
   verDocumento(doc: any): void {
     if (!doc.url) { alert('No hay archivo disponible.'); return; }
     window.open(doc.url, '_blank');
   }
 
-  descargarDocumento(doc: any): void {
+  descargarDocumento(doc: { url: string; nombre: string }): void {
     if (!doc.url) { alert('No hay archivo disponible.'); return; }
-    const a = document.createElement('a');
-    a.href = doc.url;
-    a.download = doc.nombre || 'documento';
-    a.click();
+    fetch(doc.url)
+      .then(res => { if (!res.ok) throw new Error(); return res.blob(); })
+      .then(blob => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = doc.nombre || 'documento';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+      })
+      .catch(() => window.open(doc.url, '_blank'));
   }
 
   descargarDocumentos(doc?: any): void {
     if (!doc) return;
     this.prepostulacionService.obtenerDocumentos(doc.id).subscribe({
       next: (data: any) => {
-        if (data.cedula)  window.open(data.cedula, '_blank');
-        if (data.foto)    window.open(data.foto,   '_blank');
-        // Abrir cada documento académico
+        const archivos: { url: string; nombre: string }[] = [];
+        if (data.cedula) archivos.push({ url: data.cedula, nombre: 'cedula.pdf' });
+        if (data.foto)   archivos.push({ url: data.foto,   nombre: 'foto.jpg' });
         if (data.documentosAcademicos?.length) {
-          data.documentosAcademicos.forEach((d: DocumentoAcademico) => {
-            window.open(d.urlDocumento, '_blank');
+          data.documentosAcademicos.forEach((d: DocumentoAcademico, i: number) => {
+            archivos.push({ url: d.urlDocumento, nombre: `${d.descripcion || 'titulo_' + (i + 1)}.pdf` });
           });
         }
+        archivos.forEach((archivo, index) => {
+          setTimeout(() => this.descargarDocumento(archivo), index * 400);
+        });
       },
       error: () => alert('Error al descargar los documentos')
     });
   }
 
+  // ── Validar / Rechazar ────────────────────────────────────
+
   validarDocumentos(doc: any): void {
     const request = { estado: 'APROBADO', observaciones: 'Documentos validados correctamente', idRevisor: 1 };
     this.prepostulacionService.actualizarEstado(doc.id, request).subscribe({
       next: () => {
-        doc.estado = 'validado';
+        const item = this.documentos.find(d => d.id === doc.id);
+        if (item) item.estado = 'validado';
+        if (this.selectedDocumento?.id === doc.id) {
+          this.selectedDocumento = { ...this.selectedDocumento, estado: 'validado' };
+        }
         this.calcularEstadisticas();
         this.applyFilters();
         this.cdr.detectChanges();
@@ -187,8 +269,8 @@ export class GestionPostulanteComponent implements OnInit {
     const request = { estado: 'RECHAZADO', observaciones: this.motivoRechazo, idRevisor: 1 };
     this.prepostulacionService.actualizarEstado(this.selectedDocumento.id, request).subscribe({
       next: () => {
-        const d = this.documentos.find(d => d.id === this.selectedDocumento.id);
-        if (d) d.estado = 'rechazado';
+        const item = this.documentos.find(d => d.id === this.selectedDocumento.id);
+        if (item) item.estado = 'rechazado';
         this.closeRechazarModal();
         this.closeDocumentosModal();
         this.calcularEstadisticas();
@@ -206,15 +288,18 @@ export class GestionPostulanteComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  // ── Filtros y paginación ──────────────────────────────────
+
   applyFilters(): void {
     this.documentosFiltrados = this.documentos.filter(d => {
       const matchSearch =
         d.nombreCompleto.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         d.cedula.includes(this.searchTerm) ||
         d.correo.toLowerCase().includes(this.searchTerm.toLowerCase());
-      const matchEstado = !this.filterEstado || d.estado === this.filterEstado;
-      const matchPostulacion = !this.filterPostulacion || d.postulacion === this.filterPostulacion;
-      return matchSearch && matchEstado && matchPostulacion;
+      const matchEstado       = !this.filterEstado       || d.estado === this.filterEstado;
+      const matchConvocatoria = !this.filterConvocatoria || String(d.idConvocatoria) === this.filterConvocatoria;
+      const matchSolicitud    = !this.filterSolicitud    || String(d.idSolicitud)    === this.filterSolicitud;
+      return matchSearch && matchEstado && matchConvocatoria && matchSolicitud;
     });
     this.currentPage = 1;
     this.updatePagination();
@@ -235,9 +320,8 @@ export class GestionPostulanteComponent implements OnInit {
   }
 
   getPageNumbers(): number[] {
-    const pages: number[] = [];
     if (this.totalPages <= 5) return Array.from({ length: this.totalPages }, (_, i) => i + 1);
-    pages.push(1);
+    const pages: number[] = [1];
     if (this.currentPage > 3) pages.push(-1);
     for (let i = Math.max(2, this.currentPage - 1); i <= Math.min(this.totalPages - 1, this.currentPage + 1); i++) pages.push(i);
     if (this.currentPage < this.totalPages - 2) pages.push(-1);
@@ -246,12 +330,14 @@ export class GestionPostulanteComponent implements OnInit {
   }
 
   calcularEstadisticas(): void {
-    this.totalDocumentos = this.documentos.length;
+    this.totalDocumentos    = this.documentos.length;
     this.documentosPendientes = this.documentos.filter(d => d.estado === 'pendiente').length;
-    this.documentosValidados = this.documentos.filter(d => d.estado === 'validado').length;
+    this.documentosValidados  = this.documentos.filter(d => d.estado === 'validado').length;
     this.documentosRechazados = this.documentos.filter(d => d.estado === 'rechazado').length;
     this.cdr.detectChanges();
   }
+
+  // ── Helpers UI ────────────────────────────────────────────
 
   getEstadoBadgeClass(estado: string): string {
     return ({ pendiente: 'badge-warning', validado: 'badge-success', rechazado: 'badge-danger' } as any)[estado] || 'badge-secondary';
@@ -261,7 +347,81 @@ export class GestionPostulanteComponent implements OnInit {
     return estado.charAt(0).toUpperCase() + estado.slice(1);
   }
 
-  getPostulacionClass(postulacion?: string): string { return 'badge-info'; }
+  getEstadoConvocatoriaClass(estado: string): string {
+    const map: any = { ACTIVA: 'badge-success', CERRADA: 'badge-danger', PROXIMA: 'badge-warning' };
+    return map[estado?.toUpperCase()] || 'badge-secondary';
+  }
+
+  getNivelAcademicoLabel(nivel: string): string {
+    const map: any = {
+      MAESTRIA: 'Maestría', DOCTORADO: 'Doctorado',
+      LICENCIATURA: 'Licenciatura', INGENIERIA: 'Ingeniería'
+    };
+    return map[nivel?.toUpperCase()] || nivel || '—';
+  }
+
+  // ── Modal filtro avanzado ─────────────────────────────────
+
+  get solicitudesFiltroModal(): SolicitudDocente[] {
+    if (!this.filtroModalConvocatoria) return this.solicitudes;
+    // Buscar qué solicitudes pertenecen a la convocatoria seleccionada
+    // mirando los documentos cargados que ya tienen idConvocatoria e idSolicitud
+    const idsSolicitud = new Set(
+      this.documentos
+        .filter(d => String(d.idConvocatoria) === this.filtroModalConvocatoria && d.idSolicitud)
+        .map(d => d.idSolicitud)
+    );
+    return this.solicitudes.filter(s => idsSolicitud.has(s.idSolicitud));
+  }
+
+  openFiltroModal(): void {
+    this.filtroModalConvocatoria = this.filterConvocatoria;
+    this.filtroModalSolicitud    = this.filterSolicitud;
+    this.showFiltroModal = true;
+  }
+
+  closeFiltroModal(): void {
+    this.showFiltroModal = false;
+  }
+
+  seleccionarConvocatoriaModal(id: string): void {
+    this.filtroModalConvocatoria = id;
+    this.filtroModalSolicitud    = ''; // reset solicitud al cambiar convocatoria
+  }
+
+  limpiarFiltroModal(): void {
+    this.filtroModalConvocatoria = '';
+    this.filtroModalSolicitud    = '';
+  }
+
+  aplicarFiltroModal(): void {
+    this.filterConvocatoria = this.filtroModalConvocatoria;
+    this.filterSolicitud    = this.filtroModalSolicitud;
+    this.applyFilters();
+    this.closeFiltroModal();
+  }
+
+  getConvocatoriaNombre(id: string): string {
+    const c = this.convocatorias.find(x => String(x.idConvocatoria) === id);
+    return c ? c.titulo : `Convocatoria #${id}`;
+  }
+
+  clearFiltroConvocatoria(): void {
+    this.filterConvocatoria = '';
+    this.filterSolicitud    = '';
+    this.applyFilters();
+  }
+
+  clearFiltroSolicitud(): void {
+    this.filterSolicitud = '';
+    this.applyFilters();
+  }
+
+  clearAllFiltros(): void {
+    this.filterConvocatoria = '';
+    this.filterSolicitud    = '';
+    this.applyFilters();
+  }
 
   exportarReporte(): void { alert('Funcionalidad de exportación pendiente'); }
 

@@ -702,3 +702,545 @@ $success: #16a34a;
     }
   }
 }
+
+// Título de sección dentro del modal
+.doc-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: $dark;
+  margin-bottom: 1rem;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    stroke: $primary;
+    flex-shrink: 0;
+  }
+
+  .doc-count {
+    margin-left: 0.25rem;
+    background: rgba($primary, 0.12);
+    color: $dark;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.1rem 0.55rem;
+    border-radius: 20px;
+  }
+}
+
+// Línea divisora entre secciones
+.doc-divider {
+  border: none;
+  border-top: 1px solid $border;
+  margin: 1.75rem 0;
+}
+
+// Mensaje cuando no hay documentos en una sección
+.no-docs-placeholder {
+  font-size: 0.875rem;
+  color: $text-gray;
+  padding: 0.75rem 1rem;
+  background: #f8faf9;
+  border: 1px dashed $border;
+  border-radius: 8px;
+  text-align: center;
+}
+
+// SVG fijo dentro de ícono de tarjeta
+.documento-icon svg {
+  width: 24px !important;
+  height: 24px !important;
+  flex-shrink: 0;
+}
+
+// Título de sección dentro del modal
+.doc-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: $dark;
+  margin-bottom: 1rem;
+
+  svg { width: 18px; height: 18px; stroke: $primary; flex-shrink: 0; }
+
+  .doc-count {
+    margin-left: 0.25rem;
+    background: rgba($primary, 0.12);
+    color: $dark;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.1rem 0.55rem;
+    border-radius: 20px;
+  }
+}
+
+.doc-divider {
+  border: none;
+  border-top: 1px solid $border;
+  margin: 1.75rem 0;
+}
+
+.no-docs-placeholder {
+  font-size: 0.875rem;
+  color: $text-gray;
+  padding: 0.75rem 1rem;
+  background: #f8faf9;
+  border: 1px dashed $border;
+  border-radius: 8px;
+  text-align: center;
+}
+
+// ── Botón info (azul) ────────────────────────────────────────
+.btn-icon.info:hover {
+  background: rgba(#2563eb, 0.1);
+  color: #2563eb;
+}
+
+// ── Loading spinner ──────────────────────────────────────────
+.detalle-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 0;
+  color: $text-gray;
+
+  .loading-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid $border;
+    border-top-color: $primary;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Tarjeta de detalle ───────────────────────────────────────
+.detalle-card {
+  background: $light-card-bg;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 0.5rem;
+
+  .detalle-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    .detalle-card-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba($primary, 0.1);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      svg { stroke: $primary; }
+    }
+
+    .detalle-card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: $dark;
+      margin: 0 0 0.2rem 0;
+    }
+
+    .detalle-card-sub {
+      font-size: 0.8rem;
+      color: $text-gray;
+      margin: 0;
+    }
+  }
+
+  .detalle-descripcion {
+    font-size: 0.875rem;
+    color: $text-gray;
+    margin: 0 0 1.25rem 0;
+    line-height: 1.5;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid $border;
+  }
+}
+
+.detalle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.detalle-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detalle-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $text-gray;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.detalle-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $dark;
+}
+
+.detalle-justificacion {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid $border;
+
+  .detalle-label { display: block; margin-bottom: 0.4rem; }
+
+  p {
+    font-size: 0.875rem;
+    color: $text-dark;
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+// SVG fijo dentro de ícono de tarjeta
+.documento-icon svg {
+  width: 24px !important;
+  height: 24px !important;
+  flex-shrink: 0;
+}
+
+// Título de sección dentro del modal
+.doc-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: $dark;
+  margin-bottom: 1rem;
+
+  svg { width: 18px; height: 18px; stroke: $primary; flex-shrink: 0; }
+
+  .doc-count {
+    margin-left: 0.25rem;
+    background: rgba($primary, 0.12);
+    color: $dark;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.1rem 0.55rem;
+    border-radius: 20px;
+  }
+}
+
+.doc-divider {
+  border: none;
+  border-top: 1px solid $border;
+  margin: 1.75rem 0;
+}
+
+.no-docs-placeholder {
+  font-size: 0.875rem;
+  color: $text-gray;
+  padding: 0.75rem 1rem;
+  background: #f8faf9;
+  border: 1px dashed $border;
+  border-radius: 8px;
+  text-align: center;
+}
+
+// ── Botón info (azul) ────────────────────────────────────────
+.btn-icon.info:hover {
+  background: rgba(#2563eb, 0.1);
+  color: #2563eb;
+}
+
+// ── Loading spinner ──────────────────────────────────────────
+.detalle-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 0;
+  color: $text-gray;
+
+  .loading-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid $border;
+    border-top-color: $primary;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Tarjeta de detalle ───────────────────────────────────────
+.detalle-card {
+  background: $light-card-bg;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 0.5rem;
+
+  .detalle-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    .detalle-card-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba($primary, 0.1);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      svg { stroke: $primary; }
+    }
+
+    .detalle-card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: $dark;
+      margin: 0 0 0.2rem 0;
+    }
+
+    .detalle-card-sub {
+      font-size: 0.8rem;
+      color: $text-gray;
+      margin: 0;
+    }
+  }
+
+  .detalle-descripcion {
+    font-size: 0.875rem;
+    color: $text-gray;
+    margin: 0 0 1.25rem 0;
+    line-height: 1.5;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid $border;
+  }
+}
+
+.detalle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.detalle-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detalle-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $text-gray;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.detalle-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $dark;
+}
+
+.detalle-justificacion {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid $border;
+
+  .detalle-label { display: block; margin-bottom: 0.4rem; }
+
+  p {
+    font-size: 0.875rem;
+    color: $text-dark;
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+// ── Botón de filtro avanzado ──────────────────────────────────────────────
+.btn-filtro {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  background: white;
+  border: 1.5px solid $border;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $dark;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+
+  &:hover { border-color: $primary; color: $primary; }
+
+  &.btn-filtro-active {
+    border-color: $primary;
+    background: rgba($primary, 0.06);
+    color: $primary;
+  }
+
+  .filtro-badge {
+    background: $primary;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+}
+
+// ── Chips de filtros activos ──────────────────────────────────────────────
+.filtros-activos {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.filtro-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba($primary, 0.08);
+  color: $primary;
+  border: 1px solid rgba($primary, 0.2);
+  border-radius: 20px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+
+  button {
+    background: none;
+    border: none;
+    color: $primary;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0 0 0 0.15rem;
+    opacity: 0.7;
+    &:hover { opacity: 1; }
+  }
+}
+
+.filtro-chip-clear {
+  background: none;
+  border: 1px solid $border;
+  border-radius: 20px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $text-gray;
+  cursor: pointer;
+  &:hover { color: $error; border-color: $error; }
+}
+
+// ── Columna convocatoria en tabla ─────────────────────────────────────────
+.convocatoria-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba($primary, 0.08);
+  color: $primary;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.solicitud-sub {
+  font-size: 0.75rem;
+  color: $text-gray;
+  margin-top: 0.2rem;
+}
+
+// ── Modal filtro avanzado ─────────────────────────────────────────────────
+.filtro-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: $dark;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+  svg { stroke: $primary; }
+}
+
+.filtro-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+  &::-webkit-scrollbar-thumb { background: $border; border-radius: 4px; }
+}
+
+.filtro-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  border: 1.5px solid transparent;
+  background: #f8faf9;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 0.875rem;
+
+  &:hover { background: rgba($primary, 0.06); border-color: rgba($primary, 0.2); }
+
+  &.selected {
+    background: rgba($primary, 0.1);
+    border-color: $primary;
+    color: $primary;
+    font-weight: 600;
+    .filtro-option-title { color: $primary; }
+  }
+
+  .filtro-option-title { font-weight: 600; font-size: 0.875rem; color: $dark; }
+  .filtro-option-sub   { font-size: 0.75rem; color: $text-gray; margin-top: 0.1rem; }
+}
+
+.filtro-option {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.15rem;
+
+  &.selected { flex-direction: row; align-items: center; justify-content: space-between; }
+}

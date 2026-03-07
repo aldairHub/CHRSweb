@@ -12,9 +12,11 @@ import java.util.List;
 public interface ConvocatoriaSolicitudRepository
         extends JpaRepository<ConvocatoriaSolicitud, ConvocatoriaSolicitudId> {
 
-    // Con @EmbeddedId el path es: id.idConvocatoria
     @Query("SELECT c FROM ConvocatoriaSolicitud c WHERE c.id.idConvocatoria = :idConvocatoria")
     List<ConvocatoriaSolicitud> findByIdConvocatoria(@Param("idConvocatoria") Long idConvocatoria);
+
+    @Query("SELECT c FROM ConvocatoriaSolicitud c WHERE c.id.idSolicitud = :idSolicitud")
+    List<ConvocatoriaSolicitud> findByIdSolicitud(@Param("idSolicitud") Long idSolicitud);
 
     @Query("SELECT COUNT(c) FROM ConvocatoriaSolicitud c WHERE c.id.idConvocatoria = :idConvocatoria")
     long countByIdConvocatoria(@Param("idConvocatoria") Long idConvocatoria);
