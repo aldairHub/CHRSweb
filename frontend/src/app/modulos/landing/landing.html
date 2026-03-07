@@ -1,53 +1,128 @@
 <div class="landing-container">
 
-  <div class="landing-header">
-    <div class="logo-box">
-      <img
-        [src]="(logoService.getLogo() | async) || 'imgs/logo-uteq.png'"
-        alt="Logo institucional"
-        class="logo"
-        (error)="onLogoError($event)">
-
-    </div>
-    <h1 class="title">Portal de Méritos y Oposición UTEQ</h1>
-    <h2 class="university">Universidad Técnica Estatal de Quevedo</h2>
-    <p class="subtitle">Sistema de selección docente</p>
-  </div>
-
-  <div class="main-cards">
-
-    <div class="main-card primary-card" (click)="irAConvocatorias()">
-      <div class="card-icon">
+  <!-- Header flotante -->
+  <header class="header">
+    <div class="header-content">
+      <div class="logo-wrapper">
+        <img [src]="(logoService.getLogo() | async) || 'imgs/logo-uteq.png'"
+             alt="Logo UTEQ" class="logo" (error)="onLogoError($event)">
+        <div class="logo-text">
+          <span class="logo-name">UTEQ</span>
+          <span class="logo-sub">Portal de Méritos</span>
+        </div>
+      </div>
+      <button class="btn-login" (click)="irALogin()">
+        Iniciar Sesión
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
         </svg>
-      </div>
-      <div class="card-content">
-        <h3>Ver Convocatorias</h3>
-        <p>Consulta las plazas docentes disponibles y postúlate en línea</p>
-      </div>
-      <span class="card-arrow">→</span>
+      </button>
     </div>
+  </header>
 
-    <div class="main-card secondary-card" (click)="irALogin()">
-      <div class="card-icon">
+  <!-- Hero fullscreen -->
+  <section class="hero"
+           [style.background-image]="'url(' + campusBg + ')'"
+           style="background-size:cover; background-position:center;">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-badge">Sistema de Selección Docente</div>
+      <h1 class="hero-title">Portal de <span>Méritos</span><br>y Oposición</h1>
+      <p class="hero-subtitle">Universidad Técnica Estatal de Quevedo</p>
+      <div class="hero-actions">
+        <button class="btn-hero-primary" (click)="scrollAConvocatorias()">
+          Ver convocatorias
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- Transición suave del hero al contenido -->
+  <div class="hero-transition"></div>
+
+  <!-- Convocatorias -->
+  <main class="convocatorias-section" id="convocatorias">
+    <div class="section-header reveal">
+      <div>
+        <span class="section-label">Disponibles ahora</span>
+        <h2 class="section-title">Convocatorias Activas</h2>
+      </div>
+      <button class="btn-ver-todas" (click)="irAConvocatorias()">
+        Ver todas
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
         </svg>
-      </div>
-      <div class="card-content">
-        <h3>Iniciar Sesión</h3>
-        <p>Accede con tus credenciales si ya tienes una cuenta en el sistema</p>
-      </div>
-      <span class="card-arrow">→</span>
+      </button>
     </div>
 
-  </div>
+    <!-- Loading -->
+    <div class="cards-grid loading" *ngIf="cargando">
+      <div class="skeleton-card" *ngFor="let i of [1,2,3]"></div>
+    </div>
 
-  <div class="landing-footer">
-    © 2026 Universidad Técnica Estatal de Quevedo — Todos los derechos reservados
-  </div>
+    <!-- Empty -->
+    <div class="empty reveal-scale" *ngIf="!cargando && convocatorias.length === 0">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      <p>No hay convocatorias activas por el momento</p>
+    </div>
+
+    <!-- Cards -->
+    <div class="carousel-wrapper reveal" *ngIf="!cargando && convocatorias.length > 0">
+      <button class="nav-btn prev" (click)="scrollCarousel('left')" [class.hidden]="!canScrollLeft">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <div class="cards-track" #carouselTrack (scroll)="onCarouselScroll()">
+        <article class="lnd-card" *ngFor="let conv of convocatorias; let i = index"
+                 (click)="verDetalleConvocatoria(conv)" [style.--i]="i">
+          <div class="lnd-card-img">
+            <img [src]="conv.imagenUrl || getDefaultImage(i)" [alt]="conv.titulo" (error)="onImageError($event, i)">
+            <span class="lnd-badge" [class.activa]="conv.estadoConvocatoria === 'ACTIVA'">
+              {{ conv.estadoConvocatoria }}
+            </span>
+          </div>
+          <div class="lnd-card-body">
+            <h3>{{ conv.titulo }}</h3>
+            <p>{{ conv.descripcion }}</p>
+            <div class="lnd-card-footer">
+              <div class="lnd-card-date">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span>{{ conv.fechaInicio | date:'dd MMM' }} — {{ conv.fechaFin | date:'dd MMM yyyy' }}</span>
+              </div>
+              <div class="lnd-card-arrow">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+      <button class="nav-btn next" (click)="scrollCarousel('right')" [class.hidden]="!canScrollRight">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2026 Universidad Técnica Estatal de Quevedo — Todos los derechos reservados</p>
+  </footer>
 
 </div>

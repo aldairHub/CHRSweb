@@ -25,6 +25,10 @@ $error-bg: #fff5f5;
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 html, body {
   width: 100%;
   height: 100%;
@@ -435,4 +439,30 @@ html, body {
   margin-top: 28px;
   padding-top: 20px;
   border-top: 1px solid $border;
+}
+
+// ============ SCROLL REVEAL (global - necesario para clases añadidas via JS) ============
+.reveal,
+.reveal-left,
+.reveal-right,
+.reveal-scale {
+  opacity: 0;
+  transition: opacity 0.7s cubic-bezier(.22,1,.36,1),
+  transform 0.7s cubic-bezier(.22,1,.36,1);
+}
+.reveal {
+  transform: translateY(40px);
+  &.revealed { opacity: 1; transform: translateY(0); }
+}
+.reveal-left {
+  transform: translateX(-50px);
+  &.revealed { opacity: 1; transform: translateX(0); }
+}
+.reveal-right {
+  transform: translateX(50px);
+  &.revealed { opacity: 1; transform: translateX(0); }
+}
+.reveal-scale {
+  transform: scale(0.92) translateY(30px);
+  &.revealed { opacity: 1; transform: scale(1) translateY(0); }
 }
