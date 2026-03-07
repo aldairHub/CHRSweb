@@ -169,26 +169,26 @@ public class AdminPrepostulacionController {
 
             // 4. Respuesta
             Map<String, Object> solicitudMap = new HashMap<>();
-            solicitudMap.put("idSolicitud",               solicitud.getIdSolicitud());
-            solicitudMap.put("nivelAcademico",            solicitud.getNivelAcademico());
-            solicitudMap.put("experienciaDocenteMin",     solicitud.getExperienciaDocenteMin());
+            solicitudMap.put("idSolicitud", solicitud.getIdSolicitud());
+            solicitudMap.put("nivelAcademico", solicitud.getNivelAcademico());
+            solicitudMap.put("experienciaDocenteMin", solicitud.getExperienciaDocenteMin());
             solicitudMap.put("experienciaProfesionalMin", solicitud.getExperienciaProfesionalMin());
-            solicitudMap.put("cantidadDocentes",          solicitud.getCantidadDocentes());
-            solicitudMap.put("justificacion",             solicitud.getJustificacion() != null ? solicitud.getJustificacion() : "");
-            solicitudMap.put("estadoSolicitud",           solicitud.getEstadoSolicitud());
-            solicitudMap.put("fechaSolicitud",            solicitud.getFechaSolicitud() != null ? solicitud.getFechaSolicitud().toString() : "");
+            solicitudMap.put("cantidadDocentes", solicitud.getCantidadDocentes());
+            solicitudMap.put("justificacion", solicitud.getJustificacion() != null ? solicitud.getJustificacion() : "");
+            solicitudMap.put("estadoSolicitud", solicitud.getEstadoSolicitud());
+            solicitudMap.put("fechaSolicitud", solicitud.getFechaSolicitud() != null ? solicitud.getFechaSolicitud().toString() : "");
 
             Map<String, Object> convocatoriaMap = new HashMap<>();
-            convocatoriaMap.put("idConvocatoria",     convocatoria.getIdConvocatoria());
-            convocatoriaMap.put("titulo",             convocatoria.getTitulo());
-            convocatoriaMap.put("descripcion",        convocatoria.getDescripcion() != null ? convocatoria.getDescripcion() : "");
+            convocatoriaMap.put("idConvocatoria", convocatoria.getIdConvocatoria());
+            convocatoriaMap.put("titulo", convocatoria.getTitulo());
+            convocatoriaMap.put("descripcion", convocatoria.getDescripcion() != null ? convocatoria.getDescripcion() : "");
             convocatoriaMap.put("estadoConvocatoria", convocatoria.getEstadoConvocatoria());
-            convocatoriaMap.put("fechaInicio",        convocatoria.getFechaInicio()     != null ? convocatoria.getFechaInicio().toString()     : "");
-            convocatoriaMap.put("fechaFin",           convocatoria.getFechaFin()        != null ? convocatoria.getFechaFin().toString()        : "");
-            convocatoriaMap.put("fechaPublicacion",   convocatoria.getFechaPublicacion() != null ? convocatoria.getFechaPublicacion().toString() : "");
+            convocatoriaMap.put("fechaInicio", convocatoria.getFechaInicio()     != null ? convocatoria.getFechaInicio().toString()     : "");
+            convocatoriaMap.put("fechaFin", convocatoria.getFechaFin()        != null ? convocatoria.getFechaFin().toString()        : "");
+            convocatoriaMap.put("fechaPublicacion", convocatoria.getFechaPublicacion() != null ? convocatoria.getFechaPublicacion().toString() : "");
 
             return ResponseEntity.ok(Map.of(
-                    "solicitud",    solicitudMap,
+                    "solicitud", solicitudMap,
                     "convocatoria", convocatoriaMap
             ));
 
