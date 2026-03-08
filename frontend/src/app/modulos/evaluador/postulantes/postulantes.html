@@ -8,9 +8,6 @@
         <h2 class="page-header__title">Gestión de Postulantes</h2>
         <p class="page-header__description">Revise y administre la información de los candidatos registrados.</p>
       </div>
-      <button class="btn btn--outline-back" (click)="volver()">
-        <i class="pi pi-arrow-left"></i> Volver
-      </button>
     </header>
 
     <div class="form-card mb-4">
@@ -44,62 +41,68 @@
       <div class="table-container">
         <table class="custom-table">
           <thead>
-          <tr>
-            <th>Identificación</th>
-            <th>Apellidos y Nombres</th>
-            <th>Correo</th>
-            <th>Teléfono</th>
-            <th>Estado</th>
-            <th class="text-center">Acciones</th>
-          </tr>
+            <tr>
+              <th>Identificación</th>
+              <th>Apellidos y Nombres</th>
+              <th>Correo</th>
+              <th>Materia</th>
+              <th>Estado</th>
+              <th class="text-center">Acciones</th>
+            </tr>
           </thead>
           <tbody>
-        <!-- SKELETON LOADER -->
-        <ng-container *ngIf="cargando">
-          <tr class="skeleton-row-tr" *ngFor="let s of [1,2,3,4,5]">
-            <td><div class="skeleton-cell skeleton-cell--avatar"></div></td>
-            <td><div class="skeleton-cell skeleton-cell--lg"></div></td>
-            <td><div class="skeleton-cell skeleton-cell--md"></div></td>
-            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
-            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
-            <td><div class="skeleton-cell skeleton-cell--md"></div></td>
-          </tr>
-        </ng-container>
-          <ng-container *ngIf="!cargando">
-          <tr *ngFor="let p of postulantes">
-            <td><span class="badge-id">{{ p.identificacion }}</span></td>
-            <td>
-              <div class="user-info">
-                <span class="user-name">{{ p.apellidos_postulante }} {{ p.nombres_postulante }}</span>
-              </div>
-            </td>
-            <td>{{ p.correo_postulante }}</td>
-            <td>{{ p.telefono_postulante }}</td>
-            <td>
-                <span class="status-badge"
-                      [ngClass]="{
-                        'status-pendiente': p.estado === 'pendiente',
-                        'status-aprobado': p.estado === 'aprobado'
-                      }">
-                  {{ p.estado | titlecase }}
-                </span>
-            </td>
-            <td class="text-center">
-              <button class="btn-icon" title="Ver Perfil" (click)="verPerfil(p)">
-                <i class="pi pi-eye"></i>
-              </button>
-              <button class="btn-icon btn-icon--edit" title="Enviar Notificación" (click)="abrirModalExito()">
-                <i class="pi pi-envelope"></i>
-              </button>
-            </td>
-          </tr>
-          </ng-container>
-          <tr *ngIf="postulantes.length === 0 && !cargando">
-            <td colspan="6" class="empty-state">
-              <i class="pi pi-inbox"></i>
-              <p>No se encontraron postulantes con esos criterios.</p>
-            </td>
-          </tr>
+
+            <!-- SKELETON -->
+            <ng-container *ngIf="cargando">
+              <tr class="skeleton-row-tr" *ngFor="let s of [1,2,3,4,5]">
+                <td><div class="skeleton-cell skeleton-cell--avatar"></div></td>
+                <td><div class="skeleton-cell skeleton-cell--lg"></div></td>
+                <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+                <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+                <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
+                <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+              </tr>
+            </ng-container>
+
+            <!-- DATOS -->
+            <ng-container *ngIf="!cargando">
+              <tr *ngFor="let p of postulantes">
+                <td><span class="badge-id">{{ p.identificacion }}</span></td>
+                <td>
+                  <div class="user-info">
+                    <span class="user-name">{{ p.apellidosPostulante }} {{ p.nombresPostulante }}</span>
+                  </div>
+                </td>
+                <td>{{ p.correoPostulante }}</td>
+                <td>{{ p.nombreMateria }}</td>
+                <td>
+                  <span class="status-badge" [ngClass]="estadoClass(p.estadoPostulacion)">
+                    {{ p.estadoPostulacion | titlecase }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <button class="btn-icon" title="Ver Documentos" (click)="verDocumentos(p)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 12.5z"/>
+                    </svg>
+                  </button>
+                  <button class="btn-icon btn-icon--edit" title="Enviar Notificación" (click)="abrirModalExito(p.correoPostulante)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            </ng-container>
+
+            <!-- VACÍO -->
+            <tr *ngIf="!cargando && postulantes.length === 0">
+              <td colspan="6" class="empty-state">
+                <i class="pi pi-inbox"></i>
+                <p>No se encontraron postulantes con esos criterios.</p>
+              </td>
+            </tr>
+
           </tbody>
         </table>
       </div>
@@ -108,17 +111,15 @@
   </div>
 </div>
 
+<!-- Modal notificación -->
 <div class="modal-overlay" *ngIf="mostrarModal">
   <div class="modal-card">
-
     <div class="modal-header-icon">
       <div class="check-circle">
         <i class="pi pi-check"></i>
       </div>
     </div>
-
     <h2 class="modal-title">¡Notificación Enviada!</h2>
-
     <div class="modal-steps">
       <div class="step-item">
         <div class="step-icon"><i class="pi pi-file"></i></div>
@@ -127,7 +128,6 @@
           <span>Se ha notificado al postulante sobre la revisión.</span>
         </div>
       </div>
-
       <div class="step-item">
         <div class="step-icon"><i class="pi pi-envelope"></i></div>
         <div class="step-text">
@@ -136,11 +136,9 @@
         </div>
       </div>
     </div>
-
     <div class="modal-info-box">
       Gracias por gestionar este proceso. El estado del postulante se actualizará automáticamente.
     </div>
-
     <button class="btn btn--primary btn--block" (click)="cerrarModal()">
       ENTENDIDO
     </button>

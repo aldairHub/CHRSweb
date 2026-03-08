@@ -27,6 +27,7 @@ export interface DocumentoRevision {
   observacionEval: string;
   guardando:       boolean;
   guardado:        boolean;
+  bloqueado:       boolean; // true cuando ya está validado — no se puede cambiar
 }
 
 @Component({
@@ -39,9 +40,7 @@ export interface DocumentoRevision {
 export class DocumentosComponent implements OnInit {
 
   idPostulacion!: number;
-
   postulante = { nombres: '', apellidos: '', cedula: '', estado: '' };
-
   documentos:    DocumentoRevision[] = [];
   cargando       = true;
   guardandoTodo  = false;
@@ -56,7 +55,12 @@ export class DocumentosComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
-      this.idPostulacion = +params['id'];
+      const id = Number(params['id']);
+      if (!id || isNaN(id)) {
+        this.router.navigate(['/evaluador/postulantes']);
+        return;
+      }
+      this.idPostulacion = id;
       this.cargarTodo();
     });
   }
@@ -67,9 +71,9 @@ export class DocumentosComponent implements OnInit {
 
     this.documentoSvc.obtenerInfoPorPostulacion(this.idPostulacion).subscribe({
       next: (info: any) => {
-        this.postulante.nombres   = info['nombres']         ?? '';
-        this.postulante.apellidos = info['apellidos']       ?? '';
-        this.postulante.cedula    = info['identificacion']  ?? '';
+        this.postulante.nombres   = info['nombres']            ?? '';
+        this.postulante.apellidos = info['apellidos']          ?? '';
+        this.postulante.cedula    = info['identificacion']     ?? '';
         this.postulante.estado    = info['estado_postulacion'] ?? '';
       },
       error: () => {}
@@ -83,7 +87,7 @@ export class DocumentosComponent implements OnInit {
         this.cargando = false;
       },
       error: () => {
-        this.error    = 'No se pudo cargar la información de documentos.';
+        this.error    = 'No se pudo cargar la informacion de documentos.';
         this.cargando = false;
       }
     });
@@ -104,6 +108,11 @@ export class DocumentosComponent implements OnInit {
       ? d.rutaArchivo.replace(/\\/g, '/').split('/').pop() ?? 'documento.pdf'
       : '';
 
+    // Ya guardado si tiene estado definitivo
+    const guardado = estado === 'validado' || estado === 'rechazado';
+    // Bloqueado si ya fue VALIDADO — no se puede cambiar a rechazado
+    const bloqueado = estado === 'validado';
+
     return {
       idDocumento:     d.idDocumento!,
       idTipoDocumento: d.idTipoDocumento,
@@ -116,14 +125,16 @@ export class DocumentosComponent implements OnInit {
       observacionIa:   d.observacionesIa ?? '',
       estado,
       estadoEval,
-      observacionEval: d.observacionesIa ?? '',
+      // ← CLAVE: observacionEval empieza vacía, NO con la observación de la IA
+      observacionEval: '',
       guardando:       false,
-      guardado:        estado === 'validado' || estado === 'rechazado'
+      guardado,
+      bloqueado
     };
   }
 
   get nombreCompleto(): string {
-    return `${this.postulante.nombres} ${this.postulante.apellidos}`.trim();
+    return (this.postulante.nombres + ' ' + this.postulante.apellidos).trim();
   }
 
   get totalRevisados(): number {
@@ -148,13 +159,24 @@ export class DocumentosComponent implements OnInit {
     window.open(url, '_blank');
   }
 
+  seleccionarEstado(doc: DocumentoRevision, nuevoEstado: 'validado' | 'rechazado'): void {
+    // Si ya está validado y guardado → no permitir cambio
+    if (doc.bloqueado) {
+      this.toast.error('No permitido', 'Este documento ya fue validado y no puede rechazarse.');
+      return;
+    }
+    doc.estadoEval = nuevoEstado;
+    doc.guardado   = false;
+  }
+
   guardarDoc(doc: DocumentoRevision): void {
+    if (doc.bloqueado) return;
     if (doc.estadoEval === 'sin_revisar') {
-      this.toast.error('Sin decisión', 'Selecciona Válido o Rechazado primero.');
+      this.toast.error('Sin decision', 'Selecciona Valido o Rechazado primero.');
       return;
     }
     if (doc.estadoEval === 'rechazado' && !doc.observacionEval.trim()) {
-      this.toast.error('Observación requerida', 'Agrega una observación al rechazar.');
+      this.toast.error('Observacion requerida', 'Agrega una observacion al rechazar.');
       return;
     }
     doc.guardando = true;
@@ -167,7 +189,9 @@ export class DocumentosComponent implements OnInit {
         doc.estado    = doc.estadoEval as 'validado' | 'rechazado';
         doc.guardado  = true;
         doc.guardando = false;
-        this.toast.success('Guardado', `"${doc.nombre}" marcado como ${doc.estadoEval}.`);
+        // Si se validó → bloquear para no poder rechazar después
+        if (doc.estadoEval === 'validado') doc.bloqueado = true;
+        this.toast.success('Guardado', doc.nombre + ' marcado como ' + doc.estadoEval + '.');
       },
       error: () => {
         doc.guardando = false;
@@ -179,19 +203,19 @@ export class DocumentosComponent implements OnInit {
   guardarTodos(): void {
     const sinRevisar = this.documentos.filter(d => d.estadoEval === 'sin_revisar');
     if (sinRevisar.length) {
-      this.toast.error('Incompleto', `Quedan ${sinRevisar.length} documentos sin revisar.`);
+      this.toast.error('Incompleto', 'Quedan ' + sinRevisar.length + ' documentos sin revisar.');
       return;
     }
     const sinObs = this.documentos.filter(
       d => d.estadoEval === 'rechazado' && !d.observacionEval.trim()
     );
     if (sinObs.length) {
-      this.toast.error('Observación requerida', 'Agrega observación a los documentos rechazados.');
+      this.toast.error('Observacion requerida', 'Agrega observacion a los documentos rechazados.');
       return;
     }
 
     this.guardandoTodo = true;
-    const pendientes   = this.documentos.filter(d => !d.guardado);
+    const pendientes   = this.documentos.filter(d => !d.guardado && !d.bloqueado);
 
     if (!pendientes.length) {
       this.guardandoTodo = false;
@@ -209,16 +233,17 @@ export class DocumentosComponent implements OnInit {
         next: () => {
           doc.estado   = doc.estadoEval as 'validado' | 'rechazado';
           doc.guardado = true;
+          if (doc.estadoEval === 'validado') doc.bloqueado = true;
           completados++;
           if (completados === pendientes.length) {
             this.guardandoTodo = false;
-            this.toast.success('¡Revisión completada!', 'Todos los documentos fueron guardados.');
+            this.toast.success('Revision completada', 'Todos los documentos fueron guardados.');
           }
         },
         error: () => {
           completados++;
           if (completados === pendientes.length) this.guardandoTodo = false;
-          this.toast.error('Error parcial', `No se pudo guardar "${doc.nombre}".`);
+          this.toast.error('Error parcial', 'No se pudo guardar ' + doc.nombre + '.');
         }
       });
     });

@@ -6,47 +6,43 @@ export const AuthGuard: CanActivateFn = (route, state) => {
   const router    = inject(Router);
   const authState = inject(AuthStateService);
 
-  // Rutas públicas — siempre permitir sin importar el estado
   const RUTAS_TRANSVERSALES = [
     '/login', '/registro', '/recuperar-clave', '/sin-acceso',
     '/cambiar-clave-obligatorio', '/cambio-clave-obligatorio',
-    '/perfil',         // transversal para todos los roles
-    '/notificaciones', // historial de notificaciones — todos los roles
+    '/perfil', '/notificaciones',
   ];
 
-
   if (RUTAS_TRANSVERSALES.some(r => state.url.startsWith(r))) return true;
-  // Sin autenticación → login
+
   if (!authState.isAutenticado()) {
     router.navigate(['/login']);
     return false;
   }
 
-  // Rutas marcadas como "home" del módulo no requieren validar opciones
-  // (el módulo /admin, /evaluador, /postulante, etc.)
   const esHome = route.data?.['isHome'] === true;
   if (esHome) return true;
 
-  // Para rutas sin opciones configuradas (usuario sin menú asignado), permitir igual
-  // La seguridad real es el backend — el guard solo mejora la UX
+  // Permitir raiz del modulo Y TODAS sus sub-rutas
+  const moduloRuta = authState.getEstado().moduloRuta;
+  if (moduloRuta) {
+    const raizModulo   = '/' + moduloRuta.replace(/^\//, '');
+    const urlSinParams = state.url.split('?')[0];
+    if (urlSinParams === raizModulo ||
+        urlSinParams === raizModulo + '/' ||
+        urlSinParams.startsWith(raizModulo + '/')) {
+      return true;
+    }
+  }
+
+  // Sin opciones configuradas -> permitir
   const opciones = authState.getEstado().opciones;
   if (!opciones || opciones.length === 0) return true;
 
-  // Si la URL coincide exactamente con la raíz del módulo del usuario, permitir
-  // Ej: usuario con moduloRuta="evaluador" accediendo a /evaluador
-  const moduloRuta = authState.getEstado().moduloRuta;
-  if (moduloRuta) {
-    const raizModulo = '/' + moduloRuta.replace(/^\//, '');
-    const urlSinParams = state.url.split('?')[0];
-    if (urlSinParams === raizModulo || urlSinParams === raizModulo + '/') return true;
-  }
-
-  // Verificar si la ruta está en las opciones permitidas del usuario
   const rutaSinParams = state.url.split('?')[0];
   if (!authState.rutaPermitida(rutaSinParams)) {
     router.navigate(['/sin-acceso']);
     return false;
   }
-  // cambio minimo
+
   return true;
 };

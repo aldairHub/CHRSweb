@@ -110,7 +110,7 @@
               <!-- Observación IA (solo lectura) -->
               <div class="obs-ia" *ngIf="doc.observacionIa">
                 <i class="pi pi-robot"></i>
-                <span>IA: {{ doc.observacionIa }}</span>
+                <span><strong>Revisión IA:</strong> {{ doc.observacionIa }}</span>
               </div>
 
               <!-- Selector de decisión -->
@@ -118,19 +118,25 @@
                 <button
                   class="btn-decision btn-validar"
                   [class.active]="doc.estadoEval === 'validado'"
-                  (click)="doc.estadoEval = 'validado'; doc.guardado = false"
-                  [disabled]="doc.guardando"
+                  (click)="seleccionarEstado(doc, 'validado')"
+                  [disabled]="doc.guardando || doc.bloqueado"
+                  title="{{ doc.bloqueado ? 'Ya validado' : 'Marcar como válido' }}"
                 >
                   <i class="pi pi-check"></i> Válido
                 </button>
                 <button
                   class="btn-decision btn-rechazar"
                   [class.active]="doc.estadoEval === 'rechazado'"
-                  (click)="doc.estadoEval = 'rechazado'; doc.guardado = false"
-                  [disabled]="doc.guardando"
+                  (click)="seleccionarEstado(doc, 'rechazado')"
+                  [disabled]="doc.guardando || doc.bloqueado"
+                  title="{{ doc.bloqueado ? 'No se puede rechazar un doc ya validado' : 'Marcar como rechazado' }}"
                 >
                   <i class="pi pi-times"></i> Rechazado
                 </button>
+              </div>
+              <!-- Aviso de bloqueo -->
+              <div class="obs-bloqueado" *ngIf="doc.bloqueado">
+                <i class="pi pi-lock"></i> Documento validado — no se puede modificar
               </div>
 
               <!-- Observación del evaluador (requerida si rechaza) -->

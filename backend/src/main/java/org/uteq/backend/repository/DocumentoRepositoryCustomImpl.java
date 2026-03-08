@@ -198,11 +198,11 @@ public class DocumentoRepositoryCustomImpl {
     // ----------------------------------------------------------
     public Map<String, Object> obtenerInfoPorPostulacion(Long idPostulacion) {
         String sql =
-            "SELECT p.nombres, p.apellidos, p.identificacion, " +
-            "       post.estado_postulacion " +
-            "FROM postulacion post " +
-            "JOIN postulante p ON post.id_postulante = p.id_postulante " +
-            "WHERE post.id_postulacion = ?";
+                "SELECT p.nombres_postulante AS nombres, p.apellidos_postulante AS apellidos, p.identificacion, " +
+                        "       post.estado_postulacion " +
+                        "FROM postulacion post " +
+                        "JOIN postulante p ON post.id_postulante = p.id_postulante " +
+                        "WHERE post.id_postulacion = ?";
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, idPostulacion);
         return rows.isEmpty() ? Map.of() : rows.get(0);
     }

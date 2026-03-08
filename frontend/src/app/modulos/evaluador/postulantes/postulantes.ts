@@ -1,91 +1,116 @@
-import { Component } from '@angular/core';
+import { Component, OnInit,ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-
-// AJUSTA ESTAS RUTAS SI TUS ARCHIVOS TIENEN OTROS NOMBRES
-// Normalmente es: ../../../component/navbar/navbar.component
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { NavbarComponent } from '../../../component/navbar';
 import { FooterComponent } from '../../../component/footer';
 
-// Interfaz basada en tu BD 'public.postulante'
-export interface Postulante {
-  id_postulante: number;
-  identificacion: string;
-  nombres_postulante: string;
-  apellidos_postulante: string;
-  correo_postulante: string;
-  telefono_postulante: string;
-  estado: 'pendiente' | 'aprobado' | 'rechazado';
+export interface PostulanteLista {
+  idPostulacion:       number;
+  idPostulante:        number;
+  identificacion:      string;
+  nombresPostulante:   string;
+  apellidosPostulante: string;
+  correoPostulante:    string;
+  estadoPostulacion:   string;
+  nombreMateria:       string;
 }
 
 @Component({
   selector: 'app-postulantes',
   standalone: true,
   imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
-  templateUrl: './postulantes.html', // Asegúrate que tu HTML se llame así
-  styleUrls: ['./postulantes.scss']  // Asegúrate que tu SCSS se llame así
+  templateUrl: './postulantes.html',
+  styleUrls: ['./postulantes.scss']
 })
-export class PostulantesComponent {
-  cargando = false;
+export class PostulantesComponent implements OnInit {
 
-  // Filtros
-  filtro = {
-    cedula: '',
-    apellido: ''
-  };
-
-  // Variables para controlar el Modal y UI
-  mostrarModal = false;
+  cargando = true;
+  filtro = { cedula: '', apellido: '' };
+  mostrarModal       = false;
   correoSeleccionado = '';
 
-  // Datos simulados (Aquí luego conectarás con tu Backend Service)
-  postulantes: Postulante[] = [
-    {
-      id_postulante: 1,
-      identificacion: '1205489632',
-      nombres_postulante: 'Juan Carlos',
-      apellidos_postulante: 'Pérez Loor',
-      correo_postulante: 'jperez@uteq.edu.ec',
-      telefono_postulante: '0998541236',
-      estado: 'pendiente'
-    },
-    {
-      id_postulante: 2,
-      identificacion: '1302569874',
-      nombres_postulante: 'Maria Elena',
-      apellidos_postulante: 'Gómez Sanchez',
-      correo_postulante: 'mgomez@gmail.com',
-      telefono_postulante: '0987456321',
-      estado: 'aprobado'
-    }
-  ];
+  postulantes:      PostulanteLista[] = [];
+  postulantesTotal: PostulanteLista[] = [];
+  errorCarga: string | null = null;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router,private cdr: ChangeDetectorRef, private http: HttpClient) {}
 
-  // Navegación
-  volver() {
+  ngOnInit(): void {
+    this.cargarPostulantes();
+  }
+
+  cargarPostulantes(): void {
+    this.cargando   = true;
+    this.errorCarga = null;
+    const token   = localStorage.getItem('token');
+    this.cdr.detectChanges();
+    const headers = new HttpHeaders({ Authorization: 'Bearer ' + token });
+    this.cdr.detectChanges();
+
+    this.http.get<PostulanteLista[]>('/api/postulaciones/evaluador/lista', { headers })
+      .subscribe({
+        next: (data) => {
+          this.postulantesTotal = data;
+          this.postulantes      = data;
+          this.cargando         = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.errorCarga = 'No se pudo cargar la lista de postulantes.';
+          this.cargando   = false;
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  buscar(): void {
+    const cedula   = this.filtro.cedula.toLowerCase().trim();
+    const apellido = this.filtro.apellido.toLowerCase().trim();
+    this.cdr.detectChanges();
+    this.postulantes = this.postulantesTotal.filter(p => {
+      this.cdr.detectChanges();
+      const matchCedula   = !cedula   || p.identificacion.toLowerCase().includes(cedula);
+      const matchApellido = !apellido || p.apellidosPostulante.toLowerCase().includes(apellido);
+      return matchCedula && matchApellido;
+      this.cdr.detectChanges();
+    });
+  }
+
+  limpiarFiltros(): void {
+    this.filtro = { cedula: '', apellido: '' };
+    this.postulantes = this.postulantesTotal;
+  }
+
+  verDocumentos(p: PostulanteLista): void {
+    this.router.navigate(['/evaluador/documentos/' + p.idPostulacion]);
+    this.cdr.detectChanges();
+  }
+
+  volver(): void {
     this.router.navigate(['/evaluador']);
+    this.cdr.detectChanges();
   }
 
-  // Lógica de Filtros
-  buscar() {
-    // Lógica futura: this.postulanteService.filtrar(this.filtro)...
-  }
-
-  // Ver detalles
-  verPerfil(postulante: Postulante) {
-    // this.router.navigate(['/evaluador/detalle-postulante', postulante.id_postulante]);
-  }
-
-  // === Lógica del Modal (Pop-up) ===
-  abrirModalExito() {
-    // Aquí podrías tomar el correo real del postulante seleccionado
-    this.correoSeleccionado = 'ejemplo@correo.com';
+  abrirModalExito(correo: string = ''): void {
+    this.correoSeleccionado = correo;
     this.mostrarModal = true;
+    this.cdr.detectChanges();
   }
 
-  cerrarModal() {
+  cerrarModal(): void {
     this.mostrarModal = false;
+    this.cdr.detectChanges();
+  }
+
+  estadoClass(estado: string): string {
+    switch ((estado || '').toLowerCase()) {
+      case 'pendiente':    return 'status-pendiente';
+      case 'en_revision':  return 'status-revision';
+      case 'aprobada':     return 'status-aprobado';
+      case 'rechazada':    return 'status-rechazado';
+      default:             return 'status-pendiente';
+    }
   }
 }

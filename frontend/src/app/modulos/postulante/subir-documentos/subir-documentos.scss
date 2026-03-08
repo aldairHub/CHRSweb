@@ -692,3 +692,19 @@ $blue:        #2563eb;
   // Título sección
   .seccion-titulo { color: #e5e5e5 !important; }
 }
+
+// ── Notificación enviada ────────────────────────────────────
+.notif-enviado {
+  display: flex; align-items: center; gap: 10px;
+  background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;
+  padding: 12px 16px; color: #15803d; font-weight: 600;
+  i { font-size: 1.2rem; }
+}
+
+:host-context(html.dark) {
+  .notif-enviado {
+    background: rgba(0,166,62,0.1) !important;
+    border-color: rgba(0,166,62,0.25) !important;
+    color: #4ade80 !important;
+  }
+}

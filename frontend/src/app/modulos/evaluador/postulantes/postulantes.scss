@@ -94,8 +94,11 @@ $bg-color: #f3f4f6;
   padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
   &.status-pendiente { background: #fef3c7; color: #d97706; }
   &.status-aprobado { background: $uteq-green-light; color: $uteq-green-dark; }
+  &.status-revision { background: #dbeafe; color: #1d4ed8; }
+  &.status-rechazado { background: #fee2e2; color: #dc2626; }
 }
 .btn-icon {
+  display: flex; align-items: center; justify-content: center;
   width: 32px; height: 32px; border-radius: 6px; border: none; background: transparent;
   color: $text-gray; cursor: pointer; transition: all 0.2s;
   &:hover { background: $uteq-green-light; color: $uteq-green; }
@@ -163,9 +166,9 @@ $bg-color: #f3f4f6;
   // Fondos generales
   .page-container, .main-container, .content-wrapper,
   .form-container, .card-container, .section-container,
-  .table-container, .panel, .box, .wrapper { 
-    background: #000 !important; 
-    color: #e5e5e5 !important; 
+  .table-container, .panel, .box, .wrapper {
+    background: #000 !important;
+    color: #e5e5e5 !important;
   }
 
   // Cards / items
@@ -257,10 +260,11 @@ $bg-color: #f3f4f6;
 
   // Botones de acción (icono / pequeños)
   .btn-action, .btn-icon, .btn-edit, .btn-delete, .btn-view {
-    background: rgba(255,255,255,0.04) !important;
-    border-color: rgba(255,255,255,0.08) !important;
-    color: #9ca3af !important;
-    &:hover { background: rgba(255,255,255,0.08) !important; }
+    background: rgba(255,255,255,0.06) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    color: #d1d5db !important;
+    i { color: #d1d5db !important; font-size: 1rem !important; }
+    &:hover { background: rgba(0,166,62,0.15) !important; color: #4ade80 !important; i { color: #4ade80 !important; } }
   }
 
   // Archivo cargado (input-like)
@@ -319,10 +323,10 @@ $bg-color: #f3f4f6;
     background: rgba(255,255,255,0.07) !important;
     color: #9ca3af !important;
     border-color: rgba(255,255,255,0.1) !important;
-    &.selected, &.active { 
-      background: rgba(0,166,62,0.2) !important; 
-      color: #4ade80 !important; 
-      border-color: rgba(0,166,62,0.4) !important; 
+    &.selected, &.active {
+      background: rgba(0,166,62,0.2) !important;
+      color: #4ade80 !important;
+      border-color: rgba(0,166,62,0.4) !important;
     }
   }
 
@@ -337,14 +341,29 @@ $bg-color: #f3f4f6;
   .doc-descripcion, .descripcion-campo { color: #4b5563 !important; }
 
   // Títulos de sección con color verde
+  // Títulos de sección con color verde
   .seccion-titulo, .section-title, .page-title {
     color: #4ade80 !important;
   }
 
+  .form-section__icon {
+    background: rgba(0,166,62,0.15) !important;
+    border-color: rgba(0,166,62,0.25) !important;
+    color: #4ade80 !important;
+  }
+
+  .btn-action, .btn-icon, .btn-edit, .btn-delete, .btn-view {
+    background: rgba(255,255,255,0.06) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    color: #d1d5db !important;
+    i { color: #d1d5db !important; font-size: 1rem !important; }
+    &:hover { background: rgba(0,166,62,0.15) !important; color: #4ade80 !important; i { color: #4ade80 !important; } }
+  }
+
   // Prepostulación específica
-  .doc-prepost { 
-    background: rgba(79,70,229,0.05) !important; 
-    border-color: rgba(79,70,229,0.2) !important; 
+  .doc-prepost {
+    background: rgba(79,70,229,0.05) !important;
+    border-color: rgba(79,70,229,0.2) !important;
   }
   .estado-badge.estado-subido   { background: rgba(29,78,216,0.25) !important; color: #93c5fd !important; }
   .estado-badge.estado-validado { background: rgba(22,101,52,0.25) !important; color: #86efac !important; }

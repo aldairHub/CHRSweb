@@ -146,6 +146,10 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
       .every(d => d.estado === 'subido' || d.estado === 'validado');
   }
 
+  get tieneDocRechazado(): boolean {
+    return this.documentos.some(d => d.estado === 'rechazado');
+  }
+
   get porcentajeCompletado(): number {
     if (!this.documentos.length) return 0;
     return Math.round((this.totalSubidos / this.documentos.length) * 100);
@@ -288,6 +292,10 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
     this.documentoSvc.finalizarCarga(this.idPostulacion).subscribe({
       next: res => {
         if (res.exitoso) {
+          // Actualizar estado local para ocultar el botón
+          if (this.postulante) {
+            this.postulante = { ...this.postulante, estadoPostulacion: 'en_revision' };
+          }
           this.mostrarModalExito = true;
           this.cdr.detectChanges();
         } else {

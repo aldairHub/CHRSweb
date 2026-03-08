@@ -148,7 +148,32 @@ public class DocumentoService {
     }
 
     public Map<String, Object> validarDocumento(Long idDocumento, String estado, String observacion) {
-        return documentoRepo.validarDocumento(idDocumento, estado, observacion);
+        Map<String, Object> result = documentoRepo.validarDocumento(idDocumento, estado, observacion);
+
+        // Notificar al postulante cuando su documento es rechazado
+        if ("rechazado".equalsIgnoreCase(estado)) {
+            try {
+                Map<String, Object> docInfo = jdbc.queryForMap(
+                        "SELECT d.id_postulacion, p.id_usuario, td.nombre AS tipo_doc " +
+                                "FROM documento d " +
+                                "JOIN postulacion pc ON pc.id_postulacion = d.id_postulacion " +
+                                "JOIN postulante p ON p.id_postulante = pc.id_postulante " +
+                                "JOIN tipo_documento td ON td.id_tipo_documento = d.id_tipo_documento " +
+                                "WHERE d.id_documento = ?", idDocumento
+                );
+                Long idUsuario = ((Number) docInfo.get("id_usuario")).longValue();
+                String tipoDoc = (String) docInfo.getOrDefault("tipo_doc", "documento");
+                String obs = (observacion != null && !observacion.isBlank()) ? observacion : "Sin observación";
+                notificacionService.notificarUsuario(
+                        idUsuario, "warning",
+                        "Documento rechazado",
+                        "Tu documento '" + tipoDoc + "' fue rechazado. Motivo: " + obs + ". Por favor, subelo nuevamente.",
+                        "POSTULACION", null
+                );
+            } catch (Exception ignored) {}
+        }
+
+        return result;
     }
 
     public Map<String, Object> obtenerInfoPorPostulacion(Long idPostulacion) {

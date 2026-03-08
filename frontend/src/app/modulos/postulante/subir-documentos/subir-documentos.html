@@ -173,6 +173,26 @@
           Debe completar todos los documentos obligatorios (*) para finalizar.
         </p>
 
+        <!-- Botón notificar: visible cuando hay docs completos y NO está ya en revisión -->
+        <ng-container *ngIf="obligatoriosCompletos">
+
+          <!-- Ya enviado y sin rechazados -->
+          <div class="notif-enviado" *ngIf="postulante?.estadoPostulacion === 'en_revision' && !tieneDocRechazado">
+            <i class="pi pi-check-circle"></i>
+            <span>Documentos enviados al evaluador. En revisión.</span>
+          </div>
+
+          <!-- Pendiente de envío O tiene rechazados (volver a notificar) -->
+          <button
+            class="btn btn--primary"
+            *ngIf="postulante?.estadoPostulacion !== 'en_revision' || tieneDocRechazado"
+            (click)="guardarYFinalizar()"
+          >
+            <i class="pi pi-send"></i>
+            {{ tieneDocRechazado ? 'Reenviar documentos al evaluador' : 'Notificar al evaluador' }}
+          </button>
+
+        </ng-container>
       </div>
 
     </ng-container>

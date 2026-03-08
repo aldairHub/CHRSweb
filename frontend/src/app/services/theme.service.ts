@@ -7,14 +7,9 @@ export class ThemeService {
   isDark = signal<boolean>(false);
 
   constructor() {
-    // Leer preferencia guardada (o del sistema si no hay)
     const saved = localStorage.getItem(this.STORAGE_KEY);
-    if (saved !== null) {
-      this.isDark.set(saved === 'dark');
-    } else {
-      // Usar preferencia del sistema operativo por defecto
-      this.isDark.set(window.matchMedia('(prefers-color-scheme: dark)').matches);
-    }
+    // Si no hay preferencia guardada → blanco por defecto (NO del sistema)
+    this.isDark.set(saved === 'dark');
     this.applyTheme();
   }
 
