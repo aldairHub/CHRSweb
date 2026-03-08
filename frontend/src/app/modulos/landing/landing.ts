@@ -63,11 +63,16 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   currentIndex = 0;
   canScrollLeft = false;
   canScrollRight = true;
+  headerScrolled = false;
 
   // Lerp scroll state para animación suave del hero
   private lerpScrollY = 0;
   private targetScrollY = 0;
   private animFrameId: number | null = null;
+  private headerScrollHandler = () => {
+    this.headerScrolled = window.scrollY > 60;
+    this.cdr.detectChanges();
+  };
 
   constructor(
     private router: Router,
@@ -81,11 +86,13 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.animFrameId) {
       cancelAnimationFrame(this.animFrameId);
     }
+    window.removeEventListener('scroll', this.headerScrollHandler);
   }
 
   ngOnInit(): void {
     this.cargarInstitucion();
     this.cargarConvocatorias();
+    window.addEventListener('scroll', this.headerScrollHandler, { passive: true });
     this.cdr.detectChanges();
   }
 
