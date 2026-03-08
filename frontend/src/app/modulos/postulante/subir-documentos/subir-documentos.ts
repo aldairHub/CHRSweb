@@ -292,6 +292,12 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
     this.documentoSvc.finalizarCarga(this.idPostulacion).subscribe({
       next: res => {
         if (res.exitoso) {
+          // Notificar a los evaluadores
+          this.documentoSvc.notificarRevision(this.idPostulacion!).subscribe({
+            next: () => {},
+            error: () => {} // no crítico, el estado ya cambió correctamente
+          });
+
           // Actualizar estado local para ocultar el botón
           if (this.postulante) {
             this.postulante = { ...this.postulante, estadoPostulacion: 'en_revision' };

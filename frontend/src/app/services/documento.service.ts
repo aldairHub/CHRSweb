@@ -109,6 +109,10 @@ export class DocumentoService {
     return this.http.post<OperacionResponse>(`${this.API}/finalizar/${idPostulacion}`, {});
   }
 
+  notificarRevision(idPostulacion: number): Observable<OperacionResponse> {
+    return this.http.post<OperacionResponse>(`${this.API}/notificar-revision/${idPostulacion}`, {});
+  }
+
   obtenerDocumentosConvocatoria(idPostulacion: number): Observable<DocumentoBackend[]> {
     return this.http.get<DocumentoBackend[]>(
       `${this.API}/convocatoria/${idPostulacion}`
@@ -133,4 +137,3 @@ export interface DocPrepostulacion {
   urlDocumento: string;
   fechaSubida:  string;
 }
-

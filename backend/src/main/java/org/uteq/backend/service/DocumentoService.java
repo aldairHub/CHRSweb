@@ -191,21 +191,14 @@ public class DocumentoService {
 
     public Map<String, Object> enviarARevision(Long idPostulacion, Long idUsuarioPostulante) {
         try {
-            Map<String, Object> result = jdbc.queryForMap(
-                    "SELECT v_exitoso, v_mensaje FROM sp_enviar_a_revision(?)", idPostulacion
-            );
-
-            boolean exitoso = Boolean.TRUE.equals(result.get("v_exitoso"));
-            if (!exitoso) {
-                return Map.of("exitoso", false, "mensaje", result.get("v_mensaje"));
-            }
-
             // Obtener nombre del postulante para la notificación
             String nombrePostulante = "";
             try {
                 Map<String, Object> info = jdbc.queryForMap(
-                        "SELECT nombres_postulante || ' ' || apellidos_postulante AS nombre " +
-                                "FROM postulante WHERE id_usuario = ?", idUsuarioPostulante
+                        "SELECT pt.nombres_postulante || ' ' || pt.apellidos_postulante AS nombre " +
+                                "FROM postulante pt " +
+                                "JOIN postulacion po ON po.id_postulante = pt.id_postulante " +
+                                "WHERE po.id_postulacion = ?", idPostulacion
                 );
                 nombrePostulante = (String) info.get("nombre");
             } catch (Exception ignored) {}
@@ -218,10 +211,10 @@ public class DocumentoService {
                     "POSTULACION", idPostulacion
             );
 
-            return Map.of("exitoso", true, "mensaje", "Documentos enviados a revisión.");
+            return Map.of("exitoso", true, "mensaje", "Evaluadores notificados correctamente.");
 
         } catch (Exception e) {
-            return Map.of("exitoso", false, "mensaje", "Error al enviar a revisión.");
+            return Map.of("exitoso", false, "mensaje", "Error al notificar: " + e.getMessage());
         }
     }
 
