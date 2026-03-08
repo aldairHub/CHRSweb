@@ -51,11 +51,9 @@ export class ReportesComponent implements OnInit {
             tipo: 'pdf'
           }));
           this.cdr.detectChanges();
-          console.log('Solicitudes:', this.reportesRecientes);
         },
         error: (err: any) => {
           this.cdr.detectChanges();
-          console.error('Error cargando solicitudes', err);
         }
       });
   }

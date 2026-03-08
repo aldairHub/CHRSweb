@@ -112,7 +112,6 @@ export class MateriaComponent implements OnInit {
       },
       error: (err) => {
         this.cargando = false;
-        console.error('Error cargando carreras:', err);
         this.carreras = [];
       }
     });
@@ -136,7 +135,6 @@ export class MateriaComponent implements OnInit {
       },
       error: (err) => {
         this.cargando = false;
-        console.error('Error de conexión:', err);
         this.materias = [];
         this.materiasFiltradas = [];
         this.calculatePagination();
@@ -292,7 +290,6 @@ export class MateriaComponent implements OnInit {
         error: (err) => {
           this.cargando = false;
           this.isSaving = false;
-          console.error('Error al actualizar:', err);
           alert('❌ No se pudo actualizar.');
         }
       });
@@ -310,7 +307,6 @@ export class MateriaComponent implements OnInit {
         error: (err) => {
           this.cargando = false;
           this.isSaving = false;
-          console.error('Error al guardar:', err);
           alert('❌ No se pudo crear.');
         }
       });

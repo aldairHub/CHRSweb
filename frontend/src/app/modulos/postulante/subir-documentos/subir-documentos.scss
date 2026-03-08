@@ -599,3 +599,96 @@ $blue:        #2563eb;
   flex-direction: column;
   gap: 6px;
 }
+
+// ── DARK MODE ─────────────────────────────────────────────
+:host-context(html.dark) {
+
+  // Cards de documentos
+  .doc-item {
+    background: #0f0f0f !important;
+    border-color: rgba(255,255,255,0.08) !important;
+
+    &.doc-subido, &.doc-validado {
+      background: rgba(0,166,62,0.06) !important;
+      border-color: rgba(0,166,62,0.25) !important;
+    }
+    &.doc-rechazado {
+      background: rgba(220,38,38,0.06) !important;
+      border-color: rgba(220,38,38,0.25) !important;
+    }
+  }
+
+  .doc-nombre  { color: #e5e5e5 !important; }
+  .doc-descripcion { color: #6b7280 !important; }
+
+  // Input / archivo cargado
+  .archivo-info {
+    background: #1a1a1a !important;
+    border-color: rgba(255,255,255,0.10) !important;
+  }
+  .archivo-nombre { color: #d1d5db !important; }
+
+  // Badges estado (Enviado, Pendiente...)
+  .estado-badge {
+    &.estado-subido   { background: rgba(29,78,216,0.25) !important; color: #93c5fd !important; }
+    &.estado-validado { background: rgba(22,101,52,0.25) !important; color: #86efac !important; }
+    &.estado-rechazado{ background: rgba(153,27,27,0.25) !important; color: #fca5a5 !important; }
+  }
+
+  // Badge Opcional
+  .badge-opcional {
+    background: rgba(255,255,255,0.08) !important;
+    color: #9ca3af !important;
+  }
+
+  // Badge Solo lectura (Prepostulación)
+  .badge-info {
+    background: rgba(29,78,216,0.20) !important;
+    color: #93c5fd !important;
+    border-color: rgba(147,197,253,0.2) !important;
+  }
+
+  // Badge Prepostulación
+  .estado-validado.estado-badge { color: #86efac !important; }
+
+  // Botones Cambiar / Resubir
+  .btn-upload {
+    border-color: rgba(0,166,62,0.5) !important;
+    color: #4ade80 !important;
+
+    &--subido, &--validado {
+      background: rgba(0,166,62,0.15) !important;
+      border-color: rgba(0,166,62,0.4) !important;
+      color: #4ade80 !important;
+    }
+    &--rechazado {
+      border-color: rgba(220,38,38,0.5) !important;
+      color: #f87171 !important;
+    }
+    &:hover:not(:disabled) {
+      background: rgba(0,166,62,0.12) !important;
+    }
+  }
+
+  // Botones Ver / Descargar (prepostulación)
+  .btn--secondary {
+    background: transparent !important;
+    border: 1.5px solid rgba(255,255,255,0.15) !important;
+    color: #d1d5db !important;
+    &:hover { background: rgba(255,255,255,0.05) !important; }
+  }
+  .btn--primary {
+    background: #00A63E !important;
+    color: #fff !important;
+    &:hover { background: #009034 !important; }
+  }
+
+  // Card prepostulación
+  .doc-prepost {
+    background: rgba(79,70,229,0.05) !important;
+    border-color: rgba(79,70,229,0.2) !important;
+  }
+
+  // Título sección
+  .seccion-titulo { color: #e5e5e5 !important; }
+}

@@ -62,13 +62,11 @@ export class ConfigCriteriosComponent implements OnInit {
 
     this.plantillasService.obtener(this.idPlantilla).subscribe({
       next: (p) => { this.nombrePlantilla = `${p.nombre} (${p.codigo})`; this.cdr.detectChanges(); },
-      error: (err) => console.error('Error cargando plantilla:', err)
-    });
+      error: (err) => { }  });
 
     this.criteriosService.listarPorPlantilla(this.idPlantilla).subscribe({
       next: (data) => { this.criterios = data; this.isLoading = false; this.cdr.detectChanges(); },
       error: (err) => {
-        console.error('Error cargando criterios:', err);
         this.error = 'No se pudieron cargar los criterios.';
         this.isLoading = false;
         this.cdr.detectChanges();

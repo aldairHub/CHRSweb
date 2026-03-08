@@ -65,8 +65,7 @@ export class ConfigFasesComponent implements OnInit {
           this.evaluadoresOpciones = data;
           this.cdr.detectChanges();
         },
-        error: (err) => console.error('Error cargando evaluadores:', err)
-      });
+        error: (err) => { }  });
   }
 
   cargarFases(): void {
@@ -79,7 +78,6 @@ export class ConfigFasesComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error cargando fases:', err);
         this.error     = 'No se pudieron cargar las fases.';
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -122,7 +120,6 @@ export class ConfigFasesComponent implements OnInit {
   }
 
   save(): void {
-    console.log('evaluadoresPermitidos al guardar:', this.form.evaluadoresPermitidos);
 
     if (!this.form.nombre?.trim()) { alert('El nombre es obligatorio.'); return; }
     if (!this.form.peso || this.form.peso < 1) { alert('El peso debe ser mayor a 0.'); return; }
@@ -141,7 +138,6 @@ export class ConfigFasesComponent implements OnInit {
     op$.subscribe({
       next: () => { this.isSaving = false; this.closeModal(); this.cargarFases(); },
       error: (err) => {
-        console.error('Error guardando fase:', err);
         alert('Error al guardar la fase.');
         this.isSaving = false;
         this.cdr.detectChanges();

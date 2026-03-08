@@ -1,0 +1,237 @@
+$primary:      #00A63E;
+$primary-glow: #00D149;
+$dark-green:   #016630;
+
+// ─── Layout base ──────────────────────────────────────
+.main-container {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+  background: #f0faf4;
+
+  // Patrón de puntos sutil sobre el fondo
+  background-image:
+    radial-gradient(circle, rgba(0,166,62,0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 2rem 2rem;
+}
+
+// ─── Header ───────────────────────────────────────────
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 3rem;
+
+  h1 {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 800;
+    color: $dark-green;
+    letter-spacing: -0.02em;
+    position: relative;
+    display: inline-block;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 48px; height: 3px;
+      background: linear-gradient(90deg, $primary, $primary-glow);
+      border-radius: 2px;
+    }
+  }
+}
+
+// ─── Grid ─────────────────────────────────────────────
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 220px));
+  gap: 1.4rem;
+  justify-content: center;
+  max-width: 1100px;
+  width: 100%;
+}
+
+// ─── Card ─────────────────────────────────────────────
+.card {
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0,166,62,0.14);
+  border-radius: 22px;
+  padding: 2rem 1.5rem 1.75rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 2px 0 rgba(255,255,255,0.9) inset,    // top highlight
+    0 4px 20px rgba(0,166,62,0.07),
+    0 1px 4px rgba(0,0,0,0.04);
+  transition:
+    transform 0.25s cubic-bezier(0.34,1.56,0.64,1),
+    box-shadow 0.25s ease,
+    border-color 0.25s ease,
+    background 0.25s ease;
+
+  // Shine line top
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,166,62,0.55), transparent);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  // Radial glow bottom
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: 50%;
+    transform: translateX(-50%);
+    width: 100px; height: 60px;
+    background: radial-gradient(ellipse, rgba(0,166,62,0.08) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+
+  &:hover {
+    transform: translateY(-7px) scale(1.03);
+    background: rgba(255,255,255,0.97);
+    border-color: rgba(0,166,62,0.35);
+    box-shadow:
+      0 2px 0 rgba(255,255,255,0.9) inset,
+      0 20px 40px rgba(0,166,62,0.16),
+      0 4px 12px rgba(0,0,0,0.06);
+
+    &::before { opacity: 1; }
+    &::after  { opacity: 1; }
+
+    .card-icon-wrap {
+      transform: scale(1.12) rotate(-4deg);
+      background: linear-gradient(135deg, rgba(0,166,62,0.18), rgba(0,209,73,0.1));
+      border-color: rgba(0,166,62,0.35);
+      box-shadow: 0 4px 16px rgba(0,166,62,0.2);
+    }
+  }
+
+  h3 {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: $dark-green;
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  span {
+    font-size: 0.78rem;
+    color: #64748b;
+    line-height: 1.4;
+    margin: 0;
+  }
+}
+
+// ─── Icon wrapper ─────────────────────────────────────
+.card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-icon-wrap {
+  width: 66px; height: 66px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(0,166,62,0.11), rgba(0,209,73,0.05));
+  border: 1px solid rgba(0,166,62,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.25s cubic-bezier(0.34,1.56,0.64,1),
+    background 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+  box-shadow: 0 2px 8px rgba(0,166,62,0.08);
+}
+
+.no-opciones {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+// ─── DARK AMOLED ─────────────────────────────────────
+:host-context(html.dark) {
+
+  .main-container {
+    background-color: #000000 !important;
+    background-image:
+      radial-gradient(circle, rgba(0,210,80,0.04) 1px, transparent 1px) !important;
+    background-size: 28px 28px !important;
+  }
+
+  .dashboard-header h1 {
+    color: #f0f0f0 !important;
+    &::after { background: linear-gradient(90deg, #00A63E, #00D149) !important; }
+  }
+
+  .card {
+    background: rgba(10,10,10,0.9) !important;
+    backdrop-filter: blur(12px) !important;
+    border-color: rgba(0,210,80,0.1) !important;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.03) inset,
+      0 4px 24px rgba(0,0,0,0.8),
+      0 1px 4px rgba(0,0,0,0.5) !important;
+
+    &::before {
+      background: linear-gradient(90deg, transparent, rgba(0,210,80,0.3), transparent) !important;
+    }
+    &::after {
+      background: radial-gradient(ellipse, rgba(0,210,80,0.06) 0%, transparent 70%) !important;
+    }
+
+    &:hover {
+      background: rgba(14,14,14,0.95) !important;
+      border-color: rgba(0,210,80,0.26) !important;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.03) inset,
+        0 24px 48px rgba(0,0,0,0.95),
+        0 0 0 1px rgba(0,210,80,0.12),
+        0 0 32px rgba(0,210,80,0.06) !important;
+
+      .card-icon-wrap {
+        background: rgba(0,210,80,0.1) !important;
+        border-color: rgba(0,210,80,0.3) !important;
+        box-shadow: 0 4px 16px rgba(0,210,80,0.15) !important;
+      }
+    }
+
+    h3 { color: #e0e0e0 !important; }
+    span { color: #3a3a3a !important; }
+  }
+
+  .card-icon-wrap {
+    background: rgba(0,210,80,0.06) !important;
+    border-color: rgba(0,210,80,0.14) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5) !important;
+    svg path { stroke: #00D149 !important; }
+  }
+
+  .no-opciones { color: #252525 !important; }
+}

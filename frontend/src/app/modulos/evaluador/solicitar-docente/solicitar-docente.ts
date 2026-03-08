@@ -72,8 +72,7 @@ export class SolicitarDocenteComponent implements OnInit {
   cargarNiveles(): void {
     this.nivelSvc.listarActivos().subscribe({
       next: data => { this.nivelesAcademicos = data; this.cdr.detectChanges(); },
-      error: () => console.warn('No se pudieron cargar los niveles académicos')
-    });
+      error: () => { }  });
   }
 
   crearSolicitudVacia() {
@@ -130,7 +129,6 @@ export class SolicitarDocenteComponent implements OnInit {
       .obtenerMateriasPorCarrera(Number(this.solicitud.id_carrera))
       .subscribe({
         next: m => {
-          console.log("MATERIAS RECIBIDAS 👉", m);
           this.materias = m;
           this.loadingMaterias = false;
           this.cdr.detectChanges();

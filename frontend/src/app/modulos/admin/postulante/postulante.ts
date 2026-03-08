@@ -32,7 +32,6 @@ export class PostulanteComponent implements OnInit {
   ngOnInit(): void {}
 
   guardar() {
-    console.log('postulante registrado:', this.form);
     // luego va this.postulanteService.crear(this.form)
   }
 }

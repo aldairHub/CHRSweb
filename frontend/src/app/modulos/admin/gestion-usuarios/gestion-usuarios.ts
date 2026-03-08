@@ -158,19 +158,16 @@ export class GestionUsuariosComponent implements OnInit {
   loadRolesApp(): void {
     this.rolesSvc.listar().subscribe({
       next: data => { this.rolesAppDisponibles = Array.isArray(data) ? data : []; this.cdr.detectChanges(); },
-      error: (err: any) => console.error('Error roles_app:', err)
-    });
+      error: (err: any) => { }  });
     this.rolesSvc.listarParaAutoridad().subscribe({
       next: data => { this.rolesAppParaAutoridad = Array.isArray(data) ? data : []; this.cdr.detectChanges(); },
-      error: (err: any) => console.error('Error roles_app para autoridad:', err)
-    });
+      error: (err: any) => { }  });
   }
 
   loadFacultades(): void {
     this.facultadSvc.listar().subscribe({
       next: data => { this.facultades = (Array.isArray(data) ? data : []).filter((f: any) => f.estado); this.cdr.detectChanges(); },
-      error: (err: any) => console.error('Error facultades:', err)
-    });
+      error: (err: any) => { }  });
   }
 
   loadInstituciones(): void {
@@ -182,22 +179,19 @@ export class GestionUsuariosComponent implements OnInit {
         }
         this.cdr.detectChanges();
       },
-      error: (err: any) => console.error('Error instituciones:', err)
-    });
+      error: (err: any) => { }  });
   }
 
   loadAutoridades(): void {
     this.svc.listarAutoridades().subscribe({
       next: data => { this.autoridades = Array.isArray(data) ? data : []; this.applyFiltersAutoridades(); this.cdr.detectChanges(); },
-      error: (err: any) => console.error('Error autoridades:', err)
-    });
+      error: (err: any) => { }  });
   }
 
   loadUsuarios(): void {
     this.svc.listarUsuarios().subscribe({
       next: data => { this.usuarios = Array.isArray(data) ? data : []; this.applyFiltersUsuarios(); this.cargando = false; this.cdr.detectChanges(); },
-      error: (err: any) => console.error('Error usuarios:', err)
-    });
+      error: (err: any) => { }  });
   }
 
   loadUsuariosDisponibles(): void {
@@ -205,8 +199,7 @@ export class GestionUsuariosComponent implements OnInit {
       'http://localhost:8080/api/autoridades-academicas/usuarios-disponibles'
     ).subscribe({
       next: data => { this.usuariosDisponibles = Array.isArray(data) ? data : []; this.cdr.detectChanges(); },
-      error: (err: any) => console.error('Error usuarios disponibles:', err)
-    });
+      error: (err: any) => { }  });
   }
 
   onUsuarioExistenteSeleccionado(): void {
@@ -247,7 +240,7 @@ export class GestionUsuariosComponent implements OnInit {
     a.estado = nuevo;
     this.svc.cambiarEstadoAutoridad(a.idAutoridad, nuevo).subscribe({
       next: () => this.cdr.detectChanges(),
-      error: (err: any) => { a.estado = prev; console.error(err); this.toast.error('Error', 'No se pudo cambiar el estado.'); this.cdr.detectChanges(); }
+      error: (err: any) => { a.estado = prev; this.toast.error('Error', 'No se pudo cambiar el estado.'); this.cdr.detectChanges(); }
     });
   }
 
@@ -258,7 +251,7 @@ export class GestionUsuariosComponent implements OnInit {
     u.activo = nuevo;
     this.svc.cambiarEstadoUsuario(u.idUsuario, nuevo).subscribe({
       next: () => this.cdr.detectChanges(),
-      error: (err: any) => { u.activo = prev; console.error(err); this.toast.error('Error', 'No se pudo cambiar el estado.'); this.cdr.detectChanges(); }
+      error: (err: any) => { u.activo = prev; this.toast.error('Error', 'No se pudo cambiar el estado.'); this.cdr.detectChanges(); }
     });
   }
 
@@ -307,7 +300,7 @@ export class GestionUsuariosComponent implements OnInit {
           this.applyFiltersAutoridades();
           this.isSaving = false; this.closeRolesModal(); this.toast.success('Roles actualizados', 'Los cambios se guardaron correctamente.'); this.cdr.detectChanges();
         },
-        error: (err: any) => { this.isSaving = false; console.error(err); this.toast.error('Error', 'No se pudieron actualizar los roles.'); this.cdr.detectChanges(); }
+        error: (err: any) => { this.isSaving = false; this.toast.error('Error', 'No se pudieron actualizar los roles.'); this.cdr.detectChanges(); }
       });
     } else if (this.rolesModalTipo === 'usuario' && this.selectedUsuario) {
       this.svc.actualizarRolesUsuario(this.selectedUsuario.idUsuario, ids).subscribe({
@@ -317,7 +310,7 @@ export class GestionUsuariosComponent implements OnInit {
           this.applyFiltersUsuarios();
           this.isSaving = false; this.closeRolesModal(); this.toast.success('Roles actualizados', 'Los cambios se guardaron correctamente.'); this.cdr.detectChanges();
         },
-        error: (err: any) => { this.isSaving = false; console.error(err); this.toast.error('Error', 'No se pudieron actualizar los roles.'); this.cdr.detectChanges(); }
+        error: (err: any) => { this.isSaving = false; this.toast.error('Error', 'No se pudieron actualizar los roles.'); this.cdr.detectChanges(); }
       });
     }
   }
@@ -391,7 +384,6 @@ export class GestionUsuariosComponent implements OnInit {
       error: (err: any) => {
         this.isCreating = false; this.toast.remove(loadingId);
         const msg = err.error?.mensaje || err.error?.message || err.message || 'Error desconocido';
-        console.error(err); this.toast.error('Error al crear', msg); this.cdr.detectChanges();
       }
     });
   }
@@ -424,7 +416,6 @@ export class GestionUsuariosComponent implements OnInit {
       error: (err: any) => {
         this.isCreating = false; this.toast.remove(loadingIdU);
         const msg = err.error?.mensaje || err.error?.message || err.message || 'Error desconocido';
-        console.error(err); this.toast.error('Error al crear', msg); this.cdr.detectChanges();
       }
     });
   }

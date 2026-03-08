@@ -80,7 +80,6 @@ export class PostulantesComponent implements OnInit {
           this.isLoading = false; this.cdr.detectChanges(); resolve();
         },
         error: (err: unknown) => {
-          console.error(err); this.error = 'No se pudieron cargar los postulantes.';
           this.isLoading = false; this.cdr.detectChanges(); resolve();
         }
       });
@@ -119,7 +118,6 @@ export class PostulantesComponent implements OnInit {
     this.postulantesService.obtenerDetalle(p.idProceso).subscribe({
       next: (d: PostulanteDetalle) => { this.detalleCompleto = d; this.isLoadingDetalle = false; this.cdr.detectChanges(); },
       error: (err: unknown) => {
-        console.error(err); this.isLoadingDetalle = false;
         alert('Error al cargar el detalle.'); this.cdr.detectChanges();
       }
     });

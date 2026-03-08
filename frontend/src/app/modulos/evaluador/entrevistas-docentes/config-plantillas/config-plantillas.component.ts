@@ -54,7 +54,6 @@ export class ConfigPlantillasComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error cargando datos:', err);
         this.error     = 'No se pudieron cargar los datos.';
         this.isLoading = false;
         this.cdr.detectChanges();

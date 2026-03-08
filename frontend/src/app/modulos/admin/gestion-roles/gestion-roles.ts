@@ -101,8 +101,7 @@ export class GestionRolesComponent implements OnInit {
         this.applyFilters();
         this.cdr.detectChanges();
       },
-      error: err => console.error('Error cargando roles_app:', err)
-    });
+      error: err => { }  });
   }
   loadRolesBd(): void {
     this.svc.listarRolesBdConDescripcion().subscribe({
@@ -111,8 +110,7 @@ export class GestionRolesComponent implements OnInit {
           this.cdr.detectChanges();
 
       },
-      error: err => console.error('Error cargando roles BD:', err)
-    });
+      error: err => { }  });
   }
   loadModulos(): void {
     this.svc.listarModulos().subscribe({
@@ -121,8 +119,7 @@ export class GestionRolesComponent implements OnInit {
         this.modulosDisponibles = Array.isArray(data) ? data : [];
         this.cdr.detectChanges();
       },
-      error: err => console.error('Error cargando módulos:', err)
-    });
+      error: err => { }  });
   }
 
   // ─── Filtros ────────────────────────────────────────────────
@@ -232,7 +229,6 @@ export class GestionRolesComponent implements OnInit {
       error: err => {
         this.cargando = false;
         this.isSaving = false;
-        console.error('Error guardando rol:', err);
         alert(' No se pudo guardar el rol: ' + (err?.error?.message || err?.message || 'Error desconocido'));
       }
     });
@@ -250,7 +246,6 @@ export class GestionRolesComponent implements OnInit {
       error: err => {
         this.cargando = false;
         rol.activo = prev;
-        console.error('Error cambiando estado:', err);
         alert(' No se pudo cambiar el estado.');
         this.cdr.detectChanges();
       }

@@ -69,7 +69,6 @@ export class EvaluacionDashboardComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error dashboard:', err);
         this.error     = 'No se pudo cargar la información. Intente nuevamente.';
         this.isLoading = false;
         this.cdr.detectChanges();

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener, ElementRef } from '@angular/core';
 import { AsyncPipe, CommonModule, DatePipe } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ConvocatoriaService, Convocatoria, SolicitudDocente } from '../../services/convocatoria.service';
 import { LogoService } from '../../services/logo.service';
 import { ThemeService } from '../../services/theme.service';
@@ -33,6 +33,7 @@ export class ConvocatoriasPublicasComponent implements OnInit, OnDestroy {
   constructor(
     private convocatoriaService: ConvocatoriaService,
     private router: Router,
+    private route:  ActivatedRoute,
     private cdr:    ChangeDetectorRef,
     private el:     ElementRef,
     public logoService: LogoService,
@@ -53,6 +54,25 @@ export class ConvocatoriasPublicasComponent implements OnInit, OnDestroy {
           solicitudSeleccionada: null
         }));
         this.cargando = false;
+
+        // Pre-seleccionar convocatoria si viene con queryParam ?id=
+        const idParam = this.route.snapshot.queryParamMap.get('id');
+        if (idParam) {
+          const idNum = Number(idParam);
+          const conv = this.convocatorias.find(c => c.idConvocatoria === idNum);
+          if (conv) {
+            this.toggleConvocatoria(conv);
+            // Scroll suave al card después de renderizar
+            setTimeout(() => {
+              const cards = this.el.nativeElement.querySelectorAll('.conv-card');
+              const idx = this.convocatorias.indexOf(conv);
+              if (cards[idx]) {
+                (cards[idx] as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }, 300);
+          }
+        }
+
         this.cdr.detectChanges();
       },
       error: () => {

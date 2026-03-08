@@ -96,13 +96,11 @@ export class EvaluacionComponent implements OnInit, AfterViewInit {
             setTimeout(() => this.inicializarCanvas(), 150);
           },
           error: (err: unknown) => {
-            console.error(err); this.error = 'No se pudieron cargar los criterios.';
             this.isLoading = false; this.cdr.detectChanges();
           }
         });
       },
       error: (err: unknown) => {
-        console.error(err); this.error = 'No se pudo cargar la información de la reunión.';
         this.isLoading = false; this.cdr.detectChanges();
       }
     });

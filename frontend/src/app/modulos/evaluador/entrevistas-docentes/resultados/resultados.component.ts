@@ -71,7 +71,6 @@ export class ResultadosComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err: unknown) => {
-        console.error(err); this.error = 'No se pudieron cargar los procesos.';
         this.isLoading = false; this.cdr.detectChanges();
       }
     });
@@ -91,7 +90,6 @@ export class ResultadosComponent implements OnInit {
         this.isLoadingResultado = false; this.cdr.detectChanges();
       },
       error: (err: unknown) => {
-        console.error(err); this.isLoadingResultado = false; this.cdr.detectChanges();
       }
     });
   }
@@ -119,7 +117,6 @@ export class ResultadosComponent implements OnInit {
         alert('✅ Decisión final guardada correctamente.'); this.cdr.detectChanges();
       },
       error: (err: unknown) => {
-        console.error(err); alert('Error al guardar la decisión.');
         this.isSaving = false; this.cdr.detectChanges();
       }
     });

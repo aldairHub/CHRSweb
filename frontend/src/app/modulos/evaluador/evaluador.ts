@@ -69,8 +69,7 @@
 //
 //   // Método genérico para navegar
 //   navegarA(ruta: string): void {
-//     console.log('Navegando al módulo:', ruta);
-//     // Navega relativo a la ruta actual: /evaluador/solicitar, /evaluador/postulantes, etc.
+//     //     // Navega relativo a la ruta actual: /evaluador/solicitar, /evaluador/postulantes, etc.
 //     this.router.navigate([`/evaluador/${ruta}`]);
 //   }
 // }

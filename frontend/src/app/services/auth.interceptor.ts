@@ -31,7 +31,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         }
       }
       if (err.status === 403) router.navigate(['/sin-acceso']);
-      if (err.status === 500) console.error('[Server]', err.url, err.error);
+      if (err.status === 500)       return throwError(() => err);
       return throwError(() => err);
     })
   );

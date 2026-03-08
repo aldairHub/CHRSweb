@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, tap, catchError, of } from 'rxjs';
-import { throwError } from 'rxjs';
+import { Observable, catchError, throwError, of } from 'rxjs';
 
 // ==========================================
 // INTERFACES EXISTENTES
@@ -99,37 +98,32 @@ export class PrepostulacionService {
 
   listarPrepostulaciones(): Observable<Prepostulacion[]> {
     return this.http.get<Prepostulacion[]>(this.apiUrl).pipe(
-      tap(data => console.log('✅ Prepostulaciones recibidas:', data)),
-      catchError(err => { console.error('❌ Error:', err); return throwError(() => err); })
+      catchError(err => { return throwError(() => err); })
     );
   }
 
   obtenerPrepostulacion(id: number): Observable<Prepostulacion> {
     return this.http.get<Prepostulacion>(`${this.apiUrl}/${id}`).pipe(
-      tap(data => console.log('✅ Prepostulación:', data)),
-      catchError(err => { console.error('❌ Error:', err); return throwError(() => err); })
+      catchError(err => { return throwError(() => err); })
     );
   }
 
   obtenerDocumentos(id: number): Observable<DocumentosResponse> {
     return this.http.get<DocumentosResponse>(`${this.apiUrl}/${id}/documentos`).pipe(
-      tap(data => console.log('✅ Documentos:', data)),
-      catchError(err => { console.error('❌ Error:', err); return throwError(() => err); })
+      catchError(err => { return throwError(() => err); })
     );
   }
 
   actualizarEstado(id: number, request: ActualizarEstadoRequest): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.put(`${this.apiUrl}/${id}/estado`, request, { headers }).pipe(
-      tap(response => console.log('✅ Estado actualizado:', response)),
-      catchError(err => { console.error('❌ Error:', err); return throwError(() => err); })
+      catchError(err => { return throwError(() => err); })
     );
   }
 
   listarPorEstado(estado: string): Observable<Prepostulacion[]> {
     return this.http.get<Prepostulacion[]>(`${this.apiUrl}/estado/${estado}`).pipe(
-      tap(data => console.log('✅ Por estado:', data)),
-      catchError(err => { console.error('❌ Error:', err); return throwError(() => err); })
+      catchError(err => { return throwError(() => err); })
     );
   }
 
@@ -140,8 +134,7 @@ export class PrepostulacionService {
    */
   obtenerDetalle(idPrepostulacion: number): Observable<DetallePostulacion> {
     return this.http.get<DetallePostulacion>(`${this.apiUrl}/${idPrepostulacion}/detalle`).pipe(
-      tap(data => console.log('✅ Detalle:', data)),
-      catchError(err => { console.error('❌ Error detalle:', err); return throwError(() => err); })
+      catchError(err => { return throwError(() => err); })
     );
   }
 
@@ -150,9 +143,7 @@ export class PrepostulacionService {
    */
   listarConvocatorias(): Observable<Convocatoria[]> {
     return this.http.get<Convocatoria[]>(this.convocatoriaUrl).pipe(
-      tap(data => console.log('✅ Convocatorias:', data)),
       catchError(err => {
-        console.warn('⚠️ Convocatorias no disponibles:', err.status);
         return of([]);
       })
     );
@@ -163,9 +154,7 @@ export class PrepostulacionService {
    */
   listarSolicitudes(): Observable<SolicitudDocente[]> {
     return this.http.get<SolicitudDocente[]>(this.solicitudUrl).pipe(
-      tap(data => console.log('✅ Solicitudes:', data)),
       catchError(err => {
-        console.warn('⚠️ Solicitudes no disponibles:', err.status);
         return of([]);
       })
     );

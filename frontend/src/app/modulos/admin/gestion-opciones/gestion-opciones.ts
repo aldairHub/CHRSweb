@@ -48,8 +48,7 @@ export class GestionOpcionesComponent implements OnInit {
           .filter(r => r.activo);
         this.cdr.detectChanges();
       },
-      error: err => console.error('Error cargando roles:', err)
-    });
+      error: err => { }  });
   }
 
   // ─── Seleccionar rol → carga opciones de su módulo ───────────────
@@ -70,7 +69,6 @@ export class GestionOpcionesComponent implements OnInit {
       },
       error: err => {
         this.cargando = false;
-        console.error('Error cargando opciones:', err);
         this.cargandoOpciones = false;
         alert('No se pudieron cargar las opciones. ' +
           'Verifica que el rol tiene un módulo asignado.');
@@ -93,7 +91,6 @@ export class GestionOpcionesComponent implements OnInit {
         },
         error: err => {
           this.cargando = false;
-          console.error('Error quitando opción:', err);
           alert('No se pudo quitar la opción.');
         }
       });
@@ -110,7 +107,6 @@ export class GestionOpcionesComponent implements OnInit {
         },
         error: err => {
           this.cargando = false;
-          console.error('Error asignando opción:', err);
           alert('No se pudo asignar la opción.');
         }
       });
@@ -133,7 +129,6 @@ export class GestionOpcionesComponent implements OnInit {
       },
       error: err => {
         this.cargando = false;
-        console.error('Error actualizando solo_lectura:', err);
         alert('No se pudo actualizar el permiso.');
       }
     });

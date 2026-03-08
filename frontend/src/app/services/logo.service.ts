@@ -65,7 +65,6 @@ export class LogoService {
         this.nombre$.next(appName);
       },
       error: () => {
-        console.warn('[LogoService] Backend no disponible — usando caché');
       }
     });
   }

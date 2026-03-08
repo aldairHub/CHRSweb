@@ -107,7 +107,6 @@ export class SolicitudDocenteService {
    * ⭐ NUEVO: Método simplificado que solo usa usuario_app
    */
   crearSolicitud(request: SolicitudConUsuario): Observable<SolicitudDocenteResponse> {
-    console.log('📤 Servicio enviando solicitud:', request);
 
     return this.http.post<SolicitudDocenteResponse>(
       `${this.apiUrl}/solicitudes-docente`,

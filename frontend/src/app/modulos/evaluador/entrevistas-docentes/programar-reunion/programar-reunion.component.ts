@@ -99,7 +99,6 @@ export class ProgramarReunionComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error(err); this.error = 'No se pudieron cargar los datos.';
         this.isLoading = false; this.cdr.detectChanges();
       }
     });

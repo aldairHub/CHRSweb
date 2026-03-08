@@ -89,7 +89,6 @@ export class DocumentosComponent implements OnInit {
           this.cargarDocumentos();
         },
         error: (err) => {
-          console.error('Error al cargar prepostulación:', err);
           this.error = 'No se pudo cargar la información del postulante';
           this.cargando = false;
         }
@@ -143,7 +142,6 @@ export class DocumentosComponent implements OnInit {
           this.cargando = false;
         },
         error: (err: any) => {
-          console.error('Error al cargar prepostulación:', err);
           this.error = 'No se pudo cargar la información del postulante';
           this.cargando = false;
         }
@@ -200,12 +198,10 @@ export class DocumentosComponent implements OnInit {
     this.prepostulacionService.actualizarEstado(this.prepostulacionId, request)
       .subscribe({
         next: (response) => {
-          console.log('Respuesta del servidor:', response);
           alert('✅ Validación guardada correctamente.');
           this.volver();
         },
         error: (err) => {
-          console.error('Error al guardar validación:', err);
           alert('❌ Error al guardar la validación. Intenta nuevamente.');
         }
       });

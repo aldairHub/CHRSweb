@@ -23,11 +23,9 @@ export class TestConexionComponent {
     this.http.get<any>(`${this.apiUrl}/connection`).subscribe({
       next: (data: any) => {
         this.respuesta = JSON.stringify(data);
-        console.log('Éxito:', data);
       },
       error: (error: any) => {
         this.respuesta = 'Error en la conexión';
-        console.error('Error:', error);
       }
     });
   }
@@ -35,14 +33,14 @@ export class TestConexionComponent {
   saludar(): void {
     this.http.get<any>(`${this.apiUrl}/saludar/${this.nombre}`).subscribe({
       next: (data: any) => this.respuesta = data,
-      error: (error: any) => console.error(error)
+      error: () => { this.respuesta = 'Error al saludar'; }
     });
   }
 
   enviarMensaje(): void {
     this.http.post<any>(`${this.apiUrl}/mensaje`, { mensaje: this.mensaje }).subscribe({
       next: (data: any) => this.respuesta = data,
-      error: (error: any) => console.error(error)
+      error: () => { this.respuesta = 'Error al enviar mensaje'; }
     });
   }
 }

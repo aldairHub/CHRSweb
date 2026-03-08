@@ -70,13 +70,11 @@ export class PostulantesComponent {
 
   // Lógica de Filtros
   buscar() {
-    console.log('Filtrando por:', this.filtro);
     // Lógica futura: this.postulanteService.filtrar(this.filtro)...
   }
 
   // Ver detalles
   verPerfil(postulante: Postulante) {
-    console.log('Viendo perfil de:', postulante.nombres_postulante);
     // this.router.navigate(['/evaluador/detalle-postulante', postulante.id_postulante]);
   }
 

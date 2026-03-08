@@ -75,7 +75,7 @@ export class SolicitudesDocenteComponent implements OnInit {
     this.cargando = true;
     this.http.get<SolicitudDocenteResponseDTO[]>(this.API).subscribe({
       next: data => { this.solicitudes = data; this.filtrar(); this.cargando = false; this.cdr.detectChanges(); },
-      error: err  => { this.cargando = false; console.error('Error cargando solicitudes', err); }
+      error: err  => { this.cargando = false; }
 
     })
     ;
@@ -163,7 +163,6 @@ export class SolicitudesDocenteComponent implements OnInit {
       },
       error: err => {
         this.cargando = false;
-        console.error('Error cambiando estado', err);
         this.procesando = false;
       }
     });

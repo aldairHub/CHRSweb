@@ -135,7 +135,8 @@
         (click)="navegarA(card.ruta)">
 
         <div class="card-icon">
-          <svg width="48" height="48" viewBox="0 0 32 32" fill="none"
+          <div class="card-icon-wrap">
+          <svg width="36" height="36" viewBox="0 0 32 32" fill="none"
                xmlns="http://www.w3.org/2000/svg">
             <path
               *ngFor="let path of card.svgPaths"
@@ -145,6 +146,7 @@
               stroke-linecap="round"
               stroke-linejoin="round"/>
           </svg>
+          </div>
         </div>
 
         <h3>{{ card.titulo }}</h3>

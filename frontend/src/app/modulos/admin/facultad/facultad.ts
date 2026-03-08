@@ -41,7 +41,6 @@ export class FacultadComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    console.log('FacultadComponent INIT -> cargando...');
     this.cargarFacultades();
   }
 
