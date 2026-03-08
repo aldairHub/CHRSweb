@@ -131,7 +131,6 @@ public class DocumentoService {
     public Map<String, Object> finalizarCarga(Long idPostulacion) {
         return documentoRepo.finalizarCargaDocumentos(idPostulacion);
     }
-
     // ----------------------------------------------------------
     // Info del postulante (SP 5) — para el header del componente
     // ----------------------------------------------------------

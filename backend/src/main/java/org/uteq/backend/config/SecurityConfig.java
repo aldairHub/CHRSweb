@@ -78,14 +78,12 @@ public class SecurityConfig {
                                 "/api/auth/menu/**",
                                 "/api/evaluacion/**"
                         ).permitAll()
-
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/demo/**").permitAll()
 
                         .requestMatchers("/api/usuarios/recuperar-clave").permitAll()
                         .requestMatchers("/api/usuarios/primer-login/cambiar-clave").permitAll()
                         .requestMatchers("/api/usuarios/cambiar-clave").permitAll()
-
                         .anyRequest().authenticated()
                 );
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
