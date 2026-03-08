@@ -47,6 +47,6 @@ export const AuthGuard: CanActivateFn = (route, state) => {
     router.navigate(['/sin-acceso']);
     return false;
   }
-
+  // cambio minimo
   return true;
 };
