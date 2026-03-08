@@ -44,8 +44,6 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
   idPostulacion: number | null = null;
   documentos:    DocumentoUI[] = [];
   docsPrepostulacion: DocPrepostulacion[] = [];
-  mostrarModalConfirmacion = false;
-  enviandoRevision         = false;
 
   constructor(
     private router: Router,
@@ -319,42 +317,4 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
     const id = Number(idStr);
     return isNaN(id) || id <= 0 ? null : id;
   }
-
-  get estaEnRevision(): boolean {
-    return this.postulante?.estadoPostulacion === 'en_revision';
-  }
-
-  abrirConfirmacionRevision(): void {
-    this.mostrarModalConfirmacion = true;
-  }
-
-  cancelarConfirmacion(): void {
-    this.mostrarModalConfirmacion = false;
-  }
-
-  confirmarEnvioRevision(): void {
-    if (!this.idPostulacion) return;
-    this.enviandoRevision = true;
-
-    this.documentoSvc.notificarRevision(this.idPostulacion).subscribe({
-      next: res => {
-        this.enviandoRevision         = false;
-        this.mostrarModalConfirmacion = false;
-        if (res.exitoso) {
-          if (this.postulante) this.postulante.estadoPostulacion = 'en_revision';
-          this.mostrarToast('success', 'Enviado', 'El revisor ha sido notificado.');
-        } else {
-          this.mostrarToast('error', 'Error', res.mensaje);
-        }
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.enviandoRevision         = false;
-        this.mostrarModalConfirmacion = false;
-        this.mostrarToast('error', 'Error', 'No se pudo conectar con el servidor.');
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
 }

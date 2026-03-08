@@ -1,7 +1,7 @@
 <div class="landing-container">
 
-  <!-- ════ HEADER FLOTANTE ════ -->
-  <header class="header" [class.scrolled]="headerScrolled">
+  <!-- Header flotante -->
+  <header class="header">
     <div class="header-content">
       <div class="logo-wrapper">
         <img [src]="(logoService.getLogo() | async) || 'imgs/logo-uteq.png'"
@@ -11,15 +11,16 @@
           <span class="logo-sub">{{ heroSubtitle }}</span>
         </div>
       </div>
-
-      <!-- Botones derechos: Login + Tema JUNTOS -->
-      <div class="header-right">
+      <!-- Acciones agrupadas a la derecha -->
+      <div class="header-actions">
         <button class="btn-login" (click)="irALogin()">
           Iniciar sesión
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
           </svg>
         </button>
+
+        <!-- Botón modo oscuro -->
         <button class="btn-theme-landing" (click)="themeService.toggle()"
                 [title]="themeService.isDark() ? 'Modo claro' : 'Modo oscuro'">
           <svg *ngIf="!themeService.isDark()" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -35,99 +36,77 @@
     </div>
   </header>
 
-  <!-- ════ HERO FULLSCREEN ════ -->
+  <!-- Hero fullscreen -->
   <section class="hero"
            [style.background-image]="'url(' + campusBg + ')'"
            style="background-size:cover; background-position:center;">
-
-    <div class="hero-blobs">
-      <div class="blob blob-1"></div>
-      <div class="blob blob-2"></div>
-      <div class="blob blob-3"></div>
-    </div>
-
     <div class="hero-overlay"></div>
-
     <div class="hero-content">
-      <div class="hero-badge">
-        <span class="badge-dot-live"></span>
-        Sistema de Selección Docente
-      </div>
-      <h1 class="hero-title">
-        <span class="hero-title-line">Excelencia</span>
-        <span class="hero-title-line accent">Académica</span>
-        <span class="hero-title-line">Comienza Aquí</span>
-      </h1>
-      <p class="hero-subtitle">{{ heroSubtitle }} — Plataforma oficial de méritos y oposición docente</p>
+      <div class="hero-badge">Sistema de Selección Docente</div>
+      <h1 class="hero-title">{{ appName }}</h1>
+      <p class="hero-subtitle">{{ heroSubtitle }}</p>
       <div class="hero-actions">
         <button class="btn-hero-primary" (click)="scrollAConvocatorias()">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-          </svg>
           Ver convocatorias
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
         </button>
-
       </div>
     </div>
-
     <div class="hero-scroll">
       <span>Scroll</span>
       <div class="scroll-line"></div>
     </div>
-
-    <div class="hero-wave">
-      <svg viewBox="0 0 1440 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" fill="var(--page-bg,#f8fffe)"/>
-      </svg>
-    </div>
   </section>
 
-
-
-  <!-- ════ CÓMO FUNCIONA ════ -->
-  <section class="section-features">
-    <div class="section-inner">
-      <div class="section-header-center reveal">
-        <span class="section-label">¿Cómo funciona?</span>
-        <h2 class="section-title">Proceso simple y transparente</h2>
-        <p class="section-desc">Tres pasos para postularte a una plaza docente en la UTEQ</p>
+  <!-- ¿Cómo funciona? -->
+  <section class="section-como-funciona">
+    <div class="como-header reveal">
+      <span class="section-label">Proceso simple</span>
+      <h2 class="section-title">¿Cómo funciona?</h2>
+    </div>
+    <div class="pasos-grid">
+      <div class="paso-card reveal" style="transition-delay:.05s">
+        <div class="paso-num">01</div>
+        <div class="paso-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <h3>Consulta convocatorias</h3>
+        <p>Revisa las convocatorias activas y encuentra la plaza docente que se adapta a tu perfil.</p>
       </div>
-      <div class="features-grid">
-        <div class="feature-card reveal" style="--delay:.05s">
-          <div class="feature-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-            </svg>
-          </div>
-          <span class="feature-step">01</span>
-          <h3>Regístrate</h3>
-          <p>Crea tu cuenta con tus datos personales y documentos académicos</p>
+      <div class="paso-card reveal" style="transition-delay:.13s">
+        <div class="paso-num">02</div>
+        <div class="paso-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
         </div>
-        <div class="feature-card reveal" style="--delay:.15s">
-          <div class="feature-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-          </div>
-          <span class="feature-step">02</span>
-          <h3>Postula</h3>
-          <p>Selecciona la convocatoria adecuada y sube tu expediente de méritos</p>
+        <h3>Completa tu postulación</h3>
+        <p>Carga tus méritos, documentos y completa el formulario de postulación en minutos.</p>
+      </div>
+      <div class="paso-card reveal" style="transition-delay:.21s">
+        <div class="paso-num">03</div>
+        <div class="paso-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
         </div>
-        <div class="feature-card reveal" style="--delay:.25s">
-          <div class="feature-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
-            </svg>
-          </div>
-          <span class="feature-step">03</span>
-          <h3>Sé evaluado</h3>
-          <p>Nuestro equipo revisa tu expediente y te notifica en tiempo real</p>
-        </div>
+        <h3>Conoce los resultados</h3>
+        <p>Sigue el estado de tu postulación en tiempo real y recibe notificación de los resultados.</p>
       </div>
     </div>
   </section>
 
-  <!-- ════ CONVOCATORIAS ════ -->
+  <!-- Transición suave del hero al contenido -->
+  <div class="hero-transition"></div>
+
+  <!-- Convocatorias -->
   <main class="convocatorias-section" id="convocatorias">
     <div class="section-header reveal">
       <div>
@@ -142,10 +121,12 @@
       </button>
     </div>
 
+    <!-- Loading -->
     <div class="cards-grid loading" *ngIf="cargando">
       <div class="skeleton-card" *ngFor="let i of [1,2,3]"></div>
     </div>
 
+    <!-- Empty -->
     <div class="empty reveal-scale" *ngIf="!cargando && convocatorias.length === 0">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -154,6 +135,7 @@
       <p>No hay convocatorias activas por el momento</p>
     </div>
 
+    <!-- Cards -->
     <div class="carousel-wrapper" *ngIf="!cargando && convocatorias.length > 0">
       <button class="nav-btn prev" (click)="scrollCarousel('left')" [class.hidden]="!canScrollLeft">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -180,9 +162,10 @@
                 </svg>
                 <span>{{ conv.fechaInicio | date:'dd MMM' }} — {{ conv.fechaFin | date:'dd MMM yyyy' }}</span>
               </div>
-              <div class="lnd-card-arrow">
+              <div class="lnd-card-cta">
+                Ver más
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                 </svg>
               </div>
             </div>
@@ -197,36 +180,9 @@
     </div>
   </main>
 
-  <!-- ════ CTA BANNER ════ -->
-  <div class="cta-banner reveal">
-    <div class="cta-content">
-      <div class="cta-text">
-        <h3>¿Listo para postularte?</h3>
-        <p>Únete a cientos de docentes que ya forman parte de la UTEQ</p>
-      </div>
-      <button class="btn-cta" (click)="irALogin()">
-        Comenzar ahora
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-        </svg>
-      </button>
-    </div>
-    <div class="cta-glow"></div>
-  </div>
-
-  <!-- ════ FOOTER ════ -->
+  <!-- Footer -->
   <footer class="footer">
-    <div class="footer-inner">
-      <div class="footer-brand">
-        <img [src]="(logoService.getLogo() | async) || 'imgs/logo-uteq.png'"
-             alt="Logo UTEQ" class="footer-logo" (error)="onLogoError($event)">
-        <div>
-          <strong>{{ appName }}</strong>
-          <span>{{ heroSubtitle }}</span>
-        </div>
-      </div>
-      <p class="footer-copy">© 2026 Universidad Técnica Estatal de Quevedo — Todos los derechos reservados</p>
-    </div>
+    <p>© 2026 Universidad Técnica Estatal de Quevedo — Todos los derechos reservados</p>
   </footer>
 
 </div>

@@ -61,6 +61,14 @@ export class DocumentoService {
     return this.http.get<DocumentoBackend[]>(`${this.API}/postulacion/${idPostulacion}`);
   }
 
+  validarDocumento(idDocumento: number, estado: 'validado' | 'rechazado', observacion: string): Observable<any> {
+    return this.http.post(`${this.API}/validar/${idDocumento}`, { estado, observacion });
+  }
+
+  obtenerInfoPorPostulacion(idPostulacion: number): Observable<any> {
+    return this.http.get(`${this.API}/info-postulacion/${idPostulacion}`);
+  }
+
   subirDocumento(
     idPostulacion:   number,
     idTipoDocumento: number,
@@ -110,12 +118,6 @@ export class DocumentoService {
   obtenerDocsPrepostulacion(idPostulacion: number): Observable<DocPrepostulacion[]> {
     return this.http.get<DocPrepostulacion[]>(
       `${this.API}/prepostulacion/${idPostulacion}`
-    );
-  }
-
-  notificarRevision(idPostulacion: number): Observable<{exitoso: boolean, mensaje: string}> {
-    return this.http.post<{exitoso: boolean, mensaje: string}>(
-      `${this.API}/notificar-revision/${idPostulacion}`, {}
     );
   }
 

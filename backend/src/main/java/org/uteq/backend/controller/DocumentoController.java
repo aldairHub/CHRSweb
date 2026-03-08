@@ -116,6 +116,32 @@ public class DocumentoController {
         return ResponseEntity.ok(documentoService.obtenerDocumentosConvocatoria(idPostulacion));
     }
 
+    // ----------------------------------------------------------
+    // Valida o rechaza un documento individual (uso del evaluador)
+    // ----------------------------------------------------------
+    @PostMapping("/validar/{idDocumento}")
+    public ResponseEntity<Map<String, Object>> validarDocumento(
+            @PathVariable Long idDocumento,
+            @RequestBody Map<String, String> body
+    ) {
+        String estado      = body.getOrDefault("estado", "pendiente");
+        String observacion = body.getOrDefault("observacion", "");
+        Map<String, Object> resultado = documentoService.validarDocumento(idDocumento, estado, observacion);
+        return ResponseEntity.ok(resultado);
+    }
+
+    // ----------------------------------------------------------
+    // Info del postulante a partir del ID de postulación (uso evaluador)
+    // ----------------------------------------------------------
+    @GetMapping("/info-postulacion/{idPostulacion}")
+    public ResponseEntity<Map<String, Object>> infoPostulacion(
+            @PathVariable Long idPostulacion
+    ) {
+        Map<String, Object> info = documentoService.obtenerInfoPorPostulacion(idPostulacion);
+        if (info == null || info.isEmpty()) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(info);
+    }
+
     @GetMapping("/prepostulacion/{idPostulacion}")
     public ResponseEntity<List<DocPrepostulacionDTO>> obtenerDocsPrepostulacion(
             @PathVariable Long idPostulacion) {

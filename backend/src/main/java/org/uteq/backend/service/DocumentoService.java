@@ -147,6 +147,14 @@ public class DocumentoService {
         return documentoRepo.obtenerDocsPrepostulacion(idPostulacion);
     }
 
+    public Map<String, Object> validarDocumento(Long idDocumento, String estado, String observacion) {
+        return documentoRepo.validarDocumento(idDocumento, estado, observacion);
+    }
+
+    public Map<String, Object> obtenerInfoPorPostulacion(Long idPostulacion) {
+        return documentoRepo.obtenerInfoPorPostulacion(idPostulacion);
+    }
+
     public Map<String, Object> enviarARevision(Long idPostulacion, Long idUsuarioPostulante) {
         try {
             Map<String, Object> result = jdbc.queryForMap(

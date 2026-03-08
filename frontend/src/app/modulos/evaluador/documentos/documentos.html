@@ -3,122 +3,203 @@
 <div class="main-container">
   <div class="content-wrapper">
 
-    <!-- Mensaje de carga -->
-    <div *ngIf="cargando" class="loading-message">
-      <i class="pi pi-spin pi-spinner"></i>
-      <p>Cargando información del postulante...</p>
+    <!-- Spinner -->
+    <div *ngIf="cargando" class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando documentos del postulante...</p>
     </div>
 
-    <!-- Mensaje de error -->
-    <div *ngIf="error && !cargando" class="error-message">
+    <!-- Error -->
+    <div *ngIf="error && !cargando" class="error-state">
       <i class="pi pi-exclamation-triangle"></i>
       <p>{{ error }}</p>
-      <button class="btn btn--primary" (click)="volver()">Volver a Lista</button>
+      <button class="btn btn--outline-back" (click)="volver()">
+        <i class="pi pi-arrow-left"></i> Volver
+      </button>
     </div>
 
-    <!-- Contenido principal (solo si no hay error y no está cargando) -->
-    <div *ngIf="!cargando && !error">
+    <ng-container *ngIf="!cargando && !error">
 
+      <!-- HEADER -->
       <header class="page-header">
         <div class="page-header__info">
-          <h2 class="page-header__title">Validación Documental</h2>
-          <div class="applicant-info">
-            <span class="info-badge"><i class="pi pi-user"></i> {{ postulante.nombres }}</span>
-            <span class="info-badge"><i class="pi pi-id-card"></i> {{ postulante.cedula }}</span>
+          <h2 class="page-header__title">Revisión de Documentos</h2>
+          <p class="page-header__description">Valida o rechaza cada documento subido por el postulante</p>
+          <div class="postulante-tags" *ngIf="nombreCompleto">
+            <span class="tag"><i class="pi pi-user"></i> {{ nombreCompleto }}</span>
+            <span class="tag" *ngIf="postulante.cedula">
+              <i class="pi pi-id-card"></i> {{ postulante.cedula }}
+            </span>
+            <span class="tag tag--estado" [ngClass]="{
+              'tag--verde':    postulante.estado === 'aprobada',
+              'tag--amarillo': postulante.estado === 'en_revision',
+              'tag--rojo':     postulante.estado === 'rechazada'
+            }">{{ postulante.estado | titlecase }}</span>
           </div>
-          <p class="page-header__description">{{ postulante.cargo }}</p>
         </div>
         <button class="btn btn--outline-back" (click)="volver()">
           <i class="pi pi-arrow-left"></i> Volver a Lista
         </button>
       </header>
 
-      <div class="form-card">
-        <section class="form-section">
-          <div class="form-section__header">
-            <div class="form-section__icon">
-              <i class="pi pi-check-square"></i>
-            </div>
-            <h3 class="form-section__title">Documentos Cargados</h3>
-          </div>
-
-          <div class="table-container mt-3">
-            <table class="custom-table">
-              <thead>
-              <tr>
-                <th style="width: 25%;">Documento Requerido</th>
-                <th style="width: 10%;">Archivo</th>
-                <th style="width: 20%; text-align: center;">Validación</th>
-                <th style="width: 35%;">Observación</th>
-                <th style="width: 10%; text-align: center;">Estado</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr *ngFor="let doc of documentos">
-                <td>
-                  <div class="doc-title">{{ doc.nombre }}</div>
-                </td>
-
-                <td>
-                  <button class="btn-view" (click)="verArchivo(doc.urlCompleta)">
-                    <i class="pi pi-eye"></i> Ver
-                  </button>
-                </td>
-
-                <td class="text-center">
-                  <div class="action-buttons">
-                    <button class="btn-action btn-approve"
-                            [class.active]="doc.estado === 'valido'"
-                            (click)="validarDocumento(doc, 'valido')"
-                            title="Validar">
-                      <i class="pi pi-check"></i>
-                    </button>
-                    <button class="btn-action btn-reject"
-                            [class.active]="doc.estado === 'rechazado'"
-                            (click)="validarDocumento(doc, 'rechazado')"
-                            title="Rechazar">
-                      <i class="pi pi-times"></i>
-                    </button>
-                  </div>
-                </td>
-
-                <td>
-                  <input type="text"
-                         class="form-input obs-input"
-                         [(ngModel)]="doc.observacion"
-                         placeholder="Ej. Documento ilegible..."
-                         [disabled]="doc.estado === 'valido'">
-                </td>
-
-                <td class="text-center">
-                    <span class="status-badge" [ngClass]="{
-                      'status-pendiente': doc.estado === 'pendiente',
-                      'status-valido': doc.estado === 'valido',
-                      'status-rechazado': doc.estado === 'rechazado'
-                    }">
-                      {{ doc.estado | titlecase }}
-                    </span>
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="form-footer mt-4">
-            <div class="summary-text">
-              Se han revisado <strong>{{ documentos.length }}</strong> documentos.
-            </div>
-            <button class="btn btn--primary" (click)="guardarRevision()">
-              <i class="pi pi-save"></i> Guardar y Finalizar Revisión
-            </button>
-          </div>
-
-        </section>
+      <!-- PROGRESO -->
+      <div class="progreso-card">
+        <div class="progreso-info">
+          <span class="progreso-label">Progreso de revisión</span>
+          <span class="progreso-fraccion">{{ totalRevisados }} / {{ documentos.length }} documentos</span>
+        </div>
+        <div class="barra-container">
+          <div class="barra-fill" [style.width.%]="porcentajeRevisado"></div>
+        </div>
+        <span class="progreso-pct">{{ porcentajeRevisado }}%</span>
       </div>
 
-    </div>
+      <!-- SIN DOCUMENTOS -->
+      <div class="empty-state" *ngIf="documentos.length === 0">
+        <i class="pi pi-folder-open"></i>
+        <p>El postulante aún no ha subido documentos.</p>
+      </div>
 
+      <!-- LISTA DE DOCUMENTOS -->
+      <div class="form-card" *ngIf="documentos.length > 0">
+        <div class="doc-list">
+
+          <div
+            *ngFor="let doc of documentos"
+            class="doc-item"
+            [class.doc-validado]="doc.estadoEval === 'validado'"
+            [class.doc-rechazado]="doc.estadoEval === 'rechazado'"
+          >
+
+            <!-- Ícono estado -->
+            <div class="doc-estado-icon">
+              <i class="pi pi-check-circle text-green"  *ngIf="doc.estadoEval === 'validado'"></i>
+              <i class="pi pi-times-circle text-red"    *ngIf="doc.estadoEval === 'rechazado'"></i>
+              <i class="pi pi-file text-gray"           *ngIf="doc.estadoEval === 'sin_revisar'"></i>
+            </div>
+
+            <!-- Info del documento -->
+            <div class="doc-info">
+
+              <div class="doc-nombre-wrap">
+                <span class="doc-nombre">
+                  {{ doc.nombre }}
+                  <span class="req-mark" *ngIf="doc.obligatorio">*</span>
+                  <span class="badge-opcional" *ngIf="!doc.obligatorio">Opcional</span>
+                </span>
+                <span *ngIf="doc.guardado" class="estado-badge"
+                      [ngClass]="{
+                        'estado-validado':  doc.estado === 'validado',
+                        'estado-rechazado': doc.estado === 'rechazado'
+                      }">
+                  {{ doc.estado === 'validado' ? 'Validado' : 'Rechazado' }}
+                </span>
+              </div>
+
+              <div class="doc-descripcion">{{ doc.descripcion }}</div>
+
+              <!-- Archivo subido -->
+              <div class="archivo-info" *ngIf="doc.nombreArchivo">
+                <i class="pi pi-file-pdf text-red"></i>
+                <span class="archivo-nombre">{{ doc.nombreArchivo }}</span>
+                <span class="fecha-carga" *ngIf="doc.fechaCarga">
+                  · {{ doc.fechaCarga | date:'dd/MM/yyyy' }}
+                </span>
+              </div>
+
+              <!-- Observación IA (solo lectura) -->
+              <div class="obs-ia" *ngIf="doc.observacionIa">
+                <i class="pi pi-robot"></i>
+                <span>IA: {{ doc.observacionIa }}</span>
+              </div>
+
+              <!-- Selector de decisión -->
+              <div class="decision-row">
+                <button
+                  class="btn-decision btn-validar"
+                  [class.active]="doc.estadoEval === 'validado'"
+                  (click)="doc.estadoEval = 'validado'; doc.guardado = false"
+                  [disabled]="doc.guardando"
+                >
+                  <i class="pi pi-check"></i> Válido
+                </button>
+                <button
+                  class="btn-decision btn-rechazar"
+                  [class.active]="doc.estadoEval === 'rechazado'"
+                  (click)="doc.estadoEval = 'rechazado'; doc.guardado = false"
+                  [disabled]="doc.guardando"
+                >
+                  <i class="pi pi-times"></i> Rechazado
+                </button>
+              </div>
+
+              <!-- Observación del evaluador (requerida si rechaza) -->
+              <div class="obs-row" *ngIf="doc.estadoEval !== 'sin_revisar'">
+                <input
+                  type="text"
+                  class="obs-input"
+                  [(ngModel)]="doc.observacionEval"
+                  [placeholder]="doc.estadoEval === 'rechazado'
+                    ? 'Motivo del rechazo (requerido)...'
+                    : 'Observación opcional...'"
+                  [disabled]="doc.guardando"
+                >
+              </div>
+
+            </div>
+
+            <!-- Acciones laterales -->
+            <div class="doc-actions">
+              <!-- Ver archivo -->
+              <button
+                class="btn-ver"
+                (click)="verArchivo(doc.rutaArchivo)"
+                [disabled]="!doc.rutaArchivo"
+                title="Ver documento"
+              >
+                <i class="pi pi-eye"></i>
+                <span>Ver</span>
+              </button>
+
+              <!-- Guardar individual -->
+              <button
+                class="btn-save"
+                [class.btn-save--ok]="doc.guardado"
+                (click)="guardarDoc(doc)"
+                [disabled]="doc.guardando || doc.estadoEval === 'sin_revisar'"
+                title="Guardar decisión"
+              >
+                <i class="pi pi-spin pi-spinner" *ngIf="doc.guardando"></i>
+                <i class="pi pi-check"           *ngIf="doc.guardado && !doc.guardando"></i>
+                <i class="pi pi-save"             *ngIf="!doc.guardado && !doc.guardando"></i>
+                <span>{{ doc.guardado ? 'Guardado' : 'Guardar' }}</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- BARRA DE ACCIONES FINAL -->
+      <div class="form-actions-bar" *ngIf="documentos.length > 0">
+        <p class="hint" *ngIf="!todosRevisados">
+          <i class="pi pi-exclamation-triangle"></i>
+          Revisa todos los documentos antes de finalizar.
+        </p>
+        <button
+          class="btn btn--primary"
+          (click)="guardarTodos()"
+          [disabled]="guardandoTodo"
+        >
+          <i class="pi pi-spin pi-spinner" *ngIf="guardandoTodo"></i>
+          <i class="pi pi-check-square"    *ngIf="!guardandoTodo"></i>
+          {{ guardandoTodo ? 'Guardando...' : 'Guardar toda la revisión' }}
+        </button>
+      </div>
+
+    </ng-container>
   </div>
 </div>
 
+<app-toast></app-toast>
 <app-footer></app-footer>

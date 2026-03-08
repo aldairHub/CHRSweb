@@ -1,341 +1,421 @@
-// VARIABLES UTEQ
-$uteq-green: #16a34a;
-$uteq-green-dark: #0d5e2f;
-$uteq-green-light: #dcfce7;
-$text-dark: #111827;
-$text-gray: #4b5563;
-$danger: #dc2626;
-$danger-light: #fee2e2;
-$border-color: #e5e7eb;
-$bg-color: #f3f4f6;
+$green:        #16a34a;
+$green-dark:   #0d5e2f;
+$green-light:  #dcfce7;
+$green-mid:    #bbf7d0;
+$red:          #dc2626;
+$red-light:    #fee2e2;
+$text-dark:    #111827;
+$text-gray:    #4b5563;
+$border:       #e5e7eb;
+$white:        #ffffff;
+$orange:       #d97706;
+$orange-light: #fef3c7;
 
-// === ESTRUCTURA BASE ===
-.main-container { padding: 20px; min-height: 85vh; background-color: $bg-color; }
-.content-wrapper { max-width: 1200px; margin: 0 auto; }
+* { box-sizing: border-box; }
 
-// === MENSAJES DE CARGA Y ERROR ===
-.loading-message, .error-message {
-  text-align: center; padding: 3rem; background: white; border-radius: 12px;
-  border: 1px solid $border-color; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-
-  i { font-size: 3rem; color: $uteq-green; margin-bottom: 1rem; }
-  p { font-size: 1.1rem; color: $text-gray; margin: 1rem 0; }
+// ── Layout ─────────────────────────────────────────────────
+.main-container {
+  padding: 24px;
+  min-height: calc(100vh - 140px);
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
 }
 
-.error-message {
-  i { color: $danger; }
-  button { margin-top: 1rem; }
+.content-wrapper {
+  max-width: 960px;
+  margin: 0 auto;
 }
 
-// === HEADER CON INFO DEL POSTULANTE ===
+// ── Loading / Error ────────────────────────────────────────
+.loading-state, .error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 0;
+  gap: 1rem;
+  color: $text-gray;
+  text-align: center;
+
+  i { font-size: 2rem; }
+
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid #e5e7eb;
+    border-top-color: $green;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Header ─────────────────────────────────────────────────
 .page-header {
-  display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 16px;
 
-  &__title { font-size: 1.6rem; font-weight: 800; color: $text-dark; margin: 0 0 10px 0; }
-  &__description { color: $uteq-green-dark; margin: 5px 0 0; font-size: 0.9rem; font-style: italic; }
+  &__title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: $green-dark;
+    margin: 0;
+  }
 
-  .applicant-info {
-    display: flex; gap: 10px; margin-bottom: 5px;
-    .info-badge {
-      background: white; border: 1px solid $uteq-green; color: $uteq-green-dark;
-      padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;
-      display: flex; align-items: center; gap: 6px;
-    }
+  &__description {
+    color: $text-gray;
+    margin: 4px 0 8px;
+    font-size: .88rem;
   }
 }
 
-// === TARJETAS ===
-.form-card {
-  background: white; border-radius: 12px; padding: 1.5rem;
-  border: 1px solid $border-color; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+.postulante-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.form-section {
-  &__header { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
-  &__icon {
-    width: 36px; height: 36px; background-color: $uteq-green-light; color: $uteq-green-dark;
-    border-radius: 8px; display: flex; align-items: center; justify-content: center;
-    font-size: 1.1rem; border: 1px solid #bbf7d0;
-  }
-  &__title { color: $uteq-green-dark; font-size: 1.1rem; font-weight: 700; margin: 0; }
-}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: .78rem;
+  padding: 4px 10px;
+  background: $green-light;
+  color: $green-dark;
+  border-radius: 999px;
+  font-weight: 600;
 
-// === TABLA DE VALIDACIÓN ===
-.table-container { overflow-x: auto; }
-.custom-table {
-  width: 100%; border-collapse: collapse;
-  thead th {
-    text-align: left; padding: 12px; color: $text-gray; font-size: 0.75rem;
-    font-weight: 700; text-transform: uppercase; border-bottom: 2px solid $border-color;
-    background: #f9fafb;
-  }
-  tbody td {
-    padding: 12px; border-bottom: 1px solid $border-color;
-    color: $text-dark; font-size: 0.9rem; vertical-align: middle;
-  }
-  tbody tr:hover { background-color: #fcfcfc; }
-}
-
-.doc-title { font-weight: 600; color: $text-dark; }
-
-// Botón Ver PDF
-.btn-view {
-  background: white; border: 1px solid $border-color; color: $text-gray;
-  padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer;
-  display: flex; align-items: center; gap: 6px; transition: 0.2s;
-  &:hover { border-color: $uteq-green; color: $uteq-green; background: $uteq-green-light; }
-}
-
-// Botones Validar/Rechazar
-.action-buttons {
-  display: flex; justify-content: center; gap: 10px;
-
-  .btn-action {
-    width: 36px; height: 36px; border-radius: 50%; border: 1px solid $border-color;
-    background: white; cursor: pointer; color: $text-gray; transition: all 0.2s;
-    display: flex; align-items: center; justify-content: center; font-size: 1rem;
-
-    &:hover { transform: scale(1.1); }
-
-    // Estilo APROBAR
-    &.btn-approve:hover, &.btn-approve.active {
-      background: $uteq-green; color: white; border-color: $uteq-green;
-      box-shadow: 0 0 10px rgba($uteq-green, 0.4);
-    }
-
-    // Estilo RECHAZAR
-    &.btn-reject:hover, &.btn-reject.active {
-      background: $danger; color: white; border-color: $danger;
-      box-shadow: 0 0 10px rgba($danger, 0.4);
-    }
-  }
-}
-
-// Input Observación
-.obs-input {
-  width: 100%; padding: 8px; border: 1px solid $border-color; border-radius: 6px;
-  font-size: 0.85rem; outline: none; background: #f9fafb;
-  &:focus { border-color: $uteq-green; background: white; }
-  &:disabled { background: #f3f4f6; cursor: not-allowed; opacity: 0.6; }
-}
-
-// Badges de Estado
-.status-badge {
-  padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-block;
-  &.status-pendiente { background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; } // Amarillo
-  &.status-valido { background: $uteq-green-light; color: $uteq-green-dark; border: 1px solid #86efac; } // Verde
-  &.status-rechazado { background: $danger-light; color: $danger; border: 1px solid #fecaca; } // Rojo
-}
-
-// === FOOTER Y BOTONES GLOBALES ===
-.mt-3 { margin-top: 1.5rem; }
-.mt-4 { margin-top: 2rem; }
-
-.form-footer {
-  display: flex; justify-content: space-between; align-items: center; border-top: 1px solid $border-color; padding-top: 1.5rem;
-  .summary-text { font-size: 0.9rem; color: $text-gray; }
+  &--estado { background: #f3f4f6; color: $text-gray; }
+  &--verde   { background: $green-light; color: $green-dark; }
+  &--amarillo { background: $orange-light; color: $orange; }
+  &--rojo    { background: $red-light; color: $red; }
 }
 
 .btn {
-  padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: none; font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .65rem 1.4rem;
+  border-radius: 8px;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all .2s ease;
 
-  &--primary { background: $uteq-green; color: white; &:hover { background: $uteq-green-dark; } }
-  &--outline-back { background: transparent; border: 1px solid $uteq-green; color: $uteq-green; &:hover { background: $uteq-green-light; } }
+  &--primary {
+    background: $green;
+    color: $white;
+    &:hover:not(:disabled) { background: $green-dark; box-shadow: 0 4px 12px rgba(22,163,74,.35); }
+    &:disabled { opacity: .55; cursor: not-allowed; }
+  }
+
+  &--outline-back {
+    background: $white;
+    color: $text-gray;
+    border: 1.5px solid $border;
+    &:hover { border-color: $green; color: $green; }
+  }
 }
 
-.text-center { text-align: center; }
+// ── Progreso ───────────────────────────────────────────────
+.progreso-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: $white;
+  border-radius: 12px;
+  padding: 14px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
 
-// ── DARK MODE ─────────────────────────────────────────────
-:host-context(html.dark) {
+.progreso-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+}
 
-  // Fondos generales
-  .page-container, .main-container, .content-wrapper,
-  .form-container, .card-container, .section-container,
-  .table-container, .panel, .box, .wrapper { 
-    background: #000 !important; 
-    color: #e5e5e5 !important; 
+.progreso-label    { font-size: .78rem; color: $text-gray; }
+.progreso-fraccion { font-size: .9rem; font-weight: 700; color: $text-dark; }
+
+.barra-container {
+  flex: 1;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.barra-fill {
+  height: 100%;
+  background: $green;
+  border-radius: 999px;
+  transition: width .4s ease;
+}
+
+.progreso-pct {
+  font-weight: 700;
+  color: $green;
+  min-width: 38px;
+  text-align: right;
+}
+
+// ── Empty state ────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem 0;
+  color: $text-gray;
+  i { font-size: 3rem; opacity: .4; }
+}
+
+// ── Card / Lista ───────────────────────────────────────────
+.form-card {
+  background: $white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.07);
+  margin-bottom: 20px;
+}
+
+.doc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.doc-item {
+  display: flex;
+  gap: 16px;
+  padding: 18px 20px;
+  border: 2px solid $border;
+  border-radius: 12px;
+  background: #fafafa;
+  transition: border-color .2s, background .2s;
+
+  &.doc-validado  { border-color: $green; background: #f0fdf4; }
+  &.doc-rechazado { border-color: $red;   background: #fff5f5; }
+}
+
+// Ícono lateral
+.doc-estado-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f3f4f6;
+  font-size: 1.25rem;
+  margin-top: 2px;
+
+  .text-green { color: $green; }
+  .text-red   { color: $red;   }
+  .text-gray  { color: #9ca3af; }
+}
+
+// Info centro
+.doc-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.doc-nombre-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.doc-nombre {
+  font-size: .97rem;
+  font-weight: 700;
+  color: $text-dark;
+}
+
+.req-mark    { color: $red; margin-left: 2px; }
+.badge-opcional {
+  font-size: .7rem;
+  padding: 1px 7px;
+  background: #f3f4f6;
+  color: $text-gray;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.estado-badge {
+  font-size: .72rem;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  &.estado-validado  { background: $green-light; color: $green-dark; }
+  &.estado-rechazado { background: $red-light;   color: $red;        }
+}
+
+.doc-descripcion {
+  font-size: .82rem;
+  color: $text-gray;
+}
+
+.archivo-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .82rem;
+  color: $text-gray;
+
+  .text-red { color: $red; }
+
+  .archivo-nombre {
+    font-weight: 600;
+    color: $text-dark;
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  // Cards / items
-  .card, .item, .row-item, .list-item,
-  .doc-item, .solicitud-item, .postulante-item,
-  .result-item, .nivel-item, .role-item,
-  .usuario-item, .opcion-item {
-    background: #0f0f0f !important;
-    border-color: rgba(255,255,255,0.08) !important;
-    color: #e5e5e5 !important;
+  .fecha-carga { color: #9ca3af; }
+}
+
+.obs-ia {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: .8rem;
+  color: $orange;
+  background: $orange-light;
+  padding: 6px 10px;
+  border-radius: 6px;
+
+  i { margin-top: 2px; flex-shrink: 0; }
+}
+
+// Selector validar/rechazar
+.decision-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.btn-decision {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: .45rem 1rem;
+  border-radius: 8px;
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid transparent;
+  background: #f3f4f6;
+  color: $text-gray;
+  transition: all .18s ease;
+
+  &:disabled { opacity: .5; cursor: not-allowed; }
+
+  &.btn-validar {
+    &:hover:not(:disabled) { border-color: $green; color: $green; background: $green-light; }
+    &.active               { background: $green; color: $white; border-color: $green; }
   }
 
-  // Secciones / bloques
-  .section, .block, .group, .subgroup,
-  .info-block, .detail-block, .datos-block {
-    background: #0a0a0a !important;
-    border-color: rgba(255,255,255,0.07) !important;
+  &.btn-rechazar {
+    &:hover:not(:disabled) { border-color: $red; color: $red; background: $red-light; }
+    &.active               { background: $red; color: $white; border-color: $red; }
+  }
+}
+
+// Observación
+.obs-row { margin-top: 2px; }
+
+.obs-input {
+  width: 100%;
+  padding: .5rem .75rem;
+  border: 1.5px solid $border;
+  border-radius: 8px;
+  font-size: .85rem;
+  color: $text-dark;
+  outline: none;
+  transition: border-color .2s;
+
+  &:focus        { border-color: $green; }
+  &:disabled     { background: #f9fafb; color: #9ca3af; }
+  &::placeholder { color: #9ca3af; }
+}
+
+// Acciones laterales
+.doc-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+  min-width: 84px;
+}
+
+.btn-ver, .btn-save {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: .5rem .85rem;
+  border-radius: 8px;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid $border;
+  background: $white;
+  color: $text-gray;
+  transition: all .2s;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) { border-color: $green; color: $green; }
+  &:disabled             { opacity: .45; cursor: not-allowed; }
+}
+
+.btn-save {
+  &--ok { background: $green-light; border-color: $green; color: $green-dark; }
+  &:not(.btn-save--ok):not(:disabled):hover { background: $green-light; }
+}
+
+// Barra final
+.form-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 12px 0 8px;
+
+  .hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: $orange;
+    font-size: .85rem;
+    margin: 0;
+  }
+}
+
+// Responsive
+@media (max-width: 640px) {
+  .page-header { flex-direction: column; }
+
+  .doc-item {
+    flex-direction: column;
+    gap: 12px;
   }
 
-  // Tablas
-  table { background: #0a0a0a !important; color: #e5e5e5 !important; }
-  th { background: #111 !important; color: #9ca3af !important; border-color: rgba(255,255,255,0.07) !important; }
-  td { color: #d1d5db !important; border-color: rgba(255,255,255,0.05) !important; }
-  tr:hover td { background: rgba(255,255,255,0.03) !important; }
-  tr:nth-child(even) td { background: rgba(255,255,255,0.02) !important; }
-
-  // Inputs, selects, textareas
-  input, select, textarea {
-    background: #111 !important;
-    border-color: rgba(255,255,255,0.12) !important;
-    color: #e5e5e5 !important;
-    &::placeholder { color: #4b5563 !important; }
-    &:focus { border-color: rgba(0,166,62,0.5) !important; }
+  .doc-actions {
+    flex-direction: row;
+    min-width: auto;
   }
-
-  // Labels y textos
-  label, .label { color: #9ca3af !important; }
-  h1, h2, h3, h4, h5 { color: #f0f0f0 !important; }
-  p, span, .text, .descripcion { color: #9ca3af !important; }
-  .titulo, .nombre, .title { color: #e5e5e5 !important; }
-  strong, b { color: #d1d5db !important; }
-
-  // Badges de estado genéricos
-  .badge, .estado-badge, .tag, .chip {
-    &.activo, &.estado-activo, &.activa    { background: rgba(0,166,62,0.2) !important; color: #4ade80 !important; }
-    &.inactivo, &.estado-inactivo          { background: rgba(107,114,128,0.2) !important; color: #9ca3af !important; }
-    &.pendiente, &.estado-pendiente        { background: rgba(217,119,6,0.2) !important; color: #fbbf24 !important; }
-    &.rechazado, &.estado-rechazado        { background: rgba(220,38,38,0.2) !important; color: #f87171 !important; }
-    &.aprobado, &.estado-aprobado,
-    &.validado, &.estado-validado          { background: rgba(22,101,52,0.2) !important; color: #86efac !important; }
-    &.subido, &.estado-subido              { background: rgba(29,78,216,0.2) !important; color: #93c5fd !important; }
-  }
-  .badge-opcional, .badge-info, .badge-secondary {
-    background: rgba(255,255,255,0.07) !important;
-    color: #9ca3af !important;
-    border-color: rgba(255,255,255,0.1) !important;
-  }
-
-  // Botones primarios (verde)
-  .btn-primary, .btn--primary, .btn-green, .btn-guardar,
-  .btn-enviar, .btn-confirmar, .btn-aceptar {
-    background: #00A63E !important;
-    color: #fff !important;
-    border-color: #00A63E !important;
-    &:hover:not(:disabled) { background: #009034 !important; }
-  }
-
-  // Botones secundarios / outline
-  .btn-secondary, .btn--secondary, .btn-outline,
-  .btn-cancelar, .btn-volver, .btn-back {
-    background: transparent !important;
-    border-color: rgba(255,255,255,0.15) !important;
-    color: #d1d5db !important;
-    &:hover:not(:disabled) { background: rgba(255,255,255,0.05) !important; }
-  }
-
-  // Botones de upload / cambiar
-  .btn-upload {
-    border-color: rgba(0,166,62,0.4) !important;
-    color: #4ade80 !important;
-    background: transparent !important;
-    &--subido, &--validado {
-      background: rgba(0,166,62,0.12) !important;
-      color: #4ade80 !important;
-    }
-    &--rechazado { border-color: rgba(220,38,38,0.4) !important; color: #f87171 !important; }
-    &:hover:not(:disabled) { background: rgba(0,166,62,0.10) !important; }
-  }
-
-  // Botones de acción (icono / pequeños)
-  .btn-action, .btn-icon, .btn-edit, .btn-delete, .btn-view {
-    background: rgba(255,255,255,0.04) !important;
-    border-color: rgba(255,255,255,0.08) !important;
-    color: #9ca3af !important;
-    &:hover { background: rgba(255,255,255,0.08) !important; }
-  }
-
-  // Archivo cargado (input-like)
-  .archivo-info, .file-info, .file-name-box {
-    background: #1a1a1a !important;
-    border-color: rgba(255,255,255,0.10) !important;
-    color: #d1d5db !important;
-  }
-  .archivo-nombre, .file-name { color: #d1d5db !important; }
-
-  // Modales / overlays
-  .modal, .dialog, .overlay-content, .modal-box {
-    background: #111 !important;
-    border-color: rgba(255,255,255,0.1) !important;
-    color: #e5e5e5 !important;
-  }
-  .modal-header, .modal-footer {
-    background: #0a0a0a !important;
-    border-color: rgba(255,255,255,0.07) !important;
-  }
-
-  // Líneas / divisores
-  hr, .divider, .separator { border-color: rgba(255,255,255,0.07) !important; }
-
-  // Scroll / sidebar
-  .sidebar, .nav-sidebar { background: #080808 !important; }
-  .nav-item, .menu-item {
-    color: #9ca3af !important;
-    &:hover, &.active { background: rgba(0,166,62,0.1) !important; color: #4ade80 !important; }
-  }
-
-  // Alerts / toasts info
-  .alert-info, .info-box    { background: rgba(29,78,216,0.12) !important; color: #93c5fd !important; }
-  .alert-success, .ok-box   { background: rgba(0,166,62,0.12) !important; color: #4ade80 !important; }
-  .alert-warning, .warn-box { background: rgba(217,119,6,0.12) !important; color: #fbbf24 !important; }
-  .alert-danger, .error-box { background: rgba(220,38,38,0.12) !important; color: #f87171 !important; }
-
-  // Paginación
-  .pagination .page-btn {
-    background: #111 !important;
-    border-color: rgba(255,255,255,0.1) !important;
-    color: #9ca3af !important;
-    &.active { background: #00A63E !important; color: #fff !important; }
-    &:hover:not(.active) { background: rgba(255,255,255,0.05) !important; }
-  }
-
-  // Search / filtros
-  .search-bar, .filter-bar, .buscador {
-    background: #111 !important;
-    border-color: rgba(255,255,255,0.1) !important;
-    color: #e5e5e5 !important;
-  }
-
-  // Chips de selección
-  .chip, .tag-chip, .filter-chip {
-    background: rgba(255,255,255,0.07) !important;
-    color: #9ca3af !important;
-    border-color: rgba(255,255,255,0.1) !important;
-    &.selected, &.active { 
-      background: rgba(0,166,62,0.2) !important; 
-      color: #4ade80 !important; 
-      border-color: rgba(0,166,62,0.4) !important; 
-    }
-  }
-
-  // Progress bars
-  .progress-bar, .barra-progreso {
-    background: rgba(255,255,255,0.07) !important;
-    .fill, .progreso { background: #00A63E !important; }
-  }
-
-  // Textos de hint / placeholder secundario
-  .hint, .helper-text, .text-muted, .text-gray,
-  .doc-descripcion, .descripcion-campo { color: #4b5563 !important; }
-
-  // Títulos de sección con color verde
-  .seccion-titulo, .section-title, .page-title {
-    color: #4ade80 !important;
-  }
-
-  // Prepostulación específica
-  .doc-prepost { 
-    background: rgba(79,70,229,0.05) !important; 
-    border-color: rgba(79,70,229,0.2) !important; 
-  }
-  .estado-badge.estado-subido   { background: rgba(29,78,216,0.25) !important; color: #93c5fd !important; }
-  .estado-badge.estado-validado { background: rgba(22,101,52,0.25) !important; color: #86efac !important; }
-  .estado-badge.estado-rechazado{ background: rgba(153,27,27,0.25) !important; color: #fca5a5 !important; }
 }

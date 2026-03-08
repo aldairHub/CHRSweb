@@ -2,221 +2,229 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClientModule } from '@angular/common/http';
 
-// Importar el servicio
-import { PrepostulacionService, Prepostulacion, DocumentosResponse, DocumentoAcademico } from '../../../services/prepostulacion.service';
-
-// Importar componentes
+import {
+  DocumentoService,
+  DocumentoBackend
+} from '../../../services/documento.service';
+import { ToastService } from '../../../services/toast.service';
 import { NavbarComponent } from '../../../component/navbar';
 import { FooterComponent } from '../../../component/footer';
+import { ToastComponent } from '../../../component/toast.component';
 
-// Interfaz para los documentos en la vista
-interface Documento {
-  id: number;
-  nombre: string;
-  archivo: string;
-  urlCompleta: string;
-  estado: 'pendiente' | 'valido' | 'rechazado';
-  observacion: string;
-  tipoDocumento: 'cedula' | 'foto' | 'academico';  // 'prerrequisitos' → 'academico'
+export interface DocumentoRevision {
+  idDocumento:     number;
+  idTipoDocumento: number;
+  nombre:          string;
+  descripcion:     string;
+  obligatorio:     boolean;
+  rutaArchivo:     string | null;
+  nombreArchivo:   string;
+  fechaCarga:      string | null;
+  observacionIa:   string;
+  estado:          'pendiente' | 'subido' | 'validado' | 'rechazado';
+  estadoEval:      'sin_revisar' | 'validado' | 'rechazado';
+  observacionEval: string;
+  guardando:       boolean;
+  guardado:        boolean;
 }
 
 @Component({
   selector: 'app-documentos',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    HttpClientModule,
-    NavbarComponent,
-    FooterComponent
-  ],
-  providers: [PrepostulacionService],
+  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent, ToastComponent],
   templateUrl: './documentos.html',
   styleUrls: ['./documentos.scss']
 })
 export class DocumentosComponent implements OnInit {
 
-  // ID de la prepostulación
-  prepostulacionId!: number;
+  idPostulacion!: number;
 
-  // Datos del postulante
-  postulante = {
-    nombres: '',
-    cedula: '',
-    cargo: 'Docente Tiempo Completo - Ingeniería Software'
-  };
+  postulante = { nombres: '', apellidos: '', cedula: '', estado: '' };
 
-  // Lista de documentos para validar
-  documentos: Documento[] = [];
-
-  // Estado de carga
-  cargando = true;
+  documentos:    DocumentoRevision[] = [];
+  cargando       = true;
+  guardandoTodo  = false;
   error: string | null = null;
 
   constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private prepostulacionService: PrepostulacionService
+    private route:        ActivatedRoute,
+    private router:       Router,
+    private documentoSvc: DocumentoService,
+    private toast:        ToastService
   ) {}
 
-  ngOnInit() {
-    // Obtener el ID de la prepostulación desde la ruta
-    // Ejemplo: /evaluador/documentos/123
+  ngOnInit(): void {
     this.route.params.subscribe(params => {
-      this.prepostulacionId = +params['id']; // El + convierte string a number
-      this.cargarDatos();
+      this.idPostulacion = +params['id'];
+      this.cargarTodo();
     });
   }
 
-  /**
-   * Cargar los datos de la prepostulación desde el backend
-   */
-  cargarDatos() {
+  cargarTodo(): void {
     this.cargando = true;
-    this.error = null;
+    this.error    = null;
 
-    // Primero obtenemos los datos básicos de la prepostulación
-    this.prepostulacionService.obtenerPrepostulacion(this.prepostulacionId)
-      .subscribe({
-        next: (prepostulacion: Prepostulacion) => {
-          // Llenar datos del postulante
-          this.postulante.nombres = `${prepostulacion.nombres} ${prepostulacion.apellidos}`;
-          this.postulante.cedula = prepostulacion.identificacion;
+    this.documentoSvc.obtenerInfoPorPostulacion(this.idPostulacion).subscribe({
+      next: (info: any) => {
+        this.postulante.nombres   = info['nombres']         ?? '';
+        this.postulante.apellidos = info['apellidos']       ?? '';
+        this.postulante.cedula    = info['identificacion']  ?? '';
+        this.postulante.estado    = info['estado_postulacion'] ?? '';
+      },
+      error: () => {}
+    });
 
-          // Ahora obtenemos las URLs de los documentos
-          this.cargarDocumentos();
-        },
-        error: (err) => {
-          this.error = 'No se pudo cargar la información del postulante';
-          this.cargando = false;
-        }
-      });
+    this.documentoSvc.obtenerDocumentos(this.idPostulacion).subscribe({
+      next: (docs: DocumentoBackend[]) => {
+        this.documentos = docs
+          .filter(d => d.idDocumento !== null)
+          .map(d => this.mapear(d));
+        this.cargando = false;
+      },
+      error: () => {
+        this.error    = 'No se pudo cargar la información de documentos.';
+        this.cargando = false;
+      }
+    });
   }
 
-  /**
-   * Cargar las URLs de los documentos desde el backend
-   */
-  cargarDocumentos() {
-    this.prepostulacionService.obtenerDocumentos(this.prepostulacionId)
-      .subscribe({
-        next: (docs: DocumentosResponse) => {
-          // Documentos base: cédula y foto
-          this.documentos = [
-            {
-              id: 1,
-              nombre: 'Cédula de Identidad',
-              archivo: 'cedula.pdf',
-              urlCompleta: docs.cedula,
-              estado: 'pendiente',
-              observacion: '',
-              tipoDocumento: 'cedula'
-            },
-            {
-              id: 2,
-              nombre: 'Fotografía',
-              archivo: 'foto.jpg',
-              urlCompleta: docs.foto,
-              estado: 'pendiente',
-              observacion: '',
-              tipoDocumento: 'foto'
-            }
-          ];
+  private mapear(d: DocumentoBackend): DocumentoRevision {
+    const estadoRaw = (d.estadoValidacion ?? '').toLowerCase().trim();
+    let estado: DocumentoRevision['estado'] = 'pendiente';
+    if      (estadoRaw === 'validado')  estado = 'validado';
+    else if (estadoRaw === 'rechazado') estado = 'rechazado';
+    else if (d.idDocumento)             estado = 'subido';
 
-          // Agregar cada documento académico individualmente
-          if (docs.documentosAcademicos?.length) {
-            docs.documentosAcademicos.forEach((doc: DocumentoAcademico, i: number) => {
-              this.documentos.push({
-                id: 3 + i,
-                nombre: doc.descripcion,
-                archivo: `titulo_${i + 1}.pdf`,
-                urlCompleta: doc.urlDocumento,
-                estado: 'pendiente',
-                observacion: '',
-                tipoDocumento: 'academico'
-              });
-            });
-          }
+    let estadoEval: DocumentoRevision['estadoEval'] = 'sin_revisar';
+    if (estado === 'validado')  estadoEval = 'validado';
+    if (estado === 'rechazado') estadoEval = 'rechazado';
 
-          this.cargando = false;
-        },
-        error: (err: any) => {
-          this.error = 'No se pudo cargar la información del postulante';
-          this.cargando = false;
-        }
-      });
-  }
+    const nombreArchivo = d.rutaArchivo
+      ? d.rutaArchivo.replace(/\\/g, '/').split('/').pop() ?? 'documento.pdf'
+      : '';
 
-  /**
-   * Volver a la lista de postulantes
-   */
-  volver() {
-    this.router.navigate(['/evaluador/postulantes']);
-  }
-
-  /**
-   * Validar o rechazar un documento
-   */
-  validarDocumento(doc: Documento, estado: 'valido' | 'rechazado') {
-    doc.estado = estado;
-    if (estado === 'valido') {
-      doc.observacion = '';
-    }
-  }
-
-  /**
-   * Guardar la revisión y enviarla al backend
-   */
-  guardarRevision() {
-    // Validar que todos los documentos estén revisados
-    const pendientes = this.documentos.filter(d => d.estado === 'pendiente');
-
-    if (pendientes.length > 0) {
-      alert(`Aún tienes ${pendientes.length} documentos sin revisar.`);
-      return;
-    }
-
-    // Determinar el estado general de la prepostulación
-    const tieneRechazados = this.documentos.some(d => d.estado === 'rechazado');
-    const estadoFinal = tieneRechazados ? 'RECHAZADO' : 'APROBADO';
-
-    // Juntar todas las observaciones
-    const observaciones = this.documentos
-      .filter(d => d.observacion.trim() !== '')
-      .map(d => `${d.nombre}: ${d.observacion}`)
-      .join(' | ');
-
-    // Preparar el request
-    const request = {
-      estado: estadoFinal,
-      observaciones: observaciones || 'Documentos revisados correctamente',
-      idRevisor: 1 //  Obtener el ID del usuario logueado
+    return {
+      idDocumento:     d.idDocumento!,
+      idTipoDocumento: d.idTipoDocumento,
+      nombre:          d.nombreTipo,
+      descripcion:     d.descripcionTipo ?? 'Documento requerido para el proceso.',
+      obligatorio:     d.obligatorio,
+      rutaArchivo:     d.rutaArchivo,
+      nombreArchivo,
+      fechaCarga:      d.fechaCarga,
+      observacionIa:   d.observacionesIa ?? '',
+      estado,
+      estadoEval,
+      observacionEval: d.observacionesIa ?? '',
+      guardando:       false,
+      guardado:        estado === 'validado' || estado === 'rechazado'
     };
-
-    // Enviar al backend
-    this.prepostulacionService.actualizarEstado(this.prepostulacionId, request)
-      .subscribe({
-        next: (response) => {
-          alert('✅ Validación guardada correctamente.');
-          this.volver();
-        },
-        error: (err) => {
-          alert('❌ Error al guardar la validación. Intenta nuevamente.');
-        }
-      });
   }
 
-  /**
-   * Abrir el archivo en una nueva pestaña
-   */
-  verArchivo(urlCompleta: string) {
-    if (!urlCompleta) {
-      alert('No hay archivo disponible para este documento.');
+  get nombreCompleto(): string {
+    return `${this.postulante.nombres} ${this.postulante.apellidos}`.trim();
+  }
+
+  get totalRevisados(): number {
+    return this.documentos.filter(d => d.estadoEval !== 'sin_revisar').length;
+  }
+
+  get porcentajeRevisado(): number {
+    if (!this.documentos.length) return 0;
+    return Math.round((this.totalRevisados / this.documentos.length) * 100);
+  }
+
+  get todosRevisados(): boolean {
+    return this.documentos.length > 0 &&
+           this.documentos.every(d => d.estadoEval !== 'sin_revisar');
+  }
+
+  verArchivo(url: string | null): void {
+    if (!url) {
+      this.toast.error('Sin archivo', 'No hay archivo disponible.');
+      return;
+    }
+    window.open(url, '_blank');
+  }
+
+  guardarDoc(doc: DocumentoRevision): void {
+    if (doc.estadoEval === 'sin_revisar') {
+      this.toast.error('Sin decisión', 'Selecciona Válido o Rechazado primero.');
+      return;
+    }
+    if (doc.estadoEval === 'rechazado' && !doc.observacionEval.trim()) {
+      this.toast.error('Observación requerida', 'Agrega una observación al rechazar.');
+      return;
+    }
+    doc.guardando = true;
+    this.documentoSvc.validarDocumento(
+      doc.idDocumento,
+      doc.estadoEval as 'validado' | 'rechazado',
+      doc.observacionEval
+    ).subscribe({
+      next: () => {
+        doc.estado    = doc.estadoEval as 'validado' | 'rechazado';
+        doc.guardado  = true;
+        doc.guardando = false;
+        this.toast.success('Guardado', `"${doc.nombre}" marcado como ${doc.estadoEval}.`);
+      },
+      error: () => {
+        doc.guardando = false;
+        this.toast.error('Error', 'No se pudo guardar. Intenta nuevamente.');
+      }
+    });
+  }
+
+  guardarTodos(): void {
+    const sinRevisar = this.documentos.filter(d => d.estadoEval === 'sin_revisar');
+    if (sinRevisar.length) {
+      this.toast.error('Incompleto', `Quedan ${sinRevisar.length} documentos sin revisar.`);
+      return;
+    }
+    const sinObs = this.documentos.filter(
+      d => d.estadoEval === 'rechazado' && !d.observacionEval.trim()
+    );
+    if (sinObs.length) {
+      this.toast.error('Observación requerida', 'Agrega observación a los documentos rechazados.');
       return;
     }
 
-    // Abrir en nueva pestaña
-    window.open(urlCompleta, '_blank');
+    this.guardandoTodo = true;
+    const pendientes   = this.documentos.filter(d => !d.guardado);
+
+    if (!pendientes.length) {
+      this.guardandoTodo = false;
+      this.toast.success('Todo listo', 'Todos los documentos ya estaban guardados.');
+      return;
+    }
+
+    let completados = 0;
+    pendientes.forEach(doc => {
+      this.documentoSvc.validarDocumento(
+        doc.idDocumento,
+        doc.estadoEval as 'validado' | 'rechazado',
+        doc.observacionEval
+      ).subscribe({
+        next: () => {
+          doc.estado   = doc.estadoEval as 'validado' | 'rechazado';
+          doc.guardado = true;
+          completados++;
+          if (completados === pendientes.length) {
+            this.guardandoTodo = false;
+            this.toast.success('¡Revisión completada!', 'Todos los documentos fueron guardados.');
+          }
+        },
+        error: () => {
+          completados++;
+          if (completados === pendientes.length) this.guardandoTodo = false;
+          this.toast.error('Error parcial', `No se pudo guardar "${doc.nombre}".`);
+        }
+      });
+    });
+  }
+
+  volver(): void {
+    this.router.navigate(['/evaluador/postulantes']);
   }
 }

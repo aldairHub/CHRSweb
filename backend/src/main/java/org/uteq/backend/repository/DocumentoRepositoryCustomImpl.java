@@ -170,4 +170,41 @@ public class DocumentoRepositoryCustomImpl {
         });
     }
 
+    // ----------------------------------------------------------
+    // Actualiza estado_validacion de un documento
+    // Guarda observación en resultados_ia_documento si se provee
+    // ----------------------------------------------------------
+    public Map<String, Object> validarDocumento(Long idDocumento, String estado, String observacion) {
+        try {
+            jdbcTemplate.update(
+                "UPDATE documento SET estado_validacion = ? WHERE id_documento = ?",
+                estado, idDocumento
+            );
+            if (observacion != null && !observacion.isBlank()) {
+                jdbcTemplate.update(
+                    "INSERT INTO resultados_ia_documento (id_documento, resultado, observaciones, fecha_revision) " +
+                    "VALUES (?, 'REVISION_MANUAL', ?, NOW())",
+                    idDocumento, observacion
+                );
+            }
+            return Map.of("exitoso", true, "mensaje", "Documento actualizado correctamente");
+        } catch (Exception e) {
+            return Map.of("exitoso", false, "mensaje", "Error al actualizar: " + e.getMessage());
+        }
+    }
+
+    // ----------------------------------------------------------
+    // Info básica del postulante a partir del id_postulacion
+    // ----------------------------------------------------------
+    public Map<String, Object> obtenerInfoPorPostulacion(Long idPostulacion) {
+        String sql =
+            "SELECT p.nombres, p.apellidos, p.identificacion, " +
+            "       post.estado_postulacion " +
+            "FROM postulacion post " +
+            "JOIN postulante p ON post.id_postulante = p.id_postulante " +
+            "WHERE post.id_postulacion = ?";
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, idPostulacion);
+        return rows.isEmpty() ? Map.of() : rows.get(0);
+    }
+
 }
