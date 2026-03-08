@@ -105,8 +105,8 @@ public class DocumentoRepositoryCustomImpl {
                 "SELECT * FROM sp_finalizar_carga_documentos(?)",
                 new Object[]{idPostulacion},
                 rs -> {
-                    result.put("exitoso", rs.getBoolean("v_exitoso"));
-                    result.put("mensaje", rs.getString("v_mensaje"));
+                    result.put("exitoso", rs.getBoolean("exitoso"));
+                    result.put("mensaje", rs.getString("mensaje"));
                 }
         );
         return result;
@@ -177,14 +177,14 @@ public class DocumentoRepositoryCustomImpl {
     public Map<String, Object> validarDocumento(Long idDocumento, String estado, String observacion) {
         try {
             jdbcTemplate.update(
-                "UPDATE documento SET estado_validacion = ? WHERE id_documento = ?",
-                estado, idDocumento
+                    "UPDATE documento SET estado_validacion = ? WHERE id_documento = ?",
+                    estado, idDocumento
             );
             if (observacion != null && !observacion.isBlank()) {
                 jdbcTemplate.update(
-                    "INSERT INTO resultados_ia_documento (id_documento, resultado, observaciones, fecha_revision) " +
-                    "VALUES (?, 'REVISION_MANUAL', ?, NOW())",
-                    idDocumento, observacion
+                        "INSERT INTO resultados_ia_documento (id_documento, resultado, observaciones, fecha_revision) " +
+                                "VALUES (?, 'REVISION_MANUAL', ?, NOW())",
+                        idDocumento, observacion
                 );
             }
             return Map.of("exitoso", true, "mensaje", "Documento actualizado correctamente");

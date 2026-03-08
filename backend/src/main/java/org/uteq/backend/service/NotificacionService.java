@@ -310,7 +310,7 @@ public class NotificacionService {
     @Scheduled(cron = "0 0 0 * * SUN")
     public void limpiarNotificacionesAntiguas() {
         try {
-            jdbc.update("CALL sp_eliminar_notificaciones_antiguas(90, NULL, NULL)");
+            jdbc.update("CALL sp_eliminar_notificaciones_antiguas(NULL, NULL, 90)");
             log.info("Limpieza de notificaciones antiguas completada");
         } catch (Exception e) {
             log.error("Error en limpieza de notificaciones: {}", e.getMessage());

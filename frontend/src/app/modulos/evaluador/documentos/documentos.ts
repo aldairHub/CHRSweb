@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit,ChangeDetectorRef} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -49,7 +49,7 @@ export class DocumentosComponent implements OnInit {
   constructor(
     private route:        ActivatedRoute,
     private router:       Router,
-    private documentoSvc: DocumentoService,
+    private documentoSvc: DocumentoService,private cdr: ChangeDetectorRef,
     private toast:        ToastService
   ) {}
 
@@ -58,10 +58,12 @@ export class DocumentosComponent implements OnInit {
       const id = Number(params['id']);
       if (!id || isNaN(id)) {
         this.router.navigate(['/evaluador/postulantes']);
+        this.cdr.detectChanges();
         return;
       }
       this.idPostulacion = id;
       this.cargarTodo();
+      this.cdr.detectChanges();
     });
   }
 
@@ -75,6 +77,7 @@ export class DocumentosComponent implements OnInit {
         this.postulante.apellidos = info['apellidos']          ?? '';
         this.postulante.cedula    = info['identificacion']     ?? '';
         this.postulante.estado    = info['estado_postulacion'] ?? '';
+        this.cdr.detectChanges();
       },
       error: () => {}
     });
@@ -85,6 +88,7 @@ export class DocumentosComponent implements OnInit {
           .filter(d => d.idDocumento !== null)
           .map(d => this.mapear(d));
         this.cargando = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.error    = 'No se pudo cargar la informacion de documentos.';
@@ -99,11 +103,11 @@ export class DocumentosComponent implements OnInit {
     if      (estadoRaw === 'validado')  estado = 'validado';
     else if (estadoRaw === 'rechazado') estado = 'rechazado';
     else if (d.idDocumento)             estado = 'subido';
-
+    this.cdr.detectChanges();
     let estadoEval: DocumentoRevision['estadoEval'] = 'sin_revisar';
     if (estado === 'validado')  estadoEval = 'validado';
     if (estado === 'rechazado') estadoEval = 'rechazado';
-
+    this.cdr.detectChanges();
     const nombreArchivo = d.rutaArchivo
       ? d.rutaArchivo.replace(/\\/g, '/').split('/').pop() ?? 'documento.pdf'
       : '';

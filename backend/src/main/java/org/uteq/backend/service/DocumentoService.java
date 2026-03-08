@@ -149,8 +149,8 @@ public class DocumentoService {
     public Map<String, Object> validarDocumento(Long idDocumento, String estado, String observacion) {
         Map<String, Object> result = documentoRepo.validarDocumento(idDocumento, estado, observacion);
 
-        // Notificar al postulante cuando su documento es rechazado
-        if ("rechazado".equalsIgnoreCase(estado)) {
+        // Notificar al postulante según el resultado de la validación
+        if ("rechazado".equalsIgnoreCase(estado) || "validado".equalsIgnoreCase(estado)) {
             try {
                 Map<String, Object> docInfo = jdbc.queryForMap(
                         "SELECT d.id_postulacion, p.id_usuario, td.nombre AS tipo_doc " +
@@ -162,13 +162,23 @@ public class DocumentoService {
                 );
                 Long idUsuario = ((Number) docInfo.get("id_usuario")).longValue();
                 String tipoDoc = (String) docInfo.getOrDefault("tipo_doc", "documento");
-                String obs = (observacion != null && !observacion.isBlank()) ? observacion : "Sin observación";
-                notificacionService.notificarUsuario(
-                        idUsuario, "warning",
-                        "Documento rechazado",
-                        "Tu documento '" + tipoDoc + "' fue rechazado. Motivo: " + obs + ". Por favor, subelo nuevamente.",
-                        "POSTULACION", null
-                );
+
+                if ("validado".equalsIgnoreCase(estado)) {
+                    notificacionService.notificarUsuario(
+                            idUsuario, "success",
+                            "Documento validado",
+                            "Tu documento '" + tipoDoc + "' ha sido validado correctamente. ¡Sigue subiendo los documentos restantes!",
+                            "POSTULACION", null
+                    );
+                } else {
+                    String obs = (observacion != null && !observacion.isBlank()) ? observacion : "Sin observación";
+                    notificacionService.notificarUsuario(
+                            idUsuario, "warning",
+                            "Documento rechazado",
+                            "Tu documento '" + tipoDoc + "' fue rechazado. Motivo: " + obs + ". Por favor, súbelo nuevamente.",
+                            "POSTULACION", null
+                    );
+                }
             } catch (Exception ignored) {}
         }
 
