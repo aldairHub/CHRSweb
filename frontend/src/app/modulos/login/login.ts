@@ -100,6 +100,10 @@ export class LoginComponent implements OnInit {
     this.router.navigate(['/convocatorias']);
   }
 
+  irALanding() {
+    this.router.navigate(['/']);
+  }
+
   irARecuperarClave() {
     this.router.navigate(['/recuperar-clave']);
   }

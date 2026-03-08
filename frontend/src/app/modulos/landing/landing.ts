@@ -148,7 +148,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     if (cached) {
       this.convocatorias = cached.map((c, i) => ({
         ...c,
-        imagenUrl: (c as any).imagenPortadaUrl || this.getDefaultImage(i)
+        imagenUrl: (c as any).imagenPortadaUrl || null
       }));
       this.cargando = false;
       setTimeout(() => {
@@ -164,7 +164,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
         cacheSet(CACHE_KEY, data);
         this.convocatorias = data.map((c, i) => ({
           ...c,
-          imagenUrl: (c as any).imagenPortadaUrl || this.getDefaultImage(i)
+          imagenUrl: (c as any).imagenPortadaUrl || null
         }));
         this.cargando = false;
         setTimeout(() => {

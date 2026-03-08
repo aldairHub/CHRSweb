@@ -340,6 +340,35 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
 }
 
 // ─── Botón de tema flotante en login ──────────────────
+.btn-landing-login {
+  position: fixed;
+  top: 1.25rem;
+  right: 5.5rem;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  height: 44px;
+  border-radius: 22px;
+  background: rgba(0,166,62,0.1);
+  border: 1.5px solid rgba(0,166,62,0.3);
+  color: #00A63E;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: all 0.25s ease;
+
+  svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+  &:hover {
+    background: rgba(0,166,62,0.2);
+    transform: scale(1.05);
+    box-shadow: 0 0 16px rgba(0,166,62,0.3);
+  }
+}
+
 .btn-theme-login {
   position: fixed;
   top: 1.25rem;
@@ -422,4 +451,11 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
   border-color: #2a2a2a;
   color: #666666;
   &:hover { color: #f0f0f0; background: rgba(255,255,255,0.08); }
+}
+
+:host-context(html.dark) .btn-landing-login {
+  background: rgba(255,255,255,0.04);
+  border-color: #2a2a2a;
+  color: #666666;
+  &:hover { color: #f0f0f0; background: rgba(255,255,255,0.08); box-shadow: 0 0 16px rgba(255,255,255,0.06); }
 }

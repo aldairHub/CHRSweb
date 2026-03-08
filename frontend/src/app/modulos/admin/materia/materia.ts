@@ -100,7 +100,7 @@ export class MateriaComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.cargando = false;
+    this.cargando = true;
     this.cargarCarreras();
     this.cargarMaterias();
   }
@@ -115,7 +115,6 @@ export class MateriaComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        this.cargando = false;
         console.error('Error cargando carreras:', err);
         this.carreras = [];
       }
@@ -123,9 +122,9 @@ export class MateriaComponent implements OnInit {
   }
 
   cargarMaterias(): void {
+    this.cargando = true;
     this.materiaService.listar().subscribe({
       next: (data: any[]) => {
-
         this.materias = data.map(m => ({
           id: m.idMateria,
           nombre: m.nombre,
@@ -136,6 +135,7 @@ export class MateriaComponent implements OnInit {
 
         this.materiasFiltradas = [...this.materias];
         this.calculatePagination();
+        this.cargando = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -294,7 +294,6 @@ export class MateriaComponent implements OnInit {
           this.cargarMaterias();
         },
         error: (err) => {
-          this.cargando = false;
           this.isSaving = false;
           this.toast.error('Error al actualizar', 'No se pudo actualizar la materia.');
         }
@@ -311,7 +310,6 @@ export class MateriaComponent implements OnInit {
           this.cargarMaterias();
         },
         error: (err) => {
-          this.cargando = false;
           this.isSaving = false;
           this.toast.error('Error al crear', 'No se pudo crear la materia.');
         }

@@ -73,7 +73,6 @@ export class CarreraComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarFacultades();
-    this.cargando = true;
     this.cargarCarreras();
   }
 
@@ -81,11 +80,13 @@ export class CarreraComponent implements OnInit {
   // LOADERS BACKEND
   // =========================
   cargarCarreras(): void {
+    this.cargando = true;
     this.carreraService.getAll().subscribe({
       next: (data) => {
         this.carreras = Array.isArray(data) ? data : [];
         this.carrerasFiltradas = [...this.carreras];
         this.calculatePagination();
+        this.cargando = false;
         this.cdr.detectChanges();
       },
       error: () => {

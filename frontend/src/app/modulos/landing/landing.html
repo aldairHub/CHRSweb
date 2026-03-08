@@ -146,7 +146,13 @@
         <article class="lnd-card" *ngFor="let conv of convocatorias; let i = index"
                  (click)="verDetalleConvocatoria(conv)" [style.animation-delay]="i * 0.1 + 's'">
           <div class="lnd-card-img">
-            <img [src]="conv.imagenUrl || getDefaultImage(i)" [alt]="conv.titulo" (error)="onImageError($event, i)">
+            <img *ngIf="conv.imagenUrl" [src]="conv.imagenUrl" [alt]="conv.titulo" (error)="onImageError($event, i)">
+            <div *ngIf="!conv.imagenUrl" class="lnd-card-placeholder">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+                <circle cx="40" cy="28" r="16" fill="#86efac"/>
+                <rect x="14" y="50" width="52" height="30" rx="10" fill="#86efac"/>
+              </svg>
+            </div>
             <span class="lnd-badge" [class.activa]="conv.estadoConvocatoria === 'ACTIVA'">
               {{ conv.estadoConvocatoria }}
             </span>
