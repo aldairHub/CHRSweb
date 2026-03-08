@@ -85,6 +85,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  irAInicio(): void {
+    const rol = localStorage.getItem('rol') || '';
+    this.router.navigate(['/' + rol]);
+  }
+
   irAlHistorial(event: MouseEvent): void {
     event.stopPropagation();
     this.showNotifications = false;

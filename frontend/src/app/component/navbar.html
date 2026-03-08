@@ -1,6 +1,6 @@
 <nav class="navbar">
 
-  <div class="navbar-brand">
+  <div class="navbar-brand" (click)="irAInicio()" style="cursor:pointer">
     <img
       [src]="(logoService.getLogo() | async) || 'imgs/logo-uteq.png'"
       alt="Logo institucional"
