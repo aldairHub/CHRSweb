@@ -37,11 +37,12 @@ export class EntrevistaPostulanteComponent implements OnInit {
     this.entrevistaSvc.obtenerMiEntrevista(idUsuario).subscribe({
       next: data => {
         this.entrevista = data;
-        this.cargando   = false;
+        this.error = data ? null : 'No tienes ninguna entrevista programada por el momento.';
+        setTimeout(() => this.cargando = false, 0);
       },
       error: () => {
-        this.error    = 'No tienes ninguna entrevista programada por el momento.';
-        this.cargando = false;
+        this.error = 'No tienes ninguna entrevista programada por el momento.';
+        setTimeout(() => this.cargando = false, 0);
       }
     });
   }

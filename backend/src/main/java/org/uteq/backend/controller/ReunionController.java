@@ -39,9 +39,10 @@ public class ReunionController {
     }
 
     @GetMapping("/mi-entrevista")
-    public ResponseEntity<ReunionResponseDTO> miEntrevista(
-            @RequestParam Long idUsuario) {
-        return ResponseEntity.ok(service.obtenerMiEntrevista(idUsuario));
+    public ResponseEntity<ReunionResponseDTO> miEntrevista(@RequestParam Long idUsuario) {
+        ReunionResponseDTO dto = service.obtenerMiEntrevista(idUsuario);
+        if (dto == null) return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(dto);
     }
 
     /** GET /api/evaluacion/reuniones/{id} */
