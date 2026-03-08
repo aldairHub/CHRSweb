@@ -13,6 +13,7 @@ import { SolicitudDocenteService, SolicitudDocenteResponse } from '../../../serv
 import { TipoDocumentoService, TipoDocumento } from '../../../services/tipo-documento.service';
 import { ToastService } from '../../../services/toast.service';
 import { ToastComponent } from '../../../component/toast.component';
+import { AiConvocatoriaService } from '../../../services/ai-convocatoria.service';
 
 @Component({
   selector: 'app-convocatoria',
@@ -93,12 +94,16 @@ export class ConvocatoriaComponent implements OnInit {
   generandoImagen = false;
   private toastImagenId: number | null = null;
 
+  // ===== FEATURE 4 — Generación de descripción con IA =====
+  isGenerandoDescripcion = false;
+
   constructor(
     private convocatoriaService: ConvocatoriaAdminService,
     private solicitudService: SolicitudDocenteService,
     private tipoDocumentoService: TipoDocumentoService,   // NUEVO
     private cdr: ChangeDetectorRef,
-    private toast: ToastService
+    private toast: ToastService,
+    private aiService: AiConvocatoriaService
   ) {}
 
   ngOnInit(): void {
@@ -491,4 +496,41 @@ export class ConvocatoriaComponent implements OnInit {
       }
     });
   }
+  // ─── FEATURE 4 — Generar descripción con IA ─────────────────────────────
+
+  /**
+   * Envía las justificaciones de las solicitudes seleccionadas al backend (Ollama).
+   * El resultado se inserta automáticamente en el campo descripción del formulario.
+   */
+  generarDescripcionConIA(): void {
+    if (this.form.idsSolicitudes.length === 0) {
+      this.toast.warning('Sin solicitudes', 'Selecciona al menos una solicitud para generar la descripción.');
+      return;
+    }
+
+    this.isGenerandoDescripcion = true;
+    const toastId = this.toast.loading('Generando descripción con IA...', 'Esto puede tardar unos segundos');
+    this.cdr.detectChanges();
+
+    this.aiService.generarDescripcion({ idsSolicitudes: this.form.idsSolicitudes }).subscribe({
+      next: (resp) => {
+        this.toast.remove(toastId);
+        this.isGenerandoDescripcion = false;
+        if (resp.descripcion) {
+          this.form.descripcion = resp.descripcion;
+          this.toast.success('Descripción generada', 'Puedes editarla antes de guardar.');
+        } else {
+          this.toast.error('Error', resp.error || 'No se pudo generar la descripción.');
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.toast.remove(toastId);
+        this.isGenerandoDescripcion = false;
+        this.toast.error('IA no disponible', 'Verifica que Ollama esté instalado y en ejecución.');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
 }

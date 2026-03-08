@@ -78,8 +78,8 @@
     </select>
   </div>
 
-  <!-- TABLA -->
-  <div class="table-container">
+
+  <div class="table-container" *ngIf="!cargando">
     <table class="table">
       <thead>
       <tr>
@@ -338,4 +338,5 @@
   </div>
 </div>
 
+<app-toast></app-toast>
 <app-footer></app-footer>

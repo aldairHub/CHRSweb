@@ -6,6 +6,8 @@ import { HttpClient } from '@angular/common/http';
 import { NavbarComponent } from '../../../component/navbar';
 import { FooterComponent } from '../../../component/footer.component';
 import { environment } from '../../../../environments/environment';
+import { ToastService } from '../../../services/toast.service';
+import { ToastComponent } from '../../../component/toast.component';
 
 export interface SolicitudDocenteResponseDTO {
   idSolicitud?:               number;
@@ -35,7 +37,7 @@ export interface SolicitudDocenteResponseDTO {
   selector: 'app-solicitudes-docente',
   standalone: true,
   imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent,
-    DecimalPipe, TitleCasePipe, DatePipe],
+    DecimalPipe, TitleCasePipe, DatePipe, ToastComponent],
   templateUrl: './solicitudes-docente.html',
   styleUrls:  ['./solicitudes-docente.scss']
 })
@@ -66,21 +68,29 @@ export class SolicitudesDocenteComponent implements OnInit {
   observacionesAccion = '';
   procesando          = false;
 
-  constructor(private http: HttpClient,   private cdr: ChangeDetectorRef) {}
+  constructor(private http: HttpClient,   private cdr: ChangeDetectorRef,
+              private toast: ToastService) {}
 
   ngOnInit(): void { this.cargar(); }
 
   // ── carga ──────────────────────────────────────────────────────
-  cargar(): void { this.cdr.detectChanges();
+  cargar(): void {
+    this.cdr.detectChanges();
     this.cargando = true;
     this.http.get<SolicitudDocenteResponseDTO[]>(this.API).subscribe({
-      next: data => { this.solicitudes = data; this.filtrar(); this.cargando = false; this.cdr.detectChanges(); },
-      error: err  => { this.cargando = false; }
-
-    })
-    ;
+      next: data => {
+        this.solicitudes = data;
+        this.filtrar();
+        this.cargando = false;
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        this.cargando = false;
+        this.toast.error('Error', 'No se pudieron cargar las solicitudes.');
+        this.cdr.detectChanges();
+      }
+    });
     this.cdr.detectChanges();
-
   }
 
   // ── filtro ────────────────────────────────────────────────────
@@ -163,6 +173,7 @@ export class SolicitudesDocenteComponent implements OnInit {
       },
       error: err => {
         this.cargando = false;
+        console.error('Error cambiando estado', err);
         this.procesando = false;
       }
     });

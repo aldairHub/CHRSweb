@@ -253,6 +253,7 @@ export const routes: Routes = [
         canActivate: [NoPrimerLoginGuard],
         loadComponent: () => import('./modulos/admin/auditoria/estadisticas/estadisticas').then(m => m.EstadisticasAuditoriaComponent)
       },
+
       {
         path: 'gestion-opciones',
         title: 'SSDC - Configuración de opciones',

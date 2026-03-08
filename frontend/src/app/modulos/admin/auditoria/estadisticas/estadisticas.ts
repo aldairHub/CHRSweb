@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { NavbarComponent } from '../../../../component/navbar';
 import { ToastComponent } from '../../../../component/toast.component';
 import { ToastService } from '../../../../services/toast.service';
@@ -30,7 +30,7 @@ interface EstadisticasDto {
 @Component({
   selector: 'app-estadisticas-auditoria',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, RouterLink, ToastComponent],
+  imports: [CommonModule, NavbarComponent, RouterLink, RouterLinkActive, ToastComponent],
   templateUrl: './estadisticas.html',
   styleUrls: ['./estadisticas.scss']
 })

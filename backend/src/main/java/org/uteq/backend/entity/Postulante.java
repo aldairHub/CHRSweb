@@ -20,7 +20,7 @@ public class Postulante {
     @Column(name = "apellidos_postulante", nullable = false)
     private String apellidosPostulante;
 
-    @Column(name = "identificacion", nullable = false, unique = true)
+    @Column(name = "identificacion", nullable = false)
     private String identificacion;
 
     @Column(name = "correo_postulante", nullable = false)

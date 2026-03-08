@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { NavbarComponent } from '../../../component/navbar';
+import { ToastService } from '../../../services/toast.service';
+import { ToastComponent } from '../../../component/toast.component';
 
 @Component({
   selector: 'app-gestion-opciones',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, ToastComponent],
   templateUrl: './gestion-opciones.html',
   styleUrls: ['./gestion-opciones.scss']
 })
@@ -23,6 +25,7 @@ export class GestionOpcionesComponent implements OnInit {
   nombreRolActual:  string        = '';
   moduloDelRol:     string        = '';
   cargandoOpciones: boolean       = false;
+  isLoadingRoles:   boolean       = false;
   guardando:        boolean       = false;
 
   private readonly apiRoles   = 'http://localhost:8080/api/roles-app';
@@ -30,7 +33,8 @@ export class GestionOpcionesComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -39,16 +43,21 @@ export class GestionOpcionesComponent implements OnInit {
 
   // ─── Carga roles ────────────────────────────────────────────────
   cargarRoles(): void {
-    this.cargando = true;
     this.http.get<any[]>(this.apiRoles).subscribe({
       next: data => {
         this.cargando = false;
         // Solo roles con módulo asignado — sin módulo no tiene opciones
         this.roles = (Array.isArray(data) ? data : [])
           .filter(r => r.activo);
+        this.isLoadingRoles = false;
         this.cdr.detectChanges();
       },
-      error: err => { }  });
+      error: err => {
+        this.isLoadingRoles = false;
+        this.toast.error('Error', 'No se pudieron cargar los roles.');
+        this.cdr.detectChanges();
+        }
+    });
   }
 
   // ─── Seleccionar rol → carga opciones de su módulo ───────────────
@@ -70,8 +79,7 @@ export class GestionOpcionesComponent implements OnInit {
       error: err => {
         this.cargando = false;
         this.cargandoOpciones = false;
-        alert('No se pudieron cargar las opciones. ' +
-          'Verifica que el rol tiene un módulo asignado.');
+        this.toast.error('Error al cargar opciones', 'Verifica que el rol tiene un módulo asignado.');
         this.cdr.detectChanges();
       }
     });
@@ -91,7 +99,7 @@ export class GestionOpcionesComponent implements OnInit {
         },
         error: err => {
           this.cargando = false;
-          alert('No se pudo quitar la opción.');
+          this.toast.error('Error', 'No se pudo quitar la opción.');
         }
       });
     } else {
@@ -107,7 +115,7 @@ export class GestionOpcionesComponent implements OnInit {
         },
         error: err => {
           this.cargando = false;
-          alert('No se pudo asignar la opción.');
+          this.toast.error('Error', 'No se pudo asignar la opción.');
         }
       });
     }
@@ -129,9 +137,8 @@ export class GestionOpcionesComponent implements OnInit {
       },
       error: err => {
         this.cargando = false;
-        alert('No se pudo actualizar el permiso.');
+        this.toast.error('Error', 'No se pudo actualizar el permiso.');
       }
     });
   }
 }
-

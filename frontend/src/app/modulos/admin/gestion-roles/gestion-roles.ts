@@ -12,11 +12,13 @@ import {
   RolAppConRolesBdDTO,
   RolAppSavePayload, RolBdDescripcion
 } from '../../../services/roles-app.service';
+import { ToastService } from '../../../services/toast.service';
+import { ToastComponent } from '../../../component/toast.component';
 
 @Component({
   selector: 'app-gestion-roles',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NavbarComponent, ToastComponent],
   templateUrl: './gestion-roles.html',
   styleUrls: ['./gestion-roles.scss']
 })
@@ -72,7 +74,8 @@ export class GestionRolesComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private svc: RolesAppService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -96,12 +99,13 @@ export class GestionRolesComponent implements OnInit {
     this.cargando = true;
     this.svc.listar().subscribe({
       next: data => {
-        this.cargando = false;
+        this.cargando = true;
         this.roles = Array.isArray(data) ? data : [];
         this.applyFilters();
         this.cdr.detectChanges();
       },
-      error: err => { }  });
+      error: err => console.error('Error cargando roles_app:', err)
+    });
   }
   loadRolesBd(): void {
     this.svc.listarRolesBdConDescripcion().subscribe({
@@ -110,7 +114,8 @@ export class GestionRolesComponent implements OnInit {
           this.cdr.detectChanges();
 
       },
-      error: err => { }  });
+      error: err => console.error('Error cargando roles BD:', err)
+    });
   }
   loadModulos(): void {
     this.svc.listarModulos().subscribe({
@@ -119,7 +124,8 @@ export class GestionRolesComponent implements OnInit {
         this.modulosDisponibles = Array.isArray(data) ? data : [];
         this.cdr.detectChanges();
       },
-      error: err => { }  });
+      error: err => console.error('Error cargando módulos:', err)
+    });
   }
 
   // ─── Filtros ────────────────────────────────────────────────
@@ -200,7 +206,7 @@ export class GestionRolesComponent implements OnInit {
   save(): void {
     if (this.form.invalid) {
       Object.keys(this.form.controls).forEach(k => this.form.get(k)?.markAsTouched());
-      alert('Completa los campos obligatorios.');
+      this.toast.warning('Campos incompletos', 'Completa todos los campos obligatorios.');
       return;
     }
 
@@ -229,7 +235,8 @@ export class GestionRolesComponent implements OnInit {
       error: err => {
         this.cargando = false;
         this.isSaving = false;
-        alert(' No se pudo guardar el rol: ' + (err?.error?.message || err?.message || 'Error desconocido'));
+        const msg = err?.error?.message || err?.message || 'Error desconocido';
+        this.toast.error('Error al guardar', msg);
       }
     });
   }
@@ -246,7 +253,7 @@ export class GestionRolesComponent implements OnInit {
       error: err => {
         this.cargando = false;
         rol.activo = prev;
-        alert(' No se pudo cambiar el estado.');
+        this.toast.error('Error', 'No se pudo cambiar el estado del rol.');
         this.cdr.detectChanges();
       }
     });

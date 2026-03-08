@@ -141,6 +141,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.location.back();
   }
 
+  irAlModuloHome(): void {
+    const rol = localStorage.getItem('rol');
+    if (rol) {
+      this.router.navigate([`/${rol}`]);
+    }
+  }
+
   logout(): void {
     this.notifService.detenerPolling();
     this.authService.logoutYSalir();

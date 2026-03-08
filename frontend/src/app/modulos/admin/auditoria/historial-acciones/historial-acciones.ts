@@ -1,55 +1,46 @@
+// src/app/modulos/admin/auditoria/historial-acciones/historial-acciones.ts
+
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { NavbarComponent } from '../../../../component/navbar';
 import { ToastComponent } from '../../../../component/toast.component';
+import { LoadingSpinnerComponent } from '../../../../component/loading-spinner.component';
 import { ToastService } from '../../../../services/toast.service';
-
-interface HistorialAccion {
-  idHistorial: number;
-  fecha: string;
-  titulo: string;
-  descripcion: string | null;
-  usuario: string | null;
-  proceso?: { idProceso: number };
-}
-
-interface Page<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  number: number;
-  size: number;
-}
+import {
+  AuditoriaAccionesService,
+  AudAccion,
+  FiltrosAuditoria
+} from '../../../../services/auditoria-acciones.service';
 
 @Component({
   selector: 'app-historial-acciones',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, RouterLink, ToastComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, RouterLink, RouterLinkActive, ToastComponent, LoadingSpinnerComponent],
   templateUrl: './historial-acciones.html',
   styleUrls: ['./historial-acciones.scss']
 })
 export class HistorialAccionesComponent implements OnInit {
 
-  private readonly apiUrl = 'http://localhost:8080/api/admin/auditoria';
-
-  registros: HistorialAccion[] = [];
+  registros: AudAccion[] = [];
   totalElements = 0;
   totalPages    = 0;
   currentPage   = 0;
   pageSize      = 20;
   isLoading     = false;
 
-  filtroUsuario = '';
-  filtroDesde   = '';
-  filtroHasta   = '';
+  filtros: FiltrosAuditoria = {
+    usuarioApp: '', usuarioBd: '', accion: '', entidad: '', desde: '', hasta: ''
+  };
 
-  detalle: HistorialAccion | null = null;
+  readonly acciones  = ['CREAR', 'ACTUALIZAR', 'ELIMINAR', 'CAMBIAR_ESTADO', 'SUBIR_DOCUMENTO', 'GENERAR_REPORTE'];
+  readonly entidades = ['convocatoria', 'usuario', 'prepostulacion', 'solicitud_docente'];
+
+  detalle: AudAccion | null = null;
 
   constructor(
-    private http:  HttpClient,
+    private svc:   AuditoriaAccionesService,
     private cdr:   ChangeDetectorRef,
     private toast: ToastService
   ) {}
@@ -58,15 +49,8 @@ export class HistorialAccionesComponent implements OnInit {
 
   cargar(page = 0): void {
     this.isLoading = true;
-    let params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', this.pageSize.toString());
-
-    if (this.filtroUsuario) params = params.set('usuario', this.filtroUsuario);
-    if (this.filtroDesde)   params = params.set('desde',   this.filtroDesde);
-    if (this.filtroHasta)   params = params.set('hasta',   this.filtroHasta);
-
-    this.http.get<Page<HistorialAccion>>(`${this.apiUrl}/historial`, { params }).subscribe({
+    this.cdr.detectChanges();
+    this.svc.listar(this.filtros, page, this.pageSize).subscribe({
       next: (data) => {
         this.registros     = data.content;
         this.totalElements = data.totalElements;
@@ -77,7 +61,7 @@ export class HistorialAccionesComponent implements OnInit {
       },
       error: () => {
         this.isLoading = false;
-        this.toast.error('Error', 'No se pudo cargar el historial de acciones.');
+        this.toast.error('Error al cargar', 'No se pudo obtener el historial de acciones.');
         this.cdr.detectChanges();
       }
     });
@@ -86,25 +70,13 @@ export class HistorialAccionesComponent implements OnInit {
   aplicarFiltros(): void { this.cargar(0); }
 
   limpiarFiltros(): void {
-    this.filtroUsuario = '';
-    this.filtroDesde   = '';
-    this.filtroHasta   = '';
+    this.filtros = { usuarioApp: '', usuarioBd: '', accion: '', entidad: '', desde: '', hasta: '' };
     this.cargar(0);
     this.toast.info('Filtros limpiados');
   }
 
   irPagina(p: number): void {
     if (p >= 0 && p < this.totalPages) this.cargar(p);
-  }
-
-  verDetalle(r: HistorialAccion): void  { this.detalle = r; }
-  cerrarDetalle(): void                 { this.detalle = null; }
-
-  formatFecha(fecha: string): string {
-    return new Date(fecha).toLocaleString('es-EC', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
-    });
   }
 
   get pages(): number[] {
@@ -114,5 +86,49 @@ export class HistorialAccionesComponent implements OnInit {
       range.push(i);
     }
     return range;
+  }
+
+  verDetalle(r: AudAccion): void  { this.detalle = r; }
+  cerrarDetalle(): void           { this.detalle = null; }
+
+  formatFecha(fecha: string): string {
+    return new Date(fecha).toLocaleString('es-EC', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+  }
+
+  badgeAccion(accion: string): string {
+    const map: Record<string, string> = {
+      CREAR: 'badge-crear', ACTUALIZAR: 'badge-actualizar', ELIMINAR: 'badge-eliminar',
+      CAMBIAR_ESTADO: 'badge-estado', SUBIR_DOCUMENTO: 'badge-documento', GENERAR_REPORTE: 'badge-reporte'
+    };
+    return map[accion] ?? 'badge-default';
+  }
+
+  labelAccion(accion: string): string {
+    const map: Record<string, string> = {
+      CREAR: 'Crear', ACTUALIZAR: 'Actualizar', ELIMINAR: 'Eliminar',
+      CAMBIAR_ESTADO: 'Cambiar estado', SUBIR_DOCUMENTO: 'Documento', GENERAR_REPORTE: 'Reporte'
+    };
+    return map[accion] ?? accion;
+  }
+
+  badgeEntidad(entidad: string): string {
+    const map: Record<string, string> = {
+      convocatoria: 'badge-entidad-conv', usuario: 'badge-entidad-user',
+      prepostulacion: 'badge-entidad-pre', solicitud_docente: 'badge-entidad-sol'
+    };
+    return map[entidad?.toLowerCase()] ?? 'badge-entidad-default';
+  }
+
+  esDbDirecto(r: AudAccion): boolean { return r.usuarioApp === 'db_directo'; }
+
+  parsearDescripcion(desc: string | null): { clave: string; valor: string }[] {
+    if (!desc) return [];
+    return desc.split('|').map(p => p.trim()).filter(Boolean).map(p => {
+      const idx = p.indexOf(':');
+      return idx === -1 ? { clave: '', valor: p } : { clave: p.slice(0, idx).trim(), valor: p.slice(idx + 1).trim() };
+    });
   }
 }

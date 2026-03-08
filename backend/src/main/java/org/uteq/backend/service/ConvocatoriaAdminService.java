@@ -17,11 +17,12 @@ import java.util.*;
 @RequiredArgsConstructor
 public class ConvocatoriaAdminService {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate            jdbcTemplate;
+    private final AccionAuditoriaService  auditoriaService; // FEATURE 3
 
     // CREAR
     @Transactional
-    public MensajeResponse crear(CrearRequest req) {
+    public MensajeResponse crear(CrearRequest req, String usuarioApp, String ip) {
         try {
             Long[] idsArray = req.getIdsSolicitudes() == null
                     ? new Long[0]
@@ -48,6 +49,15 @@ public class ConvocatoriaAdminService {
                     : null;
 
             boolean exito = idNuevo != null;
+
+            // FEATURE 3 — Registrar creación de convocatoria
+            if (exito) {
+                auditoriaService.registrar(
+                        usuarioApp, "CREAR", "Convocatoria", idNuevo,
+                        "Convocatoria creada: " + req.getTitulo(), ip
+                );
+            }
+
             return MensajeResponse.builder()
                     .exito(exito)
                     .mensaje(mensaje)
@@ -60,9 +70,15 @@ public class ConvocatoriaAdminService {
         }
     }
 
+    /** Sobrecarga sin auditoría para compatibilidad con llamadas internas */
+    @Transactional
+    public MensajeResponse crear(CrearRequest req) {
+        return crear(req, "sistema", null);
+    }
+
     // ACTUALIZAR
     @Transactional
-    public MensajeResponse actualizar(Long id, ActualizarRequest req) {
+    public MensajeResponse actualizar(Long id, ActualizarRequest req, String usuarioApp, String ip) {
         try {
             Map<String, Object> result = new SimpleJdbcCall(jdbcTemplate)
                     .withProcedureName("sp_actualizar_convocatoria")
@@ -77,6 +93,13 @@ public class ConvocatoriaAdminService {
 
             int    filas   = ((Number) result.get("p_filas")).intValue();
             String mensaje = (String) result.get("p_mensaje");
+
+            // FEATURE 3
+            if (filas > 0) {
+                auditoriaService.registrar(usuarioApp, "ACTUALIZAR", "Convocatoria", id,
+                        "Convocatoria actualizada: " + req.getTitulo(), ip);
+            }
+
             return MensajeResponse.builder().exito(filas > 0).mensaje(mensaje).build();
 
         } catch (Exception e) {
@@ -85,9 +108,14 @@ public class ConvocatoriaAdminService {
         }
     }
 
+    @Transactional
+    public MensajeResponse actualizar(Long id, ActualizarRequest req) {
+        return actualizar(id, req, "sistema", null);
+    }
+
     // CAMBIAR ESTADO
     @Transactional
-    public MensajeResponse cambiarEstado(Long id, String nuevoEstado) {
+    public MensajeResponse cambiarEstado(Long id, String nuevoEstado, String usuarioApp, String ip) {
         try {
             Map<String, Object> result = new SimpleJdbcCall(jdbcTemplate)
                     .withProcedureName("sp_cambiar_estado_convocatoria")
@@ -97,14 +125,25 @@ public class ConvocatoriaAdminService {
                     );
 
             String mensaje = (String) result.get("p_mensaje");
-            return MensajeResponse.builder()
-                    .exito(!mensaje.startsWith("Error"))
-                    .mensaje(mensaje).build();
+            boolean exito  = !mensaje.startsWith("Error");
+
+            // FEATURE 3
+            if (exito) {
+                auditoriaService.registrar(usuarioApp, "CAMBIAR_ESTADO", "Convocatoria", id,
+                        "Estado cambiado a '" + nuevoEstado + "'", ip);
+            }
+
+            return MensajeResponse.builder().exito(exito).mensaje(mensaje).build();
 
         } catch (Exception e) {
             return MensajeResponse.builder().exito(false)
                     .mensaje("Error al cambiar estado: " + e.getMessage()).build();
         }
+    }
+
+    @Transactional
+    public MensajeResponse cambiarEstado(Long id, String nuevoEstado) {
+        return cambiarEstado(id, nuevoEstado, "sistema", null);
     }
 
     // ELIMINAR

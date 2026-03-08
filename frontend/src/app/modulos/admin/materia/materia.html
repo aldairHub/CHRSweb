@@ -6,14 +6,14 @@
     <!-- Header de la página -->
     <div class="page-header">
       <div>
-        <h2>Gestión de Materias</h2>
-        <p class="page-subtitle">Estructura Académica</p>
+        <h2>Gestión de materias</h2>
+        <p class="page-subtitle">Estructura académica</p>
       </div>
       <button class="btn btn-primary" (click)="openCreate()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        Nueva Materia
+        Nueva materia
       </button>
     </div>
 
@@ -74,9 +74,13 @@
       </select>
     </div>
 
+    <!-- Toast notifications -->
+    <app-toast></app-toast>
+
     <!-- Tabla de Materias -->
     <div class="table-container">
-      <table class="table">
+
+      <table class="table" *ngIf="!cargando">
         <thead>
         <tr>
           <th>ID Materia</th>
@@ -179,7 +183,7 @@
 <div class="modal-overlay" *ngIf="modalAbierto" (click)="closeModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>{{ editando ? 'Editar Materia' : 'Nueva Materia' }}</h3>
+      <h3>{{ editando ? 'Editar materia' : 'Nueva materia' }}</h3>
       <button class="close-btn" (click)="closeModal()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -223,7 +227,7 @@
           <select class="form-select" [(ngModel)]="form.idCarrera">
             <option [ngValue]="null">Seleccionar carrera...</option>
             <option *ngFor="let c of carreras" [ngValue]="c.idCarrera">
-            {{ c.nombre || c.nombreCarrera }}
+              {{ c.nombre || c.nombreCarrera }}
             </option>
           </select>
 
@@ -250,7 +254,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
         </svg>
-        {{ isSaving ? 'Guardando...' : 'Guardar Materia' }}
+        {{ isSaving ? 'Guardando...' : 'Guardar materia' }}
       </button>
     </div>
   </div>

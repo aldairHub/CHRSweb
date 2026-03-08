@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../../component/navbar';
 import { MateriaService } from '../../../services/materia.service';
 import { CarreraService } from '../../../services/carrera.service';
+import { ToastService } from '../../../services/toast.service';
+import { ToastComponent } from '../../../component/toast.component';
 
 interface Materia {
   id?: number;
@@ -26,7 +28,8 @@ interface Carrera {
   imports: [
     CommonModule,
     FormsModule,
-    NavbarComponent
+    NavbarComponent,
+    ToastComponent
   ],
   templateUrl: './materia.html',
   styleUrls: ['./materia.scss']
@@ -92,11 +95,12 @@ export class MateriaComponent implements OnInit {
   constructor(
     private materiaService: MateriaService,
     private carreraService: CarreraService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
-    this.cargando = true;
+    this.cargando = false;
     this.cargarCarreras();
     this.cargarMaterias();
   }
@@ -112,6 +116,7 @@ export class MateriaComponent implements OnInit {
       },
       error: (err) => {
         this.cargando = false;
+        console.error('Error cargando carreras:', err);
         this.carreras = [];
       }
     });
@@ -135,6 +140,7 @@ export class MateriaComponent implements OnInit {
       },
       error: (err) => {
         this.cargando = false;
+        this.toast.error('Error de conexión', 'No se pudieron cargar las materias.');
         this.materias = [];
         this.materiasFiltradas = [];
         this.calculatePagination();
@@ -260,12 +266,12 @@ export class MateriaComponent implements OnInit {
     this.submitted = true;
 
     if (!this.form.nombre?.trim()) {
-      alert('El nombre de la materia es obligatorio.');
+      this.toast.warning('Campo requerido', 'El nombre de la materia es obligatorio.');
       return;
     }
 
     if (this.form.idCarrera == null) {
-      alert('Debe seleccionar una carrera.');
+      this.toast.warning('Campo requerido', 'Debe seleccionar una carrera.');
       return;
     }
 
@@ -284,13 +290,13 @@ export class MateriaComponent implements OnInit {
         next: () => {
           this.isSaving = false;
           this.closeModal();
-          alert('✅ Materia actualizada con éxito.');
+          this.toast.success('Materia actualizada', 'Los cambios fueron guardados correctamente.');
           this.cargarMaterias();
         },
         error: (err) => {
           this.cargando = false;
           this.isSaving = false;
-          alert('❌ No se pudo actualizar.');
+          this.toast.error('Error al actualizar', 'No se pudo actualizar la materia.');
         }
       });
 
@@ -301,13 +307,13 @@ export class MateriaComponent implements OnInit {
         next: () => {
           this.isSaving = false;
           this.closeModal();
-          alert('✅ Materia creada con éxito.');
+          this.toast.success('Materia creada', 'La materia fue registrada correctamente.');
           this.cargarMaterias();
         },
         error: (err) => {
           this.cargando = false;
           this.isSaving = false;
-          alert('❌ No se pudo crear.');
+          this.toast.error('Error al crear', 'No se pudo crear la materia.');
         }
       });
 
