@@ -50,9 +50,18 @@ $border:    #e2e8f0;
   width: 40px; height: 40px; border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: $white; cursor: pointer; transition: all 0.2s ease;
+  color: $white; cursor: pointer;
+  transition: background .2s ease, transform .2s ease;
+  -webkit-transition: background .2s ease, transform .2s ease;
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
   svg { width: 20px; height: 20px; }
-  &:hover { background-color: rgba(255, 255, 255, 0.22); transform: scale(1.05); }
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.22);
+    transform: scale(1.05) translateZ(0);
+    -webkit-transform: scale(1.05) translateZ(0);
+  }
 }
 
 // ─── Notificaciones ────────────────────────────────────
@@ -193,9 +202,19 @@ $border:    #e2e8f0;
   width: 40px; height: 40px; border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: $white; cursor: pointer; transition: all 0.2s ease;
+  color: $white; cursor: pointer;
+  transition: background .2s ease, border-color .2s ease, transform .2s ease;
+  -webkit-transition: background .2s ease, border-color .2s ease, transform .2s ease;
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
   svg { width: 20px; height: 20px; }
-  &:hover { background-color: #dc2626; border-color: #dc2626; transform: scale(1.05); }
+  &:hover {
+    background-color: #dc2626;
+    border-color: #dc2626;
+    transform: scale(1.05) translateZ(0);
+    -webkit-transform: scale(1.05) translateZ(0);
+  }
 }
 
 @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
@@ -214,9 +233,18 @@ $border:    #e2e8f0;
   width: 40px; height: 40px; border-radius: 50%;
   background-color: rgba(255,255,255,0.12);
   border: 1px solid rgba(255,255,255,0.2);
-  color: $white; cursor: pointer; transition: all 0.2s ease;
+  color: $white; cursor: pointer;
+  transition: background .2s ease, transform .2s ease;
+  -webkit-transition: background .2s ease, transform .2s ease;
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
   svg { width: 20px; height: 20px; }
-  &:hover { background-color: rgba(255,255,255,0.22); transform: scale(1.08); }
+  &:hover {
+    background-color: rgba(255,255,255,0.22);
+    transform: scale(1.08) translateZ(0);
+    -webkit-transform: scale(1.08) translateZ(0);
+  }
 }
 
 // =======================================================

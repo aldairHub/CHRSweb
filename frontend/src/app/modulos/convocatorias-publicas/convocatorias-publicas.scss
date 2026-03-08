@@ -18,14 +18,25 @@ $accent:    #dcfce7;
 
 // ── Navbar ────────────────────────────────────────────────────────────────────
 .navbar {
-  display: flex; justify-content: space-between; align-items: center;
-  max-width: 820px; margin: 0 auto 1.75rem; padding: 0 .25rem;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: .625rem;
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto 1.75rem;
+  padding: 0 .25rem;
 }
 .btn-back, .btn-login {
   display: flex; align-items: center; gap: 6px;
   padding: 8px 18px; border-radius: 9px;
   font-size: .875rem; font-weight: 600; cursor: pointer;
-  border: none; transition: all .2s;
+  border: none;
+  transition: color .2s ease, background .2s ease, border-color .2s ease,
+              transform .2s ease, box-shadow .2s ease;
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 .btn-back {
   background: white; color: $muted;
