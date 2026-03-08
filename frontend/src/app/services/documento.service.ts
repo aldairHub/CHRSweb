@@ -121,6 +121,10 @@ export class DocumentoService {
     );
   }
 
+  obtenerResultadosPostulante(idUsuario: number): Observable<any> {
+    return this.http.get(`${this.API}/resultados/${idUsuario}`);
+  }
+
 }
 
 export interface DocPrepostulacion {

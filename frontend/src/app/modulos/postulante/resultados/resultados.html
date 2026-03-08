@@ -10,6 +10,23 @@
       </div>
     </header>
 
+    <!-- Spinner -->
+    <div *ngIf="cargando" class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando resultados...</p>
+    </div>
+
+    <!-- Sin datos -->
+    <div *ngIf="!cargando && sinDatos" class="sin-datos">
+      <i class="pi pi-chart-bar"></i>
+      <p>Aún no hay resultados disponibles para tu proceso.</p>
+    </div>
+
+    <!-- Contenido -->
+    <div *ngIf="!cargando && !sinDatos">
+      ... todo el contenido actual ...
+    </div>
+
     <!-- =========== ESTADO GENERAL =========== -->
     <div class="estado-card" [class]="'estado-card--' + colorEstado">
       <div class="estado-icon">

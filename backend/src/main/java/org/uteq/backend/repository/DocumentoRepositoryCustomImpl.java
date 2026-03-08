@@ -207,4 +207,39 @@ public class DocumentoRepositoryCustomImpl {
         return rows.isEmpty() ? Map.of() : rows.get(0);
     }
 
+    public Map<String, Object> obtenerResultadosPostulante(Long idUsuario) {
+        Map<String, Object> resultado = new HashMap<>();
+
+        // Info del proceso
+        String sqlProceso =
+                "SELECT pe.id_proceso, pe.estado_general, pe.decision, " +
+                        "       pe.justificacion_decision, pe.puntaje_matriz, " +
+                        "       p.nombres_postulante, p.apellidos_postulante, p.identificacion " +
+                        "FROM proceso_evaluacion pe " +
+                        "JOIN postulante p ON p.id_postulante = pe.id_postulante " +
+                        "WHERE p.id_usuario = ? " +
+                        "ORDER BY pe.id_proceso DESC LIMIT 1";
+
+        List<Map<String, Object>> procesos = jdbcTemplate.queryForList(sqlProceso, idUsuario);
+        if (procesos.isEmpty()) return resultado;
+
+        Map<String, Object> proceso = procesos.get(0);
+        resultado.putAll(proceso);
+
+        // Puntajes
+        Long idProceso = ((Number) proceso.get("id_proceso")).longValue();
+        String sqlPuntajes = "SELECT item_id, valor FROM matriz_meritos_puntaje WHERE id_proceso = ?";
+        List<Map<String, Object>> puntajes = jdbcTemplate.queryForList(sqlPuntajes, idProceso);
+
+        Map<String, Double> puntajesMap = new HashMap<>();
+        for (Map<String, Object> p : puntajes) {
+            String itemId = (String) p.get("item_id");
+            Double valor = ((Number) p.get("valor")).doubleValue();
+            puntajesMap.put(itemId, valor);
+        }
+
+        resultado.put("puntajes", puntajesMap);
+        return resultado;
+    }
+
 }

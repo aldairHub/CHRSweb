@@ -216,4 +216,8 @@ public class DocumentoService {
         }
     }
 
+    public Map<String, Object> obtenerResultadosPostulante(Long idUsuario) {
+        return documentoRepo.obtenerResultadosPostulante(idUsuario);
+    }
+
 }

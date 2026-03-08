@@ -166,4 +166,12 @@ public class DocumentoController {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
+    @GetMapping("/resultados/{idUsuario}")
+    public ResponseEntity<Map<String, Object>> resultadosPostulante(
+            @PathVariable Long idUsuario) {
+        Map<String, Object> resultado = documentoService.obtenerResultadosPostulante(idUsuario);
+        if (resultado.isEmpty()) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(resultado);
+    }
+
 }
