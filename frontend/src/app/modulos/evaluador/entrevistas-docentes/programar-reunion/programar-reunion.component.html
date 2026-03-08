@@ -1,40 +1,39 @@
 <!-- entrevistas-docentes/programar-reunion/programar-reunion.component.html -->
 <app-navbar></app-navbar>
 <nav class="module-tabs">
-  <a class="tab" routerLink="/evaluador/entrevistas-docentes/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+  <a class="tab" routerLink="/evaluador/entrevistas-docentes/dashboard" routerLinkActive="active">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h7"/></svg>
     Dashboard
   </a>
-  <a class="tab" routerLink="/evaluador/entrevistas-docentes/fases" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+  <a class="tab" routerLink="/evaluador/entrevistas-docentes/fases" routerLinkActive="active">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
     Configurar Fases
   </a>
-  <a class="tab" routerLink="/evaluador/entrevistas-docentes/plantillas" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+  <a class="tab" routerLink="/evaluador/entrevistas-docentes/plantillas" routerLinkActive="active">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 4H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0121 10.414V18a2 2 0 01-2 2z"/></svg>
     Plantillas
   </a>
-  <a class="tab" routerLink="/evaluador/entrevistas-docentes/criterios" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+  <a class="tab" routerLink="/evaluador/entrevistas-docentes/criterios" routerLinkActive="active">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
     Criterios
   </a>
-  <a class="tab" routerLink="/evaluador/entrevistas-docentes/postulantes" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+  <a class="tab" routerLink="/evaluador/entrevistas-docentes/postulantes" routerLinkActive="active">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
     Postulantes
   </a>
-  <a class="tab" routerLink="/evaluador/entrevistas-docentes/programar-reunion" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+  <a class="tab" routerLink="/evaluador/entrevistas-docentes/programar-reunion" routerLinkActive="active">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
     Programar
   </a>
-  <a class="tab" routerLink="/evaluador/entrevistas-docentes/evaluacion" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+  <a class="tab" routerLink="/evaluador/entrevistas-docentes/evaluacion" routerLinkActive="active">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
     Evaluar
   </a>
-  <a class="tab" routerLink="/evaluador/entrevistas-docentes/resultados" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+  <a class="tab" routerLink="/evaluador/entrevistas-docentes/resultados" routerLinkActive="active">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
     Resultados
   </a>
 </nav>
-
 
 <div class="main-container">
   <div class="content-wrapper">
@@ -60,7 +59,6 @@
       </div>
     </div>
 
-    <!-- SUCCESS -->
     <div class="alert success" *ngIf="saved">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -74,7 +72,6 @@
 
     <div class="card" *ngIf="!isLoading && !saved && !error">
 
-      <!-- postulante + Fase -->
       <div class="form-grid">
         <div class="form-group">
           <label>Postulante <span class="required">*</span></label>
@@ -87,14 +84,14 @@
         </div>
         <div class="form-group">
           <label>Fase del Proceso <span class="required">*</span></label>
-          <select class="form-select" [(ngModel)]="form.idFase">
+          <!-- ngModelChange dispara onFaseChange() al cambiar la fase -->
+          <select class="form-select" [(ngModel)]="form.idFase" (ngModelChange)="onFaseChange()">
             <option [value]="0">Seleccionar...</option>
             <option *ngFor="let f of fases" [value]="f.idFase">{{ f.nombre }}</option>
           </select>
         </div>
       </div>
 
-      <!-- Fecha + Hora -->
       <div class="form-grid">
         <div class="form-group">
           <label>Fecha <span class="required">*</span></label>
@@ -106,7 +103,6 @@
         </div>
       </div>
 
-      <!-- Duración + Modalidad -->
       <div class="form-grid">
         <div class="form-group">
           <label>Duración Estimada <span class="required">*</span></label>
@@ -122,7 +118,6 @@
         </div>
       </div>
 
-      <!-- Enlace -->
       <div class="form-group" *ngIf="showEnlace">
         <label>Enlace de Reunión</label>
         <input class="form-input" type="url" [(ngModel)]="form.enlace"
@@ -133,31 +128,46 @@
       <!-- Evaluadores -->
       <div class="form-group">
         <label>Evaluadores Asignados</label>
-        <div class="alert info" *ngIf="evaluadores.length === 0">
+
+        <!-- Cargando evaluadores -->
+        <div class="alert info" *ngIf="isLoadingEvaluadores">
+          <p>Cargando evaluadores de la fase...</p>
+        </div>
+
+        <!-- Sin fase seleccionada -->
+        <div class="alert info" *ngIf="!isLoadingEvaluadores && evaluadores.length === 0 && !form.idFase">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          <div>
-            <strong>Sin evaluadores</strong>
-            <!--            <p>Implementa <code>GET /api/usuarios?rol=evaluador</code> en el backend para cargar evaluadores dinámicamente.</p>-->
-          </div>
+          <div><strong>Selecciona una fase</strong><p>Los evaluadores se cargarán según la fase elegida.</p></div>
         </div>
-        <div class="evaluadores-list" *ngIf="evaluadores.length > 0">
+
+        <!-- Fase sin evaluadores asignados -->
+        <div class="alert info" *ngIf="!isLoadingEvaluadores && evaluadores.length === 0 && form.idFase">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div><strong>Sin evaluadores</strong><p>Esta fase no tiene evaluadores asignados.</p></div>
+        </div>
+
+        <!-- Lista de evaluadores -->
+        <div class="evaluadores-list" *ngIf="!isLoadingEvaluadores && evaluadores.length > 0">
           <label class="evaluador-item" *ngFor="let ev of evaluadores" (click)="toggleEvaluador(ev)">
             <input type="checkbox" [checked]="ev.seleccionado" (click)="$event.stopPropagation()">
             <div class="evaluador-info">
               <span class="evaluador-nombre">{{ ev.nombre }}</span>
-              <span class="evaluador-rol">{{ ev.rol }}</span>
+              <span class="evaluador-rol">{{ ev.usuario_app }}</span>
             </div>
           </label>
         </div>
+
         <div class="evaluadores-seleccionados" *ngIf="evaluadoresSeleccionados.length > 0">
           <span class="badge-rol-app" *ngFor="let ev of evaluadoresSeleccionados">{{ ev.nombre }}</span>
         </div>
       </div>
 
-      <!-- Observaciones -->
       <div class="form-group">
         <label>Observaciones</label>
         <textarea class="form-textarea" [(ngModel)]="form.observaciones"

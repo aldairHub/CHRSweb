@@ -169,14 +169,11 @@ public class EvaluacionService {
         FaseProceso faseProceso = reunion.getFaseProceso();
         ProcesoEvaluacion proceso = faseProceso.getProceso();
 
-        // Contar cuántos evaluadores tiene asignados la reunión
-        long totalEvaluadores = contarEvaluadores(reunion.getEvaluadoresIds());
         long evaluacionesCompletas = evaluacionRepository
                 .findByReunion_IdReunion(reunion.getIdReunion())
                 .stream().filter(Evaluacion::getConfirmada).count();
 
-        if (evaluacionesCompletas >= totalEvaluadores && totalEvaluadores > 0) {
-            // Calcular promedio de todos los evaluadores
+        if (evaluacionesCompletas >= 1) {
             double promedio = evaluacionRepository.findByReunion_IdReunion(reunion.getIdReunion())
                     .stream()
                     .filter(Evaluacion::getConfirmada)
@@ -184,22 +181,19 @@ public class EvaluacionService {
                     .average()
                     .orElse(0.0);
 
-            // Actualizar calificación en FaseProceso
+            // Solo guardar calificación, NO cambiar estado aquí
             faseProceso.setCalificacion(Math.round(promedio * 100.0) / 100.0);
-            faseProceso.setEstado("completada");
-            faseProceso.setFechaCompletada(LocalDateTime.now());
+            // faseProcesoRepository.save(faseProceso); // NO guardar estado aún
 
-            // Actualizar estado de la reunión
             reunion.setEstado("completada");
             reunionRepository.save(reunion);
 
-            // Registrar historial
             procesoService.registrarHistorial(proceso,
                     "Fase Completada – " + faseProceso.getFase().getNombre(),
                     "Calificación promedio: " + faseProceso.getCalificacion() + "/5.0",
                     nuevaEval.getEvaluador().getUsuarioApp());
 
-            // Avanzar a la siguiente fase
+            // avanzarFase se encarga de marcar completada y desbloquear la siguiente
             procesoService.avanzarFase(proceso.getIdProceso());
         }
     }

@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { NavbarComponent } from '../../../../component/navbar';
 import { ProgramarReunionService } from '../../../../services/entrevistas/programar-reunion.service';
 import { PostulantesService } from '../../../../services/entrevistas/postulantes.service';
@@ -15,7 +16,7 @@ import { forkJoin } from 'rxjs';
 interface EvaluadorUI {
   id: number;
   nombre: string;
-  rol: string;
+  usuario_app: string;
   seleccionado: boolean;
 }
 
@@ -29,16 +30,13 @@ interface EvaluadorUI {
 export class ProgramarReunionComponent implements OnInit {
 
   isLoading = true;
+  isLoadingEvaluadores = false;
   isSaving  = false;
   saved     = false;
   error     = '';
 
   postulantes: PostulanteResumen[] = [];
   fases: FaseResponse[] = [];
-
-  // Los evaluadores se cargarán desde el backend cuando implementes
-  // GET /api/usuarios?rol=evaluador
-  // Por ahora se deja vacío para que el admin los gestione manualmente
   evaluadores: EvaluadorUI[] = [];
 
   duraciones = [
@@ -56,13 +54,13 @@ export class ProgramarReunionComponent implements OnInit {
   ];
 
   form = {
-    idProceso:    0,
-    idFase:       0,
-    fecha:        '',
-    hora:         '',
-    duracion:     60,
-    modalidad:    'zoom',
-    enlace:       '',
+    idProceso:     0,
+    idFase:        0,
+    fecha:         '',
+    hora:          '',
+    duracion:      60,
+    modalidad:     'zoom',
+    enlace:        '',
     observaciones: ''
   };
 
@@ -73,6 +71,7 @@ export class ProgramarReunionComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
+    private http: HttpClient,
     private reunionService: ProgramarReunionService,
     private postulantesService: PostulantesService,
     private fasesService: FasesService
@@ -96,12 +95,44 @@ export class ProgramarReunionComponent implements OnInit {
         this.postulantes = postulantes;
         this.fases       = fases.filter(f => f.estado && f.tipo !== 'automatica' && f.tipo !== 'decision');
         this.isLoading   = false;
+        // Si viene idFase por params, cargar evaluadores automáticamente
+        if (this.form.idFase) this.onFaseChange();
         this.cdr.detectChanges();
       },
       error: (err) => {
-        this.isLoading = false; this.cdr.detectChanges();
+        console.error(err);
+        this.error     = 'No se pudieron cargar los datos.';
+        this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
+  }
+
+  onFaseChange(): void {
+    if (!this.form.idFase) {
+      this.evaluadores = [];
+      return;
+    }
+    this.isLoadingEvaluadores = true;
+    this.evaluadores = [];
+    this.http.get<any[]>(`http://localhost:8080/api/evaluacion/evaluadores/por-fase/${this.form.idFase}`)
+      .subscribe({
+        next: (data) => {
+          this.evaluadores = data.map(e => ({
+            id:          e.id_usuario,
+            nombre:      e.nombre_completo,
+            usuario_app: e.usuario_app,
+            seleccionado: false
+          }));
+          this.isLoadingEvaluadores = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error cargando evaluadores:', err);
+          this.isLoadingEvaluadores = false;
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   toggleEvaluador(ev: EvaluadorUI): void { ev.seleccionado = !ev.seleccionado; }
@@ -128,18 +159,20 @@ export class ProgramarReunionComponent implements OnInit {
 
     this.reunionService.programar(payload).subscribe({
       next: () => {
-        this.isSaving = false; this.saved = true; this.cdr.detectChanges();
-        setTimeout(() => this.router.navigate(['/entrevistas-docentes/postulantes', this.form.idProceso]), 1500);
+        this.isSaving = false;
+        this.saved    = true;
+        this.cdr.detectChanges();
+        setTimeout(() => this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']), 1500);
       },
       error: (err) => {
         alert(err?.error?.mensaje || 'Error al programar la reunión.');
-        this.isSaving = false; this.cdr.detectChanges();
+        this.isSaving = false;
+        this.cdr.detectChanges();
       }
     });
   }
 
   cancelar(): void {
-    if (this.form.idProceso) this.router.navigate(['/entrevistas-docentes/postulantes', this.form.idProceso]);
-    else this.router.navigate(['/entrevistas-docentes/postulantes']);
+    this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']);
   }
 }
