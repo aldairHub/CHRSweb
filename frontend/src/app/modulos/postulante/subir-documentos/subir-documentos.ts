@@ -10,7 +10,8 @@ import { ToastService } from '../../../services/toast.service';
 import {
   DocumentoService,
   DocumentoBackend,
-  PostulanteInfo
+  PostulanteInfo,
+  DocPrepostulacion
 } from '../../../services/documento.service';
 
 export interface DocumentoUI {
@@ -42,6 +43,7 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
   postulante:    PostulanteInfo | null = null;
   idPostulacion: number | null = null;
   documentos:    DocumentoUI[] = [];
+  docsPrepostulacion: DocPrepostulacion[] = [];
 
   constructor(
     private router: Router,
@@ -78,7 +80,7 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
   }
 
   private cargarDocumentos(idPostulacion: number): void {
-    this.documentoSvc.obtenerDocumentos(idPostulacion).subscribe({
+    this.documentoSvc.obtenerDocumentosConvocatoria(idPostulacion).subscribe({
       next: docs => {
         this.documentos     = docs.map(d => this.mapearDocumento(d));
         this.cargandoPagina = false;
@@ -90,6 +92,18 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     });
+
+    this.documentoSvc.obtenerDocsPrepostulacion(idPostulacion).subscribe({
+      next: docs => {
+        this.docsPrepostulacion = docs;
+        this.cdr.detectChanges();
+      },
+      error: () => {} // no crítico, simplemente no se muestra la sección
+    });
+  }
+
+  nombreDesdeUrl(url: string): string {
+    return url ? url.replace(/\\/g, '/').split('/').pop() ?? 'documento.pdf' : 'documento.pdf';
   }
 
   // ── Mapeo backend → UI ─────────────────────────────────────

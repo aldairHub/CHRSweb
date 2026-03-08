@@ -179,6 +179,52 @@
   </div>
 </div>
 
+<!-- DOCUMENTOS DE PREPOSTULACIÓN (solo lectura) -->
+<div class="form-card" *ngIf="docsPrepostulacion.length > 0">
+  <div class="seccion-titulo">
+    <i class="pi pi-history"></i>
+    Documentos entregados en prepostulación
+    <span class="badge-info">Solo lectura</span>
+  </div>
+  <div class="doc-list">
+    <div class="doc-item doc-prepost" *ngFor="let d of docsPrepostulacion">
+
+      <div class="doc-estado-icon">
+        <i class="pi pi-file-pdf text-red"></i>
+      </div>
+
+      <div class="doc-info">
+        <div class="doc-nombre-wrap">
+          <span class="doc-nombre">{{ d.descripcion }}</span>
+          <span class="estado-badge estado-validado">Prepostulación</span>
+        </div>
+        <div class="archivo-info">
+          <i class="pi pi-file-pdf text-red"></i>
+          <span class="archivo-nombre">{{ nombreDesdeUrl(d.urlDocumento) }}</span>
+        </div>
+        <div class="doc-descripcion" *ngIf="d.fechaSubida">
+          Subido el {{ d.fechaSubida | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+      </div>
+
+      <div class="doc-action">
+        <a [href]="d.urlDocumento" target="_blank" class="btn-upload btn-upload--validado"
+           style="text-decoration:none;">
+          <i class="pi pi-eye"></i>
+          <span>Ver</span>
+        </a>
+        <a [href]="d.urlDocumento" download class="btn-upload"
+           style="text-decoration:none; margin-top:6px;">
+          <i class="pi pi-download"></i>
+          <span>Descargar</span>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
 <!-- MODAL ÉXITO -->
 <div class="modal-overlay" *ngIf="mostrarModalExito">
   <div class="modal-card">

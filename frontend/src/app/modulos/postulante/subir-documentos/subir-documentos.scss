@@ -566,3 +566,36 @@ $blue:        #2563eb;
   .toast-container { right: .75rem; left: .75rem; bottom: 1rem; }
   .toast { min-width: unset; max-width: 100%; }
 }
+
+// ── Sección prepostulación ────────────────────────────────
+.seccion-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: .95rem;
+  color: $text-dark;
+  margin-bottom: 16px;
+  i { color: $text-gray; }
+}
+
+.badge-info {
+  font-size: .7rem;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.doc-prepost {
+  border-color: #e0e7ff;
+  background: #f5f7ff;
+}
+
+.doc-action {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}

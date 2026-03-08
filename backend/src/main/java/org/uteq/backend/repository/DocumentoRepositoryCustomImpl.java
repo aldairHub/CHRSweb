@@ -1,5 +1,6 @@
 package org.uteq.backend.repository;
 
+import org.uteq.backend.dto.DocPrepostulacionDTO;
 import  org.uteq.backend.dto.DocumentoResponseDTO;
 import org.uteq.backend.dto.PostulanteInfoDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,4 +135,39 @@ public class DocumentoRepositoryCustomImpl {
 
         return list.isEmpty() ? null : list.get(0);
     }
+
+    // SP: sp_obtener_documentos_convocatoria
+    public List<DocumentoResponseDTO> obtenerDocumentosConvocatoria(Long idPostulacion) {
+        String sql = "SELECT * FROM sp_obtener_documentos_convocatoria(?)";
+        return jdbcTemplate.query(sql, new Object[]{idPostulacion}, (rs, rowNum) -> {
+            DocumentoResponseDTO dto = new DocumentoResponseDTO();
+            dto.setIdTipoDocumento(rs.getLong("id_tipo_documento"));
+            dto.setNombreTipo(rs.getString("nombre_tipo"));
+            dto.setDescripcionTipo(rs.getString("descripcion_tipo"));
+            dto.setObligatorio(rs.getBoolean("obligatorio"));
+            long idDoc = rs.getLong("id_documento");
+            dto.setIdDocumento(rs.wasNull() ? null : idDoc);
+            dto.setEstadoValidacion(rs.getString("estado_validacion"));
+            dto.setRutaArchivo(rs.getString("ruta_archivo"));
+            if (rs.getTimestamp("fecha_carga") != null)
+                dto.setFechaCarga(rs.getTimestamp("fecha_carga").toLocalDateTime().toString());
+            dto.setObservacionesIa(rs.getString("observaciones_ia"));
+            return dto;
+        });
+    }
+
+    // SP: sp_obtener_docs_prepostulacion
+    public List<DocPrepostulacionDTO> obtenerDocsPrepostulacion(Long idPostulacion) {
+        String sql = "SELECT * FROM sp_obtener_docs_prepostulacion(?)";
+        return jdbcTemplate.query(sql, new Object[]{idPostulacion}, (rs, rowNum) -> {
+            DocPrepostulacionDTO dto = new DocPrepostulacionDTO();
+            dto.setIdDocumento(rs.getLong("id_documento"));
+            dto.setDescripcion(rs.getString("descripcion"));
+            dto.setUrlDocumento(rs.getString("url_documento"));
+            if (rs.getTimestamp("fecha_subida") != null)
+                dto.setFechaSubida(rs.getTimestamp("fecha_subida").toInstant().toString());
+            return dto;
+        });
+    }
+
 }

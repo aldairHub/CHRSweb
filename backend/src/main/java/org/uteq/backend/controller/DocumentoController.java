@@ -1,5 +1,6 @@
 package org.uteq.backend.controller;
 
+import org.uteq.backend.dto.DocPrepostulacionDTO;
 import org.uteq.backend.dto.DocumentoResponseDTO;
 import org.uteq.backend.dto.PostulanteInfoDTO;
 import org.uteq.backend.service.DocumentoService;
@@ -98,4 +99,17 @@ public class DocumentoController {
         }
         return ResponseEntity.ok(info);
     }
+
+    @GetMapping("/convocatoria/{idPostulacion}")
+    public ResponseEntity<List<DocumentoResponseDTO>> obtenerDocumentosConvocatoria(
+            @PathVariable Long idPostulacion) {
+        return ResponseEntity.ok(documentoService.obtenerDocumentosConvocatoria(idPostulacion));
+    }
+
+    @GetMapping("/prepostulacion/{idPostulacion}")
+    public ResponseEntity<List<DocPrepostulacionDTO>> obtenerDocsPrepostulacion(
+            @PathVariable Long idPostulacion) {
+        return ResponseEntity.ok(documentoService.obtenerDocsPrepostulacion(idPostulacion));
+    }
+
 }

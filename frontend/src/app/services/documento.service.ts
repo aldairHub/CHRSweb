@@ -100,4 +100,25 @@ export class DocumentoService {
   finalizarCarga(idPostulacion: number): Observable<OperacionResponse> {
     return this.http.post<OperacionResponse>(`${this.API}/finalizar/${idPostulacion}`, {});
   }
+
+  obtenerDocumentosConvocatoria(idPostulacion: number): Observable<DocumentoBackend[]> {
+    return this.http.get<DocumentoBackend[]>(
+      `${this.API}/convocatoria/${idPostulacion}`
+    );
+  }
+
+  obtenerDocsPrepostulacion(idPostulacion: number): Observable<DocPrepostulacion[]> {
+    return this.http.get<DocPrepostulacion[]>(
+      `${this.API}/prepostulacion/${idPostulacion}`
+    );
+  }
+
 }
+
+export interface DocPrepostulacion {
+  idDocumento:  number;
+  descripcion:  string;
+  urlDocumento: string;
+  fechaSubida:  string;
+}
+

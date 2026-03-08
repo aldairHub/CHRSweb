@@ -35,7 +35,7 @@ public class Prepostulacion {
     @Column(name = "id_revisor")
     private Long idRevisor;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = false)
     private String identificacion;
 
     @Column(nullable = false)

@@ -1,5 +1,6 @@
 package org.uteq.backend.service;
 
+import org.uteq.backend.dto.DocPrepostulacionDTO;
 import org.uteq.backend.dto.DocumentoResponseDTO;
 import org.uteq.backend.dto.PostulanteInfoDTO;
 import org.uteq.backend.repository.DocumentoRepositoryCustomImpl;
@@ -130,4 +131,13 @@ public class DocumentoService {
     public PostulanteInfoDTO obtenerInfoPostulante(Long idUsuario) {
         return documentoRepo.obtenerInfoPostulante(idUsuario);
     }
+
+    public List<DocumentoResponseDTO> obtenerDocumentosConvocatoria(Long idPostulacion) {
+        return documentoRepo.obtenerDocumentosConvocatoria(idPostulacion);
+    }
+
+    public List<DocPrepostulacionDTO> obtenerDocsPrepostulacion(Long idPostulacion) {
+        return documentoRepo.obtenerDocsPrepostulacion(idPostulacion);
+    }
+
 }
