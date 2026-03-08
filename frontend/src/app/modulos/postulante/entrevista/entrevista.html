@@ -1,15 +1,24 @@
 <app-navbar></app-navbar>
 
 <!-- Spinner -->
-<div *ngIf="cargando" class="loading-state">
+<div *ngIf="cargando" class="estado-fullpage">
   <div class="spinner"></div>
   <p>Cargando entrevista...</p>
 </div>
 
 <!-- Sin entrevista -->
-<div *ngIf="!cargando && error" class="sin-entrevista">
-  <i class="pi pi-calendar-times"></i>
-  <p>{{ error }}</p>
+<div *ngIf="!cargando && error" class="estado-fullpage">
+  <div class="sin-entrevista-card">
+    <div class="sin-entrevista-icon">
+      <i class="pi pi-calendar"></i>
+    </div>
+    <h3>Sin entrevistas programadas</h3>
+    <p>{{ error }}</p>
+    <div class="sin-entrevista-info">
+      <i class="pi pi-info-circle"></i>
+      Cuando el equipo evaluador programe tu entrevista, aparecerá aquí con todos los detalles.
+    </div>
+  </div>
 </div>
 
 <!-- Contenido principal -->

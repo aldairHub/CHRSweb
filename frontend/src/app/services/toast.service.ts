@@ -37,4 +37,5 @@ export class ToastService {
   remove(id: number) {
     this.toasts.update(list => list.filter(t => t.id !== id));
   }
+
 }

@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../../component/navbar';
+import { ToastService } from '../../../services/toast.service';
 import {
   PrepostulacionService,
   Prepostulacion,
@@ -9,6 +10,7 @@ import {
   SolicitudDocente,
   DetallePostulacion
 } from '../../../services/prepostulacion.service';
+import {ToastComponent} from '../../../component/toast.component';
 
 export interface DocumentoAcademico {
   idDocumento: number;
@@ -22,7 +24,7 @@ export interface DocumentoAcademico {
   standalone: true,
   templateUrl: './gestionpostulante.html',
   styleUrls: ['./gestionpostulante.scss'],
-  imports: [CommonModule, FormsModule, DatePipe, NavbarComponent]
+  imports: [CommonModule, FormsModule, DatePipe, NavbarComponent, ToastComponent]
 })
 export class GestionPostulanteComponent implements OnInit {
 
@@ -71,7 +73,8 @@ export class GestionPostulanteComponent implements OnInit {
 
   constructor(
     private prepostulacionService: PrepostulacionService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -168,7 +171,7 @@ export class GestionPostulanteComponent implements OnInit {
       },
       error: () => {
         this.cargandoDetalle = false;
-        this.mostrarToast('error', 'Error al cargar el detalle');
+        this.toast.error('Error al cargar el detalle');
         this.cdr.detectChanges();
       }
     });
@@ -238,9 +241,9 @@ export class GestionPostulanteComponent implements OnInit {
         this.calcularEstadisticas();
         this.applyFilters();
         this.cdr.detectChanges();
-        this.mostrarToast('success', 'Documentos validados correctamente');
+        this.toast.success('Documentos validados correctamente');
       },
-      error: (err: any) => this.mostrarToast('error', `Error al validar. Código: ${err.status}`)
+      error: (err: any) => this.toast.error(`Error al validar. Código: ${err.status}`)
     });
   }
 
@@ -276,9 +279,9 @@ export class GestionPostulanteComponent implements OnInit {
         this.calcularEstadisticas();
         this.applyFilters();
         this.cdr.detectChanges();
-        this.mostrarToast('success', 'Documentos rechazados correctamente');
+        this.toast.error('Documentos rechazados correctamente');
       },
-      error: (err: any) => this.mostrarToast('error', `Error al rechazar. Código: ${err.status}`)
+      error: (err: any) => this.toast.error(`Error al rechazar. Código: ${err.status}`)
     });
   }
 
@@ -425,14 +428,4 @@ export class GestionPostulanteComponent implements OnInit {
 
   exportarReporte(): void { alert('Funcionalidad de exportación pendiente'); }
 
-  mostrarToast(tipo: 'success' | 'error', mensaje: string): void {
-    this.toastType = tipo;
-    this.toastMessage = mensaje;
-    this.showToast = true;
-    clearTimeout(this.toastTimer);
-    this.toastTimer = setTimeout(() => {
-      this.showToast = false;
-      this.cdr.detectChanges();
-    }, 2500);
-  }
 }

@@ -1,16 +1,7 @@
 <!-- gestionpostulante.html -->
 <app-navbar></app-navbar>
 
-<!-- Toast -->
-<div class="toast" [ngClass]="toastType" *ngIf="showToast">
-  <svg *ngIf="toastType === 'success'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-  </svg>
-  <svg *ngIf="toastType === 'error'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-  </svg>
-  {{ toastMessage }}
-</div>
+<app-toast></app-toast>
 
 <div class="main-container">
   <div class="content-wrapper">
