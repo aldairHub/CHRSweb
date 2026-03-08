@@ -1,16 +1,29 @@
 <app-navbar></app-navbar>
 
-<div class="main-container">
+<!-- Spinner -->
+<div *ngIf="cargando" class="loading-state">
+  <div class="spinner"></div>
+  <p>Cargando entrevista...</p>
+</div>
+
+<!-- Sin entrevista -->
+<div *ngIf="!cargando && error" class="sin-entrevista">
+  <i class="pi pi-calendar-times"></i>
+  <p>{{ error }}</p>
+</div>
+
+<!-- Contenido principal -->
+<div class="main-container" *ngIf="!cargando && entrevista">
   <div class="content-wrapper">
 
     <header class="page-header">
       <div>
         <h2 class="page-header__title">Mi Entrevista</h2>
-        <p class="page-header__description">{{ postulante.proceso }}</p>
+        <p class="page-header__description">{{ entrevista.nombreFase }}</p>
       </div>
     </header>
 
-    <!-- =========== ESTADO ENTREVISTA =========== -->
+    <!-- ESTADO BANNER -->
     <div class="estado-banner" [class]="'estado-banner--' + colorEstado">
       <i class="pi"
          [class.pi-calendar]="entrevista.estado === 'programada'"
@@ -19,16 +32,17 @@
       <div>
         <strong>
           {{ entrevista.estado === 'programada' ? 'Entrevista Programada' :
-             entrevista.estado === 'en_curso'   ? '¡Entrevista en Curso!' :
-             'Entrevista Completada' }}
+          entrevista.estado === 'en_curso'   ? '¡Entrevista en Curso!' :
+            'Entrevista Completada' }}
         </strong>
         <span>{{ entrevista.fecha }} a las {{ entrevista.hora }}</span>
       </div>
     </div>
 
-    <!-- =========== INFO CARD =========== -->
+    <!-- INFO GRID -->
     <div class="info-grid">
 
+      <!-- Card izquierda: detalles -->
       <div class="form-card info-card">
         <h3 class="card-title"><i class="pi pi-info-circle"></i> Detalles de la Entrevista</h3>
 
@@ -41,6 +55,10 @@
           <span class="info-valor">{{ entrevista.hora }}</span>
         </div>
         <div class="info-row">
+          <span class="info-label"><i class="pi pi-hourglass"></i> Duración</span>
+          <span class="info-valor">{{ entrevista.duracion }} minutos</span>
+        </div>
+        <div class="info-row">
           <span class="info-label"><i class="pi pi-desktop"></i> Modalidad</span>
           <span class="info-valor info-valor--badge"
                 [class.badge-virtual]="esVirtual"
@@ -49,12 +67,13 @@
             {{ entrevista.modalidad | titlecase }}
           </span>
         </div>
-        <div class="info-row" *ngIf="!esVirtual && entrevista.lugar">
+        <div class="info-row" *ngIf="!esVirtual && entrevista.observaciones">
           <span class="info-label"><i class="pi pi-map-marker"></i> Lugar</span>
-          <span class="info-valor">{{ entrevista.lugar }}</span>
+          <span class="info-valor">{{ entrevista.observaciones }}</span>
         </div>
 
-        <div class="evaluadores-section">
+        <!-- Evaluadores -->
+        <div class="evaluadores-section" *ngIf="entrevista.evaluadores?.length">
           <h4 class="eval-titulo">Comisión Evaluadora</h4>
           <div class="evaluador-item" *ngFor="let e of entrevista.evaluadores">
             <i class="pi pi-user"></i>
@@ -62,25 +81,47 @@
           </div>
         </div>
 
-        <!-- Botón unirse (solo si es virtual) -->
+        <!-- Botón unirse (solo virtual) -->
         <div class="unirse-section" *ngIf="esVirtual">
-          <button class="btn btn--videoconf" (click)="abrirModalVideoconf()"
+          <button class="btn btn--videoconf"
+                  (click)="abrirModalVideoconf()"
                   [disabled]="entrevista.estado === 'completada'">
             <i class="pi pi-video"></i>
             {{ entrevista.estado === 'completada' ? 'Entrevista Finalizada' : 'Unirse a la Videoconferencia' }}
           </button>
-          <p class="enlace-info" *ngIf="entrevista.estado !== 'completada'">
+          <p class="enlace-info" *ngIf="entrevista.estado !== 'completada' && entrevista.enlace">
             <i class="pi pi-link"></i> {{ entrevista.enlace }}
           </p>
         </div>
       </div>
 
+      <!-- Card derecha: instrucciones -->
       <div class="form-card instrucciones-card">
         <h3 class="card-title"><i class="pi pi-list"></i> Instrucciones Importantes</h3>
         <ul class="instrucciones-list">
-          <li *ngFor="let inst of entrevista.instrucciones; let i = index">
-            <div class="inst-num">{{ i + 1 }}</div>
-            <span>{{ inst }}</span>
+          <li>
+            <div class="inst-num">1</div>
+            <span>Conéctese 5 minutos antes de la hora indicada para verificar audio y cámara.</span>
+          </li>
+          <li>
+            <div class="inst-num">2</div>
+            <span>Tenga a la mano todos los documentos de soporte de su hoja de vida.</span>
+          </li>
+          <li>
+            <div class="inst-num">3</div>
+            <span>La clase demostrativa tendrá una duración máxima de 20 minutos.</span>
+          </li>
+          <li>
+            <div class="inst-num">4</div>
+            <span>Prepare el tema indicado por la comisión evaluadora con anticipación.</span>
+          </li>
+          <li>
+            <div class="inst-num">5</div>
+            <span>Asegúrese de estar en un lugar tranquilo con buena conexión a internet.</span>
+          </li>
+          <li>
+            <div class="inst-num">6</div>
+            <span>Vista ropa formal para la sesión de videoconferencia.</span>
           </li>
         </ul>
 
@@ -90,14 +131,19 @@
           <div class="criterio-badge">Actitud y Habilidades — 10 pts</div>
           <div class="criterio-badge">Clase Demostrativa — 10 pts</div>
         </div>
+
+        <!-- Observaciones del evaluador -->
+        <div class="observaciones-box" *ngIf="entrevista.observaciones">
+          <h4><i class="pi pi-comment"></i> Observaciones</h4>
+          <p>{{ entrevista.observaciones }}</p>
+        </div>
       </div>
 
     </div>
-
   </div>
 </div>
 
-<!-- =========== MODAL VIDEOCONFERENCIA =========== -->
+<!-- MODAL VIDEOCONFERENCIA -->
 <div class="modal-overlay" *ngIf="mostrarModalVideoconf">
   <div class="modal-card">
     <div class="modal-icon">
@@ -110,7 +156,7 @@
     </p>
     <div class="modal-link-box">
       <i class="pi pi-link"></i>
-      <span>{{ entrevista.enlace }}</span>
+      <span>{{ entrevista?.enlace }}</span>
     </div>
     <div class="modal-checklist">
       <div class="check-item"><i class="pi pi-check"></i> Conexión a internet estable</div>

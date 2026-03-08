@@ -38,6 +38,12 @@ public class ReunionController {
         return ResponseEntity.ok(service.listarProgramadas());
     }
 
+    @GetMapping("/mi-entrevista")
+    public ResponseEntity<ReunionResponseDTO> miEntrevista(
+            @RequestParam Long idUsuario) {
+        return ResponseEntity.ok(service.obtenerMiEntrevista(idUsuario));
+    }
+
     /** GET /api/evaluacion/reuniones/{id} */
     @GetMapping("/{id}")
     public ResponseEntity<ReunionResponseDTO> obtener(@PathVariable Long id) {

@@ -192,4 +192,15 @@ public class ReunionService {
                 .map(String::trim).filter(s -> !s.isEmpty())
                 .collect(java.util.stream.Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public ReunionResponseDTO obtenerMiEntrevista(Long idUsuario) {
+        List<Reunion> reuniones = reunionRepository.findByUsuarioPostulante(idUsuario);
+        if (reuniones.isEmpty()) {
+            throw new RuntimeException("No tienes ninguna entrevista programada.");
+        }
+        Reunion r = reuniones.get(0);
+        return toDTO(r, r.getFaseProceso().getProceso().getIdProceso());
+    }
+
 }

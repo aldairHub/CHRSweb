@@ -3,17 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { NavbarComponent } from '../../../component/navbar';
 import { FooterComponent } from '../../../component/footer';
-
-interface EntrevistaInfo {
-  fecha: string;
-  hora: string;
-  modalidad: 'presencial' | 'virtual';
-  enlace?: string;
-  lugar?: string;
-  evaluadores: string[];
-  estado: 'programada' | 'en_curso' | 'completada';
-  instrucciones: string[];
-}
+import { EntrevistaService, EntrevistaInfo } from '../../../services/entrevista.service';
 
 @Component({
   selector: 'app-entrevista-postulante',
@@ -25,42 +15,46 @@ interface EntrevistaInfo {
 export class EntrevistaPostulanteComponent implements OnInit {
 
   mostrarModalVideoconf = false;
+  cargando = true;
+  error: string | null = null;
+
+  entrevista: EntrevistaInfo | null = null;
 
   postulante = {
-    nombre: 'Juan Carlos Pérez Loor',
-    proceso: 'Docente No Titular — Área: Tecnologías de la Información'
+    nombre: '',
+    proceso: ''
   };
 
-  entrevista: EntrevistaInfo = {
-    fecha: '14 de mayo de 2025',
-    hora: '09:00 AM',
-    modalidad: 'virtual',
-    enlace: 'https://meet.google.com/awx-zsnk-xxa',
-    evaluadores: ['Ing. Washington Chiriboga Casanova — Decano FCCDD', 'Ing. Jessica Ponce Ordóñez — Coordinadora de Carrera'],
-    estado: 'programada',
-    instrucciones: [
-      'Conéctese 5 minutos antes de la hora indicada para verificar audio y cámara.',
-      'Tenga a la mano todos los documentos de soporte de su hoja de vida.',
-      'La clase demostrativa tendrá una duración máxima de 20 minutos.',
-      'Prepare el tema indicado por la comisión evaluadora con anticipación.',
-      'Asegúrese de estar en un lugar tranquilo con buena conexión a internet.',
-      'Vista ropa formal para la sesión de videoconferencia.'
-    ]
-  };
+  constructor(
+    private router: Router,
+    private entrevistaSvc: EntrevistaService
+  ) {}
+
+  ngOnInit(): void {
+    const idUsuario = Number(localStorage.getItem('idUsuario'));
+    if (!idUsuario) { this.router.navigate(['/login']); return; }
+
+    this.entrevistaSvc.obtenerMiEntrevista(idUsuario).subscribe({
+      next: data => {
+        this.entrevista = data;
+        this.cargando   = false;
+      },
+      error: () => {
+        this.error    = 'No tienes ninguna entrevista programada por el momento.';
+        this.cargando = false;
+      }
+    });
+  }
 
   get esVirtual(): boolean {
-    return this.entrevista.modalidad === 'virtual';
+    return this.entrevista?.modalidad !== 'presencial';
   }
 
   get colorEstado(): string {
-    if (this.entrevista.estado === 'en_curso') return 'en-curso';
-    if (this.entrevista.estado === 'completada') return 'completada';
+    if (this.entrevista?.estado === 'en_curso')   return 'en-curso';
+    if (this.entrevista?.estado === 'completada') return 'completada';
     return 'programada';
   }
-
-  constructor(private router: Router) {}
-
-  ngOnInit(): void {}
 
   abrirModalVideoconf(): void {
     this.mostrarModalVideoconf = true;
@@ -68,7 +62,7 @@ export class EntrevistaPostulanteComponent implements OnInit {
 
   confirmarUnirse(): void {
     this.mostrarModalVideoconf = false;
-    if (this.entrevista.enlace) {
+    if (this.entrevista?.enlace) {
       window.open(this.entrevista.enlace, '_blank');
     }
   }
