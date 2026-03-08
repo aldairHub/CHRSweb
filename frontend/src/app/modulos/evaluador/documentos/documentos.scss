@@ -17,7 +17,7 @@ $orange-light: #fef3c7;
 .main-container {
   padding: 24px;
   min-height: calc(100vh - 140px);
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  background: #EEF9EC;
 }
 
 .content-wrapper {
@@ -428,5 +428,80 @@ $orange-light: #fef3c7;
 }
 
 :host-context(html.dark) {
+
+  .main-container {
+    background: #000 !important;
+  }
+
+  // Listado de documentos
+  .doc-list {
+    background: transparent !important;
+  }
+
+  .doc-item {
+    background: #0f0f0f !important;
+    border-color: rgba(255,255,255,0.08) !important;
+    color: #e5e5e5 !important;
+
+    &:hover { background: #141414 !important; }
+  }
+
+  .doc-icon {
+    background: rgba(0,166,62,0.15) !important;
+    border-color: rgba(0,166,62,0.2) !important;
+    svg { stroke: #00D149 !important; }
+  }
+
+  .doc-nombre     { color: #e5e5e5 !important; }
+  .doc-descripcion { color: #555 !important; }
+
+  // Observaciones IA
+  .obs-box {
+    background: #1a1a1a !important;
+    border-color: rgba(255,255,255,0.08) !important;
+    color: #9ca3af !important;
+  }
+  .obs-input, textarea {
+    background: #111 !important;
+    border-color: rgba(255,255,255,0.12) !important;
+    color: #e5e5e5 !important;
+    &::placeholder { color: #4b5563 !important; }
+    &:focus { border-color: rgba(0,166,62,0.5) !important; }
+  }
+
+  // Botones de acción (Ver / Guardar)
+  .btn-ver, .btn-save {
+    background: #111 !important;
+    border-color: rgba(255,255,255,0.12) !important;
+    color: #9ca3af !important;
+    &:hover:not(:disabled) { border-color: #00D149 !important; color: #00D149 !important; }
+  }
+  .btn-save--ok {
+    background: rgba(0,166,62,0.15) !important;
+    border-color: rgba(0,166,62,0.3) !important;
+    color: #4ade80 !important;
+  }
+
+  // Tags de estado (pendiente, validado, etc)
+  .doc-tag {
+    &--pendiente  { background: rgba(217,119,6,0.18) !important;  color: #fbbf24 !important; }
+    &--validado   { background: rgba(0,166,62,0.18) !important;   color: #4ade80 !important; }
+    &--rechazado  { background: rgba(220,38,38,0.18) !important;  color: #f87171 !important; }
+  }
+
+  // Barra de acciones final
+  .form-actions-bar {
+    background: transparent !important;
+    border-color: rgba(255,255,255,0.07) !important;
+  }
+  .form-actions-bar .hint { color: #f59e0b !important; }
+
+  // Header info
+  .doc-header         { color: #e5e5e5 !important; }
+  .doc-header-info h2 { color: #e5e5e5 !important; }
+  .doc-header-info p  { color: #9ca3af !important; }
+  .page-header h2     { color: #4ade80 !important; }
+
+  // Bloqueo validado
   .obs-bloqueado { color: #4ade80 !important; }
 }

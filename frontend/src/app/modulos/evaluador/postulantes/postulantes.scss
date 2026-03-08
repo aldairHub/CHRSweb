@@ -21,7 +21,7 @@ $bg-color: #f3f4f6;
 
 // Tarjetas y Filtros (Estilo Reutilizado)
 .form-card {
-  background-color: #ffffff; border-radius: 12px; padding: 2rem;
+  background-color: #EEF9EC; border-radius: 12px; padding: 2rem;
   border: 1px solid $border-color;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
@@ -53,7 +53,7 @@ $bg-color: #f3f4f6;
 .form-label { font-size: 0.85rem; font-weight: 700; color: $text-gray; text-transform: uppercase; }
 .form-input {
   padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; width: 100%;
-  box-sizing: border-box; font-size: 0.95rem; background-color: #f9fafb;
+  box-sizing: border-box; font-size: 0.95rem; background-color: #EEF9EC;
   &:focus { outline: none; background: #fff; border-color: $uteq-green; box-shadow: 0 0 0 3px rgba($uteq-green, 0.15); }
 }
 
@@ -78,13 +78,14 @@ $bg-color: #f3f4f6;
 .custom-table {
   width: 100%; border-collapse: collapse; margin-top: 10px;
   thead th {
+    background: #f8faf9;
     text-align: left; padding: 15px; color: $text-gray; font-size: 0.85rem;
     font-weight: 700; text-transform: uppercase; border-bottom: 2px solid $border-color;
   }
   tbody td {
     padding: 15px; border-bottom: 1px solid $border-color; color: $text-dark; font-size: 0.95rem; vertical-align: middle;
   }
-  tbody tr:hover { background-color: #f9fafb; }
+  tbody tr:hover { background-color: #EEF9EC; }
 }
 
 // Elementos de la tabla
@@ -114,7 +115,7 @@ $bg-color: #f3f4f6;
 }
 
 .modal-card {
-  background: white; width: 400px; padding: 40px 30px; border-radius: 16px;
+  background: #EEF9EC; width: 400px; padding: 40px 30px; border-radius: 16px;
   text-align: center; position: relative; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   animation: slideUp 0.3s ease-out;
 }
@@ -135,7 +136,7 @@ $bg-color: #f3f4f6;
   text-align: left; margin-bottom: 20px;
   .step-item {
     display: flex; gap: 15px; margin-bottom: 15px; align-items: flex-start;
-    padding: 12px; background: #f9fafb; border-radius: 8px; border: 1px solid #f3f4f6;
+    padding: 12px; background: #EEF9EC; border-radius: 8px; border: 1px solid #f3f4f6;
   }
   .step-icon {
     width: 32px; height: 32px; background: $uteq-green; color: white;
@@ -368,4 +369,94 @@ $bg-color: #f3f4f6;
   .estado-badge.estado-subido   { background: rgba(29,78,216,0.25) !important; color: #93c5fd !important; }
   .estado-badge.estado-validado { background: rgba(22,101,52,0.25) !important; color: #86efac !important; }
   .estado-badge.estado-rechazado{ background: rgba(153,27,27,0.25) !important; color: #fca5a5 !important; }
+}
+
+// ── DARK MODE — clases específicas de postulantes ───────────────────────────
+:host-context(html.dark) {
+
+  .main-container {
+    background: #000 !important;
+  }
+
+  // Tarjeta filtros / contenedor blanco
+  .form-card {
+    background: #0f0f0f !important;
+    border-color: rgba(255,255,255,0.08) !important;
+    color: #e5e5e5 !important;
+  }
+
+  .form-section__title  { color: #4ade80 !important; }
+  .form-section__icon   {
+    background: rgba(0,166,62,0.15) !important;
+    border-color: rgba(0,166,62,0.25) !important;
+    color: #4ade80 !important;
+  }
+
+  // Tabla de postulantes
+  .custom-table {
+    background: transparent !important;
+
+    thead th {
+      background: #111 !important;
+      color: rgba(0,210,80,0.6) !important;
+      border-color: rgba(0,210,80,0.1) !important;
+    }
+    tbody td {
+      color: #d1d5db !important;
+      border-color: rgba(255,255,255,0.05) !important;
+    }
+    tbody tr:hover { background: rgba(0,210,80,0.03) !important; }
+    tbody tr:hover td { background: rgba(0,210,80,0.03) !important; }
+  }
+
+  // ID badge (fondo gris claro que queda blanco)
+  .badge-id {
+    background: #1a1a1a !important;
+    color: #00D149 !important;
+  }
+
+  // Badges de estado de la tabla
+  .status-badge {
+    &.status-pendiente { background: rgba(217,119,6,0.18) !important;  color: #fbbf24 !important; }
+    &.status-aprobado  { background: rgba(0,166,62,0.18) !important;   color: #4ade80 !important; }
+    &.status-revision  { background: rgba(29,78,216,0.18) !important;  color: #93c5fd !important; }
+    &.status-rechazado { background: rgba(220,38,38,0.18) !important;  color: #f87171 !important; }
+  }
+
+  .user-name { color: #e5e5e5 !important; }
+
+  // Modal confirmación
+  .modal-card {
+    background: #0f0f0f !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    color: #e5e5e5 !important;
+  }
+  .modal-title { color: #4ade80 !important; }
+  .modal-header-icon .check-circle {
+    border-color: #00A63E !important;
+    color: #00A63E !important;
+  }
+  .modal-info-box {
+    background: rgba(0,166,62,0.12) !important;
+    color: #4ade80 !important;
+  }
+  .step-item {
+    background: #1a1a1a !important;
+    border-color: rgba(255,255,255,0.06) !important;
+  }
+  .step-icon {
+    background: #00A63E !important;
+    color: #fff !important;
+  }
+  .step-text strong { color: #e5e5e5 !important; }
+  .step-text span   { color: #9ca3af !important; }
+
+  // Input search
+  .form-input {
+    background: #111 !important;
+    border-color: rgba(255,255,255,0.12) !important;
+    color: #e5e5e5 !important;
+    &::placeholder { color: #4b5563 !important; }
+    &:focus { border-color: rgba(0,166,62,0.5) !important; box-shadow: 0 0 0 3px rgba(0,166,62,0.1) !important; }
+  }
 }
