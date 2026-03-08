@@ -51,6 +51,7 @@ export interface Candidato {
   styleUrls: ['./evaluacion.scss']
 })
 export class EvaluacionMeritosComponent implements OnInit {
+  cargando = false;
 
   // ====================================================
   // CANDIDATOS (3 - la terna oficial)

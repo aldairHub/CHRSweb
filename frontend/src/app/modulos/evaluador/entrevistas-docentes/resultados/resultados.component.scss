@@ -158,6 +158,7 @@ $text-dark: #1a1a1a; $text-gray: #536b50; $bg-white: #ffffff; $error: #dc2626;
     cursor: pointer;
     &:hover { color: #00A63E; background: #EEF9EC; }
     &.active { color: #00A63E; border-bottom-color: #00A63E; }
+    svg { width: 16px; height: 16px; flex-shrink: 0; }
   }
 }
 

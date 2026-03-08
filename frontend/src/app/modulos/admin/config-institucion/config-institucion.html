@@ -1,28 +1,36 @@
-<!-- config-institucion.html -->
 <app-navbar></app-navbar>
 
 <div class="main-container">
-  <div class="content-wrapper">
 
-    <!-- Header -->
-    <div class="page-header">
-      <div>
-        <h2>Configuración institucional</h2>
-        <p class="page-subtitle">Edita los datos, logo y configuración de correo de la institución</p>
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h2>Configuración institucional</h2>
+      <p class="page-subtitle">Edita los datos, logo y configuración de correo de la institución</p>
+    </div>
+  </div>
+
+  <!-- Loading skeleton -->
+  <ng-container *ngIf="isLoading">
+    <div class="section-card" *ngFor="let s of [1,2,3]">
+      <div class="section-header">
+        <div class="section-icon"><div class="skeleton-cell skeleton-cell--avatar"></div></div>
+        <div style="flex:1">
+          <div class="skeleton-cell skeleton-cell--lg" style="margin-bottom:6px"></div>
+          <div class="skeleton-cell skeleton-cell--md"></div>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="skeleton-cell" style="height:40px;border-radius:10px" *ngFor="let c of [1,2,3,4]"></div>
+        </div>
       </div>
     </div>
-
-  </div>
-
-  <!-- Loading -->
-  <div class="loading-state" *ngIf="isLoading">
-    <div class="spinner"></div>
-    <p>Cargando configuración...</p>
-  </div>
+  </ng-container>
 
   <ng-container *ngIf="!isLoading && config">
 
-    <!-- ══ SECCIÓN 1: Identidad ══════════════════════════════════ -->
+    <!-- ══ SECCIÓN 1: Identidad ══ -->
     <div class="section-card">
       <div class="section-header">
         <div class="section-icon">
@@ -36,7 +44,6 @@
           <p class="section-subtitle">Nombre, dirección y datos de contacto</p>
         </div>
       </div>
-
       <div class="section-body">
         <div class="form-grid">
 
@@ -55,19 +62,19 @@
             <span class="form-hint">Aparece en los correos y encabezados del sistema.</span>
           </div>
 
-          <div class="form-group col-span-2">
-            <label>URL imagen de fondo del landing</label>
-            <input type="text" class="form-input"
-                   [(ngModel)]="form.imagenFondoUrl"
-                   placeholder="https://ejemplo.com/imagen-campus.jpg" />
-            <span class="form-hint">Imagen de fondo del hero en el landing público. Deja vacío para usar la imagen por defecto.</span>
-          </div>
-
           <div class="form-group">
             <label>Teléfono</label>
             <input type="text" class="form-input"
                    [(ngModel)]="form.telefono"
                    placeholder="Ej: +593 5 275-0000" />
+          </div>
+
+          <div class="form-group col-span-2">
+            <label>URL imagen de fondo del landing</label>
+            <input type="text" class="form-input"
+                   [(ngModel)]="form.imagenFondoUrl"
+                   placeholder="https://ejemplo.com/imagen-campus.jpg" />
+            <span class="form-hint">Imagen del hero en el landing público. Vacío = imagen por defecto.</span>
           </div>
 
           <div class="form-group col-span-2">
@@ -81,7 +88,7 @@
       </div>
     </div>
 
-    <!-- ══ SECCIÓN 2: Logo ═══════════════════════════════════════ -->
+    <!-- ══ SECCIÓN 2: Logo ══ -->
     <div class="section-card">
       <div class="section-header">
         <div class="section-icon">
@@ -95,11 +102,8 @@
           <p class="section-subtitle">PNG o JPG, máximo 2 MB. Se muestra en la app y correos.</p>
         </div>
       </div>
-
       <div class="section-body">
         <div class="logo-area">
-
-          <!-- Preview -->
           <div class="logo-preview" [class.has-image]="logoPreview || config.logoUrl">
             <img *ngIf="logoPreview || config.logoUrl"
                  [src]="logoPreview || config.logoUrl"
@@ -112,8 +116,6 @@
               <span>Sin logo</span>
             </div>
           </div>
-
-          <!-- Controles -->
           <div class="logo-controls">
             <p>Sube el logo oficial de la institución. Se mostrará en el encabezado del sistema y en los correos automáticos.</p>
             <div class="file-input-wrapper">
@@ -131,12 +133,11 @@
               </p>
             </div>
           </div>
-
         </div>
       </div>
     </div>
 
-    <!-- ══ SECCIÓN 3: Correo ═════════════════════════════════════ -->
+    <!-- ══ SECCIÓN 3: Correo ══ -->
     <div class="section-card">
       <div class="section-header">
         <div class="section-icon">
@@ -150,7 +151,6 @@
           <p class="section-subtitle">Cuenta Gmail desde la que se envían los correos del sistema</p>
         </div>
       </div>
-
       <div class="section-body">
         <div class="form-grid">
 
@@ -173,17 +173,15 @@
           <div class="form-group col-span-2">
             <label>
               Contraseña de aplicación Gmail
-              <span class="password-badge" *ngIf="config.tienePasswordConfigurado">
-                  ✓ Configurada
-                </span>
+              <span class="password-badge" *ngIf="config.tienePasswordConfigurado">✓ Configurada</span>
             </label>
             <input type="password" class="form-input"
                    [(ngModel)]="form.gmailPassword"
                    placeholder="Dejar vacío para no cambiar la contraseña actual" />
             <span class="form-hint">
-                Usa una contraseña de aplicación de Google (no la contraseña de tu cuenta).
-                Ve a <strong>Cuenta de Google → Seguridad → Contraseñas de aplicaciones</strong>.
-              </span>
+              Usa una contraseña de aplicación de Google (no tu contraseña normal).
+              Ve a <strong>Cuenta de Google → Seguridad → Contraseñas de aplicaciones</strong>.
+            </span>
           </div>
 
           <div class="form-group">
@@ -200,35 +198,28 @@
                    placeholder="587" />
           </div>
 
-          <!-- Toggle SSL -->
           <div class="form-group col-span-2">
             <label>Modo de cifrado</label>
             <div class="ssl-toggle-group">
-              <button type="button"
-                      class="ssl-option"
-                      [class.active]="!form.emailSsl"
-                      (click)="form.emailSsl = false">
-                  <span class="ssl-option-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                    </svg>
-                  </span>
+              <button type="button" class="ssl-option" [class.active]="!form.emailSsl" (click)="form.emailSsl = false">
+                <span class="ssl-option-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                  </svg>
+                </span>
                 <div>
                   <span class="ssl-option-label">STARTTLS</span>
                   <span class="ssl-option-desc">Puerto 587 — Gmail, Outlook</span>
                 </div>
               </button>
-              <button type="button"
-                      class="ssl-option"
-                      [class.active]="form.emailSsl"
-                      (click)="form.emailSsl = true">
-                  <span class="ssl-option-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                    </svg>
-                  </span>
+              <button type="button" class="ssl-option" [class.active]="form.emailSsl" (click)="form.emailSsl = true">
+                <span class="ssl-option-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                  </svg>
+                </span>
                 <div>
                   <span class="ssl-option-label">SSL puro</span>
                   <span class="ssl-option-desc">Puerto 465 — Servidores corporativos</span>
@@ -236,32 +227,34 @@
               </button>
             </div>
             <span class="form-hint">
-                Si usas Gmail, elige <strong>STARTTLS</strong> con puerto 587.
-                Usa <strong>SSL puro</strong> solo si tu proveedor de correo lo requiere explícitamente.
-              </span>
+              Si usas Gmail, elige <strong>STARTTLS</strong> con puerto 587.
+            </span>
           </div>
 
         </div>
       </div>
     </div>
 
-    <!-- ══ BOTONES ═══════════════════════════════════════════════ -->
+    <!-- ══ BOTONES ══ -->
     <div class="actions-bar">
       <button class="btn btn-outline" (click)="resetForm()" [disabled]="isSaving">
         Descartar cambios
       </button>
       <button class="btn btn-primary" (click)="guardar()" [disabled]="isSaving">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M5 13l4 4L19 7"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
         </svg>
         {{ isSaving ? 'Guardando...' : 'Guardar configuración' }}
       </button>
     </div>
-    <div class="empty-state" *ngIf="!isLoading && !config">
-      <p>No se encontró configuración institucional activa.</p>
-      <button (click)="cargar()">Reintentar</button>
-    </div>
+
   </ng-container>
+
+  <!-- Error state -->
+  <div class="empty-state" *ngIf="!isLoading && !config">
+    <p>No se encontró configuración institucional activa.</p>
+    <button (click)="cargar()">Reintentar</button>
+  </div>
+
 </div>
 <app-toast></app-toast>

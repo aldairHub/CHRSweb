@@ -29,15 +29,15 @@ $bg-color:     #ffffff;
 
 .version { color: $text-gray; font-size: 0.8rem; }
 
-// ─── Modo oscuro ───────────────────────────────────────
+// ─── Modo oscuro AMOLED ────────────────────────────────
 :host-context(html.dark) .app-footer {
-  background-color: #111111 !important;
-  border-top: 1px solid #2a2a2a !important;
+  background-color: #000000 !important;
+  border-top: 1px solid rgba(0,210,80,0.08) !important;
 }
 
 :host-context(html.dark) .copyright {
-  color: #555555 !important;
-  strong { color: #00A63E !important; }
+  color: #2e2e2e !important;
+  strong { color: #00D149 !important; }
 }
 
-:host-context(html.dark) .version { color: #444444 !important; }
+:host-context(html.dark) .version { color: #252525 !important; }

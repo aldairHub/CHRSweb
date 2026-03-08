@@ -86,6 +86,18 @@
         </tr>
         </thead>
         <tbody>
+        <!-- SKELETON LOADER -->
+        <ng-container *ngIf="cargando">
+          <tr class="skeleton-row-tr" *ngFor="let s of [1,2,3,4,5]">
+            <td><div class="skeleton-cell skeleton-cell--avatar"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--lg"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+          </tr>
+        </ng-container>
+        <ng-container *ngIf="!cargando">
         <tr *ngFor="let c of convocatoriasPaginadas">
           <td><strong>#{{ c.idConvocatoria }}</strong></td>
           <td>{{ c.titulo }}</td>
@@ -134,7 +146,8 @@
             </div>
           </td>
         </tr>
-        <tr *ngIf="convocatoriasFiltradas.length === 0">
+        </ng-container>
+        <tr *ngIf="convocatoriasFiltradas.length === 0 && !cargando">
           <td colspan="8" class="empty-state">
             <div class="empty-icon">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -272,7 +285,7 @@
         </label>
       </div>
 
-      <p *ngIf="tiposDocumentoDisponibles.length === 0" style="color:#aaa;font-size:13px;margin-bottom:12px;">
+      <p *ngIf="tiposDocumentoDisponibles.length === 0 && !cargando" style="color:#aaa;font-size:13px;margin-bottom:12px;">
         No hay tipos activos. Se usarán los tipos globales.
       </p>
       <p style="font-size:12px;margin-bottom:16px;" [style.color]="form.idsTiposDocumento.length > 0 ? '#16a34a' : '#aaa'">
@@ -300,7 +313,7 @@
           </label>
         </div>
 
-        <div class="empty-solicitudes" *ngIf="solicitudesAprobadas.length === 0">
+        <div class="empty-solicitudes" *ngIf="solicitudesAprobadas.length === 0 && !cargando">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
           </svg>

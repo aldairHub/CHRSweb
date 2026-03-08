@@ -17,6 +17,7 @@ import { Facultad } from '../../../models/facultad.model';
 export class FacultadComponent implements OnInit {
 
   // ===== Tabla =====
+  cargando = false;
   facultades: Facultad[] = [];
 
   // ===== Filtros =====
@@ -48,8 +49,11 @@ export class FacultadComponent implements OnInit {
   // LOADERS BACKEND
   // =========================
   cargarFacultades(): void {
+    this.cargando = true;
     this.facultadService.listar().subscribe({
       next: (data: any[]) => {
+        this.cargando = false;
+        this.cdr.detectChanges();
         this.facultades = data.map(x => ({
           idFacultad: x.idFacultad ?? x.id_facultad,
           nombreFacultad: x.nombreFacultad ?? x.nombre_facultad,
@@ -143,6 +147,8 @@ export class FacultadComponent implements OnInit {
         this.closeModal();
       },
       error: (err) => {
+        this.cargando = false;
+        this.cdr.detectChanges();
         this.toast.remove(loadId);
         this.toast.error('No se pudo guardar', err?.error?.message || 'Intenta de nuevo.');
       }
@@ -161,6 +167,8 @@ export class FacultadComponent implements OnInit {
         `"${f.nombreFacultad}" fue ${f.estado ? 'activada' : 'desactivada'}.`
       ),
       error: (err) => {
+        this.cargando = false;
+        this.cdr.detectChanges();
         f.estado = anterior;
         this.toast.error('Error', err?.error?.message || 'No se pudo cambiar el estado.');
       }

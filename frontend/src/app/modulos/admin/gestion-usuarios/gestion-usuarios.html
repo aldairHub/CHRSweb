@@ -82,6 +82,18 @@
           </tr>
           </thead>
           <tbody>
+        <!-- SKELETON LOADER -->
+        <ng-container *ngIf="cargando">
+          <tr class="skeleton-row-tr" *ngFor="let s of [1,2,3,4,5]">
+            <td><div class="skeleton-cell skeleton-cell--avatar"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--lg"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+          </tr>
+        </ng-container>
+          <ng-container *ngIf="!cargando">
           <tr *ngFor="let a of autoridadesPaginadas">
             <td><strong>{{ a.nombres }} {{ a.apellidos }}</strong></td>
             <td>{{ a.correo }}</td>
@@ -112,7 +124,8 @@
               </div>
             </td>
           </tr>
-          <tr *ngIf="autoridadesPaginadas.length === 0">
+          </ng-container>
+          <tr *ngIf="autoridadesPaginadas.length === 0 && !cargando">
             <td colspan="6" class="empty-state">
               <div class="empty-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -198,6 +211,7 @@
           </tr>
           </thead>
           <tbody>
+          <ng-container *ngIf="!cargando">
           <tr *ngFor="let u of usuariosPaginados">
             <td><strong>{{ u.usuarioApp }}</strong></td>
             <td>{{ u.usuarioBd }}</td>
@@ -228,7 +242,8 @@
               </div>
             </td>
           </tr>
-          <tr *ngIf="usuariosPaginados.length === 0">
+          </ng-container>
+          <tr *ngIf="usuariosPaginados.length === 0 && !cargando">
             <td colspan="6" class="empty-state">
               <div class="empty-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -83,8 +83,8 @@ public class NotificacionService {
     public void notifPostulanteAprobado(Long idUsuarioPostulante, Long idPrepostulacion) {
         notificarUsuario(
                 idUsuarioPostulante, "success",
-                "¡Prepostulación aprobada!",
-                "Tu prepostulación fue aprobada. Revisa tu correo para obtener tus credenciales de acceso.",
+                "¡Postulación aceptada!",
+                "¡Bienvenido al sistema! Tu postulación fue aceptada. Tienes documentos pendientes de subir para continuar con el proceso.",
                 "PREPOSTULACION", idPrepostulacion
         );
     }

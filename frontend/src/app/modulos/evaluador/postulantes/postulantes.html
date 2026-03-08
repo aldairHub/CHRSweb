@@ -54,6 +54,18 @@
           </tr>
           </thead>
           <tbody>
+        <!-- SKELETON LOADER -->
+        <ng-container *ngIf="cargando">
+          <tr class="skeleton-row-tr" *ngFor="let s of [1,2,3,4,5]">
+            <td><div class="skeleton-cell skeleton-cell--avatar"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--lg"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+          </tr>
+        </ng-container>
+          <ng-container *ngIf="!cargando">
           <tr *ngFor="let p of postulantes">
             <td><span class="badge-id">{{ p.identificacion }}</span></td>
             <td>
@@ -81,7 +93,8 @@
               </button>
             </td>
           </tr>
-          <tr *ngIf="postulantes.length === 0">
+          </ng-container>
+          <tr *ngIf="postulantes.length === 0 && !cargando">
             <td colspan="6" class="empty-state">
               <i class="pi pi-inbox"></i>
               <p>No se encontraron postulantes con esos criterios.</p>

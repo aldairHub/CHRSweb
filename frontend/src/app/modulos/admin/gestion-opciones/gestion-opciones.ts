@@ -14,6 +14,7 @@ import { NavbarComponent } from '../../../component/navbar';
 export class GestionOpcionesComponent implements OnInit {
 
   // ─── Datos ──────────────────────────────────────────────────────
+  cargando = false;
   roles:    any[] = [];
   opciones: any[] = [];
 
@@ -38,8 +39,10 @@ export class GestionOpcionesComponent implements OnInit {
 
   // ─── Carga roles ────────────────────────────────────────────────
   cargarRoles(): void {
+    this.cargando = true;
     this.http.get<any[]>(this.apiRoles).subscribe({
       next: data => {
+        this.cargando = false;
         // Solo roles con módulo asignado — sin módulo no tiene opciones
         this.roles = (Array.isArray(data) ? data : [])
           .filter(r => r.activo);
@@ -60,11 +63,13 @@ export class GestionOpcionesComponent implements OnInit {
 
     this.http.get<any[]>(`${this.apiOpciones}/rol/${rol.idRolApp}`).subscribe({
       next: data => {
+        this.cargando = false;
         this.opciones         = Array.isArray(data) ? data : [];
         this.cargandoOpciones = false;
         this.cdr.detectChanges();
       },
       error: err => {
+        this.cargando = false;
         console.error('Error cargando opciones:', err);
         this.cargandoOpciones = false;
         alert('No se pudieron cargar las opciones. ' +
@@ -87,6 +92,7 @@ export class GestionOpcionesComponent implements OnInit {
           this.cdr.detectChanges();
         },
         error: err => {
+          this.cargando = false;
           console.error('Error quitando opción:', err);
           alert('No se pudo quitar la opción.');
         }
@@ -103,6 +109,7 @@ export class GestionOpcionesComponent implements OnInit {
           this.cdr.detectChanges();
         },
         error: err => {
+          this.cargando = false;
           console.error('Error asignando opción:', err);
           alert('No se pudo asignar la opción.');
         }
@@ -125,6 +132,7 @@ export class GestionOpcionesComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: err => {
+        this.cargando = false;
         console.error('Error actualizando solo_lectura:', err);
         alert('No se pudo actualizar el permiso.');
       }

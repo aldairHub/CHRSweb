@@ -23,6 +23,7 @@ import {
 export class GestionRolesComponent implements OnInit {
 
   // ─── Tabla ──────────────────────────────────────────────────
+  cargando = false;
   roles: RolAppConRolesBdDTO[] = [];
   rolesFiltrados: RolAppConRolesBdDTO[] = [];
 
@@ -92,8 +93,10 @@ export class GestionRolesComponent implements OnInit {
   // ─── Loaders ────────────────────────────────────────────────
 
   loadData(): void {
+    this.cargando = true;
     this.svc.listar().subscribe({
       next: data => {
+        this.cargando = false;
         this.roles = Array.isArray(data) ? data : [];
         this.applyFilters();
         this.cdr.detectChanges();
@@ -114,6 +117,7 @@ export class GestionRolesComponent implements OnInit {
   loadModulos(): void {
     this.svc.listarModulos().subscribe({
       next: data => {
+        this.cargando = false;
         this.modulosDisponibles = Array.isArray(data) ? data : [];
         this.cdr.detectChanges();
       },
@@ -226,6 +230,7 @@ export class GestionRolesComponent implements OnInit {
         alert(' Rol guardado correctamente.');
       },
       error: err => {
+        this.cargando = false;
         this.isSaving = false;
         console.error('Error guardando rol:', err);
         alert(' No se pudo guardar el rol: ' + (err?.error?.message || err?.message || 'Error desconocido'));
@@ -243,6 +248,7 @@ export class GestionRolesComponent implements OnInit {
     this.svc.cambiarEstado(rol.idRolApp, nuevoEstado).subscribe({
       next: () => this.cdr.detectChanges(),
       error: err => {
+        this.cargando = false;
         rol.activo = prev;
         console.error('Error cambiando estado:', err);
         alert(' No se pudo cambiar el estado.');

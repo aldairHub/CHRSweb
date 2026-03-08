@@ -44,6 +44,7 @@ export class SolicitudesDocenteComponent implements OnInit {
   private readonly API = `${environment.apiUrl}/solicitudes-docente`;
 
   // ── data ─────────────────────────────────────────────────────
+  cargando = false;
   solicitudes:          SolicitudDocenteResponseDTO[] = [];
   solicitudesFiltradas: SolicitudDocenteResponseDTO[] = [];
 
@@ -71,9 +72,10 @@ export class SolicitudesDocenteComponent implements OnInit {
 
   // ── carga ──────────────────────────────────────────────────────
   cargar(): void { this.cdr.detectChanges();
+    this.cargando = true;
     this.http.get<SolicitudDocenteResponseDTO[]>(this.API).subscribe({
-      next: data => { this.solicitudes = data; this.filtrar();  this.cdr.detectChanges();},
-      error: err  => console.error('Error cargando solicitudes', err)
+      next: data => { this.solicitudes = data; this.filtrar(); this.cargando = false; this.cdr.detectChanges(); },
+      error: err  => { this.cargando = false; console.error('Error cargando solicitudes', err); }
 
     })
     ;
@@ -160,6 +162,7 @@ export class SolicitudesDocenteComponent implements OnInit {
         this.cancelarConfirm();
       },
       error: err => {
+        this.cargando = false;
         console.error('Error cambiando estado', err);
         this.procesando = false;
       }

@@ -12,6 +12,7 @@ import { TipoDocumentoService, TipoDocumento } from '../../../services/tipo-docu
   imports: [CommonModule, FormsModule, NavbarComponent]
 })
 export class GestionDocumentosComponent implements OnInit {
+  cargando = false;
 
   tiposDocumento: TipoDocumento[] = [];
   showTipoModal = false;
@@ -34,8 +35,10 @@ export class GestionDocumentosComponent implements OnInit {
   }
 
   cargarTipos(): void {
+    this.cargando = true;
     this.tipoDocumentoService.listar().subscribe({
       next: data => {
+        this.cargando = false;
         this.tiposDocumento = data;
         this.cdr.detectChanges();
       },

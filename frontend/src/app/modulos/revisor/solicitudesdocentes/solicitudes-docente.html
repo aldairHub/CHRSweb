@@ -93,7 +93,19 @@
       </tr>
       </thead>
       <tbody>
+        <!-- SKELETON LOADER -->
+        <ng-container *ngIf="cargando">
+          <tr class="skeleton-row-tr" *ngFor="let s of [1,2,3,4,5]">
+            <td><div class="skeleton-cell skeleton-cell--avatar"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--lg"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+          </tr>
+        </ng-container>
       <ng-container *ngIf="paginadas.length > 0; else sinDatos">
+        <ng-container *ngIf="!cargando">
         <tr *ngFor="let s of paginadas">
           <td><span class="badge-count">SOL-{{ s.idSolicitud | number:'5.0-0' }}</span></td>
           <td><strong>{{ s.nombreMateria }}</strong></td>
@@ -140,6 +152,7 @@
           </td>
         </tr>
       </ng-container>
+      </ng-container><!-- /paginadas.length > 0 -->
       <ng-template #sinDatos>
         <tr>
           <td colspan="7">

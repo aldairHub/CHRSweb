@@ -29,6 +29,7 @@ import { ToastComponent } from '../../../component/toast.component';
 export class ConvocatoriaComponent implements OnInit {
 
   // ===== Datos =====
+  cargando = false;
   convocatorias: ConvocatoriaListaResponse[] = [];
   convocatoriasFiltradas: ConvocatoriaListaResponse[] = [];
   solicitudesAprobadas: SolicitudDocenteResponse[] = [];
@@ -110,14 +111,17 @@ export class ConvocatoriaComponent implements OnInit {
   // LOADERS
   // =========================
   cargarConvocatorias(): void {
+    this.cargando = true;
     this.convocatoriaService.listar().subscribe({
       next: (data) => {
+        this.cargando = false;
         this.convocatorias = Array.isArray(data) ? data : [];
         this.convocatoriasFiltradas = [...this.convocatorias];
         this.calculatePagination();
         this.cdr.detectChanges();
       },
       error: () => {
+        this.cargando = false;
         this.convocatorias = [];
         this.convocatoriasFiltradas = [];
         this.calculatePagination();
@@ -313,6 +317,7 @@ export class ConvocatoriaComponent implements OnInit {
           this.cdr.detectChanges();
         },
         error: (err) => {
+          this.cargando = false;
           this.isSaving = false;
           const msg = err?.error?.mensaje || err?.error?.message || 'Error desconocido';
           this.toast.error('No se pudo actualizar', msg);
@@ -352,6 +357,7 @@ export class ConvocatoriaComponent implements OnInit {
                 this.cdr.detectChanges();
               },
               error: () => {
+                this.cargando = false;
                 if (this.toastImagenId) this.toast.remove(this.toastImagenId);
                 this.generandoImagen = false;
                 this.toast.warning('Convocatoria creada sin imagen', 'Puedes regenerarla desde el detalle.');
@@ -362,6 +368,7 @@ export class ConvocatoriaComponent implements OnInit {
           }
         },
         error: (err) => {
+          this.cargando = false;
           this.isSaving = false;
           const msg = err?.error?.mensaje || err?.error?.message || 'Error desconocido';
           this.toast.error('No se pudo crear', msg);
@@ -390,6 +397,7 @@ export class ConvocatoriaComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
+        this.cargando = false;
         this.isSaving = false;
         const msg = err?.error?.mensaje || err?.error?.message || 'Error desconocido';
         this.toast.error('No se pudo cambiar el estado', msg);
@@ -405,10 +413,12 @@ export class ConvocatoriaComponent implements OnInit {
     this.modalDetalleAbierto = true;
     this.convocatoriaService.detalle(id).subscribe({
       next: (data) => {
+        this.cargando = false;
         this.detalleConvocatoria = data;
         this.cdr.detectChanges();
       },
       error: () => {
+        this.cargando = false;
         this.modalDetalleAbierto = false;
         this.toast.error('Error', 'No se pudo cargar el detalle de la convocatoria.');
       }
@@ -427,6 +437,7 @@ export class ConvocatoriaComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
+        this.cargando = false;
         const msg = err?.error?.mensaje || err?.error?.message || 'Error desconocido';
         this.toast.error('No se pudo eliminar', msg);
       }
@@ -471,6 +482,7 @@ export class ConvocatoriaComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
+        this.cargando = false;
         if (this.toastImagenId) this.toast.remove(this.toastImagenId);
         this.generandoImagen = false;
         const msg = err?.error?.mensaje || 'El modelo de IA no está disponible ahora.';

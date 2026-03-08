@@ -17,6 +17,7 @@ import { FacultadService } from '../../../services/facultad.service';
 export class CarreraComponent implements OnInit {
 
   // ===== Datos =====
+  cargando = false;
   carreras: any[] = [];
   carrerasFiltradas: any[] = [];
   facultades: any[] = [];
@@ -72,6 +73,7 @@ export class CarreraComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarFacultades();
+    this.cargando = true;
     this.cargarCarreras();
   }
 
@@ -87,6 +89,7 @@ export class CarreraComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: () => {
+        this.cargando = false;
         this.carreras = [];
         this.carrerasFiltradas = [];
         this.calculatePagination();
@@ -102,6 +105,7 @@ export class CarreraComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: () => {
+        this.cargando = false;
         this.facultades = [];
         this.toast.error('Error', 'No se pudieron cargar las facultades.');
       }
@@ -273,6 +277,7 @@ export class CarreraComponent implements OnInit {
         this.cargarCarreras();
       },
       error: (err) => {
+        this.cargando = false;
         this.isSaving = false;
         this.toast.remove(loadId);
         const msg = err?.error?.message || err?.message || 'Intenta de nuevo.';
@@ -300,6 +305,7 @@ export class CarreraComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
+        this.cargando = false;
         carrera.estado = estadoAnterior;
         const msg = err?.error?.message || 'No se pudo cambiar el estado.';
         this.toast.error('Error', msg);

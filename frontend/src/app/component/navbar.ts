@@ -101,9 +101,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
     switch (notif.entidadTipo) {
       case 'PREPOSTULACION':
-        if (rol === 'revisor')        this.router.navigate(['/revisor/prepostulaciones']);
-        else if (rol === 'admin')     this.router.navigate(['/admin/gestion-postulante']);
-        else                          this.router.navigate(['/' + rol]);
+        if (rol === 'revisor')         this.router.navigate(['/revisor/prepostulaciones']);
+        else if (rol === 'admin')      this.router.navigate(['/admin/gestion-postulante']);
+        else if (rol === 'postulante') this.router.navigate(['/postulante/subir-documentos']);
+        else                           this.router.navigate(['/' + rol]);
         break;
       case 'SOLICITUD':
         if (rol === 'revisor')        this.router.navigate(['/revisor/solicitudes-docente']);

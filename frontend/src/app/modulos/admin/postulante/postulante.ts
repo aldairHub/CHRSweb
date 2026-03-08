@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../../component/navbar';
@@ -16,6 +16,7 @@ import { FooterComponent } from '../../../component/footer';
   styleUrls: ['./postulante.scss']
 })
 export class PostulanteComponent implements OnInit {
+  cargando = false;
 
   form = {
     nombres: '',
@@ -26,7 +27,7 @@ export class PostulanteComponent implements OnInit {
     observaciones_revision: ''
   };
 
-  constructor() {}
+  constructor(private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {}
 

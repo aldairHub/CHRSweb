@@ -87,7 +87,18 @@
         </tr>
         </thead>
         <tbody>
+        <!-- SKELETON LOADER -->
+        <ng-container *ngIf="cargando">
+          <tr class="skeleton-row-tr" *ngFor="let s of [1,2,3,4,5]">
+            <td><div class="skeleton-cell skeleton-cell--avatar"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--lg"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
+          </tr>
+        </ng-container>
 
+        <ng-container *ngIf="!cargando">
         <tr *ngFor="let m of materiasPaginadas">
           <td><strong>#{{ m.id }}</strong></td>
           <td>{{ m.nombre }}</td>
@@ -113,7 +124,8 @@
           </td>
         </tr>
 
-        <tr *ngIf="materiasFiltradas.length === 0">
+        </ng-container>
+        <tr *ngIf="materiasFiltradas.length === 0 && !cargando">
           <td colspan="5" class="empty-state">
             <div class="empty-icon">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

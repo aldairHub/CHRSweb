@@ -284,6 +284,19 @@ $success: #16a34a;
   }
 }
 
+:host-context(html.dark) .documentos-list {
+  .documento-tag {
+    background: #1e1e1e !important;
+    border-color: #2a2a2a !important;
+    color: #aaaaaa !important;
+    svg { stroke: #555555 !important; }
+  }
+  .documentos-count {
+    background: rgba(0, 166, 62, 0.12) !important;
+    color: #00D149 !important;
+  }
+}
+
 // ACTION BUTTONS
 .action-buttons {
   display: flex;

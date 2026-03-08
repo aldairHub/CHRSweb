@@ -53,7 +53,7 @@
             Solo se muestran las opciones del módulo asignado al rol.
           </p>
 
-          <div *ngIf="opciones.length === 0" class="empty-state">
+          <div *ngIf="opciones.length === 0 && !cargando" class="empty-state">
             <p>Este rol no tiene módulo asignado o el módulo no tiene opciones.</p>
             <p>Asigna un módulo en Gestión de Roles.</p>
           </div>
@@ -68,6 +68,17 @@
             </tr>
             </thead>
             <tbody>
+        <!-- SKELETON LOADER -->
+        <ng-container *ngIf="cargando">
+          <tr class="skeleton-row-tr" *ngFor="let s of [1,2,3,4,5]">
+            <td><div class="skeleton-cell skeleton-cell--avatar"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--lg"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
+          </tr>
+        </ng-container>
+            <ng-container *ngIf="!cargando">
             <tr *ngFor="let op of opciones">
               <td>
                 <strong>{{ op.nombre }}</strong>
@@ -94,6 +105,7 @@
                   </span>
               </td>
             </tr>
+            </ng-container>
             </tbody>
           </table>
         </ng-container>

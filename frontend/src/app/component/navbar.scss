@@ -16,7 +16,8 @@ $border:    #e2e8f0;
 .navbar {
   backdrop-filter: blur(24px) saturate(1.8);
   -webkit-backdrop-filter: blur(24px) saturate(1.8);
-  background-color: rgba(0, 166, 62, 0.50);
+  background: linear-gradient(135deg, rgba(0,122,46,0.96) 0%, rgba(0,166,62,0.92) 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.15);
   height: 80px;
   display: flex;
   align-items: center;
@@ -219,122 +220,149 @@ $border:    #e2e8f0;
 }
 
 // =======================================================
-// MODO OSCURO — Premium Black
+// MODO OSCURO — AMOLED PREMIUM
 // =======================================================
 
 :host-context(html.dark) .navbar {
-  background: rgba(10, 10, 10, 0.82) !important;
-  border-bottom: 1px solid #222222;
-  box-shadow: 0 2px 20px rgba(0,0,0,0.6);
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  background: rgba(0, 0, 0, 0.92) !important;
+  border-bottom: 1px solid rgba(0, 210, 80, 0.12) !important;
+  box-shadow: 0 1px 0 rgba(0,210,80,0.08), 0 4px 32px rgba(0,0,0,0.9) !important;
+  backdrop-filter: blur(20px) saturate(1.5) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.5) !important;
 }
 
 :host-context(html.dark) .btn-theme {
-  background-color: rgba(0,209,73,0.08);
-  border-color: rgba(0,209,73,0.2);
+  background-color: rgba(0,210,73,0.08);
+  border-color: rgba(0,210,73,0.18);
   color: #00D149;
-  &:hover { background-color: rgba(0,209,73,0.15); }
+  &:hover { background-color: rgba(0,210,73,0.15); box-shadow: 0 0 12px rgba(0,210,73,0.2); }
 }
 
 :host-context(html.dark) .btn-back {
-  background-color: rgba(255,255,255,0.06) !important;
-  border-color: rgba(255,255,255,0.1) !important;
-  &:hover { background-color: rgba(255,255,255,0.12) !important; }
+  background-color: rgba(255,255,255,0.04) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  &:hover { background-color: rgba(255,255,255,0.1) !important; }
 }
 
 :host-context(html.dark) .btn-logout {
-  background-color: rgba(255,255,255,0.06) !important;
-  border-color: rgba(255,255,255,0.1) !important;
-  &:hover { background-color: #dc2626 !important; border-color: #dc2626 !important; }
+  background-color: rgba(255,255,255,0.04) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  &:hover { background-color: #dc2626 !important; border-color: #dc2626 !important; box-shadow: 0 0 16px rgba(220,38,38,0.4) !important; }
 }
 
 // ─── Campana igual que los demás botones ──────────────
 :host-context(html.dark) .bell-icon {
-  background-color: rgba(255,255,255,0.06) !important;
-  border-color: rgba(255,255,255,0.1) !important;
-  &:hover { background-color: rgba(255,255,255,0.12) !important; }
-  .badge-dot { border-color: #0f0f0f !important; }
+  background-color: rgba(255,255,255,0.04) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  &:hover { background-color: rgba(255,255,255,0.1) !important; }
+  .badge-dot { border-color: #000000 !important; box-shadow: 0 0 8px rgba(239,68,68,0.5) !important; }
 }
 
-// ─── Dropdown notificaciones ───────────────────────────
+// ─── Dropdown notificaciones AMOLED ───────────────────
 :host-context(html.dark) .notification-dropdown {
-  background: #181818 !important;
-  border-color: #2a2a2a !important;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.85) !important;
-  &::before { background: #181818 !important; border-color: #2a2a2a !important; }
+  background: #050505 !important;
+  border-color: rgba(0,210,80,0.1) !important;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.98), 0 0 0 1px rgba(0,210,80,0.06) !important;
+  &::before { background: #050505 !important; border-color: rgba(0,210,80,0.1) !important; }
 }
 
 :host-context(html.dark) .dropdown-header {
-  background: #141414 !important;
-  border-color: #2a2a2a !important;
-  h3    { color: #f0f0f0 !important; }
-  .count { background: #0d2818 !important; color: #4ade80 !important; }
+  background: #020202 !important;
+  border-color: rgba(255,255,255,0.05) !important;
+  h3    { color: #f0f0f0 !important; letter-spacing: 0.02em; }
+  .count { background: rgba(0,210,80,0.1) !important; color: #00D149 !important; border: 1px solid rgba(0,210,80,0.18); }
 }
 
 :host-context(html.dark) .dropdown-body {
-  background: #181818 !important;
-  &::-webkit-scrollbar-track { background: #111111; }
-  &::-webkit-scrollbar-thumb { background: #2a2a2a; }
+  background: #050505 !important;
+  &::-webkit-scrollbar-track { background: #000; }
+  &::-webkit-scrollbar-thumb { background: rgba(0,210,80,0.15); border-radius: 2px; }
 }
 
 :host-context(html.dark) .notif-item {
-  background: #181818 !important;
-  border-color: #222222 !important;
-  &:hover  { background: #1e1e1e !important; }
-  &.unread { background: #141414 !important; border-left-color: #00A63E !important; }
+  background: #050505 !important;
+  border-color: rgba(255,255,255,0.04) !important;
+  &:hover  { background: #0a0a0a !important; }
+  &.unread { background: rgba(0,210,80,0.04) !important; border-left-color: #00D149 !important; }
 
   .notif-icon {
-    &.success { background: #0d2818 !important; color: #4ade80 !important; }
-    &.error   { background: #2a0808 !important; color: #f87171 !important; }
-    &.warning { background: #2a1800 !important; color: #f59e0b !important; }
-    &.info    { background: #0d1530 !important; color: #60a5fa !important; }
+    &.success { background: rgba(0,210,80,0.07) !important; color: #00D149 !important; }
+    &.error   { background: rgba(248,68,68,0.07) !important; color: #f87171 !important; }
+    &.warning { background: rgba(245,158,11,0.07) !important; color: #f59e0b !important; }
+    &.info    { background: rgba(96,165,250,0.07) !important; color: #60a5fa !important; }
   }
 
-  .notif-title { color: #f0f0f0 !important; }
-  .notif-msg   { color: #888888 !important; }
-  .notif-time  { color: #555555 !important; }
+  .notif-title { color: #e8e8e8 !important; }
+  .notif-msg   { color: #555555 !important; }
+  .notif-time  { color: #303030 !important; }
+  .notif-unread-dot { background: #00D149 !important; box-shadow: 0 0 6px rgba(0,209,73,0.6); }
 }
 
 :host-context(html.dark) .empty-state {
-  background: #181818 !important;
-  svg { stroke: #2a2a2a !important; opacity: 1 !important; }
-  p   { color: #444444 !important; }
+  background: #050505 !important;
+  svg { stroke: #151515 !important; opacity: 1 !important; }
+  p   { color: #2a2a2a !important; }
 }
 
 :host-context(html.dark) .dropdown-footer {
-  background: #141414 !important;
-  border-color: #2a2a2a !important;
-  button { color: #00A63E !important; &:hover:not(:disabled) { background: rgba(0,166,62,0.1) !important; } &:disabled { color: #333333 !important; } }
-  .ver-historial { color: #555555 !important; &:hover { color: #00A63E !important; } }
+  background: #020202 !important;
+  border-color: rgba(255,255,255,0.05) !important;
+  button { color: #00D149 !important; &:hover:not(:disabled) { background: rgba(0,210,80,0.07) !important; } &:disabled { color: #1e1e1e !important; } }
+  .ver-historial { color: #303030 !important; &:hover { color: #00D149 !important; } }
 }
 
-// ─── Dropdown perfil ───────────────────────────────────
+// ─── Dropdown perfil AMOLED ───────────────────────────
 :host-context(html.dark) .perfil-dropdown {
-  background: #181818 !important;
-  border-color: #2a2a2a !important;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.85) !important;
-  &::before { background: #181818 !important; border-color: #2a2a2a !important; }
+  background: #050505 !important;
+  border-color: rgba(0,210,80,0.1) !important;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.98), 0 0 0 1px rgba(0,210,80,0.06) !important;
+  &::before { background: #050505 !important; border-color: rgba(0,210,80,0.1) !important; }
 
-  .perfil-item         { color: #d0d0d0 !important; &:hover { background: #222222 !important; color: #f0f0f0 !important; } }
-  .perfil-item--activo { color: #00D149 !important; background: #0d1f12 !important; }
-  .perfil-label        { color: #444444 !important; }
-  .perfil-divider      { border-color: #222222 !important; }
-  .rol-dot             { background: #333333 !important; }
-  .rol-dot--activo     { background: #00A63E !important; }
+  .perfil-item         { color: #c0c0c0 !important; &:hover { background: #0d0d0d !important; color: #f0f0f0 !important; } }
+  .perfil-item--activo { color: #00D149 !important; background: rgba(0,210,80,0.06) !important; }
+  .perfil-label        { color: #303030 !important; }
+  .perfil-divider      { border-color: rgba(255,255,255,0.05) !important; }
+  .rol-dot             { background: #222222 !important; }
+  .rol-dot--activo     { background: #00D149 !important; box-shadow: 0 0 6px rgba(0,209,73,0.5); }
 }
 
-// ─── Perfil / Avatar ───────────────────────────────────
+// ─── Perfil / Avatar AMOLED ───────────────────────────
 :host-context(html.dark) .user-profile {
-  background-color: rgba(255,255,255,0.06) !important;
-  border-color: rgba(255,255,255,0.1) !important;
-  &:hover { background-color: rgba(255,255,255,0.1) !important; }
+  background-color: rgba(255,255,255,0.04) !important;
+  border-color: rgba(255,255,255,0.07) !important;
+  &:hover { background-color: rgba(255,255,255,0.08) !important; }
   .name   { color: #f0f0f0 !important; }
-  .role   { color: #888888 !important; }
-  .avatar { background: #222222 !important; color: #00D149 !important; border: 1px solid #333333 !important; }
+  .role   { color: #555555 !important; }
+  .avatar { background: #0a0a0a !important; color: #00D149 !important; border: 1px solid rgba(0,210,80,0.2) !important; box-shadow: 0 0 10px rgba(0,210,80,0.1) inset !important; }
 }
 
 :host-context(html.dark) .brand-text {
   h1   { color: #ffffff !important; }
-  span { color: rgba(255,255,255,0.45) !important; }
+  span { color: rgba(255,255,255,0.35) !important; }
+}
+// ─── Ring animado en avatar ─────────────────
+@keyframes avatarRing {
+  0%   { box-shadow: 0 0 0 0 rgba(0, 209, 73, 0.5); }
+  70%  { box-shadow: 0 0 0 8px rgba(0, 209, 73, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 209, 73, 0); }
+}
+
+.user-profile:hover .avatar {
+  animation: avatarRing 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+// ─── DARK: ring más brillante ───────────────
+:host-context(html.dark) .user-profile:hover .avatar {
+  animation: avatarRing 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-color: #00D149 !important;
+}
+
+// ─── Navbar bottom accent line ─────────────────────────
+.navbar::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  pointer-events: none;
 }

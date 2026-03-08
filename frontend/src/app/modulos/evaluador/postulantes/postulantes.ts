@@ -27,6 +27,7 @@ export interface Postulante {
   styleUrls: ['./postulantes.scss']  // Asegúrate que tu SCSS se llame así
 })
 export class PostulantesComponent {
+  cargando = false;
 
   // Filtros
   filtro = {

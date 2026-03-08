@@ -37,6 +37,7 @@ export class GestionUsuariosComponent implements OnInit {
   activeTab: 'autoridades' | 'usuarios' = 'autoridades';
 
   // --- Datos ---------------------------------------------------
+  cargando = false;
   autoridades: AutoridadConRolesDTO[] = [];
   autoridadesFiltradas: AutoridadConRolesDTO[] = [];
   usuarios: UsuarioConRolesDTO[] = [];
@@ -143,6 +144,7 @@ export class GestionUsuariosComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.cargando = true;
     this.loadRolesApp();
     this.loadFacultades();
     this.loadInstituciones();
@@ -193,7 +195,7 @@ export class GestionUsuariosComponent implements OnInit {
 
   loadUsuarios(): void {
     this.svc.listarUsuarios().subscribe({
-      next: data => { this.usuarios = Array.isArray(data) ? data : []; this.applyFiltersUsuarios(); this.cdr.detectChanges(); },
+      next: data => { this.usuarios = Array.isArray(data) ? data : []; this.applyFiltersUsuarios(); this.cargando = false; this.cdr.detectChanges(); },
       error: (err: any) => console.error('Error usuarios:', err)
     });
   }

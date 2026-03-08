@@ -34,6 +34,7 @@ interface Carrera {
 export class MateriaComponent implements OnInit {
 
   // ===== Datos =====
+  cargando = false;
   materias: Materia[] = [];
   materiasFiltradas: Materia[] = [];
   carreras: Carrera[] = [];
@@ -95,6 +96,7 @@ export class MateriaComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.cargando = true;
     this.cargarCarreras();
     this.cargarMaterias();
   }
@@ -109,6 +111,7 @@ export class MateriaComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
+        this.cargando = false;
         console.error('Error cargando carreras:', err);
         this.carreras = [];
       }
@@ -132,6 +135,7 @@ export class MateriaComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
+        this.cargando = false;
         console.error('Error de conexión:', err);
         this.materias = [];
         this.materiasFiltradas = [];
@@ -286,6 +290,7 @@ export class MateriaComponent implements OnInit {
           this.cargarMaterias();
         },
         error: (err) => {
+          this.cargando = false;
           this.isSaving = false;
           console.error('Error al actualizar:', err);
           alert('❌ No se pudo actualizar.');
@@ -303,6 +308,7 @@ export class MateriaComponent implements OnInit {
           this.cargarMaterias();
         },
         error: (err) => {
+          this.cargando = false;
           this.isSaving = false;
           console.error('Error al guardar:', err);
           alert('❌ No se pudo crear.');

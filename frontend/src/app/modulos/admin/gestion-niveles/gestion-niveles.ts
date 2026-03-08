@@ -15,6 +15,7 @@ import { NivelAcademicoService, NivelAcademico } from '../../../services/nivel-a
   styleUrls: ['./gestion-niveles.scss']
 })
 export class GestionNivelesComponent implements OnInit {
+  cargando = false;
 
   niveles: NivelAcademico[] = [];
   search = '';
@@ -36,9 +37,10 @@ export class GestionNivelesComponent implements OnInit {
 
   // ── Carga ─────────────────────────────────────────────────
   cargar(): void {
+    this.cargando = true;
     this.svc.listar().subscribe({
-      next: data => { this.niveles = data; this.cdr.detectChanges(); },
-      error: () => this.toast.error('Error', 'No se pudieron cargar los niveles académicos.')
+      next: data => { this.niveles = data; this.cargando = false; this.cdr.detectChanges(); },
+      error: () => { this.cargando = false; this.toast.error('Error', 'No se pudieron cargar los niveles académicos.'); }
     });
   }
 
@@ -93,6 +95,7 @@ export class GestionNivelesComponent implements OnInit {
         this.closeModal();
       },
       error: err => {
+        this.cargando = false;
         this.toast.remove(loadId);
         this.toast.error('Error', err?.error?.message || 'Intenta de nuevo.');
       }
@@ -109,6 +112,7 @@ export class GestionNivelesComponent implements OnInit {
         `"${n.nombre}" fue ${n.estado ? 'activado' : 'desactivado'}.`
       ),
       error: err => {
+        this.cargando = false;
         n.estado = anterior;
         this.toast.error('Error', err?.error?.message || 'No se pudo cambiar el estado.');
       }
@@ -138,6 +142,7 @@ export class GestionNivelesComponent implements OnInit {
         this.cargar();
       },
       error: err => {
+        this.cargando = false;
         this.toast.remove(loadId);
         this.toast.error('Error', err?.error?.message || 'No se pudo eliminar.');
         this.cancelarEliminar();

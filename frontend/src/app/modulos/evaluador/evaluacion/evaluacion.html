@@ -71,6 +71,16 @@
           </thead>
 
           <tbody>
+        <!-- SKELETON LOADER -->
+        <ng-container *ngIf="cargando">
+          <tr class="skeleton-row-tr" *ngFor="let s of [1,2,3,4,5]">
+            <td><div class="skeleton-cell skeleton-cell--avatar"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--lg"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
+          </tr>
+        </ng-container>
 
             <!-- =========================================== -->
             <!-- BLOQUE 1: MÉRITOS (50 PUNTOS) -->
@@ -99,6 +109,7 @@
               </tr>
 
               <!-- Filas de items -->
+              <ng-container *ngIf="!cargando">
               <tr *ngFor="let item of seccion.items" class="item-row">
                 <td class="item-label">
                   <span>— {{ item.label }}</span>
@@ -126,6 +137,8 @@
                 {{ c.totalMerecimientos | number:'1.1-2' }}
               </td>
             </tr>
+
+            </ng-container><!-- /ngFor seccion -->
 
             <!-- =========================================== -->
             <!-- BLOQUE 2: EXPERIENCIA + ENTREVISTA (50 PUNTOS) -->

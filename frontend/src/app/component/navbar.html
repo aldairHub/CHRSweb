@@ -73,9 +73,9 @@
         <div class="dropdown-body">
 
           <!-- Lista real desde el signal -->
-          <ng-container *ngIf="notifService.notificaciones().length > 0; else sinNotifs">
+          <ng-container *ngIf="notifService.soloNoLeidas().length > 0; else sinNotifs">
             <div
-              *ngFor="let notif of notifService.notificaciones()"
+              *ngFor="let notif of notifService.soloNoLeidas()"
               class="notif-item"
               [class.unread]="!notif.leida"
               (click)="navegarANotificacion(notif, $event)">
