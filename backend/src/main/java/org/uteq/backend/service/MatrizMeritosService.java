@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.uteq.backend.repository.PostgresProcedureRepository;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -16,6 +17,7 @@ import java.util.*;
 public class MatrizMeritosService {
 
     private final JdbcTemplate jdbc;
+    private final PostgresProcedureRepository procedureRepo;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -59,29 +61,28 @@ public class MatrizMeritosService {
         convocatoriaInfo.put("bloqueada", bloqueada);
         convocatoriaInfo.put("mensajeBloqueo", mensajeBloqueo);
 
-        // 3. Candidatos (postulantes con proceso activo en esta convocatoria)
+        // 3. Candidatos
         List<Map<String, Object>> candidatosRaw = jdbc.queryForList("""
-        SELECT
-            p.id_postulante,
-            pe.id_proceso,
-            pe.id_solicitud,
-            p.nombres_postulante AS nombres,
-            p.apellidos_postulante AS apellidos,
-            pre.nombres AS titulos
-        FROM proceso_evaluacion pe
-        JOIN postulante p ON pe.id_postulante = p.id_postulante
-        JOIN prepostulacion pre ON p.id_prepostulacion = pre.id_prepostulacion
-        JOIN convocatoria_solicitud cs ON pe.id_solicitud = cs.id_solicitud
-        WHERE cs.id_convocatoria = ?
-        ORDER BY p.apellidos_postulante
-        """, idConvocatoria);
+                SELECT
+                    p.id_postulante,
+                    pe.id_proceso,
+                    pe.id_solicitud,
+                    p.nombres_postulante AS nombres,
+                    p.apellidos_postulante AS apellidos,
+                    pre.nombres AS titulos
+                FROM proceso_evaluacion pe
+                JOIN postulante p ON pe.id_postulante = p.id_postulante
+                JOIN prepostulacion pre ON p.id_prepostulacion = pre.id_prepostulacion
+                JOIN convocatoria_solicitud cs ON pe.id_solicitud = cs.id_solicitud
+                WHERE cs.id_convocatoria = ?
+                ORDER BY p.apellidos_postulante
+                """, idConvocatoria);
 
         // 4. Para cada candidato, cargar puntajes guardados si existen
         List<Map<String, Object>> candidatos = new ArrayList<>();
         for (Map<String, Object> raw : candidatosRaw) {
             Long idProceso = ((Number) raw.get("id_proceso")).longValue();
 
-            // Puntajes guardados
             Map<String, Object> puntajes = new HashMap<>();
             Map<String, Object> accionesAfirmativas = new HashMap<>();
 
@@ -119,7 +120,7 @@ public class MatrizMeritosService {
         return result;
     }
 
-    // ─── Guardar puntajes ──────────────────────────────────────
+    // ─── Guardar puntajes usando stored procedure ──────────────
     @Transactional
     @SuppressWarnings("unchecked")
     public Map<String, Object> guardarPuntajes(Map<String, Object> payload) {
@@ -129,35 +130,28 @@ public class MatrizMeritosService {
             Long idProceso = ((Number) c.get("idProceso")).longValue();
             Map<String, Object> puntajes = (Map<String, Object>) c.get("puntajes");
             Map<String, Object> accionesAfirmativas = (Map<String, Object>) c.get("accionesAfirmativas");
-
-            // Eliminar puntajes anteriores
-            jdbc.update("DELETE FROM matriz_meritos_puntaje WHERE id_proceso = ?", idProceso);
-
-            // Insertar puntajes de ítems
-            for (Map.Entry<String, Object> entry : puntajes.entrySet()) {
-                jdbc.update("""
-                        INSERT INTO matriz_meritos_puntaje (id_proceso, item_id, valor)
-                        VALUES (?, ?, ?)
-                        """, idProceso, entry.getKey(), String.valueOf(entry.getValue()));
-            }
-
-            // Insertar acciones afirmativas
-            for (Map.Entry<String, Object> entry : accionesAfirmativas.entrySet()) {
-                jdbc.update("""
-                        INSERT INTO matriz_meritos_puntaje (id_proceso, item_id, valor)
-                        VALUES (?, ?, ?)
-                        """, idProceso, entry.getKey(), String.valueOf(entry.getValue()));
-            }
-
-            // Actualizar puntaje total en proceso_evaluacion
             Object puntajeTotal = c.get("puntajeTotal");
-            if (puntajeTotal != null) {
-                jdbc.update("""
-                        UPDATE proceso_evaluacion
-                        SET puntaje_matriz = ?
-                        WHERE id_proceso = ?
-                        """, ((Number) puntajeTotal).doubleValue(), idProceso);
+
+            // Construir arrays de items y valores
+            List<String> items = new ArrayList<>();
+            List<String> valores = new ArrayList<>();
+
+            // Puntajes normales
+            for (Map.Entry<String, Object> entry : puntajes.entrySet()) {
+                items.add(entry.getKey());
+                valores.add(String.valueOf(entry.getValue()));
             }
+
+            // Acciones afirmativas
+            for (Map.Entry<String, Object> entry : accionesAfirmativas.entrySet()) {
+                items.add(entry.getKey());
+                valores.add(String.valueOf(entry.getValue()));
+            }
+
+            double total = puntajeTotal != null ? ((Number) puntajeTotal).doubleValue() : 0.0;
+
+            // Llamar al stored procedure
+            procedureRepo.guardarMatrizMeritos(idProceso, items, valores, total);
         }
 
         Map<String, Object> result = new HashMap<>();
@@ -165,27 +159,26 @@ public class MatrizMeritosService {
         result.put("total", candidatos.size());
         return result;
     }
-    // ─── AGREGAR este método en MatrizMeritosService.java ───────────────────────
-// Dentro de la clase MatrizMeritosService, después del método obtenerMatriz()
 
+    // ─── Listar convocatorias con procesos activos ─────────────
     @Transactional(readOnly = true)
     public List<Map<String, Object>> listarConvocatorias() {
 
         List<Map<String, Object>> rows = jdbc.queryForList("""
-            SELECT
-                c.id_convocatoria,
-                c.titulo,
-                c.fecha_limite_documentos,
-                m.nombre_materia,
-                COUNT(DISTINCT pe.id_proceso) AS total_candidatos
-            FROM convocatoria c
-            JOIN convocatoria_solicitud cs ON c.id_convocatoria = cs.id_convocatoria
-            JOIN solicitud_docente sd ON cs.id_solicitud = sd.id_solicitud
-            LEFT JOIN materia m ON sd.id_materia = m.id_materia
-            JOIN proceso_evaluacion pe ON pe.id_solicitud = cs.id_solicitud
-            GROUP BY c.id_convocatoria, c.titulo, c.fecha_limite_documentos, m.nombre_materia
-            ORDER BY c.fecha_limite_documentos DESC
-            """);
+                SELECT
+                    c.id_convocatoria,
+                    c.titulo,
+                    c.fecha_limite_documentos,
+                    m.nombre_materia,
+                    COUNT(DISTINCT pe.id_proceso) AS total_candidatos
+                FROM convocatoria c
+                JOIN convocatoria_solicitud cs ON c.id_convocatoria = cs.id_convocatoria
+                JOIN solicitud_docente sd ON cs.id_solicitud = sd.id_solicitud
+                LEFT JOIN materia m ON sd.id_materia = m.id_materia
+                JOIN proceso_evaluacion pe ON pe.id_solicitud = cs.id_solicitud
+                GROUP BY c.id_convocatoria, c.titulo, c.fecha_limite_documentos, m.nombre_materia
+                ORDER BY c.fecha_limite_documentos DESC
+                """);
 
         List<Map<String, Object>> result = new ArrayList<>();
         LocalDate hoy = LocalDate.now();
@@ -199,7 +192,7 @@ public class MatrizMeritosService {
             if (fechaObj != null) {
                 LocalDate fechaLimite = ((java.sql.Date) fechaObj).toLocalDate();
                 fechaLimiteStr = fechaLimite.format(DATE_FMT);
-                disponible = !hoy.isBefore(fechaLimite); // disponible cuando fecha_limite <= hoy
+                disponible = !hoy.isBefore(fechaLimite);
                 if (hoy.isBefore(fechaLimite)) {
                     diasRestantes = java.time.temporal.ChronoUnit.DAYS.between(hoy, fechaLimite);
                 }

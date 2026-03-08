@@ -551,5 +551,21 @@ public class PostgresProcedureRepository {
             throw new RuntimeException("sp_repostular sin resultado");
         });
     }
+    /**
+     * Guarda puntajes de matriz de méritos para un proceso
+     */
+    public void guardarMatrizMeritos(Long idProceso, List<String> items,
+                                     List<String> valores, Double puntajeTotal) {
+        jdbcTemplate.execute((java.sql.Connection conn) -> {
+            var ps = conn.prepareStatement(
+                    "CALL public.sp_guardar_matriz_meritos(?, ?, ?, ?)");
+            ps.setLong(1, idProceso);
+            ps.setArray(2, conn.createArrayOf("VARCHAR", items.toArray()));
+            ps.setArray(3, conn.createArrayOf("VARCHAR", valores.toArray()));
+            ps.setDouble(4, puntajeTotal);
+            ps.execute();
+            return null;
+        });
+    }
 
 }
