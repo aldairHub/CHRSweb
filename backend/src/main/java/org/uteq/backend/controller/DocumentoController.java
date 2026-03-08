@@ -1,8 +1,10 @@
 package org.uteq.backend.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.uteq.backend.dto.DocPrepostulacionDTO;
 import org.uteq.backend.dto.DocumentoResponseDTO;
 import org.uteq.backend.dto.PostulanteInfoDTO;
+import org.uteq.backend.repository.UsuarioRepository;
 import org.uteq.backend.service.DocumentoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.uteq.backend.service.JwtService;
 
 import java.util.List;
 import java.util.Map;
@@ -21,6 +24,13 @@ public class DocumentoController {
 
     @Autowired
     private DocumentoService documentoService;
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private UsuarioRepository usuarioRepo;
+
 
     // ----------------------------------------------------------
     // Obtiene todos los tipos de doc + estado del postulante
@@ -110,6 +120,24 @@ public class DocumentoController {
     public ResponseEntity<List<DocPrepostulacionDTO>> obtenerDocsPrepostulacion(
             @PathVariable Long idPostulacion) {
         return ResponseEntity.ok(documentoService.obtenerDocsPrepostulacion(idPostulacion));
+    }
+
+    @PostMapping("/notificar-revision/{idPostulacion}")
+    public ResponseEntity<Map<String, Object>> notificarRevision(
+            @PathVariable Long idPostulacion,
+            HttpServletRequest request) {
+        Long idUsuario = extraerIdUsuario(request);
+        return ResponseEntity.ok(documentoService.enviarARevision(idPostulacion, idUsuario));
+    }
+
+    private Long extraerIdUsuario(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer "))
+            throw new RuntimeException("Token no proporcionado");
+        String usuarioApp = jwtService.extractUsername(header.substring(7));
+        return usuarioRepo.findByUsuarioApp(usuarioApp)
+                .map(u -> u.getIdUsuario())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
 }

@@ -113,6 +113,12 @@ export class DocumentoService {
     );
   }
 
+  notificarRevision(idPostulacion: number): Observable<{exitoso: boolean, mensaje: string}> {
+    return this.http.post<{exitoso: boolean, mensaje: string}>(
+      `${this.API}/notificar-revision/${idPostulacion}`, {}
+    );
+  }
+
 }
 
 export interface DocPrepostulacion {

@@ -115,10 +115,7 @@
                 <button
                   class="btn-eliminar"
                   (click)="eliminarArchivo(doc)"
-                  [disabled]="
-    postulante?.estadoPostulacion !== 'pendiente' ||
-    doc.estado !== 'pendiente'
-  "
+                  [disabled]="postulante?.estadoPostulacion !== 'pendiente' || doc.estado !== 'pendiente' || estaEnRevision"
                   title="Eliminar documento"
                 >
                   <i class="pi pi-times"></i>
@@ -148,7 +145,7 @@
                 [class.btn-upload--subido]="doc.estado === 'subido'"
                 [class.btn-upload--validado]="doc.estado === 'validado'"
                 [class.btn-upload--rechazado]="doc.estado === 'rechazado'"
-                [disabled]="documentoSubiendoId === doc.idTipoDocumento || doc.estado === 'validado'"
+                [disabled]="documentoSubiendoId === doc.idTipoDocumento || doc.estado === 'validado' || estaEnRevision"
                 (click)="triggerInput(doc.idTipoDocumento)"
               >
                 <i class="pi pi-upload"   *ngIf="doc.estado === 'pendiente'"></i>
@@ -168,10 +165,34 @@
 
       <!-- ACCIONES -->
       <div class="form-actions-bar">
-        <p class="obligatorio-hint" *ngIf="!obligatoriosCompletos">
+
+        <!-- Mensaje cuando ya está en revisión -->
+        <div class="en-revision-aviso" *ngIf="estaEnRevision">
+          <div class="en-revision-icono">
+            <i class="pi pi-clock"></i>
+          </div>
+          <div>
+            <strong>Documentos en revisión</strong>
+            <p>Ya notificaste al revisor. Tus documentos están siendo revisados. Te notificaremos cuando haya novedades.</p>
+          </div>
+        </div>
+
+        <!-- Hint obligatorios faltantes -->
+        <p class="obligatorio-hint"
+           *ngIf="!obligatoriosCompletos && !estaEnRevision">
           <i class="pi pi-exclamation-triangle"></i>
-          Debe completar todos los documentos obligatorios (*) para finalizar.
+          Debe completar todos los documentos obligatorios (*) para notificar al revisor.
         </p>
+
+        <!-- Botón notificar -->
+        <button
+          class="btn btn--primary btn--notificar"
+          *ngIf="!estaEnRevision"
+          [disabled]="!obligatoriosCompletos"
+          (click)="abrirConfirmacionRevision()">
+          <i class="pi pi-send"></i>
+          Notificar al revisor
+        </button>
 
       </div>
 
@@ -224,6 +245,33 @@
   </div>
 </div>
 
+<!-- MODAL CONFIRMACIÓN REVISIÓN -->
+<div class="modal-overlay" *ngIf="mostrarModalConfirmacion">
+  <div class="modal-card modal-card--confirm">
+    <div class="modal-icon-warning">
+      <div class="warning-circle">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+      </div>
+    </div>
+    <h2 class="modal-title">¿Notificar al revisor?</h2>
+    <p class="modal-desc">
+      Una vez que notifiques al revisor, <strong>ya no podrás modificar tus documentos</strong> hasta que finalice la revisión.
+      Asegúrate de que todo esté correcto.
+    </p>
+    <div class="modal-actions">
+      <button class="btn btn--secondary" (click)="cancelarConfirmacion()" [disabled]="enviandoRevision">
+        Cancelar
+      </button>
+      <button class="btn btn--primary" (click)="confirmarEnvioRevision()" [disabled]="enviandoRevision">
+        <i class="pi pi-spin pi-spinner" *ngIf="enviandoRevision"></i>
+        {{ enviandoRevision ? 'Enviando...' : 'Sí, notificar' }}
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL ÉXITO -->
 <div class="modal-overlay" *ngIf="mostrarModalExito">

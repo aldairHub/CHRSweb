@@ -7,6 +7,7 @@ import org.uteq.backend.repository.DocumentoRepositoryCustomImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +26,12 @@ public class DocumentoService {
 
     @Autowired
     private SupabaseStorageService supabaseService;
+
+    @Autowired
+    private NotificacionService notificacionService;
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     // ----------------------------------------------------------
     // Obtener documentos de una postulación (SP 1)
@@ -138,6 +145,42 @@ public class DocumentoService {
 
     public List<DocPrepostulacionDTO> obtenerDocsPrepostulacion(Long idPostulacion) {
         return documentoRepo.obtenerDocsPrepostulacion(idPostulacion);
+    }
+
+    public Map<String, Object> enviarARevision(Long idPostulacion, Long idUsuarioPostulante) {
+        try {
+            Map<String, Object> result = jdbc.queryForMap(
+                    "SELECT v_exitoso, v_mensaje FROM sp_enviar_a_revision(?)", idPostulacion
+            );
+
+            boolean exitoso = Boolean.TRUE.equals(result.get("v_exitoso"));
+            if (!exitoso) {
+                return Map.of("exitoso", false, "mensaje", result.get("v_mensaje"));
+            }
+
+            // Obtener nombre del postulante para la notificación
+            String nombrePostulante = "";
+            try {
+                Map<String, Object> info = jdbc.queryForMap(
+                        "SELECT nombres_postulante || ' ' || apellidos_postulante AS nombre " +
+                                "FROM postulante WHERE id_usuario = ?", idUsuarioPostulante
+                );
+                nombrePostulante = (String) info.get("nombre");
+            } catch (Exception ignored) {}
+
+            // Notificar a todos los evaluadores
+            notificacionService.notificarRol(
+                    "evaluador", "info",
+                    "Documentos listos para revisión",
+                    "El postulante " + nombrePostulante + " ha enviado sus documentos y están listos para revisión.",
+                    "POSTULACION", idPostulacion
+            );
+
+            return Map.of("exitoso", true, "mensaje", "Documentos enviados a revisión.");
+
+        } catch (Exception e) {
+            return Map.of("exitoso", false, "mensaje", "Error al enviar a revisión.");
+        }
     }
 
 }
