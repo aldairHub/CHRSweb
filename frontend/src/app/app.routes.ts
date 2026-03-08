@@ -108,9 +108,17 @@ export const routes: Routes = [
       { path: 'documentos',
         title: 'SSDC - Documentos',loadComponent: () =>
           import('./modulos/././evaluador/documentos/documentos').then(m => m.DocumentosComponent) },
-      { path: 'evaluacion',
-        title: 'SSDC - Evalaución',loadComponent: () =>
-          import('./modulos/././evaluador/evaluacion/evaluacion').then(m => m.EvaluacionMeritosComponent) },
+      // Reemplaza la ruta actual de matriz-meritos por estas dos:
+      { path: 'matriz-meritos',
+        title: 'SSDC - Matriz de Méritos',
+        loadComponent: () =>
+          import('./modulos/evaluador/matriz-meritos-lista/matriz-meritos-lista.component')
+            .then(m => m.MatrizMeritosListaComponent) },
+      { path: 'matriz-meritos/:idConvocatoria',
+        title: 'SSDC - Matriz de Méritos',
+        loadComponent: () =>
+          import('./modulos/evaluador/matriz-meritos/matriz-meritos.component')
+            .then(m => m.MatrizMeritosComponent) },
       { path: 'reportes',
         title: 'SSDC - Reportes',loadComponent: () =>
           import('./modulos/././evaluador/reportes/reportes').then(m => m.ReportesComponent) },

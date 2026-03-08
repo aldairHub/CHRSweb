@@ -1,0 +1,301 @@
+<app-navbar></app-navbar>
+
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <!-- ==================== LOADING ==================== -->
+    <div class="loading-state" *ngIf="cargando">
+      <svg class="spinner-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="32" height="32">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      <p>Cargando matriz de méritos...</p>
+    </div>
+
+    <!-- ==================== ERROR ==================== -->
+    <div class="alert danger" *ngIf="error && !cargando">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <div>
+        <strong>Error</strong>
+        <p>{{ error }}</p>
+        <button class="btn btn--outline-back" (click)="cargarDatos()">Reintentar</button>
+      </div>
+    </div>
+
+    <!-- ==================== BLOQUEADA ==================== -->
+    <div class="alert-bloqueo" *ngIf="!cargando && matrizBloqueada">
+      <div class="bloqueo-icon">🔒</div>
+      <div class="bloqueo-content">
+        <h3>Matriz de Méritos Bloqueada</h3>
+        <p>{{ convocatoriaInfo?.mensajeBloqueo }}</p>
+        <small>Fecha límite de documentos: <strong>{{ convocatoriaInfo?.fechaLimiteDocumentos }}</strong></small>
+      </div>
+    </div>
+
+    <ng-container *ngIf="!cargando && !error">
+
+      <!-- ==================== HEADER ==================== -->
+      <header class="page-header">
+        <div class="page-header__info">
+          <h2 class="page-header__title">Matriz de Méritos</h2>
+          <p class="page-header__description">
+            {{ convocatoriaInfo?.titulo }} — Normativa UTEQ Arts. 15, 16 y 17
+          </p>
+          <span class="convocatoria-badge">{{ convocatoriaInfo?.materia }}</span>
+        </div>
+        <div class="header-actions" *ngIf="!matrizBloqueada">
+          <button class="btn btn--outline-back" (click)="volver()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Volver
+          </button>
+          <button class="btn btn--primary" (click)="guardarEvaluacion()" [disabled]="guardando">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+            </svg>
+            {{ guardando ? 'Guardando...' : (guardado ? 'Actualizar' : 'Guardar Evaluación') }}
+          </button>
+        </div>
+      </header>
+
+      <!-- ==================== TOTALES ==================== -->
+      <div class="totals-bar" *ngIf="candidatos.length > 0">
+        <div class="total-card" *ngFor="let c of candidatos; trackBy: trackById"
+             [class.ganador]="guardado && c === candidatoGanador">
+          <div class="total-card__name">{{ c.apellidos }}</div>
+          <div class="total-card__sub">{{ c.nombres }}</div>
+          <div class="total-card__score">{{ c.puntajeTotal | number:'1.1-2' }}</div>
+          <div class="total-card__label">/ 104 pts</div>
+          <div class="total-card__crown" *ngIf="guardado && c === candidatoGanador">🏆 Ganador</div>
+        </div>
+      </div>
+
+      <!-- ==================== SIN CANDIDATOS ==================== -->
+      <div class="empty-state" *ngIf="!cargando && candidatos.length === 0 && !matrizBloqueada">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="48" height="48">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/>
+        </svg>
+        <h3>No hay postulantes en proceso</h3>
+        <p>No se encontraron postulantes con proceso de evaluación activo para esta convocatoria.</p>
+      </div>
+
+      <!-- ==================== TABLA PRINCIPAL ==================== -->
+      <div class="card-evaluacion" *ngIf="candidatos.length > 0">
+
+        <!-- HEADER INSTITUCIÓN -->
+        <div class="card-header-uteq">
+          <div>
+            <h3>UNIVERSIDAD TÉCNICA ESTATAL DE QUEVEDO</h3>
+            <p>CUADRO DE SELECCIÓN DE PROFESOR NO TITULAR — PARÁMETROS DE EVALUACIÓN</p>
+          </div>
+          <button class="btn-edit-candidatos" (click)="mostrarAccionAfirmativa = !mostrarAccionAfirmativa">
+            {{ mostrarAccionAfirmativa ? 'Ocultar' : 'Ver' }} Acción Afirmativa
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <!-- CABECERA CON CANDIDATOS -->
+            <thead>
+            <tr>
+              <th class="col-parametro">PARÁMETROS</th>
+              <th *ngFor="let c of candidatos; trackBy: trackById" class="col-candidato">
+                <div class="candidato-header">
+                  <span class="nombre">{{ c.apellidos }}</span>
+                  <span class="cargo">{{ c.nombres }}</span>
+                  <span class="titulo">{{ c.titulos }}</span>
+                </div>
+              </th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            <!-- BLOQUE 1: MÉRITOS -->
+            <tr class="bloque-header-row">
+              <td [attr.colspan]="candidatos.length + 1" class="bloque-title">
+                1) ETAPA DE MERECIMIENTOS — MÁXIMO 50 PUNTOS <small>(Arts. 15 y 16)</small>
+              </td>
+            </tr>
+
+            <ng-container *ngFor="let seccion of rubrica">
+              <tr class="section-row">
+                <td class="section-title">
+                  <strong>{{ seccion.titulo }}</strong>
+                  <p>{{ seccion.descripcion }}</p>
+                  <small class="max-points">MÁXIMO {{ seccion.maximo }} PUNTOS</small>
+                </td>
+                <td *ngFor="let c of candidatos" class="section-subtotal">
+                    <span class="subtotal-badge" [class.at-max]="subtotalSeccion(c, seccion) >= seccion.maximo">
+                      {{ subtotalSeccion(c, seccion) | number:'1.1-1' }} / {{ seccion.maximo }}
+                    </span>
+                </td>
+              </tr>
+
+              <tr *ngFor="let item of seccion.items" class="item-row">
+                <td class="item-label">
+                  <span>— {{ item.label }}</span>
+                  <small *ngIf="item.puntosPor" class="pts-por">{{ item.puntosPor }}</small>
+                </td>
+                <td *ngFor="let c of candidatos" class="cell-input">
+                  <input
+                    type="number" min="0" [max]="item.max" step="0.25"
+                    [(ngModel)]="c.puntajes[item.id]"
+                    (ngModelChange)="recalcular(c)"
+                    class="score-input"
+                    [disabled]="matrizBloqueada"
+                    [class.max-reached]="c.puntajes[item.id] >= item.max">
+                </td>
+              </tr>
+            </ng-container>
+
+            <!-- Total Méritos -->
+            <tr class="subtotal-row">
+              <td class="subtotal-label">TOTAL ETAPA DE MERECIMIENTOS (máx. 50)</td>
+              <td *ngFor="let c of candidatos" class="subtotal-score">
+                {{ c.totalMerecimientos | number:'1.1-2' }}
+              </td>
+            </tr>
+
+            <!-- BLOQUE 2: EXPERIENCIA + ENTREVISTA -->
+            <tr class="bloque-header-row">
+              <td [attr.colspan]="candidatos.length + 1" class="bloque-title">
+                2) EXPERIENCIA EN DOCENCIA + ENTREVISTA — MÁXIMO 50 PUNTOS
+              </td>
+            </tr>
+
+            <tr *ngFor="let blq of bloqueExperiencia" class="item-row">
+              <td class="item-label">
+                <span>— {{ blq.label }}</span>
+                <small class="pts-por">máximo {{ blq.max }} puntos</small>
+              </td>
+              <td *ngFor="let c of candidatos" class="cell-input">
+                <input
+                  type="number" min="0" [max]="blq.max" step="0.5"
+                  [(ngModel)]="c.puntajes[blq.id]"
+                  (ngModelChange)="recalcular(c)"
+                  class="score-input"
+                  [disabled]="matrizBloqueada"
+                  [class.max-reached]="c.puntajes[blq.id] >= blq.max">
+              </td>
+            </tr>
+
+            <tr class="subtotal-row">
+              <td class="subtotal-label">TOTAL EXPERIENCIA + ENTREVISTA (máx. 50)</td>
+              <td *ngFor="let c of candidatos" class="subtotal-score">
+                {{ c.totalExperienciaEntrevista | number:'1.1-2' }}
+              </td>
+            </tr>
+
+            <!-- BLOQUE 3: ACCIÓN AFIRMATIVA -->
+            <ng-container *ngIf="mostrarAccionAfirmativa">
+              <tr class="bloque-header-row">
+                <td [attr.colspan]="candidatos.length + 1" class="bloque-title">
+                  3) ACCIÓN AFIRMATIVA — MÁXIMO 4 PUNTOS <small>(Art. 17 — 2 puntos por cada una)</small>
+                </td>
+              </tr>
+
+              <tr *ngFor="let af of accionesAfirmativas" class="item-row">
+                <td class="item-label">
+                  <span>— {{ af.label }}</span>
+                  <small class="pts-por">{{ af.puntos }} puntos</small>
+                </td>
+                <td *ngFor="let c of candidatos" class="cell-checkbox">
+                  <label class="checkbox-wrapper">
+                    <input type="checkbox"
+                           [(ngModel)]="c.accionesAfirmativas[af.id]"
+                           (ngModelChange)="recalcular(c)"
+                           [disabled]="matrizBloqueada">
+                    <span class="checkmark"></span>
+                  </label>
+                </td>
+              </tr>
+
+              <tr class="subtotal-row">
+                <td class="subtotal-label">TOTAL ACCIÓN AFIRMATIVA (máx. 4)</td>
+                <td *ngFor="let c of candidatos" class="subtotal-score">
+                  {{ c.totalAccionAfirmativa }}
+                </td>
+              </tr>
+            </ng-container>
+
+            <!-- TOTAL GENERAL -->
+            <tr class="total-row">
+              <td class="total-label">PUNTAJE TOTAL (1 + 2 + 3)</td>
+              <td *ngFor="let c of candidatos" class="total-score"
+                  [class.ganador-cell]="guardado && c === candidatoGanador">
+                {{ c.puntajeTotal | number:'1.1-2' }}
+                <span *ngIf="guardado && c === candidatoGanador" class="ganador-star">🏆</span>
+              </td>
+            </tr>
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- FOOTER ACCIONES -->
+      <div class="footer-actions" *ngIf="candidatos.length > 0 && !matrizBloqueada">
+        <button class="btn btn--outline-back" (click)="volver()">Cancelar</button>
+        <button class="btn btn--primary btn--lg" (click)="guardarEvaluacion()" [disabled]="guardando">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+          </svg>
+          {{ guardando ? 'Guardando...' : 'Guardar Evaluación' }}
+        </button>
+      </div>
+
+    </ng-container>
+  </div>
+</div>
+
+<!-- ==================== MODAL GUARDADO ==================== -->
+<div class="modal-overlay" *ngIf="mostrarModalGuardado" (click)="cerrarModalGuardado()">
+  <div class="modal-card modal-card--success" (click)="$event.stopPropagation()">
+
+    <div class="modal-header-icon">
+      <div class="check-circle">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="32" height="32">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+    </div>
+
+    <h2 class="modal-title">¡Evaluación Guardada!</h2>
+
+    <div class="modal-steps" *ngIf="candidatoGanador">
+      <div class="step-item step-item--winner">
+        <div class="step-icon">🏆</div>
+        <div class="step-text">
+          <strong>Candidato Ganador</strong>
+          <span>{{ candidatoGanador.apellidos }} {{ candidatoGanador.nombres }}</span>
+          <span class="score-highlight">{{ candidatoGanador.puntajeTotal | number:'1.1-2' }} puntos</span>
+        </div>
+      </div>
+      <div class="step-item" *ngFor="let c of candidatos">
+        <div class="step-icon step-icon--score">{{ c.puntajeTotal | number:'1.0-0' }}</div>
+        <div class="step-text">
+          <strong>{{ c.apellidos }} {{ c.nombres }}</strong>
+          <span>{{ c.titulos }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-info-box">
+      Los resultados han sido registrados. Puede generar el informe final desde el módulo de Reportes.
+    </div>
+
+    <button class="btn btn--primary btn--block" (click)="cerrarModalGuardado()">
+      ENTENDIDO
+    </button>
+  </div>
+</div>
+
+<app-footer></app-footer>
