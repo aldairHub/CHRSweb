@@ -61,4 +61,16 @@ public class PostulantesEvaluacionController {
                 "decision", dto.getDecision()
         ));
     }
+    // Endpoint para listar convocatorias con entrevistas disponibles
+    @GetMapping("/convocatorias")
+    public ResponseEntity<?> listarConvocatorias() {
+        return ResponseEntity.ok(procesoService.listarConvocatoriasEntrevistas());
+    }
+
+    // Endpoint para calcular y guardar puntaje final de entrevista
+    @PostMapping("/{idProceso}/finalizar-entrevista")
+    public ResponseEntity<?> finalizarEntrevista(@PathVariable Long idProceso) {
+        procesoService.finalizarEntrevista(idProceso);
+        return ResponseEntity.ok(Map.of("mensaje", "Puntaje final calculado correctamente"));
+    }
 }

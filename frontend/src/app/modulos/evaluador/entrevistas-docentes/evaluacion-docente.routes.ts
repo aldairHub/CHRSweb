@@ -5,6 +5,20 @@ import { Routes } from '@angular/router';
 
 export const EVALUACION_DOCENTE_ROUTES: Routes = [
   {
+  path: '',  // ruta raíz → /evaluador/entrevistas-docentes
+  title: 'SSDC - Entrevistas Docentes',
+  loadComponent: () =>
+    import('./entrevistas-lista/entrevistas-lista.component')
+      .then(m => m.EntrevistasListaComponent)
+},
+{
+  path: 'postulantes/:idConvocatoria',  // con filtro por convocatoria
+  title: 'SSDC - Postulantes',
+  loadComponent: () =>
+    import('./postulantes/postulantes.component')
+      .then(m => m.PostulantesComponent)
+},
+  {
     path: '',
     redirectTo: 'dashboard',
     pathMatch: 'full'

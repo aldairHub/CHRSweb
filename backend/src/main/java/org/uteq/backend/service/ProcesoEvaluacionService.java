@@ -17,6 +17,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -28,6 +33,9 @@ public class ProcesoEvaluacionService {
     private final ReunionRepository reunionRepository;
     private final HistorialAccionRepository historialRepository;
     private final NotificacionService notifService;
+    private final PostgresProcedureRepository procedureRepo;
+    private final JdbcTemplate jdbc;
+
 
     private static final DateTimeFormatter DT_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final DateTimeFormatter D_FMT   = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -277,4 +285,70 @@ public class ProcesoEvaluacionService {
                 .filter(s -> !s.isEmpty())
                 .collect(Collectors.toList());
     }
+    public void finalizarEntrevista(Long idProceso) {
+        // Verificar que todas las fases estén completadas
+        List<FaseProceso> fases = faseProcesoRepository
+                .findByProceso_IdProcesoOrderByFase_OrdenAsc(idProceso);
+
+        boolean todasCompletadas = fases.stream()
+                .allMatch(f -> "completada".equals(f.getEstado()));
+
+        if (!todasCompletadas) {
+            throw new RuntimeException("No todas las fases están completadas aún.");
+        }
+
+        // Llamar al stored procedure que calcula puntaje_entrevista y puntaje_final
+        procedureRepo.guardarEntrevistaDocente(idProceso);
+
+        // Registrar en historial
+        ProcesoEvaluacion proceso = findOrThrow(idProceso);
+        registrarHistorial(proceso, "Puntaje Final Calculado",
+                "Se calculó el puntaje final combinando matriz de méritos y entrevistas.", "Sistema");
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> listarConvocatoriasEntrevistas() {
+
+        List<Map<String, Object>> rows = jdbc.queryForList("""
+            SELECT
+                c.id_convocatoria,
+                c.titulo,
+                m.nombre_materia,
+                COUNT(DISTINCT pe.id_proceso) AS total_candidatos,
+                COUNT(DISTINCT CASE WHEN pe.puntaje_matriz > 0 THEN pe.id_proceso END) AS candidatos_con_matriz
+            FROM convocatoria c
+            JOIN convocatoria_solicitud cs ON c.id_convocatoria = cs.id_convocatoria
+            JOIN solicitud_docente sd ON cs.id_solicitud = sd.id_solicitud
+            LEFT JOIN materia m ON sd.id_materia = m.id_materia
+            JOIN proceso_evaluacion pe ON pe.id_solicitud = cs.id_solicitud
+            GROUP BY c.id_convocatoria, c.titulo, m.nombre_materia
+            ORDER BY c.id_convocatoria DESC
+            """);
+
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (Map<String, Object> row : rows) {
+            long totalCandidatos    = ((Number) row.get("total_candidatos")).longValue();
+            long candidatosConMatriz = ((Number) row.get("candidatos_con_matriz")).longValue();
+            boolean disponible      = candidatosConMatriz > 0;
+
+            String mensajeBloqueo = null;
+            if (!disponible) {
+                mensajeBloqueo = "Ningún candidato tiene la matriz de méritos calificada aún.";
+            }
+
+            Map<String, Object> item = new HashMap<>();
+            item.put("idConvocatoria",       row.get("id_convocatoria"));
+            item.put("titulo",               row.get("titulo"));
+            item.put("materia",              row.get("nombre_materia"));
+            item.put("totalCandidatos",      totalCandidatos);
+            item.put("candidatosConMatriz",  candidatosConMatriz);
+            item.put("disponible",           disponible);
+            item.put("mensajeBloqueo",       mensajeBloqueo);
+            result.add(item);
+        }
+        return result;
+    }
+
+
 }

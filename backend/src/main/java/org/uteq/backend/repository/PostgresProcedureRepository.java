@@ -567,5 +567,12 @@ public class PostgresProcedureRepository {
             return null;
         });
     }
-
+    public void guardarEntrevistaDocente(Long idProceso) {
+       jdbcTemplate.execute((java.sql.Connection conn) -> {
+           var ps = conn.prepareStatement("CALL public.sp_guardar_entrevista_docente(?)");
+           ps.setLong(1, idProceso);
+           ps.execute();
+           return null;
+       });
+   }
 }
