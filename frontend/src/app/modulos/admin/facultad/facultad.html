@@ -7,14 +7,14 @@
     <!-- Header de la página -->
     <div class="page-header">
       <div>
-        <h2>Gestión de Facultades</h2>
-        <p class="page-subtitle">Administración de Facultades</p>
+        <h2>Gestión de facultades</h2>
+        <p class="page-subtitle">Administración de facultades</p>
       </div>
       <button class="btn btn-primary" (click)="openCreate()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        Nueva Facultad
+        Nueva facultad
       </button>
     </div>
 
@@ -27,7 +27,7 @@
           </svg>
         </div>
         <div class="stat-content">
-          <h3>Total Facultades</h3>
+          <h3>Total facultades</h3>
           <div class="stat-value">{{ facultades.length }}</div>
         </div>
       </div>
@@ -73,13 +73,13 @@
     </div>
 
     <!-- Tabla de Facultades -->
-    <p>facultades: {{ facultades.length }}</p>
+<!--    <p>Facultades: {{ facultades.length }}</p>-->
     <div class="table-container">
       <table class="table">
         <thead>
         <tr>
           <th>ID</th>
-          <th>Nombre Facultad</th>
+          <th>Nombre facultad</th>
           <th>Estado</th>
           <th>Acciones</th>
         </tr>
@@ -150,7 +150,7 @@
 <div class="modal-overlay" *ngIf="modalAbierto" (click)="closeModal()">
   <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>{{ editando ? 'Editar Facultad' : 'Nueva Facultad' }}</h3>
+      <h3>{{ editando ? 'Editar facultad' : 'Nueva facultad' }}</h3>
       <button class="close-btn" (click)="closeModal()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -171,7 +171,7 @@
       </div>
 
       <div class="form-group">
-        <label>Nombre de la Facultad <span class="required">*</span></label>
+        <label>Nombre de la facultad <span class="required">*</span></label>
         <input
           type="text"
           class="form-input"
@@ -200,7 +200,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
         </svg>
-        {{ editando ? 'Actualizar' : 'Crear Facultad' }}
+        {{ editando ? 'Actualizar' : 'Crear facultad' }}
       </button>
     </div>
   </div>

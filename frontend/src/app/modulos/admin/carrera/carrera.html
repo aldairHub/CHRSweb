@@ -6,8 +6,8 @@
     <!-- Header de la página -->
     <div class="page-header">
       <div>
-        <h2>Gestión de Carreras</h2>
-        <p class="page-subtitle">Estructura Académica</p>
+        <h2>Gestión de carreras</h2>
+        <p class="page-subtitle">Estructura académica</p>
       </div>
       <button class="btn btn-primary" (click)="openCreate()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
@@ -26,7 +26,7 @@
           </svg>
         </div>
         <div class="stat-content">
-          <h3>Total Carreras</h3>
+          <h3>Total carreras</h3>
           <div class="stat-value">{{ carreras.length }}</div>
         </div>
       </div>
@@ -84,21 +84,21 @@
       </div>
 
       <select class="form-select" [(ngModel)]="filtroFacultad" (change)="applyFilters()">
-        <option value="">Todas las Facultades</option>
+        <option value="">Todas las facultades</option>
         <option *ngFor="let f of facultades" [value]="f.nombreFacultad">
           {{ f.nombreFacultad }}
         </option>
       </select>
 
       <select class="form-select" [(ngModel)]="filtroModalidad" (change)="applyFilters()">
-        <option value="">Todas las Modalidades</option>
+        <option value="">Todas las modalidades</option>
         <option value="presencial">Presencial</option>
         <option value="virtual">Virtual</option>
         <option value="hibrido">Híbrido</option>
       </select>
 
       <select class="form-select" [(ngModel)]="filtroEstado" (change)="applyFilters()">
-        <option value="">Todos los Estados</option>
+        <option value="">Todos los estados</option>
         <option value="true">Activas</option>
         <option value="false">Inactivas</option>
       </select>
@@ -110,7 +110,7 @@
         <thead>
         <tr>
           <th>ID Carrera</th>
-          <th>Nombre de la Carrera</th>
+          <th>Nombre de la carrera</th>
           <th>Facultad</th>
           <th>Modalidad</th>
           <th>Estado</th>
@@ -225,7 +225,7 @@
 <div class="modal-overlay" *ngIf="modalAbierto" (click)="closeModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>{{ editando ? 'Editar Carrera' : 'Nueva Carrera' }}</h3>
+      <h3>{{ editando ? 'Editar carrera' : 'Nueva carrera' }}</h3>
       <button class="close-btn" (click)="closeModal()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -240,19 +240,19 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <div>
-          <strong>Información Importante</strong>
+          <strong>Información importante</strong>
           <p>Asegúrate de seleccionar la facultad correcta y configurar la modalidad adecuada para la carrera.</p>
         </div>
       </div>
 
       <div class="form-section">
-        <div class="section-title">Información de la Carrera</div>
+        <div class="section-title">Información de la carrera</div>
         <div class="section-description">Datos básicos de identificación</div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label>Nombre de la Carrera <span class="required">*</span></label>
+          <label>Nombre de la carrera <span class="required">*</span></label>
           <input
             type="text"
             class="form-input"
@@ -266,7 +266,7 @@
 
         <div class="form-group">
           <label>Facultad <span class="required">*</span></label>
-          <select class="form-select" [(ngModel)]="form.idFacultad">
+          <select class="form-input" [(ngModel)]="form.idFacultad">
             <option [ngValue]="null">Seleccionar facultad...</option>
             <option *ngFor="let f of facultades" [ngValue]="f.idFacultad">
               {{ f.nombreFacultad }}
@@ -280,7 +280,7 @@
 
       <div class="form-group">
         <label>Modalidad <span class="required">*</span></label>
-        <select class="form-select" [(ngModel)]="form.modalidad">
+        <select class="form-input" [(ngModel)]="form.modalidad">
           <option value="presencial">Presencial</option>
           <option value="virtual">Virtual</option>
           <option value="hibrido">Híbrido</option>
@@ -305,7 +305,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
         </svg>
-        {{ isSaving ? 'Guardando...' : 'Guardar Carrera' }}
+        {{ isSaving ? 'Guardando...' : 'Guardar carrera' }}
       </button>
     </div>
   </div>

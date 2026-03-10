@@ -26,7 +26,7 @@
           </svg>
         </div>
         <div class="stat-content">
-          <h3>Total Materias</h3>
+          <h3>Total materias</h3>
           <div class="stat-value">{{ materias.length }}</div>
         </div>
       </div>
@@ -38,7 +38,7 @@
           </svg>
         </div>
         <div class="stat-content">
-          <h3>Niveles Únicos</h3>
+          <h3>Niveles únicos</h3>
           <div class="stat-value">{{ nivelesUnicos }}</div>
         </div>
       </div>
@@ -60,14 +60,14 @@
       </div>
 
       <select class="form-select" [(ngModel)]="filtroCarrera" (change)="applyFilters()">
-        <option value="">Todas las Carreras</option>
+        <option value="">Todas las carreras</option>
         <option *ngFor="let c of carrerasUnicas" [value]="c">
           {{ c }}
         </option>
       </select>
 
       <select class="form-select" [(ngModel)]="filtroNivel" (change)="applyFilters()">
-        <option value="">Todos los Niveles</option>
+        <option value="">Todos los niveles</option>
         <option *ngFor="let n of nivelesDisponibles" [value]="n">
           Nivel {{ n }}
         </option>
@@ -85,7 +85,7 @@
         <thead>
         <tr>
           <th>ID Materia</th>
-          <th>Nombre de la Materia</th>
+          <th>Nombre de la materia</th>
           <th>Carrera</th>
           <th>Nivel</th>
           <th>Acciones</th>
@@ -107,7 +107,7 @@
         <thead>
         <tr>
           <th>ID Materia</th>
-          <th>Nombre de la Materia</th>
+          <th>Nombre de la materia</th>
           <th>Carrera</th>
           <th>Nivel</th>
           <th>Acciones</th>
@@ -208,19 +208,19 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <div>
-          <strong>Información Importante</strong>
+          <strong>Información importante</strong>
           <p>Configura correctamente la carrera y el nivel académico de la materia.</p>
         </div>
       </div>
 
       <div class="form-section">
-        <div class="section-title">Información de la Materia</div>
+        <div class="section-title">Información de la materia</div>
         <div class="section-description">Datos básicos de identificación</div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label>Nombre de la Materia <span class="required">*</span></label>
+          <label>Nombre de la materia <span class="required">*</span></label>
           <input
             type="text"
             class="form-input"
@@ -234,7 +234,7 @@
 
         <div class="form-group">
           <label>Carrera <span class="required">*</span></label>
-          <select class="form-select" [(ngModel)]="form.idCarrera">
+          <select class="form-input" [(ngModel)]="form.idCarrera">
             <option [ngValue]="null">Seleccionar carrera...</option>
             <option *ngFor="let c of carreras" [ngValue]="c.idCarrera">
               {{ c.nombre || c.nombreCarrera }}
@@ -249,7 +249,7 @@
 
       <div class="form-group">
         <label>Nivel <span class="required">*</span></label>
-        <select class="form-select" [(ngModel)]="form.nivel">
+        <select class="form-input" [(ngModel)]="form.nivel">
           <option *ngFor="let n of [1,2,3,4,5,6,7,8,9,10]" [value]="n">
             Nivel {{ n }}
           </option>
