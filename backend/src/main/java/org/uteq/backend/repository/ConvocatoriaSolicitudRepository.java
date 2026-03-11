@@ -26,4 +26,15 @@ public interface ConvocatoriaSolicitudRepository
     @Modifying
     @Query("DELETE FROM ConvocatoriaSolicitud c WHERE c.id.idConvocatoria = :idConvocatoria")
     void deleteByIdConvocatoria(@Param("idConvocatoria") Long idConvocatoria);
+
+    // ── PASO 6: IDs de solicitudes que ya están en convocatorias activas ──
+    // Usa SQL nativo porque ConvocatoriaSolicitud no tiene @ManyToOne a Convocatoria,
+    // por lo que JPQL no puede hacer JOIN libre entre las dos entidades.
+    @Query(value = """
+        SELECT cs.id_solicitud
+        FROM convocatoria_solicitud cs
+        JOIN convocatoria c ON c.id_convocatoria = cs.id_convocatoria
+        WHERE c.estado_convocatoria IN ('abierta', 'en_proceso')
+    """, nativeQuery = true)
+    List<Long> findIdsSolicitudesEnConvocatoriasActivas();
 }

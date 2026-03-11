@@ -2,9 +2,11 @@ package org.uteq.backend.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.uteq.backend.repository.InstitucionRepository;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -16,17 +18,17 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class HuggingFaceTextService implements AiTextService {
 
-    // 1. Renombrar la constante URL (opcional pero más claro)
-    private static final String HF_TEXT_URL =
-            "https://api.groq.com/openai/v1/chat/completions";
+    private static final String HF_TEXT_URL = "https://api.groq.com/openai/v1/chat/completions";
+    private static final String MODELO      = "llama-3.1-8b-instant";
 
-    // 2. Cambiar el modelo
-    private static final String MODELO = "llama-3.1-8b-instant";
-
-    @Value("${groq.api.token}")          // nueva
+    @Value("${groq.api.token}")
     private String groqApiToken;
+
+    // Nombre de institución dinámico desde BD
+    private final InstitucionRepository institucionRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -37,10 +39,11 @@ public class HuggingFaceTextService implements AiTextService {
         }
 
         try {
-            String prompt       = buildPrompt(contextos);
-            String requestBody  = buildRequestBody(prompt);
+            String nombreInstitucion = resolverNombreInstitucion();
+            String prompt            = buildPrompt(contextos, nombreInstitucion);
+            String requestBody       = buildRequestBody(prompt);
 
-            log.info("[IA] Llamando a HuggingFace Text API con {} solicitudes", contextos.size());
+            log.info("[IA] Llamando a Groq API con {} solicitudes", contextos.size());
 
             HttpClient client = HttpClient.newBuilder()
                     .connectTimeout(Duration.ofSeconds(15))
@@ -57,10 +60,10 @@ public class HuggingFaceTextService implements AiTextService {
             HttpResponse<String> response = client.send(request,
                     HttpResponse.BodyHandlers.ofString());
 
-            log.info("[IA] HuggingFace respondió con status {}", response.statusCode());
+            log.info("[IA] Groq respondió con status {}", response.statusCode());
 
             if (response.statusCode() != 200) {
-                log.warn("[IA] Error de HuggingFace [{}]: {}", response.statusCode(), response.body());
+                log.warn("[IA] Error de Groq [{}]: {}", response.statusCode(), response.body());
                 return fallback(contextos);
             }
 
@@ -75,14 +78,26 @@ public class HuggingFaceTextService implements AiTextService {
             return contenido.isBlank() ? fallback(contextos) : contenido;
 
         } catch (Exception e) {
-            log.error("[IA] Error al contactar HuggingFace: {}", e.getMessage(), e);
+            log.error("[IA] Error al contactar Groq: {}", e.getMessage(), e);
             return fallback(contextos);
         }
     }
 
-    // ─── Prompt enriquecido con nombre de materia ─────────────────────────
+    // ── Nombre dinámico desde BD ──────────────────────────────────────────
+    private String resolverNombreInstitucion() {
+        try {
+            return institucionRepository.findByActivoTrue()
+                    .map(inst -> inst.getNombre())
+                    .filter(n -> n != null && !n.isBlank())
+                    .orElse("la institución");
+        } catch (Exception e) {
+            log.warn("[IA] No se pudo obtener el nombre de la institución: {}", e.getMessage());
+            return "la institución";
+        }
+    }
 
-    private String buildPrompt(List<SolicitudContexto> contextos) {
+    // ── Prompt ────────────────────────────────────────────────────────────
+    private String buildPrompt(List<SolicitudContexto> contextos, String nombreInstitucion) {
         String textos = contextos.stream()
                 .filter(c -> c.justificacion() != null && !c.justificacion().isBlank())
                 .map(c -> {
@@ -103,8 +118,7 @@ public class HuggingFaceTextService implements AiTextService {
             Eres un asistente académico especializado en redacción institucional universitaria.
 
             Tu tarea es generar una descripción formal y profesional para una CONVOCATORIA DOCENTE
-            de la Universidad Técnica Estatal de Quevedo (UTEQ), basándote en las siguientes
-            solicitudes de contratación:
+            de %s, basándote en las siguientes solicitudes de contratación:
 
             %s
 
@@ -119,20 +133,20 @@ public class HuggingFaceTextService implements AiTextService {
 
             Genera ÚNICAMENTE la descripción, sin texto previo ni posterior.
             """.formatted(
+                nombreInstitucion,
                 textos,
                 materias.isBlank() ? "" : "Materias involucradas: " + materias
         );
     }
 
-    // ─── Request body ─────────────────────────────────────────────────────
-
+    // ── Request body ──────────────────────────────────────────────────────
     private String buildRequestBody(String prompt) throws Exception {
         var body = objectMapper.createObjectNode();
         body.put("model", MODELO);
         body.put("max_tokens", 120);
 
         var messages = objectMapper.createArrayNode();
-        var msg = objectMapper.createObjectNode();
+        var msg      = objectMapper.createObjectNode();
         msg.put("role", "user");
         msg.put("content", prompt);
         messages.add(msg);
@@ -141,8 +155,7 @@ public class HuggingFaceTextService implements AiTextService {
         return objectMapper.writeValueAsString(body);
     }
 
-    // ─── Fallback dinámico según las materias disponibles ─────────────────
-
+    // ── Fallback ──────────────────────────────────────────────────────────
     private String fallback(List<SolicitudContexto> contextos) {
         if (contextos == null || contextos.isEmpty()) {
             return fallbackGenerico();

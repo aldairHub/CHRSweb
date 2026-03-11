@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit,ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { LogoService } from '../../services/logo.service';
@@ -76,6 +76,9 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     private institucionService: InstitucionAdminService,private cdr: ChangeDetectorRef,
     public themeService: ThemeService
   ) {}
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void { if (this.modalAbierto) this.cerrarModal(); }
 
   ngOnDestroy(): void {
     if (this.animFrameId) {
@@ -255,8 +258,41 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  // ── Modal ────────────────────────────────────────────────────────────────
+  modalAbierto = false;
+  convSeleccionada: ConvocatoriaVM | null = null;
+
+  abrirModal(conv: ConvocatoriaVM): void {
+    this.convSeleccionada = conv;
+    this.modalAbierto = true;
+    document.body.style.overflow = 'hidden';
+    this.cdr.detectChanges();
+  }
+
+  cerrarModal(): void {
+    this.modalAbierto = false;
+    this.convSeleccionada = null;
+    document.body.style.overflow = '';
+    this.cdr.detectChanges();
+  }
+
+  irAConvocatoriaDetalle(conv: ConvocatoriaVM): void {
+    this.cerrarModal();
+    this.router.navigate(['/convocatorias'], { queryParams: { id: conv.idConvocatoria } });
+    this.cdr.detectChanges();
+  }
+
+  onModalImgError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (!img.dataset['fallback']) {
+      img.dataset['fallback'] = '1';
+      img.src = LandingComponent.PLACEHOLDER_IMG;
+    }
+  }
+
   verDetalleConvocatoria(conv: ConvocatoriaVM): void {
-    this.router.navigate(['/convocatorias'], { queryParams: { id: conv.idConvocatoria } });      this.cdr.detectChanges();
+    this.router.navigate(['/convocatorias'], { queryParams: { id: conv.idConvocatoria } });
+    this.cdr.detectChanges();
   }
 
   scrollAConvocatorias(): void {

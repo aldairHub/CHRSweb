@@ -17,7 +17,7 @@ public class Convocatoria {
     @Column(nullable = false)
     private String titulo;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String descripcion;
 
     @Column(name = "fecha_publicacion", nullable = false)

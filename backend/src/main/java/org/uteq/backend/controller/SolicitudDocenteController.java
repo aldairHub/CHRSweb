@@ -7,11 +7,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.uteq.backend.service.impl.SolicitudDocenteService;
+import org.uteq.backend.service.ConvocatoriaAdminService;
+import org.uteq.backend.service.SolicitudDocenteService;
 import org.uteq.backend.dto.SolicitudDocenteRequestDTO;
 import org.uteq.backend.dto.SolicitudDocenteResponseDTO;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/solicitudes-docente")
@@ -20,6 +22,7 @@ import java.util.List;
 public class SolicitudDocenteController {
 
     private final SolicitudDocenteService solicitudService;
+    private final ConvocatoriaAdminService convocatoriaAdminService;
 
     // =====================================================
     // DTOs INTERNOS
@@ -79,7 +82,15 @@ public class SolicitudDocenteController {
             @PathVariable String estado) {
         return ResponseEntity.ok(solicitudService.obtenerPorEstado(estado));
     }
-
+    // GET /api/solicitudes-docente/disponibles-para-convocatoria
+    // Excluye solicitudes ya asignadas a convocatorias activas
+    // =====================================================
+    @GetMapping("/disponibles-para-convocatoria")
+    public ResponseEntity<List<SolicitudDocenteResponseDTO>> obtenerDisponiblesParaConvocatoria() {
+        return ResponseEntity.ok(
+                convocatoriaAdminService.getSolicitudesDisponiblesParaConvocatoria()
+        );
+    }
     // =====================================================
     // POR ID
     // =====================================================
@@ -152,5 +163,16 @@ public class SolicitudDocenteController {
         return new ResponseEntity<>(
                 new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value()),
                 HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping("/mi-facultad")
+    public ResponseEntity<?> obtenerMiFacultad(@RequestParam String usuarioApp) {
+        try {
+            Long idFacultad = solicitudService.obtenerIdFacultadPorUsuarioApp(usuarioApp);
+            return ResponseEntity.ok(Map.of("idFacultad", idFacultad));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ErrorResponse(e.getMessage(), 400));
+        }
     }
 }

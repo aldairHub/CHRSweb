@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { SolicitudDocenteResponse } from './solicitud-docente.service';
 
 export interface ConvocatoriaListaResponse {
   idConvocatoria:        number;
@@ -9,11 +10,11 @@ export interface ConvocatoriaListaResponse {
   fechaPublicacion:      string;
   fechaInicio:           string;
   fechaFin:              string;
-  fechaLimiteDocumentos: string | null;  // NUEVO
+  fechaLimiteDocumentos: string | null;
   estadoConvocatoria:    string;
   imagenPortadaUrl?:     string;
   totalSolicitudes:      number;
-  documentosAbiertos:    boolean;        // NUEVO
+  documentosAbiertos:    boolean;
 }
 
 export interface ConvocatoriaDetalleResponse {
@@ -23,12 +24,12 @@ export interface ConvocatoriaDetalleResponse {
   fechaPublicacion:      string;
   fechaInicio:           string;
   fechaFin:              string;
-  fechaLimiteDocumentos: string | null;  // NUEVO
+  fechaLimiteDocumentos: string | null;
   estadoConvocatoria:    string;
   imagenPortadaUrl?:     string;
-  documentosAbiertos:    boolean;        // NUEVO
+  documentosAbiertos:    boolean;
   solicitudes:           SolicitudResumen[];
-  tiposDocumento:        TipoDocumentoConv[];  // NUEVO
+  tiposDocumento:        TipoDocumentoConv[];
 }
 
 export interface SolicitudResumen {
@@ -41,7 +42,7 @@ export interface SolicitudResumen {
   estadoSolicitud:  string;
 }
 
-export interface TipoDocumentoConv {  // NUEVO
+export interface TipoDocumentoConv {
   idTipoDocumento: number;
   nombre:          string;
   descripcion:     string;
@@ -55,9 +56,9 @@ export interface CrearConvocatoriaRequest {
   fechaPublicacion:      string;
   fechaInicio:           string;
   fechaFin:              string;
-  fechaLimiteDocumentos: string | null;  // NUEVO
+  fechaLimiteDocumentos: string | null;
   idsSolicitudes:        number[];
-  idsTiposDocumento:     number[];       // NUEVO
+  idsTiposDocumento:     number[];
 }
 
 export interface ActualizarConvocatoriaRequest {
@@ -66,8 +67,8 @@ export interface ActualizarConvocatoriaRequest {
   fechaPublicacion:      string;
   fechaInicio:           string;
   fechaFin:              string;
-  fechaLimiteDocumentos: string | null;  // NUEVO
-  idsTiposDocumento:     number[];       // NUEVO
+  fechaLimiteDocumentos: string | null;
+  idsTiposDocumento:     number[];
 }
 
 export interface MensajeResponse {
@@ -80,6 +81,7 @@ export interface MensajeResponse {
 export class ConvocatoriaAdminService {
 
   private apiUrl = 'http://localhost:8080/api/admin/convocatorias';
+  private solicitudesUrl = 'http://localhost:8080/api/solicitudes-docente';
 
   constructor(private http: HttpClient) {}
 
@@ -112,5 +114,12 @@ export class ConvocatoriaAdminService {
 
   generarImagen(id: number): Observable<MensajeResponse> {
     return this.http.post<MensajeResponse>(`${this.apiUrl}/${id}/generar-imagen`, {});
+  }
+
+  // El backend filtra las que ya están en convocatorias 'abierta' o 'en_proceso'
+  getSolicitudesDisponibles(): Observable<SolicitudDocenteResponse[]> {
+    return this.http.get<SolicitudDocenteResponse[]>(
+      `${this.solicitudesUrl}/disponibles-para-convocatoria`
+    );
   }
 }

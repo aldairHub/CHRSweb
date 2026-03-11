@@ -10,27 +10,23 @@
           Complete el formulario para requerir un nuevo docente.
         </p>
       </div>
-
-
     </header>
 
-    <!-- ⭐ FORM -->
     <form
       class="form-card"
       #formSolicitud="ngForm"
       (ngSubmit)="guardarSolicitud(formSolicitud)"
     >
 
-      <!-- ======================= -->
-      <!-- INFO ACADÉMICA -->
-      <!-- ======================= -->
+      <!-- ========================== -->
+      <!-- SECCIÓN: INFO ACADÉMICA    -->
+      <!-- ========================== -->
       <section class="form-section">
-
         <h3>Información Académica</h3>
 
         <div class="form-grid form-grid--3">
 
-          <!-- Carrera -->
+          <!-- Carrera (solo las de la facultad del evaluador) -->
           <div class="form-group">
             <label>Carrera *</label>
             <select
@@ -39,17 +35,39 @@
               name="id_carrera"
               required
               (change)="onCarreraChange()"
+              [disabled]="loadingCarreras"
             >
-              <option [ngValue]="null">Seleccione</option>
+              <option [ngValue]="null">
+                {{ loadingCarreras ? 'Cargando carreras...' : 'Seleccione' }}
+              </option>
               <option *ngFor="let c of carreras" [ngValue]="c.idCarrera">
                 {{ c.nombreCarrera }}
               </option>
             </select>
           </div>
 
-          <!-- Área -->
+          <!-- Materia (depende de la carrera seleccionada) -->
           <div class="form-group">
-            <label>Área *</label>
+            <label>Materia *</label>
+            <select
+              class="form-input"
+              [(ngModel)]="solicitud.id_materia"
+              name="id_materia"
+              required
+              [disabled]="!solicitud.id_carrera || loadingMaterias"
+            >
+              <option [ngValue]="null">
+                {{ loadingMaterias ? 'Cargando...' : (solicitud.id_carrera ? 'Seleccione' : 'Primero seleccione carrera') }}
+              </option>
+              <option *ngFor="let m of materias" [ngValue]="m.idMateria">
+                {{ m.nombre }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Área de conocimiento -->
+          <div class="form-group">
+            <label>Área de Conocimiento *</label>
             <select
               class="form-input"
               [(ngModel)]="solicitud.id_area"
@@ -63,23 +81,7 @@
             </select>
           </div>
 
-          <!-- Materia -->
-          <div class="form-group">
-            <label>Materia *</label>
-            <select
-              class="form-input"
-              [(ngModel)]="solicitud.id_materia"
-              name="id_materia"
-              required
-            >
-              <option [ngValue]="null">Seleccione</option>
-              <option *ngFor="let m of materias" [ngValue]="m.idMateria">
-                {{ m.nombre }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Nivel -->
+          <!-- Nivel académico -->
           <div class="form-group">
             <label>Nivel Académico *</label>
             <select
@@ -100,17 +102,16 @@
 
       <hr>
 
-      <!-- ======================= -->
-      <!-- DETALLES -->
-      <!-- ======================= -->
+      <!-- ========================== -->
+      <!-- SECCIÓN: DETALLES          -->
+      <!-- ========================== -->
       <section class="form-section">
-
         <h3>Detalles</h3>
 
         <div class="form-grid form-grid--3">
 
           <div class="form-group">
-            <label>Cantidad *</label>
+            <label>Cantidad de Docentes *</label>
             <input
               type="number"
               class="form-input"
@@ -122,23 +123,25 @@
           </div>
 
           <div class="form-group">
-            <label>Exp Profesional *</label>
+            <label>Exp. Profesional (años) *</label>
             <input
               type="number"
               class="form-input"
               [(ngModel)]="solicitud.experiencia_profesional_min"
               name="experiencia_profesional_min"
+              min="0"
               required
             >
           </div>
 
           <div class="form-group">
-            <label>Exp Docente *</label>
+            <label>Exp. Docente (años) *</label>
             <input
               type="number"
               class="form-input"
               [(ngModel)]="solicitud.experiencia_docente_min"
               name="experiencia_docente_min"
+              min="0"
               required
             >
           </div>
@@ -147,16 +150,14 @@
 
         <div class="form-grid">
 
-          <!-- ✅ JUSTIFICACIÓN PRO -->
+          <!-- Justificación -->
           <div class="form-group">
-
             <div class="label-row">
               <label>Justificación *</label>
-
               <span
                 class="char-counter"
                 [ngClass]="{
-                  'ok': (solicitud.justificacion || '').trim().length >= 20,
+                  'ok':   (solicitud.justificacion || '').trim().length >= 20,
                   'warn': (solicitud.justificacion || '').trim().length > 0 &&
                           (solicitud.justificacion || '').trim().length < 20
                 }"
@@ -164,7 +165,6 @@
                 {{ (solicitud.justificacion || '').trim().length }}/20
               </span>
             </div>
-
             <textarea
               rows="3"
               class="form-input textarea-modern"
@@ -172,37 +172,31 @@
               name="justificacion"
               required
             ></textarea>
-
             <div
               class="field-hint"
-              *ngIf="
-                solicitud.justificacion &&
-                (solicitud.justificacion || '').trim().length < 20
-              "
+              *ngIf="solicitud.justificacion && (solicitud.justificacion || '').trim().length < 20"
             >
               Mínimo 20 caracteres requeridos.
             </div>
-
           </div>
 
-          <!-- Observaciones -->
-          <div class="form-group">
-            <label>Observaciones</label>
-            <textarea
-              rows="2"
-              class="form-input"
-              [(ngModel)]="solicitud.observaciones"
-              name="observaciones"
-            ></textarea>
-          </div>
+<!--          &lt;!&ndash; Observaciones &ndash;&gt;-->
+<!--          <div class="form-group">-->
+<!--            <label>Observaciones</label>-->
+<!--            <textarea-->
+<!--              rows="2"-->
+<!--              class="form-input"-->
+<!--              [(ngModel)]="solicitud.observaciones"-->
+<!--              name="observaciones"-->
+<!--            ></textarea>-->
+<!--          </div>-->
 
         </div>
-
       </section>
 
-      <!-- ======================= -->
-      <!-- BOTONES -->
-      <!-- ======================= -->
+      <!-- ========================== -->
+      <!-- BOTONES                    -->
+      <!-- ========================== -->
       <div class="form-actions">
 
         <button type="button" class="btn btn--cancel" (click)="cancelar()">
@@ -212,9 +206,10 @@
         <button
           type="submit"
           class="btn btn--primary"
-          [disabled]="!formSolicitud.form.valid"
+          [disabled]="!formSolicitud.form.valid || guardando"
         >
-          Guardar Solicitud
+          <span *ngIf="guardando">Guardando...</span>
+          <span *ngIf="!guardando">Guardar Solicitud</span>
         </button>
 
       </div>
@@ -224,28 +219,24 @@
   </div>
 </div>
 
-<!-- ======================= -->
-<!-- TOAST -->
-<!-- ======================= -->
+<!-- ========================== -->
+<!-- TOAST                      -->
+<!-- ========================== -->
 <div
   class="toast-container"
   *ngIf="showToast"
   [ngClass]="toastType"
 >
   <div class="toast-content">
-
     <div class="toast-icon">
       <span *ngIf="toastType === 'success'">✔</span>
       <span *ngIf="toastType === 'error'">✖</span>
     </div>
-
     <div class="toast-text">
       <strong>{{ toastTitle }}</strong>
       <p>{{ toastMessage }}</p>
     </div>
-
     <button class="toast-close" (click)="cerrarToast()">✕</button>
-
   </div>
 </div>
 

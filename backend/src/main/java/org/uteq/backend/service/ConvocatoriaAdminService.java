@@ -7,20 +7,65 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.uteq.backend.dto.SolicitudDocenteResponseDTO;
+import org.uteq.backend.entity.SolicitudDocente;
+import org.uteq.backend.repository.ConvocatoriaSolicitudRepository;
+import org.uteq.backend.repository.SolicitudDocenteRepository;
 
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.Date;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ConvocatoriaAdminService {
 
-    private final JdbcTemplate            jdbcTemplate;
-    private final AccionAuditoriaService  auditoriaService; // FEATURE 3
+    private final JdbcTemplate                      jdbcTemplate;
+    private final AccionAuditoriaService             auditoriaService;
+    private final ConvocatoriaSolicitudRepository    convSolicitudRepo;
+    private final SolicitudDocenteRepository         solicitudRepo;
 
-    // CREAR
+    // Excluye las que ya están asociadas a convocatorias 'abierta' o 'en_proceso'
+    @Transactional(readOnly = true)
+    public List<SolicitudDocenteResponseDTO> getSolicitudesDisponiblesParaConvocatoria() {
+        List<Long> idsOcupados = convSolicitudRepo.findIdsSolicitudesEnConvocatoriasActivas();
+
+        // Si no hay ninguna ocupada, traemos todas las aprobadas con JOIN FETCH
+        // pasando [-1L] para que el NOT IN no falle con lista vacía en JPQL
+        List<Long> param = idsOcupados.isEmpty() ? List.of(-1L) : idsOcupados;
+
+        return solicitudRepo.findDisponiblesParaConvocatoria(param)
+                .stream()
+                .map(this::mapSolicitudToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private SolicitudDocenteResponseDTO mapSolicitudToDTO(SolicitudDocente s) {
+        return SolicitudDocenteResponseDTO.builder()
+                .idSolicitud(s.getIdSolicitud())
+                .idCarrera(s.getCarrera() != null ? s.getCarrera().getIdCarrera() : null)
+                .nombreCarrera(s.getCarrera() != null ? s.getCarrera().getNombreCarrera() : null)
+                .idFacultad(s.getCarrera() != null && s.getCarrera().getFacultad() != null
+                        ? s.getCarrera().getFacultad().getIdFacultad() : null)
+                .nombreFacultad(s.getCarrera() != null && s.getCarrera().getFacultad() != null
+                        ? s.getCarrera().getFacultad().getNombreFacultad() : null)
+                .idMateria(s.getMateria() != null ? s.getMateria().getIdMateria() : null)
+                .nombreMateria(s.getMateria() != null ? s.getMateria().getNombreMateria() : null)
+                .idArea(s.getArea() != null ? s.getArea().getIdArea() : null)
+                .nombreArea(s.getArea() != null ? s.getArea().getNombreArea() : null)
+                .estadoSolicitud(s.getEstadoSolicitud())
+                .cantidadDocentes(s.getCantidadDocentes())
+                .nivelAcademico(s.getNivelAcademico())
+                .experienciaProfesionalMin(s.getExperienciaProfesionalMin())
+                .experienciaDocenteMin(s.getExperienciaDocenteMin())
+                .fechaSolicitud(s.getFechaSolicitud())
+                // justificacion NO se mapea: no debe ser visible al postulante
+                .build();
+    }
+
+    // ── CREAR ─────────────────────────────────────────────────────────────
     @Transactional
     public MensajeResponse crear(CrearRequest req, String usuarioApp, String ip) {
         try {
@@ -50,7 +95,6 @@ public class ConvocatoriaAdminService {
 
             boolean exito = idNuevo != null;
 
-            // FEATURE 3 — Registrar creación de convocatoria
             if (exito) {
                 auditoriaService.registrar(
                         usuarioApp, "CREAR", "Convocatoria", idNuevo,
@@ -70,13 +114,12 @@ public class ConvocatoriaAdminService {
         }
     }
 
-    /** Sobrecarga sin auditoría para compatibilidad con llamadas internas */
     @Transactional
     public MensajeResponse crear(CrearRequest req) {
         return crear(req, "sistema", null);
     }
 
-    // ACTUALIZAR
+    // ── ACTUALIZAR ────────────────────────────────────────────────────────
     @Transactional
     public MensajeResponse actualizar(Long id, ActualizarRequest req, String usuarioApp, String ip) {
         try {
@@ -94,7 +137,6 @@ public class ConvocatoriaAdminService {
             int    filas   = ((Number) result.get("p_filas")).intValue();
             String mensaje = (String) result.get("p_mensaje");
 
-            // FEATURE 3
             if (filas > 0) {
                 auditoriaService.registrar(usuarioApp, "ACTUALIZAR", "Convocatoria", id,
                         "Convocatoria actualizada: " + req.getTitulo(), ip);
@@ -113,7 +155,7 @@ public class ConvocatoriaAdminService {
         return actualizar(id, req, "sistema", null);
     }
 
-    // CAMBIAR ESTADO
+    // ── CAMBIAR ESTADO ────────────────────────────────────────────────────
     @Transactional
     public MensajeResponse cambiarEstado(Long id, String nuevoEstado, String usuarioApp, String ip) {
         try {
@@ -127,7 +169,6 @@ public class ConvocatoriaAdminService {
             String mensaje = (String) result.get("p_mensaje");
             boolean exito  = !mensaje.startsWith("Error");
 
-            // FEATURE 3
             if (exito) {
                 auditoriaService.registrar(usuarioApp, "CAMBIAR_ESTADO", "Convocatoria", id,
                         "Estado cambiado a '" + nuevoEstado + "'", ip);
@@ -146,7 +187,7 @@ public class ConvocatoriaAdminService {
         return cambiarEstado(id, nuevoEstado, "sistema", null);
     }
 
-    // ELIMINAR
+    // ── ELIMINAR ──────────────────────────────────────────────────────────
     @Transactional
     public MensajeResponse eliminar(Long id) {
         try {
@@ -167,7 +208,7 @@ public class ConvocatoriaAdminService {
         }
     }
 
-    // LISTAR
+    // ── LISTAR ────────────────────────────────────────────────────────────
     public List<ListaResponse> listar(String estado, String titulo) {
         return jdbcTemplate.query(
                 "SELECT * FROM fn_listar_convocatorias(?::varchar, ?::varchar)",
@@ -185,7 +226,7 @@ public class ConvocatoriaAdminService {
         );
     }
 
-    // DETALLE
+    // ── DETALLE ───────────────────────────────────────────────────────────
     public DetalleResponse detalle(Long id) {
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(
                 "SELECT * FROM fn_detalle_convocatoria(?)", id

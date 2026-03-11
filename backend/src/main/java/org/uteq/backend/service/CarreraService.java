@@ -16,4 +16,6 @@ public interface CarreraService {
     CarreraResponseDTO actualizar(Long id, CarreraRequestDTO dto);
 
     void eliminar(Long id);
+
+    List<CarreraResponseDTO> listarPorFacultad(Long idFacultad);
 }

@@ -33,8 +33,11 @@ export class ConvocatoriaComponent implements OnInit {
   cargando = false;
   convocatorias: ConvocatoriaListaResponse[] = [];
   convocatoriasFiltradas: ConvocatoriaListaResponse[] = [];
-  solicitudesAprobadas: SolicitudDocenteResponse[] = [];
-  tiposDocumentoDisponibles: TipoDocumento[] = [];   // NUEVO
+
+  // ── PASO 6: Renombrado de solicitudesAprobadas → solicitudesDisponibles ──
+  // Ahora solo muestra las que NO están ya en convocatorias activas
+  solicitudesDisponibles: SolicitudDocenteResponse[] = [];
+  tiposDocumentoDisponibles: TipoDocumento[] = [];
 
   // ===== Filtros =====
   search = '';
@@ -78,9 +81,9 @@ export class ConvocatoriaComponent implements OnInit {
     fechaPublicacion:      '',
     fechaInicio:           '',
     fechaFin:              '',
-    fechaLimiteDocumentos: null as string | null,  // NUEVO
+    fechaLimiteDocumentos: null as string | null,
     idsSolicitudes:        [] as number[],
-    idsTiposDocumento:     [] as number[]          // NUEVO
+    idsTiposDocumento:     [] as number[]
   };
 
   // ===== Modal cambiar estado =====
@@ -90,17 +93,15 @@ export class ConvocatoriaComponent implements OnInit {
   // ===== Modal detalle =====
   detalleConvocatoria: ConvocatoriaDetalleResponse | null = null;
 
-  // ===== Generación de imagen IA =====
+  // ===== IA =====
   generandoImagen = false;
   private toastImagenId: number | null = null;
-
-  // ===== FEATURE 4 — Generación de descripción con IA =====
   isGenerandoDescripcion = false;
 
   constructor(
     private convocatoriaService: ConvocatoriaAdminService,
     private solicitudService: SolicitudDocenteService,
-    private tipoDocumentoService: TipoDocumentoService,   // NUEVO
+    private tipoDocumentoService: TipoDocumentoService,
     private cdr: ChangeDetectorRef,
     private toast: ToastService,
     private aiService: AiConvocatoriaService
@@ -108,8 +109,8 @@ export class ConvocatoriaComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarConvocatorias();
-    this.cargarSolicitudesAprobadas();
-    this.cargarTiposDocumento();  // NUEVO
+    this.cargarSolicitudesDisponibles();  // ← PASO 6
+    this.cargarTiposDocumento();
   }
 
   // =========================
@@ -135,17 +136,17 @@ export class ConvocatoriaComponent implements OnInit {
     });
   }
 
-  cargarSolicitudesAprobadas(): void {
-    this.solicitudService.obtenerSolicitudesPorEstado('aprobada').subscribe({
+  // ── PASO 6: Usar el nuevo endpoint que filtra las ya asignadas ─────────
+  cargarSolicitudesDisponibles(): void {
+    this.convocatoriaService.getSolicitudesDisponibles().subscribe({
       next: (data) => {
-        this.solicitudesAprobadas = Array.isArray(data) ? data : [];
+        this.solicitudesDisponibles = Array.isArray(data) ? data : [];
         this.cdr.detectChanges();
       },
-      error: () => { this.solicitudesAprobadas = []; }
+      error: () => { this.solicitudesDisponibles = []; }
     });
   }
 
-  // NUEVO
   cargarTiposDocumento(): void {
     this.tipoDocumentoService.listar().subscribe({
       next: (data) => {
@@ -228,12 +229,10 @@ export class ConvocatoriaComponent implements OnInit {
     else this.form.idsSolicitudes.splice(idx, 1);
   }
 
-  // NUEVO
   isTipoSeleccionado(id: number): boolean {
     return this.form.idsTiposDocumento.includes(id);
   }
 
-  // NUEVO
   toggleTipoDocumento(id: number): void {
     const idx = this.form.idsTiposDocumento.indexOf(id);
     if (idx === -1) this.form.idsTiposDocumento.push(id);
@@ -258,6 +257,8 @@ export class ConvocatoriaComponent implements OnInit {
       idsSolicitudes:        [],
       idsTiposDocumento:     []
     };
+    // Refrescar la lista de solicitudes disponibles al abrir el modal ──
+    this.cargarSolicitudesDisponibles();
     this.modalAbierto = true;
   }
 
@@ -295,7 +296,6 @@ export class ConvocatoriaComponent implements OnInit {
       this.toast.warning('Campos requeridos', 'Las fechas de inicio y fin son obligatorias.');
       return;
     }
-    // Validar que fecha límite docs no supere fecha fin
     if (this.form.fechaLimiteDocumentos && this.form.fechaFin &&
       this.form.fechaLimiteDocumentos > this.form.fechaFin) {
       this.toast.warning('Fecha inválida', 'La fecha límite de documentos no puede ser posterior a la fecha de fin.');
@@ -314,7 +314,7 @@ export class ConvocatoriaComponent implements OnInit {
         fechaLimiteDocumentos: this.form.fechaLimiteDocumentos || null,
         idsTiposDocumento:     this.form.idsTiposDocumento
       }).subscribe({
-        next: (resp) => {
+        next: () => {
           this.isSaving = false;
           this.closeModal();
           this.toast.success('Convocatoria actualizada', 'Los cambios se guardaron correctamente.');
@@ -359,6 +359,8 @@ export class ConvocatoriaComponent implements OnInit {
                   this.toast.warning('Convocatoria creada', 'No se pudo generar la imagen: ' + r.mensaje);
                 }
                 this.cargarConvocatorias();
+                // ── PASO 6: Refrescar disponibles tras crear la convocatoria ──
+                this.cargarSolicitudesDisponibles();
                 this.cdr.detectChanges();
               },
               error: () => {
@@ -367,6 +369,7 @@ export class ConvocatoriaComponent implements OnInit {
                 this.generandoImagen = false;
                 this.toast.warning('Convocatoria creada sin imagen', 'Puedes regenerarla desde el detalle.');
                 this.cargarConvocatorias();
+                this.cargarSolicitudesDisponibles();
                 this.cdr.detectChanges();
               }
             });
@@ -399,6 +402,8 @@ export class ConvocatoriaComponent implements OnInit {
         this.modalEstadoAbierto = false;
         this.toast.success('Estado actualizado', `La convocatoria ahora está ${this.nuevoEstado}.`);
         this.cargarConvocatorias();
+        // ── PASO 6: Al cerrar convocatoria las solicitudes quedan disponibles de nuevo ──
+        this.cargarSolicitudesDisponibles();
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -439,6 +444,7 @@ export class ConvocatoriaComponent implements OnInit {
       next: () => {
         this.toast.success('Convocatoria eliminada', `"${conv.titulo}" fue eliminada correctamente.`);
         this.cargarConvocatorias();
+        this.cargarSolicitudesDisponibles();
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -496,12 +502,8 @@ export class ConvocatoriaComponent implements OnInit {
       }
     });
   }
-  // ─── FEATURE 4 — Generar descripción con IA ─────────────────────────────
 
-  /**
-   * Envía las justificaciones de las solicitudes seleccionadas al backend (Ollama).
-   * El resultado se inserta automáticamente en el campo descripción del formulario.
-   */
+  // ── FEATURE 4: Generar descripción con IA ─────────────────────────────
   generarDescripcionConIA(): void {
     if (this.form.idsSolicitudes.length === 0) {
       this.toast.warning('Sin solicitudes', 'Selecciona al menos una solicitud para generar la descripción.');
@@ -527,10 +529,9 @@ export class ConvocatoriaComponent implements OnInit {
       error: () => {
         this.toast.remove(toastId);
         this.isGenerandoDescripcion = false;
-        this.toast.error('IA no disponible', 'Verifica que Ollama esté instalado y en ejecución.');
+        this.toast.error('IA no disponible', 'Verifica que el servicio de IA esté activo.');
         this.cdr.detectChanges();
       }
     });
   }
-
 }

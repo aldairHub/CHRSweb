@@ -85,7 +85,13 @@ public class CarreraServiceImpl implements CarreraService {
     public void eliminar(Long id) {
         carreraRepository.deleteById(id);
     }
-
+    @Override
+    public List<CarreraResponseDTO> listarPorFacultad(Long idFacultad) {
+        return carreraRepository.findByFacultadIdAndEstadoTrue(idFacultad)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
     private CarreraResponseDTO mapToResponse(Carrera carrera) {
         CarreraResponseDTO dto = new CarreraResponseDTO();
         dto.setIdCarrera(carrera.getIdCarrera());

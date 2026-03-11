@@ -1,4 +1,4 @@
-package org.uteq.backend.service.impl;
+package org.uteq.backend.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
@@ -262,5 +262,15 @@ public class SolicitudDocenteService {
                 .experienciaDocenteMin(solicitud.getExperienciaDocenteMin())
                 .observaciones(solicitud.getObservaciones())
                 .build();
+    }
+    public Long obtenerIdFacultadPorUsuarioApp(String usuarioApp) {
+        AutoridadAcademica autoridad = autoridadRepository
+                .findByUsuario_UsuarioApp(usuarioApp)
+                .orElseThrow(() -> new RuntimeException("Autoridad académica no encontrada"));
+
+        if (autoridad.getIdFacultad() == null) {
+            throw new RuntimeException("El evaluador no tiene una facultad asignada");
+        }
+        return autoridad.getIdFacultad();
     }
 }

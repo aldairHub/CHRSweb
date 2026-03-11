@@ -45,4 +45,9 @@ public class CarreraController {
     public void eliminar(@PathVariable Long id) {
         carreraService.eliminar(id);
     }
+
+    @GetMapping("/por-facultad/{idFacultad}")
+    public List<CarreraResponseDTO> listarPorFacultad(@PathVariable Long idFacultad) {
+        return carreraService.listarPorFacultad(idFacultad);
+    }
 }

@@ -144,7 +144,7 @@
       </button>
       <div class="cards-track" #carouselTrack (scroll)="onCarouselScroll()">
         <article class="lnd-card" *ngFor="let conv of convocatorias; let i = index"
-                 (click)="verDetalleConvocatoria(conv)" [style.animation-delay]="i * 0.1 + 's'">
+                 (click)="abrirModal(conv)" [style.animation-delay]="i * 0.1 + 's'">
           <div class="lnd-card-img">
             <img *ngIf="conv.imagenUrl" [src]="conv.imagenUrl" [alt]="conv.titulo" (error)="onImageError($event, i)">
             <div *ngIf="!conv.imagenUrl" class="lnd-card-placeholder">
@@ -191,4 +191,66 @@
     <p>© 2026 Universidad Técnica Estatal de Quevedo — Todos los derechos reservados</p>
   </footer>
 
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     MODAL — Descripción completa de la convocatoria
+     ═══════════════════════════════════════════════════ -->
+<div class="conv-modal-backdrop" *ngIf="modalAbierto" (click)="cerrarModal()">
+  <div class="conv-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+
+    <!-- Imagen de portada -->
+    <div class="conv-modal-img" *ngIf="convSeleccionada?.imagenUrl">
+      <img [src]="convSeleccionada!.imagenUrl" [alt]="convSeleccionada!.titulo"
+           (error)="onModalImgError($event)">
+      <span class="lnd-badge" [class.activa]="convSeleccionada!.estadoConvocatoria === 'ACTIVA'">
+          {{ convSeleccionada!.estadoConvocatoria }}
+        </span>
+    </div>
+    <!-- Placeholder si no hay imagen -->
+    <div class="conv-modal-img conv-modal-placeholder" *ngIf="!convSeleccionada?.imagenUrl">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 60" fill="none">
+        <circle cx="40" cy="22" r="13" fill="#86efac"/>
+        <rect x="12" y="40" width="56" height="24" rx="8" fill="#86efac"/>
+      </svg>
+      <span class="lnd-badge activa">{{ convSeleccionada!.estadoConvocatoria }}</span>
+    </div>
+
+    <!-- Cuerpo -->
+    <div class="conv-modal-body">
+      <h2 class="conv-modal-title">{{ convSeleccionada!.titulo }}</h2>
+
+      <div class="conv-modal-dates">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <span>{{ convSeleccionada!.fechaInicio | date:'dd MMM yyyy' }}
+          &nbsp;—&nbsp;
+          {{ convSeleccionada!.fechaFin | date:'dd MMM yyyy' }}</span>
+      </div>
+
+      <div class="conv-modal-divider"></div>
+
+      <p class="conv-modal-desc">{{ convSeleccionada!.descripcion }}</p>
+    </div>
+
+    <!-- Acciones -->
+    <div class="conv-modal-footer">
+      <button class="conv-modal-btn-secondary" (click)="cerrarModal()">Cerrar</button>
+      <button class="conv-modal-btn-primary" (click)="irAConvocatoriaDetalle(convSeleccionada!)">
+        Ver convocatoria completa
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Botón cerrar (X) -->
+    <button class="conv-modal-close" (click)="cerrarModal()" aria-label="Cerrar">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
 </div>

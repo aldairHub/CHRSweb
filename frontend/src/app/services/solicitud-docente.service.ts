@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 // ========== INTERFACES ==========
+
 export interface SolicitudDocenteRequest {
   idCarrera: number;
   idMateria: number;
@@ -44,20 +45,13 @@ export interface Carrera {
   nombreCarrera: string;
   modalidad: string;
   estado: boolean;
-  facultad?: {
-    idFacultad: number;
-    nombreFacultad: string;
-  };
+  idFacultad?: number;
 }
 
 export interface Materia {
   idMateria: number;
   nombre: string;
   nivel: number;
-  carrera?: {
-    idCarrera: number;
-    nombreCarrera: string;
-  };
 }
 
 export interface AreaConocimiento {
@@ -65,13 +59,12 @@ export interface AreaConocimiento {
   nombreArea: string;
 }
 
-// ⭐ NUEVO: Interface simple con solo usuario_app
 export interface SolicitudConUsuario {
   usuarioApp: string;
   solicitud: SolicitudDocenteRequest;
 }
 
-// ⚠️ LEGACY: Mantener por compatibilidad (no se usa)
+// LEGACY: mantener por compatibilidad
 export interface SolicitudConCredenciales {
   usuarioBd: string;
   claveBd: string;
@@ -87,49 +80,49 @@ export class SolicitudDocenteService {
 
   constructor(private http: HttpClient) {}
 
-  // ========== CATÁLOGOS ==========
-
-  obtenerCarreras(): Observable<Carrera[]> {
-    return this.http.get<Carrera[]>(`${this.apiUrl}/carreras`);
+  // ── NUEVO: Obtener idFacultad del evaluador logueado ─────────────────
+  // Llama a GET /api/solicitudes-docente/mi-facultad?usuarioApp=...
+  // El backend lee AutoridadAcademica.idFacultad del usuario autenticado
+  obtenerMiFacultad(usuarioApp: string): Observable<{ idFacultad: number }> {
+    return this.http.get<{ idFacultad: number }>(
+      `${this.apiUrl}/solicitudes-docente/mi-facultad`,
+      { params: { usuarioApp } }
+    );
   }
 
+  // ── Carreras filtradas por facultad ──────────────────────────────────
+  // Llama a GET /api/carreras/por-facultad/{idFacultad}
+  obtenerCarrerasPorFacultad(idFacultad: number): Observable<Carrera[]> {
+    return this.http.get<Carrera[]>(`${this.apiUrl}/carreras/por-facultad/${idFacultad}`);
+  }
+
+  // ── Materias por carrera ──────────────────────────────────────────────
   obtenerMateriasPorCarrera(idCarrera: number): Observable<Materia[]> {
     return this.http.get<Materia[]>(`${this.apiUrl}/materias/carrera/${idCarrera}`);
   }
 
+  // ── Áreas de conocimiento ─────────────────────────────────────────────
   obtenerAreasConocimiento(): Observable<AreaConocimiento[]> {
     return this.http.get<AreaConocimiento[]>(`${this.apiUrl}/areas-conocimiento`);
   }
 
-  // ========== SOLICITUDES - MÉTODO ACTUALIZADO ==========
-
-  /**
-   * ⭐ NUEVO: Método simplificado que solo usa usuario_app
-   */
+  // ── Crear solicitud ───────────────────────────────────────────────────
   crearSolicitud(request: SolicitudConUsuario): Observable<SolicitudDocenteResponse> {
-
     return this.http.post<SolicitudDocenteResponse>(
       `${this.apiUrl}/solicitudes-docente`,
       request
     );
   }
 
-  /**
-   * ⚠️ LEGACY: Método antiguo mantenido por compatibilidad
-   * Ahora solo convierte y llama al nuevo método
-   */
+  // LEGACY
   crearSolicitudConCredenciales(request: SolicitudConCredenciales): Observable<SolicitudDocenteResponse> {
-    // Convertir al nuevo formato (ignora credenciales, usa solo usuarioBd como usuarioApp)
-    const nuevoRequest: SolicitudConUsuario = {
+    return this.crearSolicitud({
       usuarioApp: request.usuarioBd,
-      solicitud: request.solicitud
-    };
-
-    return this.crearSolicitud(nuevoRequest);
+      solicitud:  request.solicitud
+    });
   }
 
-  // ========== OTROS MÉTODOS ==========
-
+  // ── Consultas ─────────────────────────────────────────────────────────
   obtenerTodasLasSolicitudes(): Observable<SolicitudDocenteResponse[]> {
     return this.http.get<SolicitudDocenteResponse[]>(`${this.apiUrl}/solicitudes-docente`);
   }
@@ -144,9 +137,9 @@ export class SolicitudDocenteService {
     );
   }
 
-  obtenerSolicitudesPorAutoridad(idAutoridad: number): Observable<SolicitudDocenteResponse[]> {
+  obtenerSolicitudesDisponibles(): Observable<SolicitudDocenteResponse[]> {
     return this.http.get<SolicitudDocenteResponse[]>(
-      `${this.apiUrl}/solicitudes-docente/autoridad/${idAutoridad}`
+      `${this.apiUrl}/solicitudes-docente/disponibles-para-convocatoria`
     );
   }
 

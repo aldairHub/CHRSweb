@@ -169,12 +169,20 @@ export class SolicitudesDocenteComponent implements OnInit {
         this.filtrar();
         this.procesando = false;
         this.cdr.detectChanges();
+        // Toast de confirmación
+        const accionLabel = this.accionPendiente === 'aprobada' ? 'aprobada' : 'rechazada';
+        const materia = updated.nombreMateria ?? 'la solicitud';
+        this.toast.success(
+          `Solicitud ${accionLabel}`,
+          `${materia} ha sido ${accionLabel} correctamente.`
+        );
         this.cancelarConfirm();
       },
       error: err => {
-        this.cargando = false;
-        console.error('Error cambiando estado', err);
         this.procesando = false;
+        const msg = err?.error?.mensaje || 'No se pudo cambiar el estado.';
+        this.toast.error('Error', msg);
+        this.cdr.detectChanges();
       }
     });
   }

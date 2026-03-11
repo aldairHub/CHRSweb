@@ -1,7 +1,3 @@
-// src/app/modulos/admin/gestion-roles/gestion-roles.ts
-//
-// Reemplaza roles-autoridad/roles-autoridad.ts
-// Gestión de roles_app ↔ roles_bd
 
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -99,19 +95,22 @@ export class GestionRolesComponent implements OnInit {
     this.cargando = true;
     this.svc.listar().subscribe({
       next: data => {
-        this.cargando = true;
+        this.cargando = false;
         this.roles = Array.isArray(data) ? data : [];
         this.applyFilters();
         this.cdr.detectChanges();
       },
-      error: err => console.error('Error cargando roles_app:', err)
+      error: err =>{
+        this.cargando = false;
+        console.error('Error cargando roles_app:', err);
+      }
     });
   }
   loadRolesBd(): void {
     this.svc.listarRolesBdConDescripcion().subscribe({
-        next: (data) => {
-          this.rolesBdDisponibles = data;
-          this.cdr.detectChanges();
+      next: (data) => {
+        this.rolesBdDisponibles = data;
+        this.cdr.detectChanges();
 
       },
       error: err => console.error('Error cargando roles BD:', err)
@@ -120,7 +119,6 @@ export class GestionRolesComponent implements OnInit {
   loadModulos(): void {
     this.svc.listarModulos().subscribe({
       next: data => {
-        this.cargando = false;
         this.modulosDisponibles = Array.isArray(data) ? data : [];
         this.cdr.detectChanges();
       },

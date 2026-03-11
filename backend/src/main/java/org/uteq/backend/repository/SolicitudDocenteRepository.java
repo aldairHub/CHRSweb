@@ -41,4 +41,18 @@ public interface SolicitudDocenteRepository extends JpaRepository<SolicitudDocen
 
     @Query("SELECT s FROM SolicitudDocente s WHERE s.carrera.facultad.idFacultad = :idFacultad AND s.estadoSolicitud = :estado")
     List<SolicitudDocente> findByFacultadIdAndEstado(@Param("idFacultad") Long idFacultad, @Param("estado") String estado);
+    // Excluye las solicitudes que ya están asociadas a convocatorias activas.
+    // JOIN FETCH carga carrera→facultad, materia y area dentro de la misma sesión JPA
+    // para evitar LazyInitializationException al mapear el DTO.
+    @Query("""
+        SELECT DISTINCT s FROM SolicitudDocente s
+        JOIN FETCH s.carrera c
+        JOIN FETCH c.facultad
+        JOIN FETCH s.materia
+        JOIN FETCH s.area
+        WHERE s.estadoSolicitud = 'aprobada'
+        AND s.idSolicitud NOT IN :idsOcupados
+    """)
+    List<SolicitudDocente> findDisponiblesParaConvocatoria(
+            @Param("idsOcupados") List<Long> idsOcupados);
 }
