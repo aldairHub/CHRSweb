@@ -264,6 +264,12 @@ export const routes: Routes = [
         title: 'SSDC - Institución',
         loadComponent: () => import('./modulos/admin/config-institucion/config-institucion').then(m => m.ConfigInstitucionComponent)
       },
+      {
+        path: 'backup',
+        title: 'SSDC - Respaldos',
+        loadComponent: () => import('./modulos/admin/backup/backup')
+          .then(m => m.BackupComponent)
+      },
       // Alias de compatibilidad
       { path: 'roles-autoridad', redirectTo: 'gestion-roles', pathMatch: 'full' },
     ]

@@ -1,0 +1,346 @@
+<div class="backup-page">
+
+  <!-- HEADER -->
+  <div class="backup-header">
+    <div>
+      <h1 class="backup-title">Gestión de Respaldos</h1>
+      <p class="backup-subtitle">Configura, programa y monitorea los backups de la base de datos</p>
+    </div>
+    <button class="btn-manual" (click)="ejecutarManual()" [disabled]="ejecutando">
+      <svg *ngIf="!ejecutando" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+      </svg>
+      <span class="spinner" *ngIf="ejecutando"></span>
+      {{ ejecutando ? 'Ejecutando...' : 'Backup manual' }}
+    </button>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div class="status-bar" [class.status-active]="config.activo" [class.status-inactive]="!config.activo">
+    <span class="status-dot"></span>
+    <span>{{ statusLabel }}</span>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn" [class.active]="activeTab === 'config'" (click)="activeTab='config'">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+      Configuración
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'historial'" (click)="activeTab='historial'; cargarHistorial()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+      </svg>
+      Historial
+    </button>
+  </div>
+
+  <!-- ===================== CONFIG TAB ===================== -->
+  <div *ngIf="activeTab === 'config'" class="config-content">
+
+    <!-- SECCIÓN: pg_dump -->
+    <div class="config-section">
+      <div class="section-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></div>
+      <div class="section-body">
+        <h3>Ruta de pg_dump</h3>
+        <p>Ruta completa al ejecutable pg_dump de PostgreSQL</p>
+        <div class="field-row">
+          <div class="field-full">
+            <label>Ruta ejecutable pg_dump</label>
+            <input type="text" [(ngModel)]="config.rutaPgdump"
+                   placeholder="C:\Program Files\PostgreSQL\18\bin\pg_dump.exe" class="input-text"/>
+            <span class="field-hint">Ejemplo: C:\Program Files\PostgreSQL\18\bin\pg_dump.exe</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: Ruta origen -->
+    <div class="config-section">
+      <div class="section-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg></div>
+      <div class="section-body">
+        <h3>Carpeta de backups</h3>
+        <p>Carpeta local donde se generan los archivos .zip</p>
+        <div class="field-row">
+          <div class="field-full">
+            <label>Ruta de origen</label>
+            <input type="text" [(ngModel)]="config.rutaOrigen"
+                   placeholder="C:\Backups" class="input-text"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: Tipo de backup -->
+    <div class="config-section">
+      <div class="section-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg></div>
+      <div class="section-body">
+        <h3>Tipo de backup</h3>
+        <p>Cómo se realiza el backup de la base de datos</p>
+        <div class="tipo-options">
+          <div class="tipo-card" [class.selected]="config.tipoBackup === 'COMPLETO'"
+               (click)="config.tipoBackup = 'COMPLETO'">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+            </svg>
+            <span class="tipo-name">Completo</span>
+            <span class="tipo-desc">Exporta toda la BD</span>
+          </div>
+          <div class="tipo-card" [class.selected]="config.tipoBackup === 'INCREMENTAL'"
+               (click)="config.tipoBackup = 'INCREMENTAL'">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+            </svg>
+            <span class="tipo-name">Incremental</span>
+            <span class="tipo-desc">Solo cambios desde el último</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: Destino -->
+    <div class="config-section">
+      <div class="section-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg></div>
+      <div class="section-body">
+        <h3>Destino del backup <span class="opt-tag">(opcional)</span></h3>
+        <p>Elige a dónde copiar o enviar el ZIP además de la carpeta de backups. Haz click en la opción activa para desactivarla.</p>
+        <div class="destino-options">
+
+          <div class="destino-card" [class.selected]="config.tipoDestino === 'LOCAL'"
+               (click)="toggleDestino('LOCAL')">
+            <span class="destino-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg></span>
+            <span class="destino-name">Local / Pendrive</span>
+            <span class="destino-desc">Copia a otra ruta o unidad</span>
+          </div>
+
+          <div class="destino-card" [class.selected]="config.tipoDestino === 'EMAIL'"
+               (click)="toggleDestino('EMAIL')">
+            <span class="destino-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></span>
+            <span class="destino-name">Correo electrónico</span>
+            <span class="destino-desc">ZIP adjunto al email</span>
+          </div>
+
+        </div>
+
+        <!-- Sin destino seleccionado -->
+        <div *ngIf="!config.tipoDestino || config.tipoDestino === 'NINGUNO'" class="destino-info destino-none">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          El ZIP quedará solo en la carpeta de backups configurada arriba.
+        </div>
+
+        <!-- LOCAL: campo de ruta destino -->
+        <div *ngIf="config.tipoDestino === 'LOCAL'" class="destino-fields">
+          <label>Ruta de destino</label>
+          <input type="text" [(ngModel)]="config.rutaDestino"
+                 placeholder="D:\MiPendrive\Backups  o  \\servidor\backups" class="input-text"/>
+          <span class="field-hint">Puede ser un pendrive, carpeta de red, unidad USB, etc. Opcional — si lo dejas vacío el ZIP solo queda en la carpeta origen.</span>
+        </div>
+
+        <!-- EMAIL: chips/tags -->
+        <div *ngIf="config.tipoDestino === 'EMAIL'" class="destino-fields">
+          <label>Correos de destino</label>
+          <div class="email-chips-box" [class.has-error]="emailInputError">
+            <span *ngFor="let chip of emailChips; let i = index; trackBy: trackByIndex" class="email-chip">
+              <span class="chip-text">{{ chip }}</span>
+              <button type="button" class="chip-remove" (click)="quitarEmailChip(i)" title="Quitar">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="12" height="12">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </span>
+            <input type="email" [(ngModel)]="emailInput"
+                   (keydown)="onEmailKeydown($event)"
+                   (input)="emailInputError = ''"
+                   placeholder="{{ emailChips.length === 0 ? 'admin@uteq.edu.ec' : 'Otro correo...' }}"
+                   class="chip-input"/>
+            <button type="button" class="chip-add-inline" (click)="agregarEmailChip()" [disabled]="!emailInput.trim()" title="Agregar">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+              </svg>
+            </button>
+          </div>
+          <span *ngIf="emailInputError" class="field-error">{{ emailInputError }}</span>
+          <span *ngIf="!emailInputError" class="field-hint">
+            Escribe un email y presiona <kbd>Enter</kbd> para agregarlo.
+          </span>
+          <div *ngIf="emailChips.length === 0 && !emailInput" class="email-empty">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            Aún no has agregado ningún correo
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECCIÓN: Retención -->
+    <div class="config-section">
+      <div class="section-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></div>
+      <div class="section-body">
+        <h3>Retención automática</h3>
+        <p>Elimina backups más antiguos de X días automáticamente</p>
+        <div class="toggle-row">
+          <label class="toggle-label">Activar retención</label>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="config.retencionActiva"/>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div *ngIf="config.retencionActiva" class="field-row mt-8">
+          <div class="field-small">
+            <label>Días a conservar</label>
+            <input type="number" [(ngModel)]="config.diasRetencion" min="1" max="365" class="input-text"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: Horario -->
+    <div class="config-section">
+      <div class="section-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+      <div class="section-body">
+        <h3>Horario automático</h3>
+        <p>Cuántas veces al día se ejecuta el backup automáticamente</p>
+        <div class="toggle-row mb-12">
+          <label class="toggle-label">Respaldo automático activo</label>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="config.activo"/>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div *ngIf="config.activo">
+          <div class="num-ejecuciones">
+            <label>Ejecuciones por día</label>
+            <div class="num-options">
+              <button class="num-btn" [class.selected]="config.numEjecuciones === 1"
+                      (click)="config.numEjecuciones = 1">1 vez</button>
+              <button class="num-btn" [class.selected]="config.numEjecuciones === 2"
+                      (click)="config.numEjecuciones = 2">2 veces</button>
+              <button class="num-btn" [class.selected]="config.numEjecuciones === 3"
+                      (click)="config.numEjecuciones = 3">3 veces</button>
+            </div>
+          </div>
+
+          <div class="horas-row">
+            <div class="hora-field">
+              <label>1er backup</label>
+              <input type="time" [(ngModel)]="config.horaBackup1" class="input-time"/>
+            </div>
+            <div class="hora-field" *ngIf="config.numEjecuciones >= 2">
+              <label>2do backup</label>
+              <input type="time" [(ngModel)]="config.horaBackup2" class="input-time"/>
+            </div>
+            <div class="hora-field" *ngIf="config.numEjecuciones >= 3">
+              <label>3er backup</label>
+              <input type="time" [(ngModel)]="config.horaBackup3" class="input-time"/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: Notificaciones -->
+    <div class="config-section">
+      <div class="section-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg></div>
+      <div class="section-body">
+        <h3>Notificaciones</h3>
+        <p>Recibe alertas en el sistema cuando ocurra un evento</p>
+        <div class="toggle-row">
+          <label class="toggle-label">Notificar errores</label>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="config.notificarError"/>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <label class="toggle-label">Notificar éxito</label>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="config.notificarExito"/>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- GUARDAR -->
+    <div class="save-row">
+      <button class="btn-save" (click)="guardarConfig()" [disabled]="guardando">
+        <span class="spinner" *ngIf="guardando"></span>
+        {{ guardando ? 'Guardando...' : 'Guardar configuración' }}
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ===================== HISTORIAL TAB ===================== -->
+  <div *ngIf="activeTab === 'historial'" class="historial-content">
+    <div class="historial-card">
+      <div class="historial-header">
+        <div class="historial-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div>
+        <div>
+          <h3>Historial de ejecuciones</h3>
+          <p>Últimos 50 backups realizados</p>
+        </div>
+      </div>
+
+      <div *ngIf="historial.length === 0" class="empty-state">
+        <span>No hay backups registrados aún</span>
+      </div>
+
+      <div *ngIf="historial.length > 0" class="historial-table-wrap">
+        <table class="historial-table">
+          <thead>
+          <tr>
+            <th>Estado</th>
+            <th>Tipo</th>
+            <th>Origen</th>
+            <th>Fecha</th>
+            <th>Tamaño</th>
+            <th>Duración</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let h of historial" class="historial-row">
+            <td>
+                <span class="badge"
+                      [class.badge-ok]="h.estado === 'EXITOSO'"
+                      [class.badge-fail]="h.estado === 'FALLIDO'"
+                      [class.badge-has-error]="h.mensajeError"
+                      [title]="h.mensajeError || ''">
+                  {{ h.estado }}
+                  <span *ngIf="h.mensajeError" class="badge-error-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="10" height="10">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  </span>
+                  <span *ngIf="h.mensajeError" class="badge-tooltip">{{ h.mensajeError }}</span>
+                </span>
+            </td>
+            <td>{{ h.tipoBackup }}</td>
+            <td>
+                <span class="origen-badge" [class.manual]="h.origen === 'MANUAL'">
+                  {{ h.origen }}
+                </span>
+            </td>
+            <td>{{ h.fechaInicio | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ h.tamanoFormateado }}</td>
+            <td>{{ h.duracionFormateada }}</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>

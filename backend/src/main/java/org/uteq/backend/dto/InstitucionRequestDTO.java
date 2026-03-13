@@ -9,6 +9,7 @@ public class InstitucionRequestDTO {
     private String correo;
     private String telefono;
     private String appName;
+    private String nombreCorto;
     private String emailSmtp;
     private String gmailPassword;
     private String emailHost;

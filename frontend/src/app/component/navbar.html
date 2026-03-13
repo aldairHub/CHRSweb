@@ -7,8 +7,8 @@
       class="logo"
       (error)="onLogoError($event)">
     <div class="brand-text">
-      <h1>UTEQ</h1>
-      <span>Sistema de selección docente</span>
+      <h1>{{ (nombreCorto$ | async) || (logoService.getNombre() | async) || 'SSDC' }}</h1>
+      <span>{{ appSubtitulo }}</span>
     </div>
   </div>
 

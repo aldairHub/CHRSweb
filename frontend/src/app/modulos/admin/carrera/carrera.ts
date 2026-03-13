@@ -1,8 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { FooterComponent } from '../../../component/footer.component';
-import { NavbarComponent } from '../../../component/navbar';
 import { ToastComponent } from '../../../component/toast.component';
 import { ToastService } from '../../../services/toast.service';
 import { CarreraService } from '../../../services/carrera.service';
@@ -10,7 +8,7 @@ import { FacultadService } from '../../../services/facultad.service';
 @Component({
   selector: 'app-carrera',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, ToastComponent],
+  imports: [CommonModule, FormsModule, ToastComponent],
   templateUrl: './carrera.html',
   styleUrls: ['./carrera.scss']
 })

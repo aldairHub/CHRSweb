@@ -1,13 +1,12 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NavbarComponent } from '../../component/navbar';
 import { UsuarioService } from '../../services/usuario.service';
 
 @Component({
   selector: 'app-perfil',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './perfil.html',
   styleUrls: ['./perfil.scss']
 })

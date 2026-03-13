@@ -2,16 +2,16 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NavbarComponent } from '../../../component/navbar';
 import { ToastComponent } from '../../../component/toast.component';
 import { ToastService } from '../../../services/toast.service';
 import { InstitucionAdminService, InstitucionConfig } from '../../../services/institucion-admin.service';
+import { LogoService } from '../../../services/logo.service';
 import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-config-institucion',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, ToastComponent],
+  imports: [CommonModule, FormsModule, ToastComponent],
   templateUrl: './config-institucion.html',
   styleUrls: ['./config-institucion.scss']
 })
@@ -33,15 +33,17 @@ export class ConfigInstitucionComponent implements OnInit {
     emailPort: 587,
     emailSsl: false,
     imagenFondoUrl: '',
+    nombreCorto: '',
   };
 
   logoFile: File | null = null;
   logoPreview: string | null = null;
 
   constructor(
-    private svc:   InstitucionAdminService,
-    private cdr:   ChangeDetectorRef,
-    private toast: ToastService
+    private svc:        InstitucionAdminService,
+    private cdr:        ChangeDetectorRef,
+    private toast:      ToastService,
+    private logoService: LogoService
   ) {}
 
   ngOnInit(): void {
@@ -77,6 +79,7 @@ export class ConfigInstitucionComponent implements OnInit {
     this.form.emailSsl          = data.emailSsl          ?? false;
     this.form.gmailPassword     = '';
     this.form.imagenFondoUrl = data.imagenFondoUrl ?? '';
+    this.form.nombreCorto    = (data as any).nombreCorto  ?? '';
   }
 
   onLogoSeleccionado(event: Event): void {
@@ -133,6 +136,7 @@ export class ConfigInstitucionComponent implements OnInit {
                 next: (res) => {
                   this.config!.logoUrl = res.logoUrl;
                   this.logoFile = null;
+                  this.logoService.cargar();
                   this.mostrarMensaje('success', 'Configuración y logo guardados correctamente.');
                 },
                 error: () => {
@@ -140,6 +144,7 @@ export class ConfigInstitucionComponent implements OnInit {
                 }
               });
           } else {
+            this.logoService.cargar();
             this.mostrarMensaje('success', 'Configuración guardada correctamente.');
           }
         },

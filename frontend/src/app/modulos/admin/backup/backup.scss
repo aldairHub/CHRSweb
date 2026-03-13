@@ -1,0 +1,870 @@
+$green: #00A63E;
+$green-dark: #007a2d;
+$green-light: #e8f5ee;
+$red: #ef4444;
+$gray: #6b7280;
+$border: #e2e8f0;
+$radius: 12px;
+
+.backup-page {
+  padding: 24px;
+  max-width: 860px;
+  margin: 0 auto;
+  padding-bottom: 80px; // espacio para footer fijo
+}
+
+// ── HEADER ──────────────────────────────────────────────────
+.backup-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.backup-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: $green;
+  margin: 0 0 4px;
+}
+
+.backup-subtitle {
+  font-size: 13px;
+  color: $gray;
+  margin: 0;
+}
+
+.btn-manual {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: $green;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+  svg { width: 18px; height: 18px; }
+  &:hover:not(:disabled) { background: $green-dark; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+// ── STATUS BAR ───────────────────────────────────────────────
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 20px;
+
+  &.status-active  { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+  &.status-inactive { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
+}
+
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0;
+  .status-active &  { background: #16a34a; box-shadow: 0 0 6px #16a34a; }
+  .status-inactive & { background: $red; box-shadow: 0 0 6px $red; }
+}
+
+// ── TABS ─────────────────────────────────────────────────────
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid $border;
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-size: 14px;
+  font-weight: 500;
+  color: $gray;
+  cursor: pointer;
+  transition: all 0.2s;
+  svg { width: 16px; height: 16px; }
+
+  &.active {
+    color: $green;
+    border-bottom-color: $green;
+    font-weight: 600;
+  }
+  &:hover:not(.active) { color: #374151; }
+}
+
+// ── CONFIG SECTIONS ──────────────────────────────────────────
+.config-section {
+  display: flex;
+  gap: 16px;
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 20px;
+  margin-bottom: 14px;
+  transition: box-shadow 0.2s;
+  &:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+}
+
+.section-icon {
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $green-light;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.section-body {
+  flex: 1;
+  h3 { font-size: 15px; font-weight: 600; margin: 0 0 4px; color: #111; }
+  p  { font-size: 12px; color: $gray; margin: 0 0 14px; }
+}
+
+// ── FIELDS ───────────────────────────────────────────────────
+.field-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.field-full { flex: 1; min-width: 200px; }
+.field-small { width: 140px; }
+
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.input-text, .input-time {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  border: 1px solid $border;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fafafa;
+  transition: border 0.2s;
+  &:focus { outline: none; border-color: $green; background: #fff; }
+}
+
+.field-hint {
+  font-size: 11px;
+  color: $gray;
+  margin-top: 4px;
+  display: block;
+}
+
+// ── TIPO OPTIONS ─────────────────────────────────────────────
+.tipo-options {
+  display: flex;
+  gap: 12px;
+}
+
+.tipo-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px;
+  border: 2px solid $border;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  svg { width: 28px; height: 28px; color: $gray; }
+  .tipo-name { font-size: 14px; font-weight: 600; color: #111; }
+  .tipo-desc  { font-size: 11px; color: $gray; }
+
+  &.selected {
+    border-color: $green;
+    background: $green-light;
+    svg { color: $green; }
+    .tipo-name { color: $green; }
+  }
+  &:hover:not(.selected) { border-color: #9ca3af; }
+}
+
+// ── DESTINO OPTIONS ──────────────────────────────────────────
+.destino-options {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.destino-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px;
+  border: 2px solid $border;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  .destino-icon { font-size: 24px; }
+  .destino-name { font-size: 13px; font-weight: 600; color: #111; }
+  .destino-desc { font-size: 11px; color: $gray; }
+
+  &.selected {
+    border-color: $green;
+    background: $green-light;
+    .destino-name { color: $green; }
+  }
+  &:hover:not(.selected) { border-color: #9ca3af; }
+}
+
+.destino-fields { margin-top: 4px; }
+
+// ── EMAIL CHIPS ───────────────────────────────────────────────
+.email-chips-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 7px 10px;
+  border: 1px solid $border;
+  border-radius: 8px;
+  background: #fafafa;
+  cursor: text;
+  transition: border 0.2s, box-shadow 0.2s;
+
+  &:focus-within {
+    border-color: $green;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 166, 62, 0.08);
+  }
+
+  &.has-error {
+    border-color: $red;
+    background: #fff8f8;
+  }
+}
+
+.email-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: $green-light;
+  border: 1px solid #c8e8d4;
+  color: $green-dark;
+  border-radius: 20px;
+  padding: 3px 8px 3px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  max-width: 240px;
+  animation: chipIn 0.15s ease;
+}
+
+@keyframes chipIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.chip-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip-remove {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: rgba(0, 122, 45, 0.15);
+  border: none;
+  color: $green-dark;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: $red;
+    color: #fff;
+  }
+}
+
+.chip-input {
+  flex: 1;
+  min-width: 160px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  color: #374151;
+  padding: 2px 0;
+
+  &::placeholder { color: #9ca3af; }
+}
+
+.chip-add-inline {
+  flex-shrink: 0;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px;
+  border: 1px solid #d1fae5;
+  background: #f0fdf4;
+  color: $green;
+  cursor: pointer;
+  transition: all 0.15s;
+  padding: 0;
+
+  &:hover:not(:disabled) {
+    background: $green;
+    border-color: $green;
+    color: #fff;
+  }
+  &:disabled { opacity: 0.3; cursor: not-allowed; }
+}
+
+.field-error {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: $red;
+}
+
+.btn-chip-add {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: $green;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  vertical-align: middle;
+  transition: background 0.15s;
+  &:hover:not(:disabled) { background: $green-dark; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  font-size: 10px;
+  font-family: monospace;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  color: #475569;
+  vertical-align: middle;
+}
+
+.email-empty {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #9ca3af;
+  svg { color: #cbd5e1; }
+}
+
+.destino-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #166534;
+  svg { flex-shrink: 0; color: #16a34a; }
+
+  &.destino-none {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    color: #64748b;
+    svg { color: #94a3b8; }
+  }
+}
+
+// ── TOGGLE ───────────────────────────────────────────────────
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.toggle-label { font-size: 13px; color: #374151; font-weight: 500; }
+
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  input { opacity: 0; width: 0; height: 0; }
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: #cbd5e1;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background 0.2s;
+  &::before {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    left: 3px; top: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+}
+
+input:checked + .slider {
+  background: $green;
+  &::before { transform: translateX(20px); }
+}
+
+// ── EJECUCIONES ──────────────────────────────────────────────
+.num-ejecuciones { margin-bottom: 14px; }
+
+.num-options {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.num-btn {
+  padding: 7px 16px;
+  border: 2px solid $border;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &.selected {
+    border-color: $green;
+    background: $green-light;
+    color: $green;
+    font-weight: 700;
+  }
+  &:hover:not(.selected) { border-color: #9ca3af; }
+}
+
+.horas-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.hora-field {
+  width: 140px;
+  label { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 6px; display: block; }
+}
+
+// ── SAVE ─────────────────────────────────────────────────────
+.save-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.btn-save {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: $green;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover:not(:disabled) { background: $green-dark; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+// ── HISTORIAL ────────────────────────────────────────────────
+.historial-card {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 20px;
+}
+
+.historial-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  h3 { font-size: 15px; font-weight: 600; margin: 0 0 3px; }
+  p  { font-size: 12px; color: $gray; margin: 0; }
+}
+
+.historial-icon {
+  font-size: 24px;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  background: $green-light;
+  border-radius: 10px;
+}
+
+.historial-table-wrap { overflow-x: auto; }
+
+.historial-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: $gray;
+    border-bottom: 2px solid $border;
+    letter-spacing: 0.5px;
+  }
+
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #374151;
+  }
+}
+
+.historial-row:hover td { background: #f9fafb; }
+
+.badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  &.badge-ok   { background: #dcfce7; color: #166534; }
+  &.badge-fail { background: #fee2e2; color: #991b1b; }
+}
+
+.badge-error-icon {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.7;
+}
+
+.badge-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e1e1e;
+  color: #fca5a5;
+  font-size: 11px;
+  font-weight: 400;
+  text-transform: none;
+  white-space: nowrap;
+  max-width: 340px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 6px 10px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  z-index: 100;
+  pointer-events: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%; left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #1e1e1e;
+  }
+}
+
+.badge.badge-has-error:hover .badge-tooltip { display: block; }
+
+.origen-badge {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #475569;
+  &.manual { background: #eff6ff; color: #1d4ed8; }
+}
+
+.error-msg {
+  font-size: 12px;
+  color: #991b1b;
+  background: #fff1f1;
+  padding: 6px 12px !important;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: $gray;
+  font-size: 14px;
+}
+
+// ── SPINNER ──────────────────────────────────────────────────
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── UTILS ────────────────────────────────────────────────────
+.mt-8  { margin-top: 8px; }
+.mb-12 { margin-bottom: 12px; }
+.hidden { display: none; }
+
+// ── DARK MODE ────────────────────────────────────────────────
+//
+// IMPORTANTE: Los SVG usan stroke="currentColor" en los <path>.
+// "currentColor" hereda de la propiedad CSS "color", NO de "stroke".
+// Por eso siempre se usa "color: #xxx" para controlar el color del SVG.
+//
+:host-context(html.dark),
+html.dark {
+
+  .backup-page { background: transparent !important; }
+
+  // ── Encabezado ──────────────────────────────────────────────
+  .backup-title    { color: #00D149 !important; }
+  .backup-subtitle { color: #888 !important; }
+  .btn-manual {
+    background: #00A63E !important;
+    color: #fff !important;
+    &:hover:not(:disabled) { background: #007a2d !important; }
+  }
+
+  // ── Barra de estado ─────────────────────────────────────────
+  .status-bar.status-active   { background: #052e16 !important; color: #86efac !important; border-color: #166534 !important; }
+  .status-bar.status-inactive { background: #2d1a1a !important; color: #fca5a5 !important; border-color: #7f1d1d !important; }
+
+  // ── Tabs ────────────────────────────────────────────────────
+  .tabs { border-bottom-color: #222 !important; }
+  .tab-btn {
+    color: #555 !important;
+    background: transparent !important;
+    svg { color: inherit !important; }
+    &.active { color: #00D149 !important; border-bottom-color: #00D149 !important; }
+    &:hover:not(.active) { color: #aaa !important; }
+  }
+
+  // ── Tarjetas de sección ─────────────────────────────────────
+  .config-section {
+    background: #161616 !important;
+    border-color: #2a2a2a !important;
+    &:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; border-color: #333 !important; }
+  }
+
+  .historial-card {
+    background: #161616 !important;
+    border-color: #2a2a2a !important;
+  }
+
+  // ── Íconos de sección ───────────────────────────────────────
+  .section-icon {
+    background: #0d1f12 !important;
+    color: #00A63E !important;
+    svg { color: inherit !important; }
+  }
+
+  .historial-icon {
+    background: #0d1f12 !important;
+    color: #00A63E !important;
+    svg { color: inherit !important; }
+  }
+
+  // ── Cuerpo de sección ───────────────────────────────────────
+  .section-body {
+    h3 { color: #f0f0f0 !important; }
+    p  { color: #888 !important; }
+  }
+
+  // ── Formulario ──────────────────────────────────────────────
+  label { color: #9ca3af !important; }
+
+  .input-text, .input-time {
+    background: #0d0d0d !important;
+    border-color: #2a2a2a !important;
+    color: #e5e7eb !important;
+    &:focus { border-color: #00A63E !important; background: #161616 !important; }
+    &::placeholder { color: #444 !important; }
+  }
+
+  .field-hint  { color: #555 !important; }
+  .field-error { color: #f87171 !important; }
+
+  // ── Tipo backup (cards) ─────────────────────────────────────
+  .tipo-card {
+    background: #1a1a1a !important;
+    border-color: #2a2a2a !important;
+    color: #555 !important;
+    .tipo-name { color: #9ca3af !important; }
+    .tipo-desc  { color: #555 !important; }
+    svg { color: inherit !important; }
+
+    &.selected {
+      background: #0d1f12 !important;
+      border-color: #00A63E !important;
+      color: #00D149 !important;
+      .tipo-name { color: #00D149 !important; }
+    }
+    &:hover:not(.selected) { border-color: #3a3a3a !important; background: #1e1e1e !important; color: #777 !important; }
+  }
+
+  // ── Destino backup (cards) ──────────────────────────────────
+  .destino-card {
+    background: #1a1a1a !important;
+    border-color: #2a2a2a !important;
+    color: #555 !important;
+    .destino-name { color: #9ca3af !important; }
+    .destino-desc { color: #555 !important; }
+    svg { color: inherit !important; }
+
+    &.selected {
+      background: #0d1f12 !important;
+      border-color: #00A63E !important;
+      color: #00D149 !important;
+      .destino-name { color: #00D149 !important; }
+    }
+    &:hover:not(.selected) { border-color: #3a3a3a !important; background: #1e1e1e !important; color: #777 !important; }
+  }
+
+  // ── Botones numéricos de horario ─────────────────────────────
+  .num-btn {
+    border-color: #2a2a2a !important;
+    color: #6b7280 !important;
+    background: #1a1a1a !important;
+    &.selected { background: #0d1f12 !important; color: #00D149 !important; border-color: #00A63E !important; }
+    &:hover:not(.selected) { border-color: #3a3a3a !important; }
+  }
+
+  // ── Toggle retención ────────────────────────────────────────
+  .toggle-label { color: #9ca3af !important; }
+  .slider { background: #2a2a2a !important; }
+
+  // ── Destino info ────────────────────────────────────────────
+  .destino-info {
+    background: #0d1f12 !important;
+    border-color: #166534 !important;
+    color: #86efac !important;
+    svg { color: inherit !important; }
+    &.destino-none {
+      background: #161616 !important;
+      border-color: #2a2a2a !important;
+      color: #3a3a3a !important;
+    }
+  }
+
+  // ── Botón guardar ────────────────────────────────────────────
+  .btn-save {
+    background: #00A63E !important;
+    color: #fff !important;
+    &:hover:not(:disabled) { background: #007a2d !important; }
+    &:disabled { opacity: 0.5 !important; }
+  }
+
+  // ── Historial ────────────────────────────────────────────────
+  .historial-table {
+    thead tr { background: #0d0d0d !important; }
+    th { border-bottom-color: #222 !important; color: #555 !important; }
+    td { border-bottom-color: #1e1e1e !important; color: #c0c0c0 !important; }
+  }
+  .historial-row:hover td { background: #1c1c1c !important; }
+  .historial-header {
+    h3 { color: #f0f0f0 !important; }
+    p  { color: #888 !important; }
+  }
+
+  .badge.badge-ok   { background: #052e16 !important; color: #86efac !important; }
+  .badge.badge-fail { background: #2d1a1a !important; color: #fca5a5 !important; }
+  .origen-badge     { background: #1e293b !important; color: #94a3b8 !important; }
+  .origen-badge.manual { background: #0d1b40 !important; color: #93c5fd !important; }
+  .error-msg        { background: #180a0a !important; color: #fca5a5 !important; border-left: 2px solid #ef4444 !important; }
+
+  .empty-state { color: #555 !important; svg { color: #444 !important; } }
+
+  // ── Email chips ──────────────────────────────────────────────
+  .email-chips-box {
+    background: #0d0d0d !important;
+    border-color: #2a2a2a !important;
+    &:focus-within { border-color: #00A63E !important; background: #161616 !important; box-shadow: 0 0 0 3px rgba(0,166,62,0.08) !important; }
+    &.has-error { border-color: #ef4444 !important; background: #180808 !important; }
+  }
+  .email-chip {
+    background: #0d1f12 !important;
+    border-color: #1a3a1f !important;
+    color: #00D149 !important;
+  }
+  .chip-remove {
+    background: rgba(0,209,73,0.1) !important;
+    color: #00A63E !important;
+    &:hover { background: #ef4444 !important; color: #fff !important; }
+  }
+  .chip-input {
+    color: #e5e7eb !important;
+    &::placeholder { color: #444 !important; }
+  }
+  .chip-add-inline {
+    border-color: #1a3a1f !important;
+    background: #0d1f12 !important;
+    color: #00D149 !important;
+    &:hover:not(:disabled) { background: #00A63E !important; border-color: #00A63E !important; color: #fff !important; }
+  }
+  .email-empty { color: #444 !important; }
+
+  kbd {
+    background: #1a1a1a !important;
+    border-color: #2a2a2a !important;
+    color: #555 !important;
+  }
+}
+

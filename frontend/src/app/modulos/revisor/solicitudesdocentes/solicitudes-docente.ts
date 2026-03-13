@@ -3,8 +3,6 @@ import { Component, OnInit,ChangeDetectorRef  } from '@angular/core';
 import { CommonModule, DecimalPipe, TitleCasePipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { NavbarComponent } from '../../../component/navbar';
-import { FooterComponent } from '../../../component/footer.component';
 import { environment } from '../../../../environments/environment';
 import { ToastService } from '../../../services/toast.service';
 import { ToastComponent } from '../../../component/toast.component';
@@ -36,7 +34,7 @@ export interface SolicitudDocenteResponseDTO {
 @Component({
   selector: 'app-solicitudes-docente',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent,
+  imports: [CommonModule, FormsModule,
     DecimalPipe, TitleCasePipe, DatePipe, ToastComponent],
   templateUrl: './solicitudes-docente.html',
   styleUrls:  ['./solicitudes-docente.scss']

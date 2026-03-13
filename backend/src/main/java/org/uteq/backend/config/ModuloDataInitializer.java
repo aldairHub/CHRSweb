@@ -48,6 +48,7 @@ public class ModuloDataInitializer implements ApplicationRunner {
         op(adm,"Gestión Opciones",  "Configurar módulos y opciones","/gestion-opciones",   9);
         op(adm,"Configuración institucional",  "Configurar datos de la institución","/config-institucion",   10);
         op(adm,"Niveles Académicos",        "Configurar niveles académicos",     "/niveles-academicos",  11);
+        op(adm,"Respaldos",        "Configurar y ver historial de respaldos",     "/backup",  12);
 
         // ── EVALUADOR ───────────────────────────────────────────────
         Modulo ev = mod("evaluador","Panel de evaluador","/evaluador",2);

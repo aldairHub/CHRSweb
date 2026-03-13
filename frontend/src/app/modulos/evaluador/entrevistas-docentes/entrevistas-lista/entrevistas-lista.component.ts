@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { NavbarComponent } from '../../../../component/navbar';
-import { FooterComponent } from '../../../../component/footer';
 
 export interface ConvocatoriaEntrevista {
   idConvocatoria: number;
@@ -19,7 +17,7 @@ export interface ConvocatoriaEntrevista {
 @Component({
   selector: 'app-entrevistas-lista',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule],
   templateUrl: './entrevistas-lista.component.html',
   styleUrls: ['./entrevistas-lista.component.scss']
 })

@@ -1,8 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NavbarComponent } from '../../../component/navbar';
-import { FooterComponent } from '../../../component/footer.component';
 import { ToastComponent } from '../../../component/toast.component';
 import { ToastService } from '../../../services/toast.service';
 import { NivelAcademicoService, NivelAcademico } from '../../../services/nivel-academico.service';
@@ -10,7 +8,7 @@ import { NivelAcademicoService, NivelAcademico } from '../../../services/nivel-a
 @Component({
   selector: 'app-gestion-niveles',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent, ToastComponent],
+  imports: [CommonModule, FormsModule, ToastComponent],
   templateUrl: './gestion-niveles.html',
   styleUrls: ['./gestion-niveles.scss']
 })

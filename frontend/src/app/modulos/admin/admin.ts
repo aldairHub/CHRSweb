@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { NavbarComponent } from '../../component/navbar';
-import { FooterComponent } from '../../component/footer.component';
 import { AuthService } from '../../services/auth.service';
 
 // ─── Estructura de una card del dashboard ────────────────────────────────────
@@ -84,6 +82,10 @@ const SVG_MAP: Record<string, Array<{ d: string }>> = {
     { d: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
   ],
 
+  'backup': [
+    { d: 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12' },
+  ],
+
 };
 
 // SVG genérico para opciones sin mapeo definido (fallback)
@@ -96,7 +98,7 @@ const SVG_FALLBACK: Array<{ d: string }> = [
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule],
   templateUrl: './admin.html',
   styleUrls: ['./admin.scss']
 })

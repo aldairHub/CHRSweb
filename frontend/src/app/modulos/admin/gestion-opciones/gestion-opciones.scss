@@ -1,26 +1,64 @@
-.opciones-layout {
+$green:       #00A63E;
+$green-dark:  #016630;
+$green-light: #e8f5ee;
+$border:      #e2e8f0;
+$radius:      12px;
+$gray:        #6b7280;
+
+// ── Page layout ──────────────────────────────────────────────
+.go-page {
+  padding: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-bottom: 80px;
+}
+
+.go-header {
+  margin-bottom: 20px;
+}
+
+.go-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: $green;
+  margin: 0 0 4px;
+}
+
+.go-subtitle {
+  font-size: 13px;
+  color: $gray;
+  margin: 0;
+}
+
+// ── Two-column layout ────────────────────────────────────────
+.go-layout {
   display: flex;
-  gap: 24px;
+  gap: 20px;
+  align-items: flex-start;
   min-height: 500px;
 }
 
-// ── Panel izquierdo ────────────────────────────────────────────────
+// ── Roles panel ──────────────────────────────────────────────
 .roles-panel {
-  width: 260px;
+  width: 230px;
   flex-shrink: 0;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: $radius;
   padding: 16px;
+  position: sticky;
+  top: 90px; // 80px navbar + 10px margen
 }
 
 .panel-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #555;
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 12px;
+  letter-spacing: 0.07em;
+  color: $gray;
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid $border;
 }
 
 .roles-list {
@@ -31,63 +69,90 @@
 
 .rol-item {
   padding: 10px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   transition: background 0.15s;
 
-  &:hover { background: #e8f5e9; }
-  &.activo { background: #43963C; .rol-nombre { color: white; } }
+  &:hover:not(.activo) { background: $green-light; }
+
+  &.activo {
+    background: $green;
+    .rol-nombre { color: #fff; font-weight: 600; }
+    .modulo-badge { background: rgba(255,255,255,0.2); color: #fff; }
+  }
 }
 
 .rol-nombre {
   display: block;
+  font-size: 13px;
   font-weight: 500;
-  font-size: 14px;
+  color: #1f2937;
 }
 
 .modulo-badge {
   display: inline-block;
-  margin-top: 2px;
-  font-size: 11px;
-  background: #e8f5e9;
-  color: #2e7d32;
-  padding: 1px 6px;
+  margin-top: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  background: $green-light;
+  color: $green-dark;
+  padding: 1px 7px;
   border-radius: 10px;
 
   &.sin-modulo {
-    background: #fce4ec;
-    color: #c62828;
+    background: #fee2e2;
+    color: #991b1b;
   }
 }
 
-// ── Panel derecho ──────────────────────────────────────────────────
+// ── Opciones panel ───────────────────────────────────────────
 .opciones-panel {
   flex: 1;
   min-width: 0;
 }
 
-.opciones-header {
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.panel-header-left {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 8px;
 
-  h2 { margin: 0; font-size: 20px; }
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+  }
 }
 
-.modulo-label {
-  font-size: 13px;
-  color: #555;
+.modulo-chip {
+  font-size: 12px;
+  color: #374151;
   background: #f0f4ff;
-  padding: 2px 10px;
-  border-radius: 12px;
+  border: 1px solid #c7d2fe;
+  padding: 3px 10px;
+  border-radius: 20px;
 }
 
-.opciones-hint {
-  font-size: 13px;
-  color: #777;
-  margin-bottom: 16px;
+.panel-hint {
+  font-size: 12px;
+  color: $gray;
+  margin: 0 0 14px;
+}
+
+// ── Table ────────────────────────────────────────────────────
+.table-wrap {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: $radius;
+  overflow: hidden;
 }
 
 .opciones-table {
@@ -95,247 +160,164 @@
   border-collapse: collapse;
   font-size: 14px;
 
+  thead tr {
+    background: #1e2a3a;
+  }
+
   th {
     text-align: left;
-    padding: 10px 12px;
-    background: #1f3864;
-    color: white;
+    padding: 12px 16px;
+    color: #fff;
+    font-size: 12px;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+
+    &.col-center { text-align: center; }
   }
 
   td {
-    padding: 10px 12px;
-    border-bottom: 1px solid #e0e0e0;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
     vertical-align: middle;
+    color: #374151;
   }
 
-  tr:nth-child(even) td { background: #f7f9ff; }
-  tr:hover td { background: #e8f5e9; }
+  tbody tr {
+    transition: background 0.12s;
 
-  .center { text-align: center; }
+    &:last-child td { border-bottom: none; }
 
-  code {
-    font-size: 12px;
-    background: #f5f5f5;
-    padding: 1px 5px;
-    border-radius: 3px;
-    color: #333;
+    &:hover td { background: #f8fafc; }
+
+    &.row-active td:first-child {
+      border-left: 3px solid $green;
+      padding-left: 13px;
+    }
   }
+
+  .col-center { text-align: center; }
 }
 
-// ── Toggle overlay ─────────────────────────────────────────────────
-.toggle-overlay {
+.op-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.op-desc {
+  font-size: 12px;
+  color: $gray;
+}
+
+.ruta-badge {
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  background: #f1f5f9;
+  color: #334155;
+  padding: 3px 8px;
+  border-radius: 5px;
+  border: 1px solid #e2e8f0;
+}
+
+// ── Toggle switch ────────────────────────────────────────────
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 23px;
+
+  input { opacity: 0; width: 0; height: 0; }
+}
+
+.slider {
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  inset: 0;
+  background: #cbd5e1;
+  border-radius: 23px;
   cursor: pointer;
+  transition: background 0.2s;
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 17px; height: 17px;
+    left: 3px; top: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
 }
 
-td { position: relative; } // Necesario para el overlay
+input:checked + .slider {
+  background: $green;
+  &::before { transform: translateX(19px); }
+}
 
-// ── Estados vacíos ─────────────────────────────────────────────────
-.empty-state, .loading-state {
-  padding: 40px;
+// ── Empty / loading states ───────────────────────────────────
+.empty-state {
   text-align: center;
-  color: #777;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border: 1px dashed #ccc;
+  padding: 50px 30px;
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: $radius;
+  color: $gray;
+
+  .empty-icon { font-size: 36px; margin-bottom: 12px; }
+  p { font-size: 14px; margin: 0 0 4px; }
+  small { font-size: 12px; color: #9ca3af; }
 }
 
-.text-muted { color: #888; }
+.spinner-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
 
+.spinner {
+  width: 28px; height: 28px;
+  border: 3px solid #e2e8f0;
+  border-top-color: $green;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: block;
+}
 
-// ── DARK MODE ─────────────────────────────────────────────
-:host-context(html.dark) {
+@keyframes spin { to { transform: rotate(360deg); } }
 
-  // Fondos generales
-  .page-container, .main-container, .content-wrapper,
-  .form-container, .card-container, .section-container,
-  .table-container, .panel, .box, .wrapper { 
-    background: #000 !important; 
-    color: #e5e5e5 !important; 
-  }
-
-  // Cards / items
-  .card, .item, .row-item, .list-item,
-  .doc-item, .solicitud-item, .postulante-item,
-  .result-item, .nivel-item, .role-item,
-  .usuario-item, .opcion-item {
-    background: #0f0f0f !important;
-    border-color: rgba(255,255,255,0.08) !important;
-    color: #e5e5e5 !important;
-  }
-
-  // Secciones / bloques
-  .section, .block, .group, .subgroup,
-  .info-block, .detail-block, .datos-block {
-    background: #0a0a0a !important;
-    border-color: rgba(255,255,255,0.07) !important;
-  }
-
-  // Tablas
-  table { background: #0a0a0a !important; color: #e5e5e5 !important; }
-  th { background: #111 !important; color: #9ca3af !important; border-color: rgba(255,255,255,0.07) !important; }
-  td { color: #d1d5db !important; border-color: rgba(255,255,255,0.05) !important; }
-  tr:hover td { background: rgba(255,255,255,0.03) !important; }
-  tr:nth-child(even) td { background: rgba(255,255,255,0.02) !important; }
-
-  // Inputs, selects, textareas
-  input, select, textarea {
+// ── Dark mode ────────────────────────────────────────────────
+html.dark {
+  .roles-panel, .table-wrap, .empty-state {
     background: #111 !important;
-    border-color: rgba(255,255,255,0.12) !important;
-    color: #e5e5e5 !important;
-    &::placeholder { color: #4b5563 !important; }
-    &:focus { border-color: rgba(0,166,62,0.5) !important; }
+    border-color: #222 !important;
   }
 
-  // Labels y textos
-  label, .label { color: #9ca3af !important; }
-  h1, h2, h3, h4, h5 { color: #f0f0f0 !important; }
-  p, span, .text, .descripcion { color: #9ca3af !important; }
-  .titulo, .nombre, .title { color: #e5e5e5 !important; }
-  strong, b { color: #d1d5db !important; }
+  .go-title { color: #00D149; }
+  .go-subtitle { color: #555; }
 
-  // Badges de estado genéricos
-  .badge, .estado-badge, .tag, .chip {
-    &.activo, &.estado-activo, &.activa    { background: rgba(0,166,62,0.2) !important; color: #4ade80 !important; }
-    &.inactivo, &.estado-inactivo          { background: rgba(107,114,128,0.2) !important; color: #9ca3af !important; }
-    &.pendiente, &.estado-pendiente        { background: rgba(217,119,6,0.2) !important; color: #fbbf24 !important; }
-    &.rechazado, &.estado-rechazado        { background: rgba(220,38,38,0.2) !important; color: #f87171 !important; }
-    &.aprobado, &.estado-aprobado,
-    &.validado, &.estado-validado          { background: rgba(22,101,52,0.2) !important; color: #86efac !important; }
-    &.subido, &.estado-subido              { background: rgba(29,78,216,0.2) !important; color: #93c5fd !important; }
-  }
-  .badge-opcional, .badge-info, .badge-secondary {
-    background: rgba(255,255,255,0.07) !important;
-    color: #9ca3af !important;
-    border-color: rgba(255,255,255,0.1) !important;
+  .rol-item:hover:not(.activo) { background: #0a1a0f; }
+  .rol-nombre { color: #d1d5db; }
+  .panel-title { color: #555; border-bottom-color: #222; }
+  .modulo-badge { background: #0a1a0f; color: #00D149; }
+  .modulo-badge.sin-modulo { background: #2d1a1a; color: #fca5a5; }
+
+  .opciones-table {
+    thead tr { background: #0a0a0a; }
+    th { color: #6b7280; }
+    td { color: #d1d5db; border-bottom-color: #1a1a1a; }
+    tbody tr:hover td { background: #161616; }
+    tbody tr.row-active td:first-child { border-left-color: #00A63E; }
   }
 
-  // Botones primarios (verde)
-  .btn-primary, .btn--primary, .btn-green, .btn-guardar,
-  .btn-enviar, .btn-confirmar, .btn-aceptar {
-    background: #00A63E !important;
-    color: #fff !important;
-    border-color: #00A63E !important;
-    &:hover:not(:disabled) { background: #009034 !important; }
-  }
+  .op-name { color: #f1f5f9; }
+  .op-desc { color: #555; }
+  .ruta-badge { background: #0a0a0a; border-color: #222; color: #6b7280; }
+  .modulo-chip { background: #0d1b40; border-color: #1e3a8a; color: #93c5fd; }
+  .panel-header-left h2 { color: #f1f5f9; }
+  .panel-hint { color: #555; }
 
-  // Botones secundarios / outline
-  .btn-secondary, .btn--secondary, .btn-outline,
-  .btn-cancelar, .btn-volver, .btn-back {
-    background: transparent !important;
-    border-color: rgba(255,255,255,0.15) !important;
-    color: #d1d5db !important;
-    &:hover:not(:disabled) { background: rgba(255,255,255,0.05) !important; }
-  }
-
-  // Botones de upload / cambiar
-  .btn-upload {
-    border-color: rgba(0,166,62,0.4) !important;
-    color: #4ade80 !important;
-    background: transparent !important;
-    &--subido, &--validado {
-      background: rgba(0,166,62,0.12) !important;
-      color: #4ade80 !important;
-    }
-    &--rechazado { border-color: rgba(220,38,38,0.4) !important; color: #f87171 !important; }
-    &:hover:not(:disabled) { background: rgba(0,166,62,0.10) !important; }
-  }
-
-  // Botones de acción (icono / pequeños)
-  .btn-action, .btn-icon, .btn-edit, .btn-delete, .btn-view {
-    background: rgba(255,255,255,0.04) !important;
-    border-color: rgba(255,255,255,0.08) !important;
-    color: #9ca3af !important;
-    &:hover { background: rgba(255,255,255,0.08) !important; }
-  }
-
-  // Archivo cargado (input-like)
-  .archivo-info, .file-info, .file-name-box {
-    background: #1a1a1a !important;
-    border-color: rgba(255,255,255,0.10) !important;
-    color: #d1d5db !important;
-  }
-  .archivo-nombre, .file-name { color: #d1d5db !important; }
-
-  // Modales / overlays
-  .modal, .dialog, .overlay-content, .modal-box {
-    background: #111 !important;
-    border-color: rgba(255,255,255,0.1) !important;
-    color: #e5e5e5 !important;
-  }
-  .modal-header, .modal-footer {
-    background: #0a0a0a !important;
-    border-color: rgba(255,255,255,0.07) !important;
-  }
-
-  // Líneas / divisores
-  hr, .divider, .separator { border-color: rgba(255,255,255,0.07) !important; }
-
-  // Scroll / sidebar
-  .sidebar, .nav-sidebar { background: #080808 !important; }
-  .nav-item, .menu-item {
-    color: #9ca3af !important;
-    &:hover, &.active { background: rgba(0,166,62,0.1) !important; color: #4ade80 !important; }
-  }
-
-  // Alerts / toasts info
-  .alert-info, .info-box    { background: rgba(29,78,216,0.12) !important; color: #93c5fd !important; }
-  .alert-success, .ok-box   { background: rgba(0,166,62,0.12) !important; color: #4ade80 !important; }
-  .alert-warning, .warn-box { background: rgba(217,119,6,0.12) !important; color: #fbbf24 !important; }
-  .alert-danger, .error-box { background: rgba(220,38,38,0.12) !important; color: #f87171 !important; }
-
-  // Paginación
-  .pagination .page-btn {
-    background: #111 !important;
-    border-color: rgba(255,255,255,0.1) !important;
-    color: #9ca3af !important;
-    &.active { background: #00A63E !important; color: #fff !important; }
-    &:hover:not(.active) { background: rgba(255,255,255,0.05) !important; }
-  }
-
-  // Search / filtros
-  .search-bar, .filter-bar, .buscador {
-    background: #111 !important;
-    border-color: rgba(255,255,255,0.1) !important;
-    color: #e5e5e5 !important;
-  }
-
-  // Chips de selección
-  .chip, .tag-chip, .filter-chip {
-    background: rgba(255,255,255,0.07) !important;
-    color: #9ca3af !important;
-    border-color: rgba(255,255,255,0.1) !important;
-    &.selected, &.active { 
-      background: rgba(0,166,62,0.2) !important; 
-      color: #4ade80 !important; 
-      border-color: rgba(0,166,62,0.4) !important; 
-    }
-  }
-
-  // Progress bars
-  .progress-bar, .barra-progreso {
-    background: rgba(255,255,255,0.07) !important;
-    .fill, .progreso { background: #00A63E !important; }
-  }
-
-  // Textos de hint / placeholder secundario
-  .hint, .helper-text, .text-muted, .text-gray,
-  .doc-descripcion, .descripcion-campo { color: #4b5563 !important; }
-
-  // Títulos de sección con color verde
-  .seccion-titulo, .section-title, .page-title {
-    color: #4ade80 !important;
-  }
-
-  // Prepostulación específica
-  .doc-prepost { 
-    background: rgba(79,70,229,0.05) !important; 
-    border-color: rgba(79,70,229,0.2) !important; 
-  }
-  .estado-badge.estado-subido   { background: rgba(29,78,216,0.25) !important; color: #93c5fd !important; }
-  .estado-badge.estado-validado { background: rgba(22,101,52,0.25) !important; color: #86efac !important; }
-  .estado-badge.estado-rechazado{ background: rgba(153,27,27,0.25) !important; color: #fca5a5 !important; }
+  .spinner { border-color: #222; border-top-color: #00A63E; }
+  .empty-state { color: #444; }
 }

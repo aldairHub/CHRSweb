@@ -2,7 +2,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { NavbarComponent } from '../../../component/navbar';
 import {
   RolesAppService,
   RolAppConRolesBdDTO,
@@ -14,7 +13,7 @@ import { ToastComponent } from '../../../component/toast.component';
 @Component({
   selector: 'app-gestion-roles',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, NavbarComponent, ToastComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, ToastComponent],
   templateUrl: './gestion-roles.html',
   styleUrls: ['./gestion-roles.scss']
 })

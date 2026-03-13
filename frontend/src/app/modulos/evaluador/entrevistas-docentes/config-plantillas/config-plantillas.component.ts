@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { RouterModule } from '@angular/router';
-import { NavbarComponent } from '../../../../component/navbar';
 import { ConfigPlantillasService } from '../../../../services/entrevistas/config-plantillas.service';
 import { FasesService } from '../../../../services/entrevistas/config-fases.service';
 import { PlantillaRequest, PlantillaResponse, FaseResponse } from '../../../../models/entrevistas-models';
@@ -14,7 +13,7 @@ import { forkJoin } from 'rxjs';
 @Component({
   selector: 'app-config-plantillas',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './config-plantillas.component.html',
   styleUrls: ['./config-plantillas.component.scss']
 })

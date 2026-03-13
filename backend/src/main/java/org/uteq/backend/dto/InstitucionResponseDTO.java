@@ -11,6 +11,7 @@ public class InstitucionResponseDTO {
     private String telefono;
     private String logoUrl;
     private String appName;
+    private String nombreCorto;
     private String emailSmtp;
     private String emailHost;
     private Integer emailPort;

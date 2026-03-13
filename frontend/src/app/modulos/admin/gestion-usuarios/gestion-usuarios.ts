@@ -4,7 +4,6 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { NavbarComponent } from '../../../component/navbar';
 
 import {
   UsuarioAdminService,
@@ -27,7 +26,7 @@ interface InstitucionDTO {
 @Component({
   selector: 'app-gestion-usuarios',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, ToastComponent],
+  imports: [CommonModule, FormsModule, ToastComponent],
   templateUrl: './gestion-usuarios.html',
   styleUrls: ['./gestion-usuarios.scss']
 })

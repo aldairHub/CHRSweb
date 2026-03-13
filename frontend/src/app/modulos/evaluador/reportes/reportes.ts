@@ -1,7 +1,5 @@
 import { Component, OnInit,ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NavbarComponent } from '../../../component/navbar';
-import { FooterComponent } from '../../../component/footer';
 import { HttpClient } from '@angular/common/http';
 
 interface SolicitudDto {
@@ -21,7 +19,7 @@ interface ReporteView {
 @Component({
   selector: 'app-reportes',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule],
   templateUrl: './reportes.html',
   styleUrls: ['./reportes.scss']
 })

@@ -6,8 +6,6 @@ import { HttpClientModule } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { NavbarComponent } from '../../../component/navbar';
-import { FooterComponent } from '../../../component/footer';
 
 import { NivelAcademicoService, NivelAcademico } from '../../../services/nivel-academico.service';
 import {
@@ -26,8 +24,8 @@ import {
     CommonModule,
     FormsModule,
     HttpClientModule,
-    NavbarComponent,
-    FooterComponent
+    
+    
   ],
   templateUrl: './solicitar-docente.html',
   styleUrls: ['./solicitar-docente.scss'],

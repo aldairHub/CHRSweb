@@ -4,7 +4,6 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { NavbarComponent } from '../../../../component/navbar';
 import { ToastComponent } from '../../../../component/toast.component';
 import { LoadingSpinnerComponent } from '../../../../component/loading-spinner.component';
 import { ToastService } from '../../../../services/toast.service';
@@ -17,7 +16,7 @@ import {
 @Component({
   selector: 'app-historial-acciones',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, RouterLink, RouterLinkActive, ToastComponent, LoadingSpinnerComponent],
+  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive, ToastComponent, LoadingSpinnerComponent],
   templateUrl: './historial-acciones.html',
   styleUrls: ['./historial-acciones.scss']
 })

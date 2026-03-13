@@ -5,7 +5,6 @@ import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { NavbarComponent } from '../../component/navbar';
 import { NotificacionService, Notificacion } from '../../services/notificacion.service';
 
 @Component({
@@ -13,7 +12,7 @@ import { NotificacionService, Notificacion } from '../../services/notificacion.s
   standalone: true,
   templateUrl: './historial-notificaciones.html',
   styleUrls: ['./historial-notificaciones.scss'],
-  imports: [CommonModule, FormsModule, NavbarComponent]
+  imports: [CommonModule, FormsModule]
 })
 export class HistorialNotificacionesComponent implements OnInit {
 

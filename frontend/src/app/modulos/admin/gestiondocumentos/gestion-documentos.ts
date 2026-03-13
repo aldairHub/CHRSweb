@@ -1,7 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NavbarComponent } from '../../../component/navbar';
 import { TipoDocumentoService, TipoDocumento } from '../../../services/tipo-documento.service';
 
 @Component({
@@ -9,7 +8,7 @@ import { TipoDocumentoService, TipoDocumento } from '../../../services/tipo-docu
   standalone: true,
   templateUrl: './gestion-documentos.html',
   styleUrls: ['./gestion-documentos.scss'],
-  imports: [CommonModule, FormsModule, NavbarComponent]
+  imports: [CommonModule, FormsModule]
 })
 export class GestionDocumentosComponent implements OnInit {
   cargando = false;

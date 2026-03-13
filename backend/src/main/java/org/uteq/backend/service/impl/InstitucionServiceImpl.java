@@ -50,6 +50,7 @@ public class InstitucionServiceImpl implements InstitucionService {
         inst.setCorreo(dto.getCorreo());
         inst.setTelefono(dto.getTelefono());
         inst.setAppName(dto.getAppName());
+        inst.setNombreCorto(dto.getNombreCorto());
         if (dto.getImagenFondoUrl() != null) {
             inst.setImagenFondoUrl(dto.getImagenFondoUrl());
         }
@@ -75,6 +76,7 @@ public class InstitucionServiceImpl implements InstitucionService {
         dto.setLogoUrl(i.getLogoUrl());
         dto.setImagenFondoUrl(i.getImagenFondoUrl());
         dto.setAppName(i.getAppName());
+        dto.setNombreCorto(i.getNombreCorto());
         dto.setEmailSmtp(i.getEmailSmtp());
         dto.setEmailHost(i.getEmailHost());
         dto.setEmailPort(i.getEmailPort());

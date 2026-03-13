@@ -7,13 +7,13 @@ const NOMBRE_KEY = 'inst_nombre';
 const CACHE_KEY  = 'cache_logo_service';
 const TTL_MS     = 24 * 60 * 60 * 1000; // 24 horas
 
-function cacheSet(data: { logoUrl: string | null; appName: string }): void {
+function cacheSet(data: { logoUrl: string | null; appName: string; nombreCorto?: string }): void {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
   } catch { /* storage lleno */ }
 }
 
-function cacheGet(): { logoUrl: string | null; appName: string } | null {
+function cacheGet(): { logoUrl: string | null; appName: string; nombreCorto?: string } | null {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
@@ -26,8 +26,9 @@ function cacheGet(): { logoUrl: string | null; appName: string } | null {
 @Injectable({ providedIn: 'root' })
 export class LogoService {
 
-  private logo$   = new BehaviorSubject<string | null>(localStorage.getItem(LOGO_KEY));
-  private nombre$ = new BehaviorSubject<string>(localStorage.getItem(NOMBRE_KEY) ?? 'SSDC');
+  private logo$        = new BehaviorSubject<string | null>(localStorage.getItem(LOGO_KEY));
+  private nombre$      = new BehaviorSubject<string>(localStorage.getItem(NOMBRE_KEY) ?? 'SSDC');
+  private nombreCorto$ = new BehaviorSubject<string>(localStorage.getItem('inst_nombreCorto') ?? '');
 
   constructor(private http: HttpClient) {
     // 1. Aplicar caché con TTL al instante si existe
@@ -35,6 +36,7 @@ export class LogoService {
     if (cached) {
       this.logo$.next(cached.logoUrl);
       this.nombre$.next(cached.appName);
+      if (cached.nombreCorto) this.nombreCorto$.next(cached.nombreCorto);
     }
 
     // 2. Refrescar desde el backend en background
@@ -44,16 +46,19 @@ export class LogoService {
   cargar(): void {
     this.http.get<any>('/api/instituciones/activa').subscribe({
       next: cfg => {
-        const logoUrl = cfg.logoUrl ?? null;
-        const appName = cfg.appName ?? cfg.nombreInstitucion ?? 'SSDC';
+        const logoUrl     = cfg.logoUrl ?? null;
+        const appName     = cfg.appName ?? cfg.nombreInstitucion ?? 'SSDC';
+        const nombreCorto = cfg.nombreCorto ?? '';
 
         // Guardar en caché con TTL
-        cacheSet({ logoUrl, appName });
+        cacheSet({ logoUrl, appName, nombreCorto });
 
-        // Actualizar localStorage legacy
+        // Actualizar localStorage
         if (logoUrl) localStorage.setItem(LOGO_KEY, logoUrl);
         else         localStorage.removeItem(LOGO_KEY);
         localStorage.setItem(NOMBRE_KEY, appName);
+        localStorage.setItem('inst_appName', cfg.appName ?? 'Sistema de selección docente');
+        localStorage.setItem('inst_nombreCorto', nombreCorto);
 
         // Emitir con cache-buster solo en la URL de la imagen
         if (logoUrl) {
@@ -63,14 +68,15 @@ export class LogoService {
           this.logo$.next(null);
         }
         this.nombre$.next(appName);
+        this.nombreCorto$.next(nombreCorto);
       },
-      error: () => {
-      }
+      error: () => {}
     });
   }
 
   getLogo()        { return this.logo$.asObservable(); }
   getNombre()      { return this.nombre$.asObservable(); }
+  getNombreCorto() { return this.nombreCorto$.asObservable(); }
   getLogoActual()  { return this.logo$.getValue(); }
   getNombreActual(){ return this.nombre$.getValue(); }
 }

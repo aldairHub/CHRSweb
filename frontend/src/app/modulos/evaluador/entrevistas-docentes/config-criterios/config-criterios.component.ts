@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { RouterModule } from '@angular/router';
-import { NavbarComponent } from '../../../../component/navbar';
 import { ConfigCriteriosService } from '../../../../services/entrevistas/config-criterios.service';
 import { ConfigPlantillasService } from '../../../../services/entrevistas/config-plantillas.service';
 import { CriterioRequest, CriterioResponse } from '../../../../models/entrevistas-models';
@@ -11,7 +10,7 @@ import { CriterioRequest, CriterioResponse } from '../../../../models/entrevista
 @Component({
   selector: 'app-config-criterios',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './config-criterios.component.html',
   styleUrls: ['./config-criterios.component.scss']
 })

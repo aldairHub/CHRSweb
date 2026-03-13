@@ -1,7 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NavbarComponent } from '../../../component/navbar';
 import { ToastService } from '../../../services/toast.service';
 import {
   PrepostulacionService,
@@ -24,7 +23,7 @@ export interface DocumentoAcademico {
   standalone: true,
   templateUrl: './gestionpostulante.html',
   styleUrls: ['./gestionpostulante.scss'],
-  imports: [CommonModule, FormsModule, DatePipe, NavbarComponent, ToastComponent]
+  imports: [CommonModule, FormsModule, DatePipe, ToastComponent]
 })
 export class GestionPostulanteComponent implements OnInit {
 

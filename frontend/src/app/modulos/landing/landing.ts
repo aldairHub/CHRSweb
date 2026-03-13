@@ -78,7 +78,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {}
 
   @HostListener('document:keydown.escape')
-  onEscape(): void { if (this.modalAbierto) this.cerrarModal(); }
+  onEscape(): void { if (this.modalAbierto && !this.modalCerrando) this.cerrarModal(); }
 
   ngOnDestroy(): void {
     if (this.animFrameId) {
@@ -259,21 +259,29 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ── Modal ────────────────────────────────────────────────────────────────
-  modalAbierto = false;
+  modalAbierto  = false;
+  modalCerrando = false;
   convSeleccionada: ConvocatoriaVM | null = null;
 
   abrirModal(conv: ConvocatoriaVM): void {
     this.convSeleccionada = conv;
-    this.modalAbierto = true;
+    this.modalCerrando    = false;
+    this.modalAbierto     = true;
     document.body.style.overflow = 'hidden';
     this.cdr.detectChanges();
   }
 
   cerrarModal(): void {
-    this.modalAbierto = false;
-    this.convSeleccionada = null;
-    document.body.style.overflow = '';
+    if (this.modalCerrando) return;
+    this.modalCerrando = true;
     this.cdr.detectChanges();
+    setTimeout(() => {
+      this.modalAbierto     = false;
+      this.modalCerrando    = false;
+      this.convSeleccionada = null;
+      document.body.style.overflow = '';
+      this.cdr.detectChanges();
+    }, 280);
   }
 
   irAConvocatoriaDetalle(conv: ConvocatoriaVM): void {

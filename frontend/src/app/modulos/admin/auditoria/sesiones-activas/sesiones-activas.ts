@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { NavbarComponent } from '../../../../component/navbar';
 
 interface SesionActiva {
   id_sesion: number;
@@ -16,7 +15,7 @@ interface SesionActiva {
 @Component({
   selector: 'app-sesiones-activas',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './sesiones-activas.html',
   styleUrls: ['./sesiones-activas.scss']
 })

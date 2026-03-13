@@ -1,4 +1,4 @@
-<app-navbar></app-navbar>
+
 
 <div class="main-container">
 
@@ -60,6 +60,14 @@
                    [(ngModel)]="form.appName"
                    placeholder="Ej: Sistema UTEQ" />
             <span class="form-hint">Aparece en los correos y encabezados del sistema.</span>
+          </div>
+
+          <div class="form-group">
+            <label>Siglas / Nombre corto</label>
+            <input type="text" class="form-input"
+                   [(ngModel)]="form.nombreCorto"
+                   placeholder="Ej: UTEQ" />
+            <span class="form-hint">Se muestra en la barra de navegación superior.</span>
           </div>
 
           <div class="form-group">

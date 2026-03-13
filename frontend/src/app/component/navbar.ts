@@ -6,6 +6,7 @@ import { Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { LogoService } from '../services/logo.service';
+import { Observable, of } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
 import { NotificacionService } from '../services/notificacion.service';
 import { AuthStateService } from '../services/auth-state.service';  // ← compañero
@@ -31,6 +32,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
   isDashboard      = false;
   showPerfilMenu   = false;
 
+  // ── Institución ─────────────────────────────────────────────
+  appSubtitulo  = localStorage.getItem('inst_appName') || 'Sistema de selección docente';
+  nombreCorto$: Observable<string> = of(localStorage.getItem('inst_nombreCorto') ?? '');
+
   constructor(
     private router: Router,
     private authService: AuthService,
@@ -52,6 +57,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.notifService.iniciarPolling();
+    // Cargar subtítulo dinámico desde institución
+    this.logoService.getNombre().subscribe(() => {
+      const cached = localStorage.getItem('inst_appName');
+      if (cached) this.appSubtitulo = cached;
+    });
+    // Refrescar desde API y actualizar nombreCorto$ dinámicamente
+    this.nombreCorto$ = this.logoService.getNombreCorto();
+    this.logoService.cargar();
+    this.cdr.detectChanges();
   }
 
   ngOnDestroy(): void {
@@ -128,6 +142,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
         break;
       case 'USUARIO':
         if (rol === 'admin')           this.router.navigate(['/admin/gestion-usuarios']);
+        else                           this.router.navigate(['/' + rol]);
+        break;
+      case 'BACKUP':
+        if (rol === 'admin')           this.router.navigate(['/admin/backup']);
         else                           this.router.navigate(['/' + rol]);
         break;
       default:

@@ -196,8 +196,8 @@
 <!-- ═══════════════════════════════════════════════════
      MODAL — Descripción completa de la convocatoria
      ═══════════════════════════════════════════════════ -->
-<div class="conv-modal-backdrop" *ngIf="modalAbierto" (click)="cerrarModal()">
-  <div class="conv-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+<div class="conv-modal-backdrop" *ngIf="modalAbierto" [class.cerrando]="modalCerrando" (click)="cerrarModal()">
+  <div class="conv-modal" [class.cerrando]="modalCerrando" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
 
     <!-- Imagen de portada -->
     <div class="conv-modal-img" *ngIf="convSeleccionada?.imagenUrl">

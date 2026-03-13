@@ -1,16 +1,14 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NavbarComponent } from '../../../component/navbar';
-import { FooterComponent } from '../../../component/footer';
 
 @Component({
   selector: 'app-postulante', standalone: true,
   imports: [
     CommonModule,
     FormsModule,
-    NavbarComponent,
-    FooterComponent
+    
+    
   ],
   templateUrl: './postulante.html',
   styleUrls: ['./postulante.scss']

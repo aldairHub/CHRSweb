@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { NavbarComponent } from '../../../component/navbar';
-import { FooterComponent } from '../../../component/footer';
 import { DocumentoService } from '../../../services/documento.service';
 
 interface SeccionResultado {
@@ -15,7 +13,7 @@ interface SeccionResultado {
 @Component({
   selector: 'app-resultados',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule],
   templateUrl: './resultados.html',
   styleUrls: ['./resultados.scss']
 })

@@ -5,7 +5,6 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { NavbarComponent } from '../../../../component/navbar';
 import { FasesService } from '../../../../services/entrevistas/config-fases.service';
 import { FaseRequest, FaseResponse } from '../../../../models/entrevistas-models';
 
@@ -19,7 +18,7 @@ interface EvaluadorUsuario {
 @Component({
   selector: 'app-config-fases',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './config-fases.component.html',
   styleUrls: ['./config-fases.component.scss']
 })

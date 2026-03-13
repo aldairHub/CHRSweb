@@ -273,7 +273,7 @@ html.dark {
 
   // ─── Tipografía ───────────────────────────────────────────
   h1, h2, h3, h4, h5, h6 { color: #f0f0f0 !important; }
-  p, span:not(.badge):not([class*="status"]):not([class*="tag"]) { color: #aaaaaa; }
+  p, span:not(.badge):not([class*="status"]):not([class*="tag"]):not([class*="icon"]):not([class*="tipo"]):not([class*="destino"]):not([class*="section-icon"]):not([class*="historial-icon"]) { color: #aaaaaa; }
 
   // ─── Encabezados de página ────────────────────────────────
   .dashboard-header {
@@ -1453,7 +1453,8 @@ html.dark .card {
   }
 
   h3   { color: #e0e0e0 !important; }
-  span { color: #383838 !important; }
+  // NOTE: Only target direct description spans, NOT icon containers that use currentColor for SVGs
+  > span:not([class*="icon"]):not([class*="svg"]) { color: #383838 !important; }
 }
 
 html.dark .section-card,
@@ -1615,7 +1616,7 @@ html.dark {
   * { scrollbar-color: rgba(0,210,80,0.2) transparent; }
 
   .skeleton {
-    background: linear-gradient(90deg, #181818 0%, #181818 35%, #2b2b2b 50%, #181818 65%, #181818 100%);
+    background: linear-gradient(90deg, #181818 0%, #181818 35%, #2b2b2b 50%, #181818 65%, #181818 100%) !important;
     background-size: 200% 100%;
     animation: shimmerDark 2.2s infinite linear;
   }
@@ -1623,8 +1624,8 @@ html.dark {
   .skeleton-row { border-color: rgba(255,255,255,0.04); }
 
   .table tbody tr td:first-child::before {
-    background: #00D149;
-    box-shadow: 0 0 8px rgba(0, 209, 73, 0.5);
+    background: #00D149 !important;
+    box-shadow: 0 0 8px rgba(0, 209, 73, 0.5) !important;
   }
 
   .table tbody tr:hover td {
@@ -1770,8 +1771,8 @@ html.dark {
   // Hover rows
   .table tbody tr {
     td:first-child::before {
-      background: #00D149;
-      box-shadow: 0 0 8px rgba(0,209,73,0.45);
+      background: #00D149 !important;
+      box-shadow: 0 0 8px rgba(0,209,73,0.45) !important;
     }
     &:hover td { background: rgba(0,210,80,0.025) !important; }
   }
@@ -2129,7 +2130,7 @@ html.dark {
   }
 
   .btn-icon {
-    color: #555;
+    color: #555 !important;
     &:hover { background: rgba(0,210,80,0.08); border-color: rgba(0,210,80,0.2); color: #00D149; }
   }
 
@@ -2137,9 +2138,9 @@ html.dark {
   .toggle-switch input:checked + .toggle-slider { background: #00D149; }
 
   .page-btn {
-    background: #080808;
-    border-color: rgba(255,255,255,0.07);
-    color: #888;
+    background: #080808 !important;
+    border-color: rgba(255,255,255,0.07) !important;
+    color: #888 !important;
     &:hover:not(:disabled) { border-color: #00D149; color: #00D149; background: rgba(0,210,80,0.06); }
     &.active { background: #00D149; border-color: #00D149; color: #000; }
   }
@@ -2148,21 +2149,21 @@ html.dark {
 
   .modal-overlay { background: rgba(0,0,0,0.75); }
   .modal-content {
-    background: #080808;
-    border: 1px solid rgba(0,210,80,0.1);
-    box-shadow: 0 24px 60px rgba(0,0,0,0.8);
+    background: #080808 !important;
+    border: 1px solid rgba(0,210,80,0.1) !important;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.8) !important;
   }
   .modal-header {
-    border-color: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.04) !important;
     h3 { color: #e0e0e0; }
   }
   .modal-footer {
-    background: #050505;
-    border-color: rgba(255,255,255,0.04);
+    background: #050505 !important;
+    border-color: rgba(255,255,255,0.04) !important;
   }
   .close-btn {
-    background: #111;
-    color: #555;
+    background: #111 !important;
+    color: #555 !important;
     &:hover { background: rgba(220,38,38,0.15); color: #f87171; }
   }
 
@@ -2207,10 +2208,12 @@ html.dark {
 }
 
 // ─── Card description text fade on hover ─────────────────────
-.card span {
+.card > span,
+.card .card-icon + span,
+.card h3 + span {
   transition: color 0.2s ease;
 }
-.card:hover span {
+.card:hover > span {
   color: #00A63E !important;
 }
 
@@ -2222,7 +2225,7 @@ app-navbar .navbar {
 // ─── Dark mode dashboard dot pattern ────────────────────────
 html.dark {
   .dashboard-header .welcome-sub { color: #383838; }
-  .card:hover span { color: #00D149 !important; }
+  .card:hover > span { color: #00D149 !important; }
 }
 
 // ============================================================
@@ -2241,14 +2244,7 @@ html.dark {
   .skeleton-cell--md,
   .skeleton-cell--lg,
   .skeleton-cell--avatar {
-    background-image: linear-gradient(
-      90deg,
-      #181818 0%,
-      #181818 35%,
-      #2b2b2b 50%,
-      #181818 65%,
-      #181818 100%
-    ) !important;
+    background-image: linear-gradient(90deg, #181818 0%, #181818 35%, #2b2b2b 50%, #181818 65%, #181818 100%) !important;
     background-size: 200% 100% !important;
     background-repeat: no-repeat !important;
     animation: shimmerDark 2.2s infinite linear !important;
@@ -2403,4 +2399,93 @@ html.dark {
 .table thead tr {
   background: rgba(0,166,62,0.04);
   border-bottom: 2px solid rgba(0,166,62,0.1);
+}
+
+// =========================================
+// GLOBAL SIZE SCALE — efecto "140% zoom"
+// Aumenta base font-size para que todo se
+// vea más grande y elegante sin tocar el
+// zoom del navegador
+// =========================================
+html, body {
+  font-size: 15px;   // era 16px implícito; subir a 15px + rem hace efecto 140%
+}
+
+// Tablas globales — más espaciosas
+table th, table td {
+  padding: 13px 16px !important;
+  font-size: 14px;
+}
+
+// Botones más grandes
+.btn, button:not(.tab-btn):not(.num-btn):not(.toggle input) {
+  font-size: 14px;
+}
+
+// Inputs globales — solo font-size, sin padding para no romper login
+input[type="text"], input[type="email"], input[type="password"],
+input[type="number"], input[type="date"], input[type="time"],
+select, textarea {
+  font-size: 14px;
+}
+
+// Inputs dentro de input-wrapper (login) — preservar padding para iconos SVG
+.input-wrapper input[type="text"],
+.input-wrapper input[type="email"],
+.input-wrapper input[type="password"] {
+  padding-left: 40px !important;
+  padding-right: 12px !important;
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+}
+
+// ============================================================
+// DARK MODE — SVG COLOR UNIVERSAL FIX
+// Ensures all icon containers properly inherit green color for
+// stroke="currentColor" SVGs, overriding any global span/p rules.
+// ============================================================
+html.dark {
+  // All known icon container classes — force green so currentColor works
+  .section-icon,
+  .historial-icon,
+  .conv-icon,
+  .card-icon,
+  .card-icon-wrap,
+  .stat-icon,
+  .icon-wrap,
+  .icon-wrapper,
+  .icon-box,
+  .notif-icon,
+  .feature-icon,
+  .step-icon,
+  .fase-icon,
+  .doc-icon,
+  .file-icon,
+  .empty-icon {
+    color: #00A63E !important;
+    svg { color: inherit !important; }
+  }
+
+  // Tab buttons with SVGs: active tab = green
+  .tab-btn.active,
+  .tab-btn.active svg {
+    color: #00D149 !important;
+  }
+
+  // Tipo/destino/option cards when selected
+  .tipo-card.selected,
+  .destino-card.selected,
+  .ssl-option.active,
+  .option-card.selected,
+  .num-btn.selected {
+    color: #00D149 !important;
+    border-color: #00A63E !important;
+    background: #0d1f12 !important;
+  }
+
+  // Ensure all these classes have proper dark bg and green SVG
+  .section-icon,
+  .historial-icon {
+    background: #0d1f12 !important;
+  }
 }

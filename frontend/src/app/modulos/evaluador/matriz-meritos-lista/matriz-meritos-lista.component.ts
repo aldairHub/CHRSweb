@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { NavbarComponent } from '../../../component/navbar';
-import { FooterComponent } from '../../../component/footer';
 
 export interface ConvocatoriaLista {
   idConvocatoria: number;
@@ -18,7 +16,7 @@ export interface ConvocatoriaLista {
 @Component({
   selector: 'app-matriz-meritos-lista',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule],
   templateUrl: './matriz-meritos-lista.component.html',
   styleUrls: ['./matriz-meritos-lista.component.scss']
 })

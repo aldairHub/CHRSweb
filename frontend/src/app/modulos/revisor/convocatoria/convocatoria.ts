@@ -1,8 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NavbarComponent } from '../../../component/navbar';
-import { FooterComponent } from '../../../component/footer.component';
 import {
   ConvocatoriaAdminService,
   ConvocatoriaListaResponse,
@@ -21,7 +19,7 @@ import { AiConvocatoriaService } from '../../../services/ai-convocatoria.service
   imports: [
     CommonModule,
     FormsModule,
-    NavbarComponent,
+    
     ToastComponent
   ],
   templateUrl: './convocatoria.html',

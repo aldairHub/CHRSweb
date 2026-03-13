@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { NavbarComponent } from '../../../component/navbar';
-import { FooterComponent } from '../../../component/footer';
 
 // =====================================================
 // INTERFACES
@@ -34,7 +32,7 @@ export interface EntrevistaCandidato {
 @Component({
   selector: 'app-entrevistas',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './entrevistas.html',
   styleUrls: ['./entrevistas.scss']
 })

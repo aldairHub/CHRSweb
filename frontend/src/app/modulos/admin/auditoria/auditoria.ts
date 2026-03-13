@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import {RouterLink, RouterLinkActive} from '@angular/router';
-import { NavbarComponent } from '../../../component/navbar';
 import { ToastComponent } from '../../../component/toast.component';
 import { ToastService } from '../../../services/toast.service';
 
@@ -29,7 +28,7 @@ interface Page<T> {
 @Component({
   selector: 'app-auditoria',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, RouterLink, ToastComponent, RouterLinkActive],
+  imports: [CommonModule, FormsModule, RouterLink, ToastComponent, RouterLinkActive],
   templateUrl: './auditoria.html',
   styleUrls: ['./auditoria.scss']
 })

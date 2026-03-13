@@ -43,6 +43,9 @@ public class Institucion {
     @Column(name = "app_name")
     private String appName;
 
+    @Column(name = "nombre_corto")
+    private String nombreCorto;
+
     @Column(name = "activo")
     private Boolean activo = true;
 

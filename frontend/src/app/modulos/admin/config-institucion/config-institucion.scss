@@ -351,23 +351,23 @@
 :host-context(html.dark) {
 
   .section-card {
-    background: #080808;
-    border-color: rgba(0,210,80,0.1);
+    background: #080808 !important;
+    border-color: rgba(0,210,80,0.1) !important;
     &:hover { box-shadow: 0 4px 20px rgba(0,209,73,0.08); }
   }
 
   .section-header {
-    background: #050505;
-    border-color: rgba(255,255,255,0.04);
+    background: #050505 !important;
+    border-color: rgba(255,255,255,0.04) !important;
     .section-title { color: #e0e0e0; }
   }
 
   .form-group label { color: #c0c0c0; }
 
   .form-input {
-    background: #050505;
-    border-color: rgba(255,255,255,0.08);
-    color: #e0e0e0;
+    background: #050505 !important;
+    border-color: rgba(255,255,255,0.08) !important;
+    color: #e0e0e0 !important;
     &:focus { border-color: #00D149; box-shadow: 0 0 0 3px rgba(0,209,73,0.12); }
     &::placeholder { color: #444; }
   }
@@ -375,26 +375,26 @@
   .form-hint { color: #555; }
 
   .logo-preview {
-    background: #0a0a0a;
-    border-color: rgba(255,255,255,0.08);
+    background: #0a0a0a !important;
+    border-color: rgba(255,255,255,0.08) !important;
     &.has-image { border-color: rgba(0,210,80,0.2); }
     .placeholder-icon { color: #444; }
   }
 
   .file-btn {
-    background: rgba(0,210,80,0.08);
-    border-color: rgba(0,210,80,0.2);
-    color: #00D149;
+    background: rgba(0,210,80,0.08) !important;
+    border-color: rgba(0,210,80,0.2) !important;
+    color: #00D149 !important;
     &:hover { background: rgba(0,210,80,0.12); }
   }
 
   .ssl-option {
-    background: #080808;
-    border-color: rgba(255,255,255,0.07);
+    background: #080808 !important;
+    border-color: rgba(255,255,255,0.07) !important;
     &:hover { background: rgba(0,210,80,0.04); border-color: rgba(0,210,80,0.2); }
     &.active {
-      background: rgba(0,210,80,0.06);
-      border-color: #00D149;
+      background: rgba(0,210,80,0.06) !important;
+      border-color: #00D149 !important;
       .ssl-option-label { color: #00D149; }
     }
     .ssl-option-icon { background: #111; svg { color: #555; } }
@@ -403,13 +403,13 @@
   }
 
   .actions-bar .btn-outline {
-    color: #c0c0c0;
-    border-color: rgba(255,255,255,0.1);
+    color: #c0c0c0 !important;
+    border-color: rgba(255,255,255,0.1) !important;
     &:hover:not(:disabled) { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.15); }
   }
 
   .loading-state {
-    color: #555;
+    color: #555 !important;
     .spinner { border-color: #1a1a1a; border-top-color: #00D149; }
   }
 

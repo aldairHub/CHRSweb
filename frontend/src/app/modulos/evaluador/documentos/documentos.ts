@@ -8,8 +8,6 @@ import {
   DocumentoBackend
 } from '../../../services/documento.service';
 import { ToastService } from '../../../services/toast.service';
-import { NavbarComponent } from '../../../component/navbar';
-import { FooterComponent } from '../../../component/footer';
 import { ToastComponent } from '../../../component/toast.component';
 
 export interface DocumentoRevision {
@@ -33,7 +31,7 @@ export interface DocumentoRevision {
 @Component({
   selector: 'app-documentos',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent, ToastComponent],
+  imports: [CommonModule, FormsModule, ToastComponent],
   templateUrl: './documentos.html',
   styleUrls: ['./documentos.scss']
 })

@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
-import { NavbarComponent } from '../../../component/navbar';
-import { FooterComponent } from '../../../component/footer';
 import { ToastComponent } from '../../../component/toast.component';
 import { ToastService } from '../../../services/toast.service';
 import {
@@ -30,7 +28,7 @@ export interface DocumentoUI {
 @Component({
   selector: 'app-subir-documentos',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent, ToastComponent],
+  imports: [CommonModule, FormsModule, ToastComponent],
   templateUrl: './subir-documentos.html',
   styleUrls: ['./subir-documentos.scss']
 })

@@ -1,7 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { NavbarComponent } from '../../../../component/navbar';
 import { DashboardService } from '../../../../services/entrevistas/dashboard.service';
 import { PostulantesService } from '../../../../services/entrevistas/postulantes.service';
 import { ReunionesService } from '../../../../services/entrevistas/reuniones.service';
@@ -11,7 +10,7 @@ import { forkJoin } from 'rxjs';
 @Component({
   selector: 'app-evaluacion-dashboard',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, RouterModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })

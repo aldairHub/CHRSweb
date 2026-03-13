@@ -1,14 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { NavbarComponent } from '../../../component/navbar';
-import { FooterComponent } from '../../../component/footer';
 import { EntrevistaService, EntrevistaInfo } from '../../../services/entrevista.service';
 
 @Component({
   selector: 'app-entrevista-postulante',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule],
   templateUrl: './entrevista.html',
   styleUrls: ['./entrevista.scss']
 })

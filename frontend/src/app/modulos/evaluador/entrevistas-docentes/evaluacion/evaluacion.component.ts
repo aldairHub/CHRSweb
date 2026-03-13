@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RouterModule } from '@angular/router';
-import { NavbarComponent } from '../../../../component/navbar';
 import { EvaluacionService } from '../../../../services/entrevistas/evaluacion.service';
 import { ReunionesService } from '../../../../services/entrevistas/reuniones.service';
 import { ConfigCriteriosService } from '../../../../services/entrevistas/config-criterios.service';
@@ -20,7 +19,7 @@ interface CriterioForm extends CriterioResponse {
 @Component({
   selector: 'app-evaluacion',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './evaluacion.component.html',
   styleUrls: ['./evaluacion.component.scss']
 })

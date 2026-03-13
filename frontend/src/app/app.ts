@@ -1,19 +1,37 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { LoginComponent } from './modulos/login/login';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { NavbarComponent } from './component/navbar';
+import { FooterComponent } from './component/footer';
+import { ToastComponent } from './component/toast.component';
 import { ThemeService } from './services/theme.service';
+import { AuthService } from './services/auth.service';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [CommonModule, RouterOutlet, NavbarComponent, FooterComponent, ToastComponent],
   templateUrl: './app.html'
 })
-export class App {
-  // Inyectar aquí garantiza que ThemeService se inicialice
-  // (lee localStorage y aplica la clase en <html>) al arrancar la app
-  constructor(private themeService: ThemeService) {}
+export class App implements OnInit {
+  mostrarLayout = false;
+
+  constructor(
+    private router: Router,
+    private themeService: ThemeService,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit() {
+    // Verificar al iniciar la app
+    this.mostrarLayout = this.authService.isLoggedIn();
+
+    // Verificar en cada cambio de ruta (login/logout)
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.mostrarLayout = this.authService.isLoggedIn();
+    });
+  }
 }
-const routes = [
-  { path: '', component: LoginComponent }
-];

@@ -5,7 +5,6 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RouterModule } from '@angular/router';
-import { NavbarComponent } from '../../../../component/navbar';
 import { ResultadosService } from '../../../../services/entrevistas/resultados.service';
 import { PostulantesService } from '../../../../services/entrevistas/postulantes.service';
 import { PostulanteResumen, ResultadoProceso, ResultadoFase, DecisionFinalRequest } from '../../../../models/entrevistas-models';
@@ -13,7 +12,7 @@ import { PostulanteResumen, ResultadoProceso, ResultadoFase, DecisionFinalReques
 @Component({
   selector: 'app-resultados',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, NavbarComponent, DecimalPipe],
+  imports: [CommonModule, RouterModule, FormsModule, DecimalPipe],
   templateUrl: './resultados.component.html',
   styleUrls: ['./resultados.component.scss']
 })

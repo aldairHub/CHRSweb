@@ -1,8 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { FooterComponent } from '../../../component/footer.component';
-import { NavbarComponent } from '../../../component/navbar';
 import { ToastComponent } from '../../../component/toast.component';
 import { ToastService } from '../../../services/toast.service';
 import { FacultadService } from '../../../services/facultad.service';
@@ -10,7 +8,7 @@ import { Facultad } from '../../../models/facultad.model';
 @Component({
   selector: 'app-facultad',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent, ToastComponent],
+  imports: [CommonModule, FormsModule, ToastComponent],
   templateUrl: './facultad.html',
   styleUrls: ['./facultad.scss']
 })

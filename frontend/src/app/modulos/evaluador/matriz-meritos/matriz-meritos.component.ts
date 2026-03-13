@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { NavbarComponent } from '../../../component/navbar';
-import { FooterComponent } from '../../../component/footer';
 
 // =====================================================
 // INTERFACES
@@ -57,7 +55,7 @@ export interface ConvocatoriaInfo {
 @Component({
   selector: 'app-matriz-meritos',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './matriz-meritos.component.html',
   styleUrls: ['./matriz-meritos.component.scss']
 })

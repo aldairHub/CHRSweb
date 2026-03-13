@@ -2,8 +2,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { NavbarComponent } from '../../component/navbar';
-import { FooterComponent } from '../../component/footer.component';
 import { AuthService } from '../../services/auth.service';
 
 interface DashCard {
@@ -42,7 +40,7 @@ const SVG_FALLBACK: Array<{ d: string }> = [
 @Component({
   selector: 'app-revisor',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule],
   templateUrl: './revisor.html',
   styleUrls: ['./revisor.scss']
 })

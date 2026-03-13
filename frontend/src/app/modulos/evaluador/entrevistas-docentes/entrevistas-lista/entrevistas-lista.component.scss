@@ -226,3 +226,89 @@
   color: #b0c8ae;
   transition: all 0.2s;
 }
+
+// ── MODO OSCURO ────────────────────────────────────────
+html.dark {
+  .main-container {
+    background: #000000 !important;
+  }
+
+  .content-wrapper {
+    background: transparent !important;
+  }
+
+  .btn-volver {
+    background: #161616 !important;
+    border-color: #2a2a2a !important;
+    color: #00A63E !important;
+    &:hover {
+      background: #1e1e1e !important;
+      border-color: #00A63E !important;
+    }
+  }
+
+  .header-text {
+    h1 { color: #f0f0f0 !important; }
+    p  { color: #555 !important; }
+  }
+
+  .estado-container { color: #555 !important; }
+
+  .spinner {
+    border-color: #2a2a2a !important;
+    border-top-color: #00A63E !important;
+  }
+
+  .alert-error {
+    background: #180808 !important;
+    border-color: #5a1a1a !important;
+    color: #f87171 !important;
+  }
+
+  .conv-card {
+    background: #161616 !important;
+    border-color: #2a2a2a !important;
+
+    &.disponible:hover {
+      border-color: #00A63E !important;
+      box-shadow: 0 4px 16px rgba(0, 166, 62, 0.12) !important;
+
+      .conv-icon {
+        background: #00A63E !important;
+        color: white !important;
+      }
+
+      .arrow { color: #00A63E !important; }
+    }
+
+    &.bloqueada { opacity: 0.6 !important; }
+  }
+
+  .conv-icon {
+    background: #0d1f12 !important;
+    color: #00A63E !important;
+  }
+
+  .conv-info {
+    h3      { color: #e0e0e0 !important; }
+    .materia { color: #555 !important; }
+  }
+
+  .meta-item { color: #444 !important; }
+  .msg-bloqueo { color: #f59e0b !important; }
+
+  .badge {
+    &.badge-disponible {
+      background: #0d1f12 !important;
+      color: #00D149 !important;
+      border-color: #1a3a24 !important;
+    }
+    &.badge-bloqueada {
+      background: #2a1800 !important;
+      color: #f59e0b !important;
+      border-color: #3a2000 !important;
+    }
+  }
+
+  .arrow { color: #2a2a2a !important; }
+}

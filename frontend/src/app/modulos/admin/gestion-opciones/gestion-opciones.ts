@@ -2,34 +2,28 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { NavbarComponent } from '../../../component/navbar';
 import { ToastService } from '../../../services/toast.service';
-import { ToastComponent } from '../../../component/toast.component';
 
 @Component({
   selector: 'app-gestion-opciones',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, ToastComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './gestion-opciones.html',
   styleUrls: ['./gestion-opciones.scss']
 })
 export class GestionOpcionesComponent implements OnInit {
 
-  // ─── Datos ──────────────────────────────────────────────────────
-  cargando = false;
-  roles:    any[] = [];
-  opciones: any[] = [];
+  cargando          = false;
+  roles:    any[]   = [];
+  opciones: any[]   = [];
 
-  // ─── Estado ─────────────────────────────────────────────────────
   rolSeleccionado:  number | null = null;
   nombreRolActual:  string        = '';
   moduloDelRol:     string        = '';
-  cargandoOpciones: boolean       = false;
-  isLoadingRoles:   boolean       = false;
-  guardando:        boolean       = false;
+  cargandoOpciones  = false;
 
-  private readonly apiRoles   = 'http://localhost:8080/api/roles-app';
-  private readonly apiOpciones= 'http://localhost:8080/api/admin/opciones';
+  private readonly apiRoles    = '/api/roles-app';
+  private readonly apiOpciones = '/api/admin/opciones';
 
   constructor(
     private http: HttpClient,
@@ -41,26 +35,16 @@ export class GestionOpcionesComponent implements OnInit {
     this.cargarRoles();
   }
 
-  // ─── Carga roles ────────────────────────────────────────────────
   cargarRoles(): void {
     this.http.get<any[]>(this.apiRoles).subscribe({
       next: data => {
-        this.cargando = false;
-        // Solo roles con módulo asignado — sin módulo no tiene opciones
-        this.roles = (Array.isArray(data) ? data : [])
-          .filter(r => r.activo);
-        this.isLoadingRoles = false;
+        this.roles = (Array.isArray(data) ? data : []).filter(r => r.activo);
         this.cdr.detectChanges();
       },
-      error: err => {
-        this.isLoadingRoles = false;
-        this.toast.error('Error', 'No se pudieron cargar los roles.');
-        this.cdr.detectChanges();
-        }
+      error: () => this.toast.error('No se pudieron cargar los roles.')
     });
   }
 
-  // ─── Seleccionar rol → carga opciones de su módulo ───────────────
   seleccionarRol(rol: any): void {
     this.rolSeleccionado  = rol.idRolApp;
     this.nombreRolActual  = rol.nombre;
@@ -71,74 +55,35 @@ export class GestionOpcionesComponent implements OnInit {
 
     this.http.get<any[]>(`${this.apiOpciones}/rol/${rol.idRolApp}`).subscribe({
       next: data => {
-        this.cargando = false;
         this.opciones         = Array.isArray(data) ? data : [];
         this.cargandoOpciones = false;
         this.cdr.detectChanges();
       },
-      error: err => {
-        this.cargando = false;
+      error: () => {
         this.cargandoOpciones = false;
-        this.toast.error('Error al cargar opciones', 'Verifica que el rol tiene un módulo asignado.');
+        this.toast.error('Verifica que el rol tiene un módulo asignado.');
         this.cdr.detectChanges();
       }
     });
   }
 
-  // ─── Toggle habilitada ───────────────────────────────────────────
   toggleOpcion(op: any): void {
     if (op.asignada) {
-      // Quitar
       this.http.delete(`${this.apiOpciones}/quitar`, {
         body: { idRolApp: this.rolSeleccionado, idOpcion: op.id_opcion }
       }).subscribe({
-        next: () => {
-          op.asignada     = false;
-          op.solo_lectura = false;
-          this.cdr.detectChanges();
-        },
-        error: err => {
-          this.cargando = false;
-          this.toast.error('Error', 'No se pudo quitar la opción.');
-        }
+        next: () => { op.asignada = false; this.cdr.detectChanges(); },
+        error: () => this.toast.error('No se pudo quitar la opción.')
       });
     } else {
-      // Asignar
       this.http.post(`${this.apiOpciones}/asignar`, {
         idRolApp:    this.rolSeleccionado,
         idOpcion:    op.id_opcion,
         soloLectura: false
       }).subscribe({
-        next: () => {
-          op.asignada = true;
-          this.cdr.detectChanges();
-        },
-        error: err => {
-          this.cargando = false;
-          this.toast.error('Error', 'No se pudo asignar la opción.');
-        }
+        next: () => { op.asignada = true; this.cdr.detectChanges(); },
+        error: () => this.toast.error('No se pudo asignar la opción.')
       });
     }
-  }
-
-  // ─── Toggle solo lectura ─────────────────────────────────────────
-  toggleSoloLectura(op: any): void {
-    if (!op.asignada) return; // No tiene sentido si no está habilitada
-    const nuevoValor = !op.solo_lectura;
-
-    this.http.post(`${this.apiOpciones}/asignar`, {
-      idRolApp:    this.rolSeleccionado,
-      idOpcion:    op.id_opcion,
-      soloLectura: nuevoValor
-    }).subscribe({
-      next: () => {
-        op.solo_lectura = nuevoValor;
-        this.cdr.detectChanges();
-      },
-      error: err => {
-        this.cargando = false;
-        this.toast.error('Error', 'No se pudo actualizar el permiso.');
-      }
-    });
   }
 }

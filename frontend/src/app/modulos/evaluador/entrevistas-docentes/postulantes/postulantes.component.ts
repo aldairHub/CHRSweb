@@ -4,7 +4,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RouterModule } from '@angular/router';
-import { NavbarComponent } from '../../../../component/navbar';
 import { PostulantesService } from '../../../../services/entrevistas/postulantes.service';
 import {
   PostulanteResumen, PostulanteDetalle,
@@ -15,7 +14,7 @@ import { debounceTime, Subject } from 'rxjs';
 @Component({
   selector: 'app-postulantes',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './postulantes.component.html',
   styleUrls: ['./postulantes.component.scss']
 })

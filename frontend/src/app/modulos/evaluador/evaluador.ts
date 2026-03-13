@@ -4,8 +4,6 @@
 //
 // // Asegúrate que las rutas a tus componentes compartidos sean correctas
 // // A veces es '.../navbar/navbar.component' dependiendo de tu estructura
-// import { NavbarComponent } from '../../component/navbar';
-// import { FooterComponent } from '../../component/footer';
 //
 // // Interfaz para definir la estructura de las tarjetas del menú
 // interface ModuloEvaluador {
@@ -19,7 +17,7 @@
 // @Component({
 //   selector: 'app-evaluador',
 //   standalone: true,
-//   imports: [CommonModule, NavbarComponent, FooterComponent],
+//   imports: [CommonModule],
 //   templateUrl: './evaluador.html', // Asegúrate que coincida el nombre
 //   styleUrls: ['./evaluador.scss']  // Asegúrate que coincida el nombre
 // })
@@ -76,8 +74,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { NavbarComponent } from '../../component/navbar';
-import { FooterComponent } from '../../component/footer';
 import { AuthService } from '../../services/auth.service';
 
 interface DashCard {
@@ -158,7 +154,7 @@ const SVG_FALLBACK: Array<{ d: string }> = [
 @Component({
   selector: 'app-evaluador',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule],
   templateUrl: './evaluador.html',
   styleUrls: ['./evaluador.scss']
 })

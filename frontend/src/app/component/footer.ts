@@ -1,34 +1,113 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LogoService } from '../services/logo.service';
 
 @Component({
   selector: 'app-footer',
   standalone: true,
   imports: [CommonModule],
-  encapsulation: ViewEncapsulation.None,
   template: `
     <footer class="app-footer">
-      <p>© 2026 Universidad Técnica Estatal de Quevedo - Todos los derechos reservados</p>
+      <div class="footer-left">
+        <span class="footer-inst">{{ appSubtitulo }}</span>
+      </div>
+      <div class="footer-center">
+        <span>© {{ anio }} {{ nombreInst }} — Todos los derechos reservados</span>
+      </div>
+      <div class="footer-right">
+        <span class="footer-time">{{ horaActual }}</span>
+      </div>
     </footer>
   `,
   styles: [`
-    app-footer { display: block; }
+    :host { display: block; }
 
     .app-footer {
-      text-align: center;
-      padding: 20px;
-      background: #f8f9fa;
-      border-top: 1px solid #e2e8f0;
-      color: #666;
-      font-size: 14px;
-      transition: background 0.3s, color 0.3s;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      background: linear-gradient(135deg, rgba(0,122,46,0.97) 0%, rgba(0,166,62,0.93) 100%);
+      border-top: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 12px;
+      z-index: 1000;
+      box-shadow: 0 -2px 16px rgba(0,100,30,0.18);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
 
-    html.dark .app-footer {
-      background: #111111 !important;
-      border-top: 1px solid #2a2a2a !important;
-      color: #444444 !important;
+    .footer-left  { flex: 1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.95; }
+    .footer-center { flex: 1; text-align: center; opacity: 0.85; font-size: 11.5px; }
+    .footer-right { flex: 1; display: flex; align-items: center; justify-content: flex-end; }
+
+    .footer-time {
+      font-weight: 700;
+      font-size: 17px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.6px;
+    }
+
+    /* Dark mode */
+    :host-context(html.dark) .app-footer {
+      background: linear-gradient(135deg, rgba(0,80,30,0.97) 0%, rgba(0,122,46,0.95) 100%) !important;
+      border-top: 1px solid rgba(255,255,255,0.08) !important;
+      box-shadow: 0 -2px 16px rgba(0,0,0,0.4) !important;
     }
   `]
 })
-export class FooterComponent {}
+export class FooterComponent implements OnInit, OnDestroy {
+
+  horaActual   = '';
+  nombreInst   = 'SSDC';
+  appSubtitulo = 'Sistema de Selección Docente';
+  anio         = new Date().getFullYear();
+
+  private timer: any;
+
+  constructor(
+    private logoService: LogoService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
+  ) {}
+
+  ngOnInit() {
+    // Cargar nombres desde caché inmediatamente
+    const cached = localStorage.getItem('inst_nombreCorto');
+    const sub    = localStorage.getItem('inst_appName');
+    if (cached) this.nombreInst   = cached;
+    if (sub)    this.appSubtitulo = sub;
+
+    // Suscribirse a cambios del servicio
+    this.logoService.getNombre().subscribe(nombre => {
+      this.nombreInst   = localStorage.getItem('inst_nombreCorto') || nombre || 'SSDC';
+      this.appSubtitulo = localStorage.getItem('inst_appName') || 'Sistema de Selección Docente';
+      this.cdr.markForCheck();
+    });
+
+    // Timer dentro de NgZone para que Angular detecte cambios automáticamente
+    this.ngZone.runOutsideAngular(() => {
+      this.actualizarHora();
+      this.timer = setInterval(() => {
+        this.ngZone.run(() => {
+          this.actualizarHora();
+          this.cdr.detectChanges();
+        });
+      }, 1000);
+    });
+  }
+
+  ngOnDestroy() {
+    clearInterval(this.timer);
+  }
+
+  private actualizarHora() {
+    const now = new Date();
+    this.horaActual = now.toLocaleTimeString('es-EC', {
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+    });
+  }
+}

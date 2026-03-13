@@ -191,8 +191,7 @@ $dark-green:   #016630;
 
   .main-container {
     background-color: #000000 !important;
-    background-image:
-      radial-gradient(circle, rgba(0,210,80,0.04) 1px, transparent 1px) !important;
+    background-image: radial-gradient(circle, rgba(0,210,80,0.04) 1px, transparent 1px) !important;
     background-size: 28px 28px !important;
   }
 
@@ -205,10 +204,7 @@ $dark-green:   #016630;
     background: rgba(10,10,10,0.9) !important;
     backdrop-filter: blur(12px) !important;
     border-color: rgba(0,210,80,0.1) !important;
-    box-shadow:
-      0 1px 0 rgba(255,255,255,0.03) inset,
-      0 4px 24px rgba(0,0,0,0.8),
-      0 1px 4px rgba(0,0,0,0.5) !important;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 4px 24px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.5) !important;
 
     &::before {
       background: linear-gradient(90deg, transparent, rgba(0,210,80,0.3), transparent) !important;
@@ -220,11 +216,7 @@ $dark-green:   #016630;
     &:hover {
       background: rgba(14,14,14,0.95) !important;
       border-color: rgba(0,210,80,0.26) !important;
-      box-shadow:
-        0 1px 0 rgba(255,255,255,0.03) inset,
-        0 24px 48px rgba(0,0,0,0.95),
-        0 0 0 1px rgba(0,210,80,0.12),
-        0 0 32px rgba(0,210,80,0.06) !important;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 24px 48px rgba(0,0,0,0.95), 0 0 0 1px rgba(0,210,80,0.12), 0 0 32px rgba(0,210,80,0.06) !important;
 
       .card-icon-wrap {
         background: rgba(0,210,80,0.1) !important;

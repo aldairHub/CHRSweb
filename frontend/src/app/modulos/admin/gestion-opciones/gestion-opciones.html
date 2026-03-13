@@ -1,116 +1,101 @@
-<app-navbar></app-navbar>
+<div class="go-page">
 
-<div class="main-container">
-  <div class="content-wrapper">
-
-    <header class="dashboard-header">
-      <h1>Gestión de Módulos y Opciones</h1>
-      <p>Configura qué opciones tiene cada rol y si son de solo lectura.</p>
-    </header>
-
-    <div class="opciones-layout">
-
-      <!-- ── Panel izquierdo: lista de roles ─────────────────────── -->
-      <aside class="roles-panel">
-        <h2 class="panel-title">Roles</h2>
-        <ul class="roles-list">
-          <li *ngFor="let rol of roles"
-              class="rol-item"
-              [class.activo]="rol.idRolApp === rolSeleccionado"
-              (click)="seleccionarRol(rol)">
-            <span class="rol-nombre">{{ rol.nombre }}</span>
-            <span class="modulo-badge"
-                  [class.sin-modulo]="!rol.nombreModulo">
-              {{ rol.nombreModulo || 'Sin módulo' }}
-            </span>
-          </li>
-        </ul>
-      </aside>
-
-      <!-- ── Panel derecho: opciones del módulo ─────────────────── -->
-      <main class="opciones-panel">
-
-        <!-- Sin selección -->
-        <div *ngIf="!rolSeleccionado" class="empty-state">
-          <p>Selecciona un rol para ver y configurar sus opciones.</p>
-        </div>
-
-        <!-- Cargando -->
-        <div *ngIf="rolSeleccionado && cargandoOpciones" class="loading-state">
-          <p>Cargando opciones...</p>
-        </div>
-
-        <!-- Tabla de opciones -->
-        <ng-container *ngIf="rolSeleccionado && !cargandoOpciones">
-          <div class="opciones-header">
-            <h2>{{ nombreRolActual }}</h2>
-            <span class="modulo-label">
-              Módulo: <strong>{{ moduloDelRol }}</strong>
-            </span>
-          </div>
-
-          <p class="opciones-hint">
-            Solo se muestran las opciones del módulo asignado al rol.
-          </p>
-
-          <div *ngIf="opciones.length === 0 && !cargando" class="empty-state">
-            <p>Este rol no tiene módulo asignado o el módulo no tiene opciones.</p>
-            <p>Asigna un módulo en Gestión de Roles.</p>
-          </div>
-
-          <table *ngIf="opciones.length > 0" class="opciones-table">
-            <thead>
-            <tr>
-              <th>Opción</th>
-              <th>Ruta</th>
-              <th class="center">Habilitada</th>
-              <th class="center">Solo lectura</th>
-            </tr>
-            </thead>
-            <tbody>
-        <!-- SKELETON LOADER -->
-        <ng-container *ngIf="cargando">
-          <tr class="skeleton-row-tr" *ngFor="let s of [1,2,3,4,5]">
-            <td><div class="skeleton-cell skeleton-cell--avatar"></div></td>
-            <td><div class="skeleton-cell skeleton-cell--lg"></div></td>
-            <td><div class="skeleton-cell skeleton-cell--md"></div></td>
-            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
-            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
-          </tr>
-        </ng-container>
-            <ng-container *ngIf="!cargando">
-            <tr *ngFor="let op of opciones">
-              <td>
-                <strong>{{ op.nombre }}</strong>
-                <br>
-                <small class="text-muted">{{ op.descripcion }}</small>
-              </td>
-              <td>
-                <code>{{ op.ruta }}</code>
-              </td>
-              <td class="center">
-                <input type="checkbox"
-                       [checked]="op.asignada"
-                       (change)="toggleOpcion(op)">
-              </td>
-              <td class="center">
-                <input type="checkbox"
-                       [checked]="op.solo_lectura"
-                       [disabled]="!op.asignada"
-                       [title]="!op.asignada ? 'Habilita la opción primero' : ''">
-                <!-- click manual porque (change) con [disabled] es inconsistente -->
-                <span *ngIf="op.asignada"
-                      class="toggle-overlay"
-                      (click)="toggleSoloLectura(op)">
-                  </span>
-              </td>
-            </tr>
-            </ng-container>
-            </tbody>
-          </table>
-        </ng-container>
-      </main>
+  <!-- HEADER -->
+  <div class="go-header">
+    <div>
+      <h1 class="go-title">Gestión de Módulos y Opciones</h1>
+      <p class="go-subtitle">Configura qué opciones tiene acceso cada rol</p>
     </div>
   </div>
+
+  <div class="go-layout">
+
+    <!-- ── Panel izquierdo: lista de roles ─────────────── -->
+    <aside class="roles-panel">
+      <p class="panel-title">ROLES</p>
+      <ul class="roles-list">
+        <li *ngFor="let rol of roles"
+            class="rol-item"
+            [class.activo]="rol.idRolApp === rolSeleccionado"
+            (click)="seleccionarRol(rol)">
+          <span class="rol-nombre">{{ rol.nombre }}</span>
+          <span class="modulo-badge" [class.sin-modulo]="!rol.nombreModulo">
+            {{ rol.nombreModulo || 'Sin módulo' }}
+          </span>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- ── Panel derecho: opciones ─────────────────────── -->
+    <main class="opciones-panel">
+
+      <!-- Sin selección -->
+      <div *ngIf="!rolSeleccionado" class="empty-state">
+        <div class="empty-icon"></div>
+        <p>Selecciona un rol para ver y configurar sus opciones</p>
+      </div>
+
+      <!-- Cargando -->
+      <div *ngIf="rolSeleccionado && cargandoOpciones" class="empty-state">
+        <div class="spinner-wrap">
+          <span class="spinner"></span>
+        </div>
+        <p>Cargando opciones...</p>
+      </div>
+
+      <!-- Contenido -->
+      <ng-container *ngIf="rolSeleccionado && !cargandoOpciones">
+
+        <!-- Header del panel -->
+        <div class="panel-header">
+          <div class="panel-header-left">
+            <h2>{{ nombreRolActual }}</h2>
+            <span class="modulo-chip">Módulo: <strong>{{ moduloDelRol }}</strong></span>
+          </div>
+        </div>
+        <p class="panel-hint">Solo se muestran las opciones del módulo asignado al rol.</p>
+
+        <!-- Sin opciones -->
+        <div *ngIf="opciones.length === 0" class="empty-state">
+          <div class="empty-icon">📭</div>
+          <p>Este rol no tiene módulo asignado o el módulo no tiene opciones.</p>
+          <small>Asigna un módulo en Gestión de Roles.</small>
+        </div>
+
+        <!-- Tabla estilo consistente con el resto del sistema -->
+        <div *ngIf="opciones.length > 0" class="table-wrap">
+          <table class="opciones-table">
+            <thead>
+              <tr>
+                <th>Opción</th>
+                <th>Ruta</th>
+                <th class="col-center">Habilitada</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let op of opciones" [class.row-active]="op.asignada">
+                <td>
+                  <div class="op-name">{{ op.nombre }}</div>
+                  <div class="op-desc">{{ op.descripcion }}</div>
+                </td>
+                <td>
+                  <span class="ruta-badge">{{ op.ruta }}</span>
+                </td>
+                <td class="col-center">
+                  <label class="toggle">
+                    <input type="checkbox"
+                           [checked]="op.asignada"
+                           (change)="toggleOpcion(op)"/>
+                    <span class="slider"></span>
+                  </label>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </ng-container>
+    </main>
+  </div>
+
 </div>
-<app-toast></app-toast>

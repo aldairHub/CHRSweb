@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { NavbarComponent } from '../../../component/navbar';
-import { FooterComponent } from '../../../component/footer';
 
 export interface PostulanteLista {
   idPostulacion:       number;
@@ -20,7 +18,7 @@ export interface PostulanteLista {
 @Component({
   selector: 'app-postulantes',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './postulantes.html',
   styleUrls: ['./postulantes.scss']
 })
