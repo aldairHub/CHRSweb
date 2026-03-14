@@ -1,7 +1,6 @@
 // evaluacion-docente.routes.ts
 // Rutas del módulo entrevistas-docentes
 
-// evaluacion-docente.routes.ts
 import { Routes } from '@angular/router';
 
 export const EVALUACION_DOCENTE_ROUTES: Routes = [
@@ -11,6 +10,13 @@ export const EVALUACION_DOCENTE_ROUTES: Routes = [
     loadComponent: () =>
       import('./entrevistas-lista/entrevistas-lista.component')
         .then(m => m.EntrevistasListaComponent)
+  },
+  {
+    path: 'dashboard',
+    title: 'SSDC - Dashboard Evaluación',
+    loadComponent: () =>
+      import('./dashboard/dashboard.component')
+        .then(m => m.EvaluacionDashboardComponent)
   },
   {
     path: 'fases',
