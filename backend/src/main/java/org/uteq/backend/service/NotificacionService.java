@@ -88,7 +88,6 @@ public class NotificacionService {
                 "PREPOSTULACION", idPrepostulacion
         );
     }
-
     /** Llama desde PrepostulacionService.actualizarEstado() cuando estado = RECHAZADO */
     public void notifPostulanteRechazado(Long idUsuarioPostulante, Long idPrepostulacion, String motivo) {
         notificarUsuario(
