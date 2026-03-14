@@ -121,12 +121,13 @@ public class DashboardController {
         OffsetDateTime inicioDia = LocalDate.now().atStartOfDay().atOffset(ZoneOffset.UTC);
         OffsetDateTime finDia    = LocalDate.now().atTime(LocalTime.MAX).atOffset(ZoneOffset.UTC);
 
-        // Agrupar por operacion+tabla+idRegistro para evitar duplicados
-        // (la auditoría guarda un registro por cada campo cambiado)
+        // Agrupar para evitar duplicados:
+        // Clave = usuario + operacion + tabla + minuto exacto
+        // Así colapsa: múltiples campos del mismo registro Y múltiples registros creados en ráfaga
         Map<String, AudCambio> agrupados = new LinkedHashMap<>();
 
         audCambioRepository
-                .findAll(PageRequest.of(0, 200, Sort.by("fecha").descending()))
+                .findAll(PageRequest.of(0, 500, Sort.by("fecha").descending()))
                 .getContent()
                 .stream()
                 // Solo actividades de hoy
@@ -136,7 +137,7 @@ public class DashboardController {
                 // Solo tablas relevantes al rol
                 .filter(a -> a.getTabla() != null
                         && tablasPermitidas.contains(a.getTabla().toLowerCase().trim()))
-                // Ignorar campos técnicos (token_version, password, etc)
+                // Ignorar campos técnicos
                 .filter(a -> {
                     if (a.getCampo() == null) return true;
                     String c = a.getCampo().toLowerCase().trim();
@@ -146,14 +147,19 @@ public class DashboardController {
                 .filter(a -> soloUsuario == null || soloUsuario.isBlank()
                         || soloUsuario.equalsIgnoreCase(a.getUsuarioApp()))
                 .forEach(a -> {
-                    // Clave única: operacion + tabla + idRegistro
-                    String clave = a.getOperacion() + "|" + a.getTabla() + "|" + a.getIdRegistro();
-                    // Guardar solo el primer registro de cada grupo (el más reciente)
-                    // Preferir el que tenga un campo con nombre/titulo/estado (más descriptivo)
+                    String usuario = a.getUsuarioApp() != null ? a.getUsuarioApp() : a.getUsuarioBd();
+                    // Agrupar por: usuario + operacion + tabla + minuto (HH:mm)
+                    // Esto colapsa tanto múltiples campos del mismo registro
+                    // como múltiples registros creados en el mismo minuto por el mismo usuario
+                    String minuto = a.getFecha() != null
+                            ? a.getFecha().format(DateTimeFormatter.ofPattern("HH:mm"))
+                            : "00:00";
+                    String clave = usuario + "|" + a.getOperacion() + "|" + a.getTabla() + "|" + minuto;
+
                     if (!agrupados.containsKey(clave)) {
                         agrupados.put(clave, a);
                     } else {
-                        // Si el nuevo tiene un campo más descriptivo, reemplazar
+                        // Preferir el registro con campo más descriptivo
                         AudCambio actual = agrupados.get(clave);
                         if (esCampoDescriptivo(a.getCampo()) && !esCampoDescriptivo(actual.getCampo())) {
                             agrupados.put(clave, a);
@@ -183,135 +189,191 @@ public class DashboardController {
     }
 
     private String humanizar(AudCambio a) {
-        String tabla  = traducirTabla(a.getTabla());
-        String op     = a.getOperacion();
-        String campo  = a.getCampo();
-        String valor  = a.getValorDespues();
+        String tabla = traducirTabla(a.getTabla());
+        String op    = a.getOperacion();
+        String campo = a.getCampo();
+        String valor = a.getValorDespues();
 
-        // INSERT — nuevo registro
         if ("INSERT".equalsIgnoreCase(op)) {
-            if (valor != null && !valor.isBlank() && valor.length() < 80
-                    && campo != null && (campo.contains("nombre") || campo.contains("titulo") || campo.contains("descripcion"))) {
-                return "Se creó " + tabla + ": \"" + valor + "\"";
-            }
-            return "Se creó un nuevo " + tabla;
+            // Mensajes específicos por tabla en INSERT
+            return switch (a.getTabla() != null ? a.getTabla().toLowerCase() : "") {
+                case "usuario"              -> "Nuevo usuario registrado en el sistema";
+                case "convocatoria"         -> valor != null && campo != null && campo.contains("titulo") && valor.length() < 80
+                        ? "Nueva convocatoria publicada: \"" + valor + "\""
+                        : "Nueva convocatoria creada";
+                case "solicitud_docente"    -> "Nueva solicitud docente enviada";
+                case "prepostulacion"       -> "Nueva postulación recibida";
+                case "reunion"              -> "Nueva entrevista programada";
+                case "evaluacion"           -> "Nueva evaluación registrada";
+                case "proceso_evaluacion"   -> "Nuevo proceso de evaluación iniciado";
+                case "carrera"              -> valor != null && campo != null && campo.contains("nombre") && valor.length() < 60
+                        ? "Nueva carrera registrada: \"" + valor + "\""
+                        : "Nueva carrera registrada";
+                case "facultad"             -> valor != null && campo != null && campo.contains("nombre") && valor.length() < 60
+                        ? "Nueva facultad registrada: \"" + valor + "\""
+                        : "Nueva facultad registrada";
+                case "documento_postulante" -> "Nuevo documento subido";
+                case "historial_backup"     -> "Respaldo de base de datos ejecutado";
+                case "config_institucion"   -> "Configuración institucional actualizada";
+                case "fase_evaluacion"      -> "Nueva fase de evaluación configurada";
+                case "plantilla_evaluacion" -> "Nueva plantilla de evaluación creada";
+                case "criterio_evaluacion"  -> "Nuevo criterio de evaluación agregado";
+                default                     -> "Nuevo " + tabla + " registrado";
+            };
         }
 
-        // DELETE
         if ("DELETE".equalsIgnoreCase(op)) {
-            return "Se eliminó un " + tabla;
+            return switch (a.getTabla() != null ? a.getTabla().toLowerCase() : "") {
+                case "usuario"              -> "Usuario eliminado del sistema";
+                case "convocatoria"         -> "Convocatoria eliminada";
+                case "solicitud_docente"    -> "Solicitud docente eliminada";
+                case "reunion"              -> "Entrevista cancelada y eliminada";
+                case "documento_postulante" -> "Documento eliminado";
+                case "fase_evaluacion"      -> "Fase de evaluación eliminada";
+                case "criterio_evaluacion"  -> "Criterio de evaluación eliminado";
+                default                     -> tabla.substring(0, 1).toUpperCase() + tabla.substring(1) + " eliminado";
+            };
         }
 
-        // UPDATE — describir el cambio en lenguaje natural
         if ("UPDATE".equalsIgnoreCase(op)) {
-            return describeCambio(tabla, campo, valor);
+            return describeCambio(a.getTabla(), tabla, campo, valor);
         }
 
         return "Cambio en " + tabla;
     }
 
-    private String describeCambio(String tabla, String campo, String valorDespues) {
+    private String describeCambio(String rawTabla, String tabla, String campo, String valorDespues) {
         if (campo == null) return "Se actualizó " + tabla;
+        String raw = rawTabla != null ? rawTabla.toLowerCase() : "";
 
-        return switch (campo.toLowerCase()) {
-            // Usuario
-            case "estado"                   -> {
-                boolean enc = "true".equalsIgnoreCase(valorDespues) || "1".equals(valorDespues) || "activo".equalsIgnoreCase(valorDespues);
-                yield (enc ? "Se activó " : "Se desactivó ") + tabla;
-            }
-            case "nombre_usuario", "nombre_completo", "nombres" ->
-                    "Se actualizó el nombre en " + tabla;
-            case "correo", "email"          -> "Se cambió el correo de " + tabla;
-            case "rol", "rol_app", "id_rol" -> "Se cambió el rol de " + tabla;
-            case "primer_login"             -> "Completó configuración inicial";
-
-            // Convocatoria
-            case "estado_convocatoria"      -> {
-                String est = valorDespues != null ? valorDespues.toUpperCase() : "";
-                yield switch (est) {
-                    case "ABIERTA"   -> "Se abrió una convocatoria";
-                    case "CERRADA"   -> "Se cerró una convocatoria";
-                    case "PUBLICADA" -> "Se publicó una convocatoria";
-                    default          -> "Se actualizó el estado de convocatoria";
-                };
-            }
-            case "titulo_convocatoria", "titulo" ->
-                    "Se actualizó el título de " + tabla + (valorDespues != null && valorDespues.length() < 60 ? ": \"" + valorDespues + "\"" : "");
-            case "fecha_inicio", "fecha_fin" ->
-                    "Se actualizó la fecha de " + tabla;
-
-            // Solicitud docente
-            case "estado_solicitud"         -> {
-                String est = valorDespues != null ? valorDespues.toLowerCase() : "";
-                yield switch (est) {
-                    case "aprobada"  -> "Se aprobó una solicitud docente";
-                    case "rechazada" -> "Se rechazó una solicitud docente";
-                    case "pendiente" -> "Nueva solicitud docente en revisión";
-                    default          -> "Se actualizó el estado de solicitud docente";
-                };
-            }
-
-            // Postulación
-            case "estado_revision"          -> {
-                String est = valorDespues != null ? valorDespues.toUpperCase() : "";
-                yield switch (est) {
-                    case "APROBADO"  -> "Se aprobó una postulación";
-                    case "RECHAZADO" -> "Se rechazó una postulación";
-                    case "PENDIENTE" -> "Nueva postulación recibida";
-                    default          -> "Se actualizó el estado de postulación";
-                };
-            }
-
-            // Reunión / entrevista
-            case "estado_reunion"           -> {
-                if (tabla.contains("reunión")) {
+        // Casos especiales por tabla — más descriptivos
+        if ("proceso_evaluacion".equals(raw)) {
+            return switch (campo.toLowerCase()) {
+                case "estado"              -> {
                     String est = valorDespues != null ? valorDespues.toLowerCase() : "";
                     yield switch (est) {
-                        case "programada"  -> "Se programó una entrevista";
-                        case "completada"  -> "Se completó una entrevista";
-                        case "cancelada"   -> "Se canceló una entrevista";
-                        default            -> "Se actualizó una entrevista";
+                        case "completado" -> "Proceso de evaluación finalizado";
+                        case "en_proceso" -> "Proceso de evaluación en curso";
+                        case "cancelado"  -> "Proceso de evaluación cancelado";
+                        default           -> "Estado de proceso de evaluación actualizado";
                     };
                 }
-                yield "Se actualizó " + tabla;
-            }
-            case "fecha_reunion", "hora_reunion" ->
-                    "Se reprogramó una entrevista";
-            case "enlace_reunion", "enlace"      ->
-                    "Se actualizó el enlace de entrevista";
+                case "puntaje_final", "calificacion_final" ->
+                        "Calificación final registrada en proceso de evaluación";
+                default -> "Proceso de evaluación actualizado";
+            };
+        }
 
-            // Evaluación
-            case "puntaje", "calificacion", "nota" ->
-                    "Se registró una calificación en " + tabla;
-            case "estado_evaluacion"        -> {
-                String est = valorDespues != null ? valorDespues.toLowerCase() : "";
-                yield "evaluada".equals(est) ? "Se completó una evaluación" : "Se actualizó una evaluación";
-            }
+        if ("reunion".equals(raw)) {
+            return switch (campo.toLowerCase()) {
+                case "estado_reunion", "estado" -> {
+                    String est = valorDespues != null ? valorDespues.toLowerCase() : "";
+                    yield switch (est) {
+                        case "completada"  -> "Entrevista completada exitosamente";
+                        case "cancelada"   -> "Entrevista cancelada";
+                        case "programada"  -> "Entrevista reprogramada";
+                        default            -> "Estado de entrevista actualizado";
+                    };
+                }
+                case "fecha_reunion"  -> "Fecha de entrevista actualizada";
+                case "hora_reunion"   -> "Hora de entrevista actualizada";
+                case "enlace", "enlace_reunion" -> "Enlace de entrevista actualizado";
+                default -> "Entrevista actualizada";
+            };
+        }
 
-            // Documento
-            case "estado_documento"         -> {
-                String est = valorDespues != null ? valorDespues.toUpperCase() : "";
-                yield switch (est) {
-                    case "APROBADO"  -> "Se aprobó un documento";
-                    case "RECHAZADO" -> "Se rechazó un documento";
-                    default          -> "Se actualizó un documento";
-                };
-            }
-            case "ruta_archivo", "nombre_archivo" ->
-                    "Se subió un documento";
+        if ("convocatoria".equals(raw)) {
+            return switch (campo.toLowerCase()) {
+                case "estado_convocatoria" -> {
+                    String est = valorDespues != null ? valorDespues.toUpperCase() : "";
+                    yield switch (est) {
+                        case "ABIERTA"   -> "Convocatoria abierta al público";
+                        case "CERRADA"   -> "Convocatoria cerrada";
+                        case "PUBLICADA" -> "Convocatoria publicada";
+                        case "BORRADOR"  -> "Convocatoria guardada como borrador";
+                        default          -> "Estado de convocatoria actualizado";
+                    };
+                }
+                case "titulo_convocatoria", "titulo" ->
+                        valorDespues != null && valorDespues.length() < 80
+                                ? "Título de convocatoria actualizado: \"" + valorDespues + "\""
+                                : "Título de convocatoria actualizado";
+                case "fecha_inicio" -> "Fecha de inicio de convocatoria modificada";
+                case "fecha_fin"    -> "Fecha de cierre de convocatoria modificada";
+                default -> "Convocatoria actualizada";
+            };
+        }
 
-            // Backup
-            case "destino_local", "destino_email" ->
-                    "Se actualizó la configuración de destino del respaldo";
+        if ("prepostulacion".equals(raw)) {
+            return switch (campo.toLowerCase()) {
+                case "estado_revision" -> {
+                    String est = valorDespues != null ? valorDespues.toUpperCase() : "";
+                    yield switch (est) {
+                        case "APROBADO"  -> "Postulación aprobada por el revisor";
+                        case "RECHAZADO" -> "Postulación rechazada por el revisor";
+                        case "PENDIENTE" -> "Postulación en revisión";
+                        default          -> "Estado de postulación actualizado";
+                    };
+                }
+                default -> "Postulación actualizada";
+            };
+        }
 
-            // Carrera / facultad
-            case "nombre_carrera"           ->
-                    "Se actualizó la carrera" + (valorDespues != null && valorDespues.length() < 60 ? ": \"" + valorDespues + "\"" : "");
-            case "nombre_facultad"          ->
-                    "Se actualizó la facultad" + (valorDespues != null && valorDespues.length() < 60 ? ": \"" + valorDespues + "\"" : "");
+        if ("solicitud_docente".equals(raw)) {
+            return switch (campo.toLowerCase()) {
+                case "estado_solicitud" -> {
+                    String est = valorDespues != null ? valorDespues.toLowerCase() : "";
+                    yield switch (est) {
+                        case "aprobada"  -> "Solicitud docente aprobada";
+                        case "rechazada" -> "Solicitud docente rechazada";
+                        case "pendiente" -> "Solicitud docente enviada a revisión";
+                        default          -> "Estado de solicitud docente actualizado";
+                    };
+                }
+                default -> "Solicitud docente actualizada";
+            };
+        }
 
-            default -> "Se actualizó " + tabla;
-        };
+        if ("documento_postulante".equals(raw)) {
+            return switch (campo.toLowerCase()) {
+                case "estado_documento" -> {
+                    String est = valorDespues != null ? valorDespues.toUpperCase() : "";
+                    yield switch (est) {
+                        case "APROBADO"  -> "Documento aprobado";
+                        case "RECHAZADO" -> "Documento rechazado";
+                        default          -> "Estado de documento actualizado";
+                    };
+                }
+                case "ruta_archivo", "nombre_archivo" -> "Documento actualizado";
+                default -> "Documento actualizado";
+            };
+        }
+
+        if ("usuario".equals(raw)) {
+            return switch (campo.toLowerCase()) {
+                case "estado", "activo"   -> "true".equalsIgnoreCase(valorDespues) || "1".equals(valorDespues)
+                        ? "Usuario activado en el sistema"
+                        : "Usuario desactivado en el sistema";
+                case "correo", "email"    -> "Correo electrónico de usuario actualizado";
+                case "rol", "id_rol_app"  -> "Rol de usuario modificado";
+                case "primer_login"       -> "Usuario completó su configuración inicial";
+                case "nombres", "apellidos", "nombre_usuario" -> "Datos personales de usuario actualizados";
+                default -> "Información de usuario actualizada";
+            };
+        }
+
+        if ("evaluacion".equals(raw)) {
+            return switch (campo.toLowerCase()) {
+                case "puntaje", "calificacion", "nota" -> "Calificación registrada en evaluación";
+                case "estado_evaluacion" -> "evaluada".equalsIgnoreCase(valorDespues)
+                        ? "Evaluación completada" : "Evaluación actualizada";
+                case "comentarios", "observaciones" -> "Comentarios de evaluación actualizados";
+                default -> "Evaluación actualizada";
+            };
+        }
+
+        // Fallback genérico para tablas no cubiertas arriba
+        return tabla.substring(0, 1).toUpperCase() + tabla.substring(1) + " actualizado";
     }
 
     private String traducirTabla(String tabla) {
