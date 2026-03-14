@@ -18,15 +18,13 @@ import org.uteq.backend.repository.UsuarioRepository;
 import org.uteq.backend.service.*;
 
 import java.security.SecureRandom;
-import java.util.*;
 import java.util.stream.Collectors;
 import org.uteq.backend.dto.RolAppDTO;
-import java.util.Collections;
+
 import java.util.List;
-import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.uteq.backend.util.CredencialesGenerator;
 
 @Service
 @Transactional

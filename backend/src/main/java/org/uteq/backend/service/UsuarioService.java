@@ -1,6 +1,5 @@
 package org.uteq.backend.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,7 +10,7 @@ import org.uteq.backend.entity.Usuario;
 import org.uteq.backend.repository.PostgresProcedureRepository;
 import org.uteq.backend.repository.UsuarioRepository;
 import org.uteq.backend.dto.CambiarClaveDTO;
-import org.uteq.backend.util.CredencialesGenerator;
+import org.uteq.backend.service.util.CredencialesGenerator;
 
 
 import java.util.List;

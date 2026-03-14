@@ -1,4 +1,4 @@
-package org.uteq.backend.util;
+package org.uteq.backend.service.util;
 
 import java.security.SecureRandom;
 import java.util.Random;

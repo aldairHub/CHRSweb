@@ -7,6 +7,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.uteq.backend.dto.ConfigBackupDTO;
 import org.uteq.backend.dto.HistorialBackupDTO;
@@ -42,6 +45,10 @@ public class BackupService {
     private final NotificacionService       notificacionService;
     private final DynamicMailService        dynamicMailService;
 
+    @Lazy
+    @Autowired
+    private BackupSchedulerService schedulerService;
+
     @Value("${spring.datasource.url}")
     private String datasourceUrl;
 
@@ -50,6 +57,20 @@ public class BackupService {
 
     @Value("${spring.datasource.password}")
     private String datasourcePassword;
+
+    // =========================================================================
+    // INIT SCHEDULER AL ARRANCAR
+    // =========================================================================
+
+    @PostConstruct
+    public void inicializarScheduler() {
+        try {
+            ConfigBackup cfg = configRepo.findFirstByOrderByIdConfigAsc().orElse(null);
+            if (cfg != null) schedulerService.reconfigurar(toConfigDTO(cfg));
+        } catch (Exception e) {
+            log.warn("No se pudo inicializar el scheduler de backup: {}", e.getMessage());
+        }
+    }
 
     // =========================================================================
     // CONFIG
@@ -95,7 +116,10 @@ public class BackupService {
         cfg.setHoraBackup3(num >= 3 && dto.getHoraBackup3() != null && !dto.getHoraBackup3().isBlank()
                 ? LocalTime.parse(dto.getHoraBackup3()) : null);
 
-        return toConfigDTO(configRepo.save(cfg));
+        ConfigBackupDTO resultado = toConfigDTO(configRepo.save(cfg));
+        // Notificar al scheduler para que se reconfigure sin tocar la BD
+        schedulerService.reconfigurar(resultado);
+        return resultado;
     }
 
     // =========================================================================
@@ -145,8 +169,8 @@ public class BackupService {
                     && !cfg.getRutaDestino().isBlank()) {
                 crearCarpetaSiNoExiste(cfg.getRutaDestino());
                 Files.copy(Paths.get(rutaZip),
-                           Paths.get(cfg.getRutaDestino(), nombreZip),
-                           StandardCopyOption.REPLACE_EXISTING);
+                        Paths.get(cfg.getRutaDestino(), nombreZip),
+                        StandardCopyOption.REPLACE_EXISTING);
                 log.info("Backup copiado a destino local: {}", cfg.getRutaDestino());
             }
 
@@ -168,11 +192,11 @@ public class BackupService {
 
             if (Boolean.TRUE.equals(cfg.getNotificarExito())) {
                 notificacionService.notificarRol(
-                    "admin", "success",
-                    "Backup exitoso ✅",
-                    "Backup " + cfg.getTipoBackup() + " completado. "
-                    + nombreZip + " (" + formatearTamano(tamano) + ") en " + duracion + "s.",
-                    "BACKUP", historial.getIdHistorial()
+                        "admin", "success",
+                        "Backup exitoso ✅",
+                        "Backup " + cfg.getTipoBackup() + " completado. "
+                                + nombreZip + " (" + formatearTamano(tamano) + ") en " + duracion + "s.",
+                        "BACKUP", historial.getIdHistorial()
                 );
             }
 
@@ -188,10 +212,10 @@ public class BackupService {
 
             if (Boolean.TRUE.equals(cfg.getNotificarError())) {
                 notificacionService.notificarRol(
-                    "admin", "error",
-                    "Error en backup ❌",
-                    "El backup falló: " + e.getMessage(),
-                    "BACKUP", null
+                        "admin", "error",
+                        "Error en backup ❌",
+                        "El backup falló: " + e.getMessage(),
+                        "BACKUP", null
                 );
             }
             log.error("Error en backup: {}", e.getMessage());
@@ -250,7 +274,7 @@ public class BackupService {
 
         if (exitCode != 0) {
             throw new RuntimeException(
-                "pg_dump falló (código " + exitCode + "): " + output);
+                    "pg_dump falló (código " + exitCode + "): " + output);
         }
     }
 
@@ -266,9 +290,9 @@ public class BackupService {
 
         String[] destinatarios = destino.split("[,;]");
         List<String> emails = Arrays.stream(destinatarios)
-            .map(String::trim)
-            .filter(e -> !e.isEmpty())
-            .collect(Collectors.toList());
+                .map(String::trim)
+                .filter(e -> !e.isEmpty())
+                .collect(Collectors.toList());
 
         if (emails.isEmpty()) {
             throw new RuntimeException("No se encontró ningún email de destino válido.");
@@ -281,13 +305,13 @@ public class BackupService {
         helper.setTo(emails.toArray(new String[0]));
         helper.setSubject("Backup BD — " + nombreZip);
         helper.setText(
-            "<h3>Backup de base de datos</h3>" +
-            "<p>Se adjunta el backup generado automáticamente.</p>" +
-            "<p><b>Archivo:</b> " + nombreZip + "<br>" +
-            "<b>Tamaño:</b> " + formatearTamano(tamano) + "<br>" +
-            "<b>Fecha:</b> " + LocalDateTime.now().format(
-                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) + "</p>",
-            true
+                "<h3>Backup de base de datos</h3>" +
+                        "<p>Se adjunta el backup generado automáticamente.</p>" +
+                        "<p><b>Archivo:</b> " + nombreZip + "<br>" +
+                        "<b>Tamaño:</b> " + formatearTamano(tamano) + "<br>" +
+                        "<b>Fecha:</b> " + LocalDateTime.now().format(
+                        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) + "</p>",
+                true
         );
 
         FileSystemResource file = new FileSystemResource(new File(rutaZip));
