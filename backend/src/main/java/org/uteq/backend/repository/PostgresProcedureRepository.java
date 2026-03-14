@@ -536,6 +536,11 @@ public class PostgresProcedureRepository {
         }
         throw new RuntimeException("sp_agregar_documento sin resultado");
     }
+    public Long iniciarProcesoEvaluacion(Long idPostulante, Long idSolicitud) {
+        return jdbcTemplate.queryForObject(
+                "SELECT public.iniciar_proceso_evaluacion(?, ?)",
+                Long.class, idPostulante, idSolicitud);
+    }
     /** Repostular SIN url_prerrequisitos */
     public Long repostular(String identificacion, Long idSolicitud,
                            String urlCedula, String urlFoto) {

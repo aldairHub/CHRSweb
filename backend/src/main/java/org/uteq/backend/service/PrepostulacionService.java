@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.uteq.backend.dto.RegistroSpResultDTO;
+import org.uteq.backend.entity.Postulante;
 import org.uteq.backend.entity.Prepostulacion;
 import org.uteq.backend.repository.*;
 import org.uteq.backend.dto.PrepostulacionResponseDTO;
@@ -17,8 +18,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class PrepostulacionService {
-    private static final Logger log =
-            LoggerFactory.getLogger(PrepostulacionService.class);
+    private static final Logger log = LoggerFactory.getLogger(PrepostulacionService.class);
+
     private final NotificacionService notifService;
     private final PrepostulacionRepository prepostulacionRepository;
     private final SupabaseStorageService supabaseService;
@@ -29,8 +30,12 @@ public class PrepostulacionService {
     private final PostgresProcedureRepository postgresProcedureRepository;
     private final AesCipherService aesCipherService;
     private final PrepostulacionDocumentoRepository documentoRepository;
+    private final PostulanteRepository postulanteRepository;
+    private final PrepostulacionSolicitudRepository prepostulacionSolicitudRepository;
+
     public PrepostulacionService(
-            NotificacionService notifService, PrepostulacionRepository prepostulacionRepository,
+            NotificacionService notifService,
+            PrepostulacionRepository prepostulacionRepository,
             SupabaseStorageService supabaseService,
             UsuarioRepository usuarioRepository,
             EmailService emailService,
@@ -38,7 +43,9 @@ public class PrepostulacionService {
             RolAppRepository rolAppRepository,
             PostgresProcedureRepository postgresProcedureRepository,
             AesCipherService aesCipherService,
-            PrepostulacionDocumentoRepository documentoRepository
+            PrepostulacionDocumentoRepository documentoRepository,
+            PostulanteRepository postulanteRepository,
+            PrepostulacionSolicitudRepository prepostulacionSolicitudRepository
     ) {
         this.notifService = notifService;
         this.prepostulacionRepository = prepostulacionRepository;
@@ -50,16 +57,14 @@ public class PrepostulacionService {
         this.postgresProcedureRepository = postgresProcedureRepository;
         this.aesCipherService = aesCipherService;
         this.documentoRepository = documentoRepository;
+        this.postulanteRepository = postulanteRepository;
+        this.prepostulacionSolicitudRepository = prepostulacionSolicitudRepository;
     }
 
     // =========================================================================
     // REGISTRO INICIAL
     // =========================================================================
 
-    /**
-     * Registra una nueva prepostulación y la asocia a la solicitud elegida por el postulante.
-     *
-     **/
     @Transactional
     public PrepostulacionResponseDTO procesarPrepostulacion(
             String correo,
@@ -68,44 +73,32 @@ public class PrepostulacionService {
             String apellidos,
             MultipartFile archivoCedula,
             MultipartFile archivoFoto,
-            List<MultipartFile> archivosDocumentos,      // NUEVO: lista de PDFs
-            List<String> descripcionesDocumentos,         // NUEVO: lista de descripciones
+            List<MultipartFile> archivosDocumentos,
+            List<String> descripcionesDocumentos,
             Long idSolicitud
     ) {
         log.info("Procesando prepostulacion para identificacion: {}", cedula);
 
-        // Subir cédula y foto (sin cambios)
         String urlCedula, urlFoto;
         try {
             log.debug("Subiendo cedula a Supabase...");
             urlCedula = supabaseService.subirArchivo(archivoCedula, "cedulas", cedula);
-
             log.debug("Subiendo foto a Supabase...");
             urlFoto = supabaseService.subirArchivo(archivoFoto, "fotos", cedula);
-
             log.info("Archivos base de prepostulacion subidos exitosamente");
         } catch (Exception e) {
             log.error("Error al subir archivos base: {}", e.getMessage());
             throw new RuntimeException("Error al subir archivos: " + e.getMessage());
         }
 
-        // Guardar prepostulacion en BD via stored procedure (sin url_prerrequisitos)
         Long idPrepostulacion = postgresProcedureRepository.registrarPrepostulacion(
-                nombres,
-                apellidos,
-                cedula,
-                correo,
-                urlCedula,
-                urlFoto,
-                idSolicitud
-        );
+                nombres, apellidos, cedula, correo, urlCedula, urlFoto, idSolicitud);
 
         log.info("Prepostulacion guardada con ID: {}", idPrepostulacion);
         if (idSolicitud != null) {
             log.info("Prepostulacion {} vinculada a solicitud {}", idPrepostulacion, idSolicitud);
         }
 
-        // Subir y registrar cada documento académico individualmente
         String tag = cedula + "_" + System.currentTimeMillis();
         for (int i = 0; i < archivosDocumentos.size(); i++) {
             MultipartFile archivo = archivosDocumentos.get(i);
@@ -115,12 +108,7 @@ public class PrepostulacionService {
             try {
                 log.debug("Subiendo documento academico {} de {}: {}", i + 1, archivosDocumentos.size(), descripcion);
                 String urlDoc = supabaseService.subirArchivo(archivo, "documentos_academicos", tag + "_" + i);
-
-                postgresProcedureRepository.agregarDocumentoPrepostulacion(
-                        idPrepostulacion,
-                        descripcion,
-                        urlDoc
-                );
+                postgresProcedureRepository.agregarDocumentoPrepostulacion(idPrepostulacion, descripcion, urlDoc);
                 log.debug("Documento {} registrado correctamente", i + 1);
             } catch (Exception e) {
                 log.error("Error al subir documento academico {}: {}", i + 1, e.getMessage());
@@ -131,97 +119,16 @@ public class PrepostulacionService {
         log.info("Prepostulacion {} completada con {} documento(s) academico(s)",
                 idPrepostulacion, archivosDocumentos.size());
 
-        // Notificar a todos los revisores que llegó nueva prepostulación
-        notifService.notifRevisorNuevaPrepostulacion(
-                idPrepostulacion,
-                nombres + " " + apellidos
-        );
+        notifService.notifRevisorNuevaPrepostulacion(idPrepostulacion, nombres + " " + apellidos);
 
         return new PrepostulacionResponseDTO(
-                "Solicitud registrada exitosamente",
-                correo,
-                idPrepostulacion,
-                true,
-                LocalDateTime.now()
-        );
+                "Solicitud registrada exitosamente", correo, idPrepostulacion, true, LocalDateTime.now());
     }
-//    @Transactional
-//    public PrepostulacionResponseDTO procesarPrepostulacion(
-//            String correo,
-//            String cedula,
-//            String nombres,
-//            String apellidos,
-//            MultipartFile archivoCedula,
-//            MultipartFile archivoFoto,
-//            MultipartFile archivoPrerrequisitos,
-//            Long idSolicitud
-//    ) {
-////        System.out.println("🔄 Procesando prepostulación para identificación: " + cedula);
-//        log.info("Procesando prepostulacion para identificacion: {}", cedula);
-//        // Subir archivos a Supabase
-//        String urlCedula, urlFoto, urlPrerrequisitos;
-//        try {
-////            System.out.println("📤 Subiendo cédula a Supabase...");
-//            log.debug("Subiendo id a Supabase...");
-//            urlCedula = supabaseService.subirArchivo(archivoCedula, "cedulas", cedula);
-//
-////            System.out.println("📤 Subiendo foto a Supabase...");
-//            log.debug("Subiendo foto a Supabase...");
-//            urlFoto = supabaseService.subirArchivo(archivoFoto, "fotos", cedula);
-//
-////            System.out.println("📤 Subiendo prerrequisitos a Supabase...");
-//            log.debug("Subiendo prerrequisitos a Supabase...");
-//            urlPrerrequisitos = supabaseService.subirArchivo(archivoPrerrequisitos, "prerrequisitos", cedula);
-//
-////            System.out.println("✅ Todos los archivos subidos exitosamente");
-//            log.info("Archivos de prepostulacion subidos exitosamente");
-//        } catch (Exception e) {
-////            System.err.println("❌ Error al subir archivos: " + e.getMessage());
-//            log.error("Error al subir archivos: {}", e.getMessage());
-//            throw new RuntimeException("Error al subir archivos: " + e.getMessage());
-//        }
-//
-//        // Guardar en BD via stored procedure
-//        Long idPrepostulacion = postgresProcedureRepository.registrarPrepostulacion(
-//                nombres,
-//                apellidos,
-//                cedula,
-//                correo,
-//                urlCedula,
-//                urlFoto,
-//                urlPrerrequisitos,
-//                idSolicitud
-//        );
-//
-////        System.out.println("💾 Prepostulación guardada en BD con ID: " + idPrepostulacion);
-//         log.info("Prepostulacion guardada con ID: {}", idPrepostulacion);
-//        if (idSolicitud != null) {
-////            System.out.println("✅ Prepostulacion " + idPrepostulacion + " amarrada a solicitud " + idSolicitud);
-//             log.info("Prepostulacion {} vinculada a solicitud {}",
-//                    idPrepostulacion, idSolicitud);
-//
-//        }
-//
-//        return new PrepostulacionResponseDTO(
-//                "Solicitud registrada exitosamente",
-//                correo,
-//                idPrepostulacion,
-//                true,
-//                LocalDateTime.now()
-//        );
-//    }
 
     // =========================================================================
     // REPOSTULACIÓN
     // =========================================================================
 
-    /**
-     * Re-postulación: crea una NUEVA fila en prepostulacion (mantiene historial).
-     * Solo permitido si la última postulación de esa cédula fue RECHAZADA.
-     * La validación del estado RECHAZADO es delegada al stored procedure (atomicidad garantizada).
-     *
-     * @param idSolicitud La solicitud a la que aplica ahora (puede ser distinta a la anterior)
-     */
     @Transactional
     public PrepostulacionResponseDTO repostular(
             String cedula,
@@ -230,7 +137,6 @@ public class PrepostulacionService {
             MultipartFile archivoPrerrequisitos,
             Long idSolicitud
     ) {
-        // 1. Subir nuevos documentos a Supabase
         String urlCedula, urlFoto, urlPrerrequisitos;
         try {
             String tag = cedula + "_repost_" + System.currentTimeMillis();
@@ -241,15 +147,12 @@ public class PrepostulacionService {
             throw new RuntimeException("Error al subir documentos: " + e.getMessage());
         }
 
-        // 2. El SP valida RECHAZADO, copia datos anteriores e inserta nueva fila
         try {
             Long idNuevaPrepostulacion = postgresProcedureRepository.repostular(
-                    cedula, idSolicitud, urlCedula, urlFoto, urlPrerrequisitos
-            );
+                    cedula, idSolicitud, urlCedula, urlFoto, urlPrerrequisitos);
 
-            System.out.println("💾 Re-postulación guardada como nueva fila con ID: " + idNuevaPrepostulacion);
+            System.out.println("Re-postulación guardada como nueva fila con ID: " + idNuevaPrepostulacion);
 
-            // 3. Obtener correo del registro más reciente para la respuesta
             String correo = prepostulacionRepository
                     .findTopByIdentificacionOrderByFechaEnvioDesc(cedula)
                     .map(Prepostulacion::getCorreo)
@@ -257,11 +160,7 @@ public class PrepostulacionService {
 
             return new PrepostulacionResponseDTO(
                     "Re-postulación enviada. Su solicitud está nuevamente en revisión.",
-                    correo,
-                    idNuevaPrepostulacion,
-                    true,
-                    LocalDateTime.now()
-            );
+                    correo, idNuevaPrepostulacion, true, LocalDateTime.now());
         } catch (Exception e) {
             throw new RuntimeException(extraerMensajeTrigger(e));
         }
@@ -300,9 +199,6 @@ public class PrepostulacionService {
         return prepostulacionRepository.findByEstadoRevision(estado).size();
     }
 
-    /**
-     * Retorna el estado de la ÚLTIMA postulación de una cédula.
-     */
     public String obtenerEstadoPorCedula(String cedula) {
         Prepostulacion ultima = prepostulacionRepository
                 .findTopByIdentificacionOrderByFechaEnvioDesc(cedula)
@@ -318,8 +214,7 @@ public class PrepostulacionService {
                         p.getIdentificacion().toLowerCase().contains(queryLower) ||
                                 p.getNombres().toLowerCase().contains(queryLower) ||
                                 p.getApellidos().toLowerCase().contains(queryLower) ||
-                                p.getCorreo().toLowerCase().contains(queryLower)
-                )
+                                p.getCorreo().toLowerCase().contains(queryLower))
                 .collect(Collectors.toList());
     }
 
@@ -329,11 +224,6 @@ public class PrepostulacionService {
 
     @Transactional
     public void actualizarEstado(Long id, String nuevoEstado, String observaciones, Long idRevisor) {
-
-//        System.out.println("\n═══════════════════════════════════════════");
-//        System.out.println("METODO actualizarEstado LLAMADO");
-//        System.out.println("ID: " + id + " | Estado: " + nuevoEstado);
-//        System.out.println("═══════════════════════════════════════════");
         log.info("actualizarEstado -> id={}, estado={}", id, nuevoEstado);
         Prepostulacion prepostulacion = obtenerPorId(id);
 
@@ -341,29 +231,24 @@ public class PrepostulacionService {
         prepostulacion.setObservacionesRevision(observaciones);
         prepostulacion.setFechaRevision(LocalDateTime.now());
         prepostulacion.setIdRevisor(idRevisor);
-
         prepostulacionRepository.save(prepostulacion);
 
-//        System.out.println("✅ Estado de prepostulación " + id + " actualizado a: " + nuevoEstado);
         log.info("Estado de prepostulacion {} actualizado a: {}", id, nuevoEstado);
 
-        // APROBADO: Crear usuario y enviar credenciales
+        // ── APROBADO: Crear usuario + iniciar proceso de evaluación ──────────
         if ("APROBADO".equalsIgnoreCase(nuevoEstado)) {
-//            System.out.println("\n🎯 CREANDO USUARIO PARA POSTULANTE APROBADO");
             log.info("Creando usuario para postulante aprobado — prepostulacion {}", id);
             try {
-                String correo    = prepostulacion.getCorreo();
-                String base      = correo.split("@")[0].toLowerCase().replaceAll("[^a-z0-9]", "");
+                String correo     = prepostulacion.getCorreo();
+                String base       = correo.split("@")[0].toLowerCase().replaceAll("[^a-z0-9]", "");
                 String usuarioApp = base;
                 int n = 1;
                 while (usuarioRepository.existsByUsuarioApp(usuarioApp)) {
                     usuarioApp = base + n++;
                 }
 
-                String usuarioBd = generarUsuarioBdUnico(
-                        normalizar(prepostulacion.getNombres()) + normalizar(prepostulacion.getApellidos())
-                );
-
+                String usuarioBd      = generarUsuarioBdUnico(
+                        normalizar(prepostulacion.getNombres()) + normalizar(prepostulacion.getApellidos()));
                 String claveTemporal  = generarClaveTemporal(12);
                 String claveBdReal    = generarClaveTemporal(16);
                 String claveBdCifrada = aesCipherService.cifrar(claveBdReal);
@@ -375,30 +260,54 @@ public class PrepostulacionService {
                         usuarioBd,
                         claveBdCifrada,
                         claveBdReal,
-                        prepostulacion.getIdPrepostulacion()   // ✅ CLAVE
-
+                        prepostulacion.getIdPrepostulacion()
                 );
-//                System.out.println("✅✅✅ POSTULANTE REGISTRADO CON ID: " + resultado.getIdUsuario());
-                log.info("Postulante registrado con ID: {}", resultado.getIdUsuario());
+
+                log.info("Postulante registrado con ID usuario: {}", resultado.getIdUsuario());
                 emailService.enviarCredenciales(correo, usuarioApp, claveTemporal);
-//                System.out.println("✅ Correo enviado exitosamente");
                 log.info("Correo de credenciales enviado a {}", correo);
 
-                // Notificar al postulante (usa el id_usuario recién creado)
                 notifService.notifPostulanteAprobado(
                         resultado.getIdUsuario(),
                         prepostulacion.getIdPrepostulacion()
                 );
+
+                // ── Iniciar proceso de evaluación automáticamente ──────────────
+                try {
+                    Postulante postulante = postulanteRepository
+                            .findByPrepostulacion_IdPrepostulacion(prepostulacion.getIdPrepostulacion())
+                            .orElseThrow(() -> new RuntimeException("Postulante no encontrado"));
+
+                    Long idPostulante = postulante.getIdPostulante();
+
+                    List<Long> idsSolicitud = prepostulacionSolicitudRepository
+                            .findByIdIdPrepostulacion(prepostulacion.getIdPrepostulacion())
+                            .stream()
+                            .map(ps -> ps.getId().getIdSolicitud())
+                            .collect(Collectors.toList());
+
+                    for (Long idSolicitud : idsSolicitud) {
+                        try {
+                            postgresProcedureRepository.iniciarProcesoEvaluacion(idPostulante, idSolicitud);
+                            log.info("Proceso de evaluacion iniciado para postulante {} solicitud {}",
+                                    idPostulante, idSolicitud);
+                        } catch (Exception ex) {
+                            log.warn("No se pudo iniciar proceso para solicitud {}: {}", idSolicitud, ex.getMessage());
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("Error al iniciar proceso de evaluacion: {}", e.getMessage(), e);
+                }
+                // ──────────────────────────────────────────────────────────────
+
             } catch (Exception e) {
-//                System.err.println("❌ ERROR al crear usuario: " + e.getMessage());
                 log.error("Error al crear usuario para prepostulacion {}: {}", id, e.getMessage(), e);
                 e.printStackTrace();
             }
         }
 
-        // RECHAZADO: Enviar correo de rechazo
+        // ── RECHAZADO: Enviar correo de rechazo ──────────────────────────────
         if ("RECHAZADO".equalsIgnoreCase(nuevoEstado)) {
-//            System.out.println("\n❌ ENVIANDO CORREO DE RECHAZO");
             log.info("Enviando correo de rechazo para prepostulacion {}", id);
             try {
                 emailService.enviarCorreoRechazo(
@@ -406,10 +315,8 @@ public class PrepostulacionService {
                         prepostulacion.getNombres() + " " + prepostulacion.getApellidos(),
                         observaciones
                 );
-//                System.out.println("✅ Correo de rechazo enviado");
                 log.info("Correo de rechazo enviado para prepostulacion {}", id);
 
-                // Si el postulante ya tenía usuario (repostulación rechazada), notificarle
                 usuarioRepository.findByCorreo(prepostulacion.getCorreo()).ifPresent(u ->
                         notifService.notifPostulanteRechazado(
                                 u.getIdUsuario(),
@@ -418,7 +325,6 @@ public class PrepostulacionService {
                         )
                 );
             } catch (Exception e) {
-//                System.err.println("❌ ERROR al enviar correo de rechazo: " + e.getMessage());
                 log.error("Error al enviar correo de rechazo {}: {}", id, e.getMessage(), e);
                 e.printStackTrace();
             }
@@ -442,11 +348,9 @@ public class PrepostulacionService {
             if (prepostulacion.getUrlPrerrequisitos() != null)
                 supabaseService.eliminarArchivo(prepostulacion.getUrlPrerrequisitos());
         } catch (Exception e) {
-//            System.err.println("⚠️ Error al eliminar archivos de Supabase: " + e.getMessage());
             log.warn("Error al eliminar archivos de Supabase: {}", e.getMessage());
         }
         prepostulacionRepository.deleteById(id);
-//        System.out.println("🗑️ Prepostulación " + id + " eliminada correctamente");
         log.info("Prepostulacion {} eliminada correctamente", id);
     }
 
@@ -481,5 +385,4 @@ public class PrepostulacionService {
         for (int i = 0; i < length; i++) sb.append(ABC.charAt(r.nextInt(ABC.length())));
         return sb.toString();
     }
-
 }
