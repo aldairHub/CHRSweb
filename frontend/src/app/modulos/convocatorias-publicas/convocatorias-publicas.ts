@@ -23,6 +23,7 @@ export class ConvocatoriasPublicasComponent implements OnInit, OnDestroy {
 
   convocatorias: ConvocatoriaVM[] = [];
   cargando = true;
+  totalPlazas = 0;
 
   mostrarModal           = false;
   solicitudParaPostular: SolicitudDocente | null = null;
@@ -54,6 +55,7 @@ export class ConvocatoriasPublicasComponent implements OnInit, OnDestroy {
           solicitudSeleccionada: null
         }));
         this.cargando = false;
+        this.totalPlazas = data.reduce((acc: number, c: any) => acc + (c.totalPlazas || 0), 0);
 
         // Pre-seleccionar convocatoria si viene con queryParam ?id=
         const idParam = this.route.snapshot.queryParamMap.get('id');

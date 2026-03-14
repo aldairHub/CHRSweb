@@ -6,33 +6,17 @@ import { ToastService } from '../../../services/toast.service';
 
 interface ConfigBackup {
   idConfig?: number;
-  rutaPgdump: string;
-  rutaOrigen: string;
-  tipoBackup: string;
-  retencionActiva: boolean;
-  diasRetencion: number;
-  numEjecuciones: number;
-  horaBackup1: string;
-  horaBackup2: string;
-  horaBackup3: string;
-  activo: boolean;
-  tipoDestino: string;
-  rutaDestino: string;
-  emailDestino: string;
-  notificarError: boolean;
-  notificarExito: boolean;
+  rutaPgdump: string; rutaOrigen: string; tipoBackup: string;
+  retencionActiva: boolean; diasRetencion: number; numEjecuciones: number;
+  horaBackup1: string; horaBackup2: string; horaBackup3: string;
+  activo: boolean; tipoDestino: string; rutaDestino: string;
+  emailDestino: string; notificarError: boolean; notificarExito: boolean;
 }
 
 interface HistorialBackup {
-  idHistorial: number;
-  estado: string;
-  tipoBackup: string;
-  origen: string;
-  fechaInicio: string;
-  tamanoFormateado: string;
-  duracionFormateada: string;
-  rutaArchivo: string;
-  mensajeError: string;
+  idHistorial: number; estado: string; tipoBackup: string; origen: string;
+  fechaInicio: string; tamanoFormateado: string; duracionFormateada: string;
+  rutaArchivo: string; mensajeError: string;
 }
 
 @Component({
@@ -45,175 +29,131 @@ interface HistorialBackup {
 export class BackupComponent implements OnInit, OnDestroy {
   private pollingInterval: any;
 
-  activeTab: 'config' | 'historial' = 'config';
-  guardando = false;
-  ejecutando = false;
-  cargando = true;
+  activeTab: 'config' | 'historial' | 'restaurar' = 'config';
+  guardando = false; ejecutando = false; cargando = true;
 
   config: ConfigBackup = {
     rutaPgdump: 'C:\\Program Files\\PostgreSQL\\18\\bin\\pg_dump.exe',
-    rutaOrigen: 'C:\\Backups',
-    tipoBackup: 'COMPLETO',
-    retencionActiva: false,
-    diasRetencion: 7,
-    numEjecuciones: 2,
-    horaBackup1: '08:00',
-    horaBackup2: '20:00',
-    horaBackup3: '',
-    activo: true,
-    tipoDestino: 'EMAIL',
-    rutaDestino: '',
-    emailDestino: '',
-    notificarError: true,
-    notificarExito: false
+    rutaOrigen: 'C:\\Backups', tipoBackup: 'COMPLETO',
+    retencionActiva: false, diasRetencion: 7, numEjecuciones: 2,
+    horaBackup1: '08:00', horaBackup2: '20:00', horaBackup3: '',
+    activo: true, tipoDestino: 'EMAIL', rutaDestino: '', emailDestino: '',
+    notificarError: true, notificarExito: false
   };
 
-  // Gestión de múltiples emails como chips
-  emailChips: string[] = [];
-  emailInput = '';
-  emailInputError = '';
+  emailChips: string[] = []; emailInput = ''; emailInputError = '';
 
   syncEmailsFromConfig() {
-    if (this.config.emailDestino && this.config.emailDestino.trim()) {
-      this.emailChips = this.config.emailDestino
-        .split(/[,;]/)
-        .map(e => e.trim())
-        .filter(e => e.length > 0);
-    } else {
-      this.emailChips = [];
-    }
-    this.emailInput = '';
-    this.emailInputError = '';
+    this.emailChips = this.config.emailDestino?.trim()
+      ? this.config.emailDestino.split(/[,;]/).map(e=>e.trim()).filter(e=>e) : [];
+    this.emailInput = ''; this.emailInputError = '';
   }
-
-  syncEmailsToConfig() {
-    this.config.emailDestino = this.emailChips.join(', ');
-  }
-
+  syncEmailsToConfig() { this.config.emailDestino = this.emailChips.join(', '); }
   agregarEmailChip() {
     const email = this.emailInput.trim();
     if (!email) return;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      this.emailInputError = 'Email inválido';
-      return;
-    }
-    if (this.emailChips.includes(email)) {
-      this.emailInputError = 'Este email ya fue agregado';
-      return;
-    }
-    this.emailChips.push(email);
-    this.emailInput = '';
-    this.emailInputError = '';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { this.emailInputError = 'Email inválido'; return; }
+    if (this.emailChips.includes(email)) { this.emailInputError = 'Ya fue agregado'; return; }
+    this.emailChips.push(email); this.emailInput = ''; this.emailInputError = '';
     this.syncEmailsToConfig();
   }
-
-  quitarEmailChip(i: number) {
-    this.emailChips.splice(i, 1);
-    this.syncEmailsToConfig();
+  quitarEmailChip(i: number) { this.emailChips.splice(i,1); this.syncEmailsToConfig(); }
+  onEmailKeydown(e: KeyboardEvent) {
+    if (e.key==='Enter') { e.preventDefault(); this.agregarEmailChip(); }
+    if (e.key==='Backspace' && !this.emailInput && this.emailChips.length>0) { this.emailChips.pop(); this.syncEmailsToConfig(); }
   }
-
-  onEmailKeydown(event: KeyboardEvent) {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      this.agregarEmailChip();
-    }
-    if (event.key === 'Backspace' && !this.emailInput && this.emailChips.length > 0) {
-      this.emailChips.pop();
-      this.syncEmailsToConfig();
-    }
-  }
-
-  trackByIndex(index: number) { return index; }
-
-  toggleDestino(tipo: string) {
-    // Si ya está seleccionado ese tipo, desactivar (NINGUNO)
-    if (this.config.tipoDestino === tipo) {
-      this.config.tipoDestino = 'NINGUNO';
-    } else {
-      this.config.tipoDestino = tipo;
-    }
-  }
+  trackByIndex(i: number) { return i; }
+  toggleDestino(tipo: string) { this.config.tipoDestino = this.config.tipoDestino===tipo ? 'NINGUNO' : tipo; }
 
   historial: HistorialBackup[] = [];
 
+  // ── Restauración ─────────────────────────────────────────────
+  restaurarFile: File | null = null;
+  restaurarNombre = '';
+  restaurarEstado: 'idle'|'validando'|'valido'|'invalido'|'restaurando'|'ok'|'error' = 'idle';
+  restaurarMensaje = '';
+  restaurarConfirmando = false;
+
+  onArchivoSeleccionado(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+    this.restaurarFile = file; this.restaurarNombre = file?.name ?? '';
+    this.restaurarEstado = 'idle'; this.restaurarMensaje = ''; this.restaurarConfirmando = false;
+    if (file) this.validarArchivo();
+  }
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    const file = event.dataTransfer?.files?.[0] ?? null;
+    if (!file) return;
+    this.restaurarFile = file; this.restaurarNombre = file.name;
+    this.restaurarEstado = 'idle'; this.restaurarMensaje = ''; this.restaurarConfirmando = false;
+    this.validarArchivo();
+  }
+  onDragOver(e: DragEvent) { e.preventDefault(); }
+  limpiarArchivo() { this.restaurarFile=null; this.restaurarNombre=''; this.restaurarEstado='idle'; this.restaurarMensaje=''; this.restaurarConfirmando=false; }
+
+  validarArchivo() {
+    if (!this.restaurarFile) return;
+    this.restaurarEstado = 'validando'; this.restaurarMensaje = '';
+    const form = new FormData(); form.append('archivo', this.restaurarFile);
+    this.http.post<any>('/api/backup/validar', form).subscribe({
+      next: (res) => { this.restaurarEstado = res.estado==='OK' ? 'valido' : 'invalido'; this.restaurarMensaje = res.mensaje; },
+      error: (err) => { this.restaurarEstado = 'invalido'; this.restaurarMensaje = err?.error?.mensaje ?? 'No se pudo validar el archivo.'; }
+    });
+  }
+  confirmarRestauracion() { this.restaurarConfirmando = true; }
+  cancelarRestauracion() { this.restaurarConfirmando = false; }
+  ejecutarRestauracion() {
+    if (!this.restaurarFile) return;
+    this.restaurarEstado = 'restaurando'; this.restaurarConfirmando = false;
+    const form = new FormData(); form.append('archivo', this.restaurarFile);
+    this.http.post<any>('/api/backup/restaurar', form).subscribe({
+      next: (res) => { this.restaurarEstado='ok'; this.restaurarMensaje=res.mensaje; this.toast.success('Base de datos restaurada correctamente.'); },
+      error: (err) => { this.restaurarEstado='error'; this.restaurarMensaje=err?.error?.mensaje ?? 'Error durante la restauración.'; this.toast.error('Error al restaurar: '+this.restaurarMensaje); }
+    });
+  }
+
   constructor(private http: HttpClient, private toast: ToastService) {}
 
-  ngOnDestroy(): void {
-        throw new Error("Method not implemented.");
-    }
-
   ngOnInit() {
-    this.cargarConfig();
-    this.cargarHistorial();
+    this.cargarConfig(); this.cargarHistorial();
+    this.pollingInterval = setInterval(()=>this.cargarHistorial(), 30000);
   }
+  ngOnDestroy() { if (this.pollingInterval) clearInterval(this.pollingInterval); }
 
   cargarConfig() {
     this.cargando = true;
     this.http.get<ConfigBackup>('/api/backup/config').subscribe({
-      next: (cfg) => {
-        this.config = cfg;
-        this.syncEmailsFromConfig();
-        this.cargando = false;
-      },
-      error: () => { this.cargando = false; }
+      next: (cfg) => { this.config=cfg; this.syncEmailsFromConfig(); this.cargando=false; },
+      error: () => { this.cargando=false; }
     });
   }
-
   cargarHistorial() {
     this.http.get<HistorialBackup[]>('/api/backup/historial').subscribe({
-      next: (h) => { this.historial = h; },
-      error: () => {}
+      next: (h) => { this.historial=h; }, error: ()=>{}
     });
   }
-
   guardarConfig() {
-    this.syncEmailsToConfig();
-    this.guardando = true;
+    this.syncEmailsToConfig(); this.guardando=true;
     this.http.put<ConfigBackup>('/api/backup/config', this.config).subscribe({
-      next: (cfg) => {
-        this.config = cfg;
-        this.syncEmailsFromConfig();
-        this.guardando = false;
-        this.toast.success('Configuración guardada');
-      },
-      error: () => {
-        this.guardando = false;
-        this.toast.error('Error al guardar configuración');
-      }
+      next: (cfg) => { this.config=cfg; this.syncEmailsFromConfig(); this.guardando=false; this.cargarHistorial(); this.toast.success('Configuración guardada'); },
+      error: () => { this.guardando=false; this.toast.error('Error al guardar'); }
     });
   }
-
   ejecutarManual() {
-    this.ejecutando = true;
-    this.http.post<any>('/api/backup/ejecutar', {}).subscribe({
-      next: (res) => {
-        this.ejecutando = false;
-        if (res.estado === 'EXITOSO') {
-          this.toast.success('Backup ejecutado correctamente');
-        } else {
-          this.toast.error('Backup falló: ' + res.mensajeError);
-        }
-        this.cargarHistorial();
-        this.activeTab = 'historial';
-      },
-      error: () => {
-        this.ejecutando = false;
-        this.toast.error('Error al ejecutar backup');
-      }
+    this.ejecutando=true;
+    this.http.post<any>('/api/backup/ejecutar',{}).subscribe({
+      next: (res) => { this.ejecutando=false; res.estado==='EXITOSO' ? this.toast.success('Backup ejecutado correctamente') : this.toast.error('Backup falló: '+res.mensajeError); this.cargarHistorial(); this.activeTab='historial'; },
+      error: ()=>{ this.ejecutando=false; this.toast.error('Error al ejecutar backup'); }
     });
   }
-
   get horasConfiguradas(): string[] {
-    const horas = [this.config.horaBackup1];
-    if (this.config.numEjecuciones >= 2) horas.push(this.config.horaBackup2 || '--:--');
-    if (this.config.numEjecuciones >= 3) horas.push(this.config.horaBackup3 || '--:--');
-    return horas.filter(h => h && h !== '--:--');
+    const h=[this.config.horaBackup1];
+    if(this.config.numEjecuciones>=2) h.push(this.config.horaBackup2||'--:--');
+    if(this.config.numEjecuciones>=3) h.push(this.config.horaBackup3||'--:--');
+    return h.filter(x=>x&&x!=='--:--');
   }
-
   get statusLabel(): string {
-    if (!this.config.activo) return 'Respaldo automático INACTIVO';
-    const horas = this.horasConfiguradas;
-    return `Respaldo automático ACTIVO — Horarios programados: ${horas.join(', ')}`;
+    return !this.config.activo ? 'Respaldo automático INACTIVO'
+      : `Respaldo automático ACTIVO — Horarios: ${this.horasConfiguradas.join(', ')}`;
   }
 }

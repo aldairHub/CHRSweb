@@ -416,9 +416,9 @@ $text-dark: #1a1a1a; $text-gray: #536b50; $bg-white: #ffffff; $error: #dc2626;
   .badge-estado, .status-badge, .estado-badge,
   .meta-badge, .criterio-badge, .convocatoria-tag,
   .mod-badge, .modulo-badge, .role-badge, .badge-rol-app {
-    background: #1f1f1f !important;
-    border-color: #2a2a2a !important;
-    color: #888888 !important;
+    background: transparent !important;
+    border-color: #00D149 !important;
+    color: #00D149 !important;
   }
 
   // ── Alertas ────────────────────────────────────────────

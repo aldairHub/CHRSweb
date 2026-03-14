@@ -33,7 +33,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   showPerfilMenu   = false;
 
   // ── Institución ─────────────────────────────────────────────
-  appSubtitulo  = localStorage.getItem('inst_appName') || 'Sistema de selección docente';
+  appSubtitulo  = localStorage.getItem('inst_nombreInstitucion') || localStorage.getItem('inst_appName') || 'Sistema de selección docente';
   nombreCorto$: Observable<string> = of(localStorage.getItem('inst_nombreCorto') ?? '');
 
   constructor(
@@ -58,9 +58,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.notifService.iniciarPolling();
     // Cargar subtítulo dinámico desde institución
-    this.logoService.getNombre().subscribe(() => {
-      const cached = localStorage.getItem('inst_appName');
-      if (cached) this.appSubtitulo = cached;
+    this.logoService.getNombreInstitucion().subscribe(inst => {
+      if (inst) this.appSubtitulo = inst;
+      else {
+        const cached = localStorage.getItem('inst_appName');
+        if (cached) this.appSubtitulo = cached;
+      }
     });
     // Refrescar desde API y actualizar nombreCorto$ dinámicamente
     this.nombreCorto$ = this.logoService.getNombreCorto();

@@ -1,43 +1,50 @@
-$primary:      #00A63E;
-$text-gray:    #64748b;
-$border-color: #e2e8f0;
-$bg-color:     #ffffff;
-
 .app-footer {
   width: 100%;
-  background-color: $bg-color;
-  border-top: 1px solid $border-color;
-  padding: 1.5rem 0;
-  margin-top: auto;
+  background: linear-gradient(135deg, #007a2e 0%, #00a63e 100%);
+  border-top: 1px solid rgba(255,255,255,0.15);
+  padding: 0;
   font-family: 'Inter', sans-serif;
 }
 
 .footer-content {
   max-width: 1200px;
   margin: 0 auto;
-  text-align: center;
-  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  height: 48px;
+  gap: 16px;
 }
 
 .copyright {
-  color: #334155;
-  font-size: 0.9rem;
-  margin-bottom: 0.25rem;
-
-  strong { font-weight: 600; color: #00A63E; }
+  color: rgba(255,255,255,0.9);
+  font-size: 13px;
+  margin: 0;
+  strong { font-weight: 600; color: #fff; }
 }
 
-.version { color: $text-gray; font-size: 0.8rem; }
-
-// ─── Modo oscuro AMOLED ────────────────────────────────
-:host-context(html.dark) .app-footer {
-  background-color: #000000 !important;
-  border-top: 1px solid rgba(0,210,80,0.08) !important;
+.version {
+  color: rgba(255,255,255,0.6);
+  font-size: 12px;
+  white-space: nowrap;
 }
 
-:host-context(html.dark) .copyright {
-  color: #2e2e2e !important;
-  strong { color: #00D149 !important; }
+// Dark mode — todas las variantes para ganar especificidad
+:host-context(html.dark) .app-footer,
+html.dark app-footer .app-footer,
+html.dark .app-footer {
+  background: linear-gradient(135deg, #003c14 0%, #006423 100%) !important;
+  border-top: 1px solid rgba(0,210,80,0.2) !important;
 }
 
-:host-context(html.dark) .version { color: #252525 !important; }
+:host-context(html.dark) .copyright,
+html.dark .copyright {
+  color: rgba(255,255,255,0.9) !important;
+  strong { color: #fff !important; }
+}
+
+:host-context(html.dark) .version,
+html.dark .version {
+  color: rgba(255,255,255,0.5) !important;
+}

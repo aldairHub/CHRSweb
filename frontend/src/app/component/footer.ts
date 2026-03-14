@@ -12,7 +12,7 @@ import { LogoService } from '../services/logo.service';
         <span class="footer-inst">{{ appSubtitulo }}</span>
       </div>
       <div class="footer-center">
-        <span>© {{ anio }} {{ nombreInst }} — Todos los derechos reservados</span>
+        <span>© {{ anio }} {{ nombreInstitucion }} — Todos los derechos reservados</span>
       </div>
       <div class="footer-right">
         <span class="footer-time">{{ horaActual }}</span>
@@ -51,19 +51,22 @@ import { LogoService } from '../services/logo.service';
       letter-spacing: 0.6px;
     }
 
-    /* Dark mode */
-    :host-context(html.dark) .app-footer {
-      background: linear-gradient(135deg, rgba(0,80,30,0.97) 0%, rgba(0,122,46,0.95) 100%) !important;
-      border-top: 1px solid rgba(255,255,255,0.08) !important;
-      box-shadow: 0 -2px 16px rgba(0,0,0,0.4) !important;
+    /* Dark mode — exactamente igual que el navbar */
+    :host-context(html.dark) .app-footer,
+    :host-context(html.dark) footer {
+      background: rgba(0,0,0,0.92) !important;
+      border-top: 1px solid rgba(0,210,80,0.12) !important;
+      box-shadow: 0 -1px 0 rgba(0,210,80,0.08), 0 -4px 32px rgba(0,0,0,0.9) !important;
+      backdrop-filter: blur(20px) saturate(1.5) !important;
+      -webkit-backdrop-filter: blur(20px) saturate(1.5) !important;
     }
   `]
 })
 export class FooterComponent implements OnInit, OnDestroy {
 
   horaActual   = '';
-  nombreInst   = 'SSDC';
-  appSubtitulo = 'Sistema de Selección Docente';
+  nombreInstitucion = 'Universidad';
+  appSubtitulo      = 'Sistema de Selección Docente';
   anio         = new Date().getFullYear();
 
   private timer: any;
@@ -75,16 +78,19 @@ export class FooterComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    // Cargar nombres desde caché inmediatamente
-    const cached = localStorage.getItem('inst_nombreCorto');
-    const sub    = localStorage.getItem('inst_appName');
-    if (cached) this.nombreInst   = cached;
-    if (sub)    this.appSubtitulo = sub;
+    // Cargar desde caché inmediatamente
+    const cachedInst = localStorage.getItem('inst_nombreInstitucion');
+    const cachedApp  = localStorage.getItem('inst_appName');
+    if (cachedInst) this.nombreInstitucion = cachedInst;
+    if (cachedApp)  this.appSubtitulo      = cachedApp;
 
     // Suscribirse a cambios del servicio
+    this.logoService.getNombreInstitucion().subscribe(inst => {
+      if (inst) this.nombreInstitucion = inst;
+      this.cdr.markForCheck();
+    });
     this.logoService.getNombre().subscribe(nombre => {
-      this.nombreInst   = localStorage.getItem('inst_nombreCorto') || nombre || 'SSDC';
-      this.appSubtitulo = localStorage.getItem('inst_appName') || 'Sistema de Selección Docente';
+      this.appSubtitulo = localStorage.getItem('inst_appName') || nombre || 'Sistema de Selección Docente';
       this.cdr.markForCheck();
     });
 

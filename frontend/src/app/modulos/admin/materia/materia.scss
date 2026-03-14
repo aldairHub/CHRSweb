@@ -911,7 +911,7 @@ $error: #dc2626;
 
   // Botones de acción (icono / pequeños)
   .btn-action, .btn-icon, .btn-edit, .btn-delete, .btn-view {
-    background: rgba(255,255,255,0.04) !important;
+    background: transparent !important;
     border-color: rgba(255,255,255,0.08) !important;
     color: #9ca3af !important;
     &:hover { background: rgba(255,255,255,0.08) !important; }

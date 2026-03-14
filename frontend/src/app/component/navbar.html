@@ -8,7 +8,7 @@
       (error)="onLogoError($event)">
     <div class="brand-text">
       <h1>{{ (nombreCorto$ | async) || (logoService.getNombre() | async) || 'SSDC' }}</h1>
-      <span>{{ appSubtitulo }}</span>
+      <span *ngIf="(nombreCorto$ | async)">{{ appSubtitulo }}</span>
     </div>
   </div>
 

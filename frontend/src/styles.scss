@@ -578,22 +578,22 @@ html.dark {
   }
 }
 
-// Appended: footer dark mode (global override)
+// Footer dark mode — igual que navbar (negro AMOLED)
 html.dark .app-footer,
 html.dark .footer {
-  background: #111111 !important;
-  border-top: 1px solid #2a2a2a !important;
-  color: #444444 !important;
+  background: rgba(0,0,0,0.92) !important;
+  border-top: 1px solid rgba(0,210,80,0.12) !important;
+  color: rgba(255,255,255,0.85) !important;
 }
 
 html.dark .app-footer p,
 html.dark .footer p {
-  color: #444444 !important;
+  color: rgba(255,255,255,0.85) !important;
 }
 
-html.dark .copyright { color: #444444 !important; }
-html.dark .copyright strong { color: #00A63E !important; }
-html.dark .version { color: #333333 !important; }
+html.dark .copyright { color: rgba(255,255,255,0.85) !important; }
+html.dark .copyright strong { color: #fff !important; }
+html.dark .version { color: rgba(255,255,255,0.5) !important; }
 
 // =========================================
 // 11. DARK MODE — COMPONENTES COMPLETOS
@@ -851,9 +851,9 @@ html.dark {
   .modulo-badge,
   .role-badge,
   .badge-rol-app {
-    background: #222222 !important;
-    border-color: #333333 !important;
-    color: #aaaaaa !important;
+    background: transparent !important;
+    border-color: rgba(0,166,62,0.3) !important;
+    color: #00D149 !important;
   }
 
   // badges con color semántico
@@ -1441,7 +1441,8 @@ html.dark .sd-page {
   background: #000000 !important;
 }
 
-html.dark .card {
+// Scoped to .main-container only — backup and new dashboard handle their own dark cards
+html.dark .main-container .card {
   background: #080808 !important;
   border-color: rgba(0, 210, 80, 0.1) !important;
   box-shadow: 0 2px 24px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.02) !important;
@@ -1453,7 +1454,6 @@ html.dark .card {
   }
 
   h3   { color: #e0e0e0 !important; }
-  // NOTE: Only target direct description spans, NOT icon containers that use currentColor for SVGs
   > span:not([class*="icon"]):not([class*="svg"]) { color: #383838 !important; }
 }
 
@@ -1474,8 +1474,8 @@ html.dark select {
 }
 
 html.dark .app-footer {
-  background: #000000 !important;
-  border-top-color: rgba(0,210,80,0.08) !important;
+  background: rgba(0,0,0,0.92) !important;
+  border-top-color: rgba(0,210,80,0.12) !important;
 }
 
 

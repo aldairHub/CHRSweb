@@ -70,6 +70,7 @@ public class SecurityConfig {
                                 "/api/prepostulacion/repostular",
                                 "/api/admin/auditoria",
                                 "/api/admin/auditoria/**",
+                                "/api/dashboard/**",
                                 "/api/documentos",
                                 "/api/documentos/**",
                                 "/api/tipos-documento",
