@@ -121,8 +121,12 @@ public class DashboardController {
         OffsetDateTime inicioDia = LocalDate.now().atStartOfDay().atOffset(ZoneOffset.UTC);
         OffsetDateTime finDia    = LocalDate.now().atTime(LocalTime.MAX).atOffset(ZoneOffset.UTC);
 
-        return audCambioRepository
-                .findAll(PageRequest.of(0, 50, Sort.by("fecha").descending()))
+        // Agrupar por operacion+tabla+idRegistro para evitar duplicados
+        // (la auditoría guarda un registro por cada campo cambiado)
+        Map<String, AudCambio> agrupados = new LinkedHashMap<>();
+
+        audCambioRepository
+                .findAll(PageRequest.of(0, 200, Sort.by("fecha").descending()))
                 .getContent()
                 .stream()
                 // Solo actividades de hoy
@@ -141,6 +145,23 @@ public class DashboardController {
                 // Solo del usuario si es postulante
                 .filter(a -> soloUsuario == null || soloUsuario.isBlank()
                         || soloUsuario.equalsIgnoreCase(a.getUsuarioApp()))
+                .forEach(a -> {
+                    // Clave única: operacion + tabla + idRegistro
+                    String clave = a.getOperacion() + "|" + a.getTabla() + "|" + a.getIdRegistro();
+                    // Guardar solo el primer registro de cada grupo (el más reciente)
+                    // Preferir el que tenga un campo con nombre/titulo/estado (más descriptivo)
+                    if (!agrupados.containsKey(clave)) {
+                        agrupados.put(clave, a);
+                    } else {
+                        // Si el nuevo tiene un campo más descriptivo, reemplazar
+                        AudCambio actual = agrupados.get(clave);
+                        if (esCampoDescriptivo(a.getCampo()) && !esCampoDescriptivo(actual.getCampo())) {
+                            agrupados.put(clave, a);
+                        }
+                    }
+                });
+
+        return agrupados.values().stream()
                 .limit(10)
                 .map(a -> {
                     Map<String, Object> item = new HashMap<>();
@@ -152,6 +173,13 @@ public class DashboardController {
                     return item;
                 })
                 .collect(Collectors.toList());
+    }
+
+    private boolean esCampoDescriptivo(String campo) {
+        if (campo == null) return false;
+        String c = campo.toLowerCase();
+        return c.contains("nombre") || c.contains("titulo") || c.contains("estado")
+                || c.contains("descripcion") || c.contains("correo") || c.contains("email");
     }
 
     private String humanizar(AudCambio a) {
