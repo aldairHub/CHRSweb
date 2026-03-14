@@ -135,12 +135,10 @@ export const routes: Routes = [
           import('./modulos/evaluador/matriz-meritos-lista/matriz-meritos-lista.component')
             .then(m => m.MatrizMeritosListaComponent)
       },
-      {
-        path: 'matriz-meritos/:idConvocatoria',
+      { path: 'matriz-meritos/:idSolicitud',
         loadComponent: () =>
           import('./modulos/evaluador/matriz-meritos/matriz-meritos.component')
-            .then(m => m.MatrizMeritosComponent)
-      },
+            .then(m => m.MatrizMeritosComponent) },
       {
         path: 'reportes',
         loadComponent: () =>

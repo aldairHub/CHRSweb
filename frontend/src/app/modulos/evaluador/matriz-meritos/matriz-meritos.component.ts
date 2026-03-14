@@ -170,16 +170,16 @@ export class MatrizMeritosComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
-      if (params['idConvocatoria']) {
-        this.idConvocatoria = +params['idConvocatoria'];
+      if (params['idSolicitud']) {
+        this.idConvocatoria = +params['idSolicitud'];
         this.cargarDatos();
       }
     });
 
     // También revisar query params
-    this.route.queryParams.subscribe(params => {
-      if (params['idConvocatoria'] && !this.idConvocatoria) {
-        this.idConvocatoria = +params['idConvocatoria'];
+    this.route.params.subscribe(params => {
+      if (params['idSolicitud']) {
+        this.idConvocatoria = +params['idSolicitud'];  // reusar la variable, ahora guarda idSolicitud
         this.cargarDatos();
       }
     });
@@ -193,7 +193,7 @@ export class MatrizMeritosComponent implements OnInit {
     this.cargando = true;
     this.error = '';
 
-    this.http.get<any>(`${this.API}/convocatoria/${this.idConvocatoria}`).subscribe({
+    this.http.get<any>(`${this.API}/solicitud/${this.idConvocatoria}`).subscribe({
       next: (data) => {
         this.convocatoriaInfo = data.convocatoria;
         this.candidatos = data.candidatos.map((c: any) => ({

@@ -3,14 +3,21 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
-export interface ConvocatoriaLista {
-  idConvocatoria: number;
-  titulo: string;
+export interface SolicitudItem {
+  idSolicitud: number;
   materia: string;
-  fechaLimiteDocumentos: string;
   totalCandidatos: number;
   disponible: boolean;
-  diasRestantes: number | null;
+  mensajeBloqueo: string | null;
+}
+
+export interface ConvocatoriaAgrupada {
+  idConvocatoria: number;
+  titulo: string;
+  fechaLimiteDocumentos: string | null;
+  solicitudes: SolicitudItem[];
+  expandida: boolean;
+  tieneMultiples: boolean;
 }
 
 @Component({
@@ -26,7 +33,7 @@ export class MatrizMeritosListaComponent implements OnInit {
 
   cargando = false;
   error = '';
-  convocatorias: ConvocatoriaLista[] = [];
+  convocatorias: ConvocatoriaAgrupada[] = [];
 
   constructor(
     private router: Router,
@@ -41,9 +48,9 @@ export class MatrizMeritosListaComponent implements OnInit {
     this.cargando = true;
     this.error = '';
 
-    this.http.get<ConvocatoriaLista[]>(`${this.API}/convocatorias`).subscribe({
+    this.http.get<any[]>(`${this.API}/convocatorias`).subscribe({
       next: (data) => {
-        this.convocatorias = data;
+        this.convocatorias = this.agrupar(data);
         this.cargando = false;
       },
       error: (err) => {
@@ -53,9 +60,53 @@ export class MatrizMeritosListaComponent implements OnInit {
     });
   }
 
-  abrirMatriz(conv: ConvocatoriaLista): void {
-    if (!conv.disponible) return;
-    this.router.navigate(['/evaluador/matriz-meritos', conv.idConvocatoria]);
+  // Agrupa las filas por convocatoria
+  private agrupar(rows: any[]): ConvocatoriaAgrupada[] {
+    const map = new Map<number, ConvocatoriaAgrupada>();
+
+    for (const row of rows) {
+      if (!map.has(row.idConvocatoria)) {
+        map.set(row.idConvocatoria, {
+          idConvocatoria:        row.idConvocatoria,
+          titulo:                row.titulo,
+          fechaLimiteDocumentos: row.fechaLimiteDocumentos,
+          solicitudes:           [],
+          expandida:             false,
+          tieneMultiples:        false
+        });
+      }
+
+      const conv = map.get(row.idConvocatoria)!;
+      conv.solicitudes.push({
+        idSolicitud:    row.idSolicitud,
+        materia:        row.materia,
+        totalCandidatos: row.totalCandidatos,
+        disponible:     row.disponible,
+        mensajeBloqueo: row.mensajeBloqueo
+      });
+    }
+
+    const result = Array.from(map.values());
+    result.forEach(c => {
+      c.tieneMultiples = c.solicitudes.length > 1;
+      // Si tiene una sola solicitud, mostrarla expandida por defecto
+      if (!c.tieneMultiples) c.expandida = true;
+    });
+    return result;
+  }
+
+  toggleExpandir(conv: ConvocatoriaAgrupada): void {
+    if (conv.tieneMultiples) conv.expandida = !conv.expandida;
+  }
+
+  abrirMatriz(sol: SolicitudItem): void {
+    if (!sol.disponible) return;
+    this.router.navigate(['/evaluador/matriz-meritos', sol.idSolicitud]);
+  }
+
+  // ¿Alguna solicitud de la convocatoria está disponible?
+  algunaDisponible(conv: ConvocatoriaAgrupada): boolean {
+    return conv.solicitudes.some(s => s.disponible);
   }
 
   volver(): void {

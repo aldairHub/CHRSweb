@@ -15,20 +15,11 @@ public class MatrizMeritosController {
 
     private final MatrizMeritosService service;
 
-    /**
-     * GET /api/matriz-meritos/convocatoria/{idConvocatoria}
-     * Devuelve info de la convocatoria + candidatos con sus puntajes actuales
-     */
-    @GetMapping("/convocatoria/{idConvocatoria}")
-    public ResponseEntity<Map<String, Object>> obtenerMatriz(
-            @PathVariable Long idConvocatoria) {
-        return ResponseEntity.ok(service.obtenerMatriz(idConvocatoria));
+    @GetMapping("/solicitud/{idSolicitud}")
+    public ResponseEntity<?> obtenerMatriz(@PathVariable Long idSolicitud) {
+        return ResponseEntity.ok(service.obtenerMatrizPorSolicitud(idSolicitud));
     }
 
-    /**
-     * POST /api/matriz-meritos/guardar
-     * Guarda los puntajes de todos los candidatos
-     */
     @PostMapping("/guardar")
     public ResponseEntity<Map<String, Object>> guardar(
             @RequestBody Map<String, Object> payload) {
