@@ -15,9 +15,13 @@ public class ConfigBackupDTO {
     private String  horaBackup2;
     private String  horaBackup3;
     private Boolean activo;
-    private String  tipoDestino;
+    // Destinos múltiples
+    private Boolean destinoLocal;
+    private Boolean destinoEmail;
     private String  rutaDestino;
     private String  emailDestino;
+    // Legacy — se mantiene por compatibilidad
+    private String  tipoDestino;
     private Boolean notificarError;
     private Boolean notificarExito;
 }

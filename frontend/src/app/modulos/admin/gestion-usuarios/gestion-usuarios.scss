@@ -756,6 +756,14 @@ $error: #dc2626;
 
 // ── DARK MODE ─────────────────────────────────────────────
 :host-context(html.dark) {
+  // Badge roles de aplicación — fondo verde sutil, sin gris
+  .badge-rol-app {
+    background: rgba(0,166,62,0.10) !important;
+    border-color: rgba(0,166,62,0.35) !important;
+    color: #00D149 !important;
+  }
+
+
 
   // Fondos generales
   .page-container, .main-container, .content-wrapper,

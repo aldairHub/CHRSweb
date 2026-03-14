@@ -273,9 +273,9 @@
             Fecha límite subida de docs
             <span style="font-size:11px;color:#888;font-weight:400;">(opcional)</span>
           </label>
-          <input type="date" class="form-input" [(ngModel)]="form.fechaLimiteDocumentos" [max]="form.fechaFin">
+          <input type="date" class="form-input" [(ngModel)]="form.fechaLimiteDocumentos" [min]="form.fechaInicio">
           <small style="color:#888;font-size:11px;">
-            Después de esta fecha los postulantes no podrán subir documentos. Si se deja vacío se usa la fecha de fin.
+            Puede ser igual o posterior al cierre de la convocatoria. Los postulantes <strong>ya inscritos</strong> podrán subir documentos hasta esta fecha aunque la convocatoria esté cerrada. Si se deja vacío se usa la fecha de fin.
           </small>
         </div>
       </div>

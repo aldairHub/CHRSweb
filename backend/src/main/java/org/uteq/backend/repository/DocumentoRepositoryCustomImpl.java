@@ -130,6 +130,13 @@ public class DocumentoRepositoryCustomImpl {
             dto.setNombreMateria(rs.getString("nombre_materia"));
             dto.setNombreCarrera(rs.getString("nombre_carrera"));
             dto.setNombreArea(rs.getString("nombre_area"));
+            // Campos de ventana de docs (el SP devuelve estos si existen)
+            try {
+                dto.setFechaLimiteDocumentos(rs.getString("fecha_limite_documentos"));
+                dto.setDocumentosAbiertos(rs.getBoolean("documentos_abiertos"));
+            } catch (Exception ignored) {
+                // Si el SP aún no devuelve estos campos, no falla
+            }
             return dto;
         });
 

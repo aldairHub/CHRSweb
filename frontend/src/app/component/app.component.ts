@@ -36,7 +36,18 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Limpiar tokens huérfanos al iniciar: si uno existe pero el otro no,
+    // la sesión quedó a medias — limpiar todo para forzar login
+    this.limpiarSesionHuerfana();
+
     this.evaluar(this.router.url);
+
+    // Escuchar cambios de storage en otras pestañas (logout en tab A → ocultar navbar en tab B)
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'token' || e.key === 'authState') {
+        this.evaluar(this.router.url);
+      }
+    });
 
     // Título de pestaña = siglas si existen, si no appName
     this.actualizarTitulo();
@@ -44,6 +55,41 @@ export class AppComponent implements OnInit {
     // Actualizar cuando el servicio refresca desde la API
     this.logoService.getNombreCorto().subscribe(() => this.actualizarTitulo());
     this.logoService.getNombre().subscribe(() => this.actualizarTitulo());
+  }
+
+  private limpiarSesionHuerfana(): void {
+    const token     = localStorage.getItem('token');
+    const authState = localStorage.getItem('authState');
+
+    // Si hay authState pero no token (o token vacío), la sesión quedó rota
+    if (authState && !token) {
+      localStorage.removeItem('authState');
+      return;
+    }
+
+    // Si hay token pero no authState, también es sesión huérfana
+    if (token && !authState) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('rol');
+      localStorage.removeItem('roles');
+      localStorage.removeItem('usuario');
+      localStorage.removeItem('idUsuario');
+      localStorage.removeItem('modulo');
+      return;
+    }
+
+    // Si hay ambos, verificar que el token dentro de authState coincida con el token guardado
+    if (token && authState) {
+      try {
+        const estado = JSON.parse(authState);
+        if (estado?.token && estado.token !== token) {
+          // Token desincronizado — limpiar todo
+          localStorage.clear();
+        }
+      } catch {
+        localStorage.clear();
+      }
+    }
   }
 
   private actualizarTitulo(): void {
@@ -59,7 +105,11 @@ export class AppComponent implements OnInit {
       ruta === r || ruta.startsWith(r === '/' ? '/#' : r + '/') || ruta.startsWith(r + '?')
     );
 
-    const hayToken = !!localStorage.getItem('token');
-    this.mostrarLayout = !esPublica && hayToken;
+    // Sesión válida = token Y authState deben existir ambos
+    const hayToken     = !!localStorage.getItem('token');
+    const hayAuthState = !!localStorage.getItem('authState');
+    const sesionValida = hayToken && hayAuthState;
+
+    this.mostrarLayout = !esPublica && sesionValida;
   }
 }

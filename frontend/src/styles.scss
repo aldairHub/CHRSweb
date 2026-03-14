@@ -1441,6 +1441,13 @@ html.dark .sd-page {
   background: #000000 !important;
 }
 
+
+// Backup — content-wrapper full width
+app-backup .content-wrapper {
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
 // Scoped to .main-container only — backup and new dashboard handle their own dark cards
 html.dark .main-container .card {
   background: #080808 !important;

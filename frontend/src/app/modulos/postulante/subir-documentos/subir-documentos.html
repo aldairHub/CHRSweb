@@ -148,7 +148,7 @@
                 [class.btn-upload--subido]="doc.estado === 'subido'"
                 [class.btn-upload--validado]="doc.estado === 'validado'"
                 [class.btn-upload--rechazado]="doc.estado === 'rechazado'"
-                [disabled]="documentoSubiendoId === doc.idTipoDocumento || doc.estado === 'validado'"
+                [disabled]="documentoSubiendoId === doc.idTipoDocumento || doc.estado === 'validado' || postulante?.documentosAbiertos === false"
                 (click)="triggerInput(doc.idTipoDocumento)"
               >
                 <i class="pi pi-upload"   *ngIf="doc.estado === 'pendiente'"></i>
@@ -177,6 +177,11 @@
         <ng-container *ngIf="obligatoriosCompletos">
 
           <!-- Ya enviado y sin rechazados -->
+          <!-- Banner: plazo de subida vencido -->
+          <div class="notif-plazo-vencido" *ngIf="postulante?.documentosAbiertos === false">
+            <i class="pi pi-lock"></i>
+            <span>El plazo para subir documentos ha vencido{{ postulante?.fechaLimiteDocumentos ? " (" + postulante?.fechaLimiteDocumentos + ")" : "" }}. Ya no puedes subir ni reemplazar documentos.</span>
+          </div>
           <div class="notif-enviado" *ngIf="postulante?.estadoPostulacion === 'en_revision' && !tieneDocRechazado">
             <i class="pi pi-check-circle"></i>
             <span>Documentos enviados al evaluador. En revisión.</span>

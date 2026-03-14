@@ -23,4 +23,8 @@ public class PostulanteInfoDTO {
     private String nombreMateria;
     private String nombreCarrera;
     private String nombreArea;
+
+    // Ventana de subida de documentos (independiente del estado de la convocatoria)
+    private Boolean documentosAbiertos;     // true = puede subir hoy
+    private String  fechaLimiteDocumentos;  // fecha límite (puede ser posterior al cierre)
 }

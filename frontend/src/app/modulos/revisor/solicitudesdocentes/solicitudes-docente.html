@@ -79,7 +79,7 @@
   </div>
 
 
-  <div class="table-container" *ngIf="!cargando">
+  <div class="table-container">
     <table class="table">
       <thead>
       <tr>
@@ -93,68 +93,68 @@
       </tr>
       </thead>
       <tbody>
-        <!-- SKELETON LOADER -->
-        <ng-container *ngIf="cargando">
-          <tr class="skeleton-row-tr" *ngFor="let s of [1,2,3,4,5]">
-            <td><div class="skeleton-cell skeleton-cell--avatar"></div></td>
-            <td><div class="skeleton-cell skeleton-cell--lg"></div></td>
-            <td><div class="skeleton-cell skeleton-cell--md"></div></td>
-            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
-            <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
-            <td><div class="skeleton-cell skeleton-cell--md"></div></td>
-          </tr>
-        </ng-container>
-      <ng-container *ngIf="paginadas.length > 0; else sinDatos">
+      <!-- SKELETON LOADER -->
+      <ng-container *ngIf="cargando">
+        <tr class="skeleton-row-tr" *ngFor="let s of [1,2,3,4,5]">
+          <td><div class="skeleton-cell skeleton-cell--avatar"></div></td>
+          <td><div class="skeleton-cell skeleton-cell--lg"></div></td>
+          <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+          <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
+          <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
+          <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+        </tr>
+      </ng-container>
+      <ng-container *ngIf="!cargando && paginadas.length > 0; else sinDatos">
         <ng-container *ngIf="!cargando">
-        <tr *ngFor="let s of paginadas">
-          <td><span class="badge-count">SOL-{{ s.idSolicitud | number:'5.0-0' }}</span></td>
-          <td><strong>{{ s.nombreMateria }}</strong></td>
-          <td>{{ s.nombreCarrera }}</td>
-          <td>{{ s.nombreArea }}</td>
-          <td style="text-align:center">{{ s.cantidadDocentes }}</td>
-          <td>
+          <tr *ngFor="let s of paginadas">
+            <td><span class="badge-count">SOL-{{ s.idSolicitud | number:'5.0-0' }}</span></td>
+            <td><strong>{{ s.nombreMateria }}</strong></td>
+            <td>{{ s.nombreCarrera }}</td>
+            <td>{{ s.nombreArea }}</td>
+            <td style="text-align:center">{{ s.cantidadDocentes }}</td>
+            <td>
               <span class="badge" [ngClass]="estadoClass(s.estadoSolicitud)">
                 <span class="status-dot"></span>{{ s.estadoSolicitud | titlecase }}
               </span>
-          </td>
-          <td>
-            <div class="action-buttons">
-              <!-- Ver -->
-              <button class="btn-icon" title="Ver detalle" (click)="verDetalle(s)">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                </svg>
-              </button>
-              <!-- Aprobar -->
-              <button class="btn-icon approve" title="Aprobar"
-                      [disabled]="s.estadoSolicitud !== 'pendiente'"
-                      (click)="accionRapida(s, 'aprobada')">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                </svg>
-              </button>
-              <!-- Rechazar -->
-              <button class="btn-icon reject" title="Rechazar"
-                      [disabled]="s.estadoSolicitud !== 'pendiente'"
-                      (click)="accionRapida(s, 'rechazada')">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-              </button>
-              <!-- PDF -->
-              <button class="btn-icon pdf" title="Ver PDF" (click)="abrirPDF(s.idSolicitud!)">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                </svg>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </ng-container>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <!-- Ver -->
+                <button class="btn-icon" title="Ver detalle" (click)="verDetalle(s)">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                  </svg>
+                </button>
+                <!-- Aprobar -->
+                <button class="btn-icon approve" title="Aprobar"
+                        [disabled]="s.estadoSolicitud !== 'pendiente'"
+                        (click)="accionRapida(s, 'aprobada')">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </button>
+                <!-- Rechazar -->
+                <button class="btn-icon reject" title="Rechazar"
+                        [disabled]="s.estadoSolicitud !== 'pendiente'"
+                        (click)="accionRapida(s, 'rechazada')">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+                <!-- PDF -->
+                <button class="btn-icon pdf" title="Ver PDF" (click)="abrirPDF(s.idSolicitud!)">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
       </ng-container><!-- /paginadas.length > 0 -->
       <ng-template #sinDatos>
-        <tr>
+        <tr *ngIf="!cargando">
           <td colspan="7">
             <div class="empty-state">
               <div class="empty-icon">
@@ -339,4 +339,3 @@
 </div>
 
 <app-toast></app-toast>
-

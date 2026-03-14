@@ -29,6 +29,8 @@ export interface PostulanteInfo {
   nombreMateria:     string;
   nombreCarrera:     string;
   nombreArea:        string;
+  documentosAbiertos:      boolean;   // true = puede subir docs hoy
+  fechaLimiteDocumentos:   string;    // fecha límite (puede ser posterior al cierre)
 }
 
 export interface SubirDocumentoResponse {

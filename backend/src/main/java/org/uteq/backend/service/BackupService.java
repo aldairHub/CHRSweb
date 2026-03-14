@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -73,11 +74,19 @@ public class BackupService {
         cfg.setActivo(dto.getActivo());
         cfg.setNotificarError(dto.getNotificarError());
         cfg.setNotificarExito(dto.getNotificarExito());
-        cfg.setTipoDestino(dto.getTipoDestino() != null ? dto.getTipoDestino() : "LOCAL");
+
+        // Destinos múltiples
+        cfg.setDestinoLocal(Boolean.TRUE.equals(dto.getDestinoLocal()));
+        cfg.setDestinoEmail(Boolean.TRUE.equals(dto.getDestinoEmail()));
         cfg.setRutaDestino(dto.getRutaDestino());
         cfg.setEmailDestino(dto.getEmailDestino());
 
-        // Horarios dinámicos
+        // Legacy tipoDestino — derivar del estado actual para compatibilidad
+        if (Boolean.TRUE.equals(cfg.getDestinoEmail()) && Boolean.TRUE.equals(cfg.getDestinoLocal())) cfg.setTipoDestino("LOCAL");
+        else if (Boolean.TRUE.equals(cfg.getDestinoEmail()))                     cfg.setTipoDestino("EMAIL");
+        else if (Boolean.TRUE.equals(cfg.getDestinoLocal()))                     cfg.setTipoDestino("LOCAL");
+        else                                               cfg.setTipoDestino("NINGUNO");
+
         int num = dto.getNumEjecuciones() != null ? dto.getNumEjecuciones() : 1;
         cfg.setNumEjecuciones(num);
         cfg.setHoraBackup1(dto.getHoraBackup1() != null ? LocalTime.parse(dto.getHoraBackup1()) : LocalTime.of(8, 0));
@@ -110,7 +119,8 @@ public class BackupService {
         long inicio = System.currentTimeMillis();
 
         try {
-            Files.createDirectories(Paths.get(cfg.getRutaOrigen()));
+            // Crear carpeta local principal si no existe
+            crearCarpetaSiNoExiste(cfg.getRutaOrigen());
 
             String timestamp = LocalDateTime.now()
                     .format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm"));
@@ -119,7 +129,7 @@ public class BackupService {
             String nombreZip  = "backup_" + timestamp + ".zip";
             String rutaZip    = cfg.getRutaOrigen() + File.separator + nombreZip;
 
-            // 1. pg_dump con ruta configurable
+            // 1. pg_dump
             ejecutarPgDump(cfg.getRutaPgdump(), rutaDump);
 
             // 2. Comprimir
@@ -129,17 +139,19 @@ public class BackupService {
             long tamano   = Files.size(Paths.get(rutaZip));
             long duracion = (System.currentTimeMillis() - inicio) / 1000;
 
-            // 3. Enviar según destino
-            String tipoDestino = cfg.getTipoDestino() != null ? cfg.getTipoDestino() : "LOCAL";
+            // 3. Destino LOCAL secundario (pendrive/red)
+            if (Boolean.TRUE.equals(cfg.getDestinoLocal())
+                    && cfg.getRutaDestino() != null
+                    && !cfg.getRutaDestino().isBlank()) {
+                crearCarpetaSiNoExiste(cfg.getRutaDestino());
+                Files.copy(Paths.get(rutaZip),
+                           Paths.get(cfg.getRutaDestino(), nombreZip),
+                           StandardCopyOption.REPLACE_EXISTING);
+                log.info("Backup copiado a destino local: {}", cfg.getRutaDestino());
+            }
 
-            if ("LOCAL".equals(tipoDestino)) {
-                if (cfg.getRutaDestino() != null && !cfg.getRutaDestino().isBlank()) {
-                    Files.createDirectories(Paths.get(cfg.getRutaDestino()));
-                    Files.copy(Paths.get(rutaZip),
-                               Paths.get(cfg.getRutaDestino(), nombreZip),
-                               StandardCopyOption.REPLACE_EXISTING);
-                }
-    } else if ("EMAIL".equals(tipoDestino)) {
+            // 4. Destino EMAIL
+            if (Boolean.TRUE.equals(cfg.getDestinoEmail())) {
                 enviarBackupPorEmail(cfg.getEmailDestino(), rutaZip, nombreZip, tamano);
             }
 
@@ -150,7 +162,6 @@ public class BackupService {
             historial.setFechaFin(LocalDateTime.now());
             historialRepo.save(historial);
 
-            // Limpieza solo si retención activa
             if (Boolean.TRUE.equals(cfg.getRetencionActiva())) {
                 limpiarBackupsAntiguos(cfg);
             }
@@ -179,7 +190,7 @@ public class BackupService {
                 notificacionService.notificarRol(
                     "admin", "error",
                     "Error en backup ❌",
-                    "El backup automático falló: " + e.getMessage(),
+                    "El backup falló: " + e.getMessage(),
                     "BACKUP", null
                 );
             }
@@ -190,13 +201,25 @@ public class BackupService {
     }
 
     // =========================================================================
-    // pg_dump — ruta configurable
+    // CREAR CARPETA AUTOMÁTICAMENTE
+    // =========================================================================
+
+    private void crearCarpetaSiNoExiste(String ruta) throws IOException {
+        if (ruta == null || ruta.isBlank()) return;
+        Path path = Paths.get(ruta);
+        if (!Files.exists(path)) {
+            Files.createDirectories(path);
+            log.info("Carpeta creada automáticamente: {}", ruta);
+        }
+    }
+
+    // =========================================================================
+    // pg_dump
     // =========================================================================
 
     private void ejecutarPgDump(String rutaPgdump, String rutaSalida)
             throws IOException, InterruptedException {
 
-        // Parsear jdbc:postgresql://host:puerto/dbname?params
         String clean   = datasourceUrl.replace("jdbc:postgresql://", "").split("\\?")[0];
         String[] partes = clean.split("/");
         String dbname   = partes[partes.length - 1];
@@ -204,7 +227,6 @@ public class BackupService {
         String host     = hp[0];
         String puerto   = hp.length > 1 ? hp[1] : "5432";
 
-        // Usar ruta completa si viene configurada, si no intentar pg_dump del PATH
         String pgDumpExe = (rutaPgdump != null && !rutaPgdump.isBlank()) ? rutaPgdump : "pg_dump";
 
         ProcessBuilder pb = new ProcessBuilder(
@@ -228,8 +250,7 @@ public class BackupService {
 
         if (exitCode != 0) {
             throw new RuntimeException(
-                "pg_dump falló (código " + exitCode + "): " + output +
-                ". Verifica que la ruta de pg_dump sea correcta en la configuración.");
+                "pg_dump falló (código " + exitCode + "): " + output);
         }
     }
 
@@ -243,9 +264,8 @@ public class BackupService {
             throw new RuntimeException("No se configuró email de destino para el backup.");
         }
 
-        // Soporte para múltiples emails separados por coma o punto y coma
         String[] destinatarios = destino.split("[,;]");
-        List<String> emails = java.util.Arrays.stream(destinatarios)
+        List<String> emails = Arrays.stream(destinatarios)
             .map(String::trim)
             .filter(e -> !e.isEmpty())
             .collect(Collectors.toList());
@@ -338,16 +358,18 @@ public class BackupService {
         ConfigBackup cfg = new ConfigBackup();
         cfg.setRutaPgdump("C:\\Program Files\\PostgreSQL\\18\\bin\\pg_dump.exe");
         cfg.setRutaOrigen("C:\\Backups");
-        cfg.setRutaDestino("C:\\BackupsRemotos");
+        cfg.setRutaDestino("");
         cfg.setTipoBackup("COMPLETO");
         cfg.setRetencionActiva(false);
         cfg.setDiasRetencion(7);
-        cfg.setNumEjecuciones(2);
+        cfg.setNumEjecuciones(1);
         cfg.setHoraBackup1(LocalTime.of(8, 0));
-        cfg.setHoraBackup2(LocalTime.of(20, 0));
+        cfg.setHoraBackup2(null);
         cfg.setHoraBackup3(null);
-        cfg.setActivo(true);
-        cfg.setTipoDestino("LOCAL");
+        cfg.setActivo(false);
+        cfg.setDestinoLocal(false);
+        cfg.setDestinoEmail(false);
+        cfg.setTipoDestino("NINGUNO");
         cfg.setNotificarError(true);
         cfg.setNotificarExito(false);
         return configRepo.save(cfg);
@@ -369,6 +391,8 @@ public class BackupService {
         dto.setHoraBackup3(cfg.getHoraBackup3() != null
                 ? cfg.getHoraBackup3().format(DateTimeFormatter.ofPattern("HH:mm")) : "");
         dto.setActivo(cfg.getActivo());
+        dto.setDestinoLocal(Boolean.TRUE.equals(cfg.getDestinoLocal()));
+        dto.setDestinoEmail(Boolean.TRUE.equals(cfg.getDestinoEmail()));
         dto.setTipoDestino(cfg.getTipoDestino());
         dto.setRutaDestino(cfg.getRutaDestino());
         dto.setEmailDestino(cfg.getEmailDestino());
@@ -402,4 +426,7 @@ public class BackupService {
         if (bytes < 1024L * 1024 * 1024)   return String.format("%.1f MB", bytes / (1024.0 * 1024));
         return String.format("%.1f GB", bytes / (1024.0 * 1024 * 1024));
     }
+
+    // Helper para usar Boolean como primitivo en if()
+    private boolean isTrue(Boolean b) { return Boolean.TRUE.equals(b); }
 }

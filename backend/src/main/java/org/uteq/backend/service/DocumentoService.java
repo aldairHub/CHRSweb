@@ -72,6 +72,21 @@ public class DocumentoService {
             return response;
         }
 
+        // ✅ VALIDAR que la ventana de subida de docs sigue abierta
+        // (puede estar abierta aunque la convocatoria ya haya cerrado)
+        try {
+            Map<String, Object> infoPostulacion = documentoRepo.obtenerInfoPorPostulacion(idPostulacion);
+            Object docsAbiertosObj = infoPostulacion.get("documentos_abiertos");
+            if (Boolean.FALSE.equals(docsAbiertosObj)) {
+                response.put("exitoso", false);
+                response.put("mensaje", "El plazo para subir documentos ha vencido.");
+                return response;
+            }
+        } catch (Exception e) {
+            // Si el SP no devuelve ese campo aún, no bloqueamos la subida
+            System.out.println("⚠️ No se pudo verificar fecha límite de docs: " + e.getMessage());
+        }
+
         // ✅ SUBIR ARCHIVO A SUPABASE (carpeta "documentos")
         String urlArchivo;
         try {
