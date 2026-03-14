@@ -1,33 +1,16 @@
 // evaluacion-docente.routes.ts
 // Rutas del módulo entrevistas-docentes
 
+// evaluacion-docente.routes.ts
 import { Routes } from '@angular/router';
 
 export const EVALUACION_DOCENTE_ROUTES: Routes = [
   {
-  path: '',  // ruta raíz → /evaluador/entrevistas-docentes
-  title: 'SSDC - Entrevistas Docentes',
-  loadComponent: () =>
-    import('./entrevistas-lista/entrevistas-lista.component')
-      .then(m => m.EntrevistasListaComponent)
-},
-{
-  path: 'postulantes/:idConvocatoria',  // con filtro por convocatoria
-  title: 'SSDC - Postulantes',
-  loadComponent: () =>
-    import('./postulantes/postulantes.component')
-      .then(m => m.PostulantesComponent)
-},
-  {
     path: '',
-    redirectTo: 'dashboard',
-    pathMatch: 'full'
-  },
-  {
-    path: 'dashboard',
+    title: 'SSDC - Entrevistas Docentes',
     loadComponent: () =>
-      import('./dashboard/dashboard.component')
-        .then(m => m.EvaluacionDashboardComponent)
+      import('./entrevistas-lista/entrevistas-lista.component')
+        .then(m => m.EntrevistasListaComponent)
   },
   {
     path: 'fases',
@@ -52,6 +35,13 @@ export const EVALUACION_DOCENTE_ROUTES: Routes = [
     loadComponent: () =>
       import('./config-criterios/config-criterios.component')
         .then(m => m.ConfigCriteriosComponent)
+  },
+  {
+    path: 'postulantes/:idSolicitud',
+    title: 'SSDC - Postulantes',
+    loadComponent: () =>
+      import('./postulantes/postulantes.component')
+        .then(m => m.PostulantesComponent)
   },
   {
     path: 'postulantes',
@@ -85,7 +75,6 @@ export const EVALUACION_DOCENTE_ROUTES: Routes = [
   },
   {
     path: 'evaluacion',
-    // Sin idReunion: redirige a postulantes para seleccionar una reunión
     redirectTo: 'postulantes',
     pathMatch: 'full'
   },

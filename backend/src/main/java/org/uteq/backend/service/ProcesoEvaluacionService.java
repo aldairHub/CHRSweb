@@ -8,7 +8,6 @@ import org.uteq.backend.dto.PostulanteDetalleDTO;
 import org.uteq.backend.dto.PostulanteEvaluacionDTO;
 import org.uteq.backend.entity.*;
 import org.uteq.backend.repository.*;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,7 +15,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -313,6 +311,7 @@ public class ProcesoEvaluacionService {
             SELECT
                 c.id_convocatoria,
                 c.titulo,
+                cs.id_solicitud,
                 m.nombre_materia,
                 COUNT(DISTINCT pe.id_proceso) AS total_candidatos,
                 COUNT(DISTINCT CASE WHEN pe.puntaje_matriz > 0 THEN pe.id_proceso END) AS candidatos_con_matriz
@@ -320,35 +319,38 @@ public class ProcesoEvaluacionService {
             JOIN convocatoria_solicitud cs ON c.id_convocatoria = cs.id_convocatoria
             JOIN solicitud_docente sd ON cs.id_solicitud = sd.id_solicitud
             LEFT JOIN materia m ON sd.id_materia = m.id_materia
-            JOIN proceso_evaluacion pe ON pe.id_solicitud = cs.id_solicitud
-            GROUP BY c.id_convocatoria, c.titulo, m.nombre_materia
-            ORDER BY c.id_convocatoria DESC
+            LEFT JOIN proceso_evaluacion pe ON pe.id_solicitud = cs.id_solicitud
+            GROUP BY c.id_convocatoria, c.titulo, cs.id_solicitud, m.nombre_materia
+            ORDER BY c.id_convocatoria DESC, cs.id_solicitud
             """);
 
         List<Map<String, Object>> result = new ArrayList<>();
 
         for (Map<String, Object> row : rows) {
-            long totalCandidatos    = ((Number) row.get("total_candidatos")).longValue();
+            long totalCandidatos     = ((Number) row.get("total_candidatos")).longValue();
             long candidatosConMatriz = ((Number) row.get("candidatos_con_matriz")).longValue();
-            boolean disponible      = candidatosConMatriz > 0;
+            boolean disponible       = candidatosConMatriz > 0;
 
             String mensajeBloqueo = null;
             if (!disponible) {
-                mensajeBloqueo = "Ningún candidato tiene la matriz de méritos calificada aún.";
+                if (totalCandidatos == 0) {
+                    mensajeBloqueo = "No hay candidatos con proceso activo.";
+                } else {
+                    mensajeBloqueo = "Ningún candidato tiene la matriz de méritos calificada aún.";
+                }
             }
 
             Map<String, Object> item = new HashMap<>();
-            item.put("idConvocatoria",       row.get("id_convocatoria"));
-            item.put("titulo",               row.get("titulo"));
-            item.put("materia",              row.get("nombre_materia"));
-            item.put("totalCandidatos",      totalCandidatos);
-            item.put("candidatosConMatriz",  candidatosConMatriz);
-            item.put("disponible",           disponible);
-            item.put("mensajeBloqueo",       mensajeBloqueo);
+            item.put("idConvocatoria",      row.get("id_convocatoria"));
+            item.put("titulo",              row.get("titulo"));
+            item.put("idSolicitud",         row.get("id_solicitud"));
+            item.put("materia",             row.get("nombre_materia"));
+            item.put("totalCandidatos",     totalCandidatos);
+            item.put("candidatosConMatriz", candidatosConMatriz);
+            item.put("disponible",          disponible);
+            item.put("mensajeBloqueo",      mensajeBloqueo);
             result.add(item);
         }
         return result;
     }
-
-
 }

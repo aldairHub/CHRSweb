@@ -3,15 +3,21 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
-export interface ConvocatoriaEntrevista {
+export interface SolicitudEntrevista {
+  idSolicitud: number;
+  materia: string;
+  totalCandidatos: number;
+  candidatosConMatriz: number;
+  disponible: boolean;
+  mensajeBloqueo: string | null;
+}
+
+export interface ConvocatoriaEntrevistaAgrupada {
   idConvocatoria: number;
   titulo: string;
-  materia: string;
-  fechaLimiteDocumentos: string;
-  totalCandidatos: number;
-  candidatosConMatriz: number;   // cuántos ya tienen puntaje_matriz > 0
-  disponible: boolean;           // true si al menos 1 candidato tiene matriz calificada
-  mensajeBloqueo: string | null;
+  solicitudes: SolicitudEntrevista[];
+  expandida: boolean;
+  tieneMultiples: boolean;
 }
 
 @Component({
@@ -27,7 +33,7 @@ export class EntrevistasListaComponent implements OnInit {
 
   cargando = false;
   error = '';
-  convocatorias: ConvocatoriaEntrevista[] = [];
+  convocatorias: ConvocatoriaEntrevistaAgrupada[] = [];
 
   constructor(
     private router: Router,
@@ -42,9 +48,9 @@ export class EntrevistasListaComponent implements OnInit {
     this.cargando = true;
     this.error = '';
 
-    this.http.get<ConvocatoriaEntrevista[]>(`${this.API}/convocatorias`).subscribe({
+    this.http.get<any[]>(`${this.API}/convocatorias`).subscribe({
       next: (data) => {
-        this.convocatorias = data;
+        this.convocatorias = this.agrupar(data);
         this.cargando = false;
       },
       error: (err) => {
@@ -54,9 +60,50 @@ export class EntrevistasListaComponent implements OnInit {
     });
   }
 
-  abrirEntrevistas(conv: ConvocatoriaEntrevista): void {
-    if (!conv.disponible) return;
-    this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', conv.idConvocatoria]);
+  private agrupar(rows: any[]): ConvocatoriaEntrevistaAgrupada[] {
+    const map = new Map<number, ConvocatoriaEntrevistaAgrupada>();
+
+    for (const row of rows) {
+      if (!map.has(row.idConvocatoria)) {
+        map.set(row.idConvocatoria, {
+          idConvocatoria: row.idConvocatoria,
+          titulo:         row.titulo,
+          solicitudes:    [],
+          expandida:      false,
+          tieneMultiples: false
+        });
+      }
+
+      const conv = map.get(row.idConvocatoria)!;
+      conv.solicitudes.push({
+        idSolicitud:       row.idSolicitud,
+        materia:           row.materia,
+        totalCandidatos:   row.totalCandidatos,
+        candidatosConMatriz: row.candidatosConMatriz,
+        disponible:        row.disponible,
+        mensajeBloqueo:    row.mensajeBloqueo
+      });
+    }
+
+    const result = Array.from(map.values());
+    result.forEach(c => {
+      c.tieneMultiples = c.solicitudes.length > 1;
+      if (!c.tieneMultiples) c.expandida = true;
+    });
+    return result;
+  }
+
+  toggleExpandir(conv: ConvocatoriaEntrevistaAgrupada): void {
+    if (conv.tieneMultiples) conv.expandida = !conv.expandida;
+  }
+
+  abrirEntrevistas(sol: SolicitudEntrevista): void {
+    if (!sol.disponible) return;
+    this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', sol.idSolicitud]);
+  }
+
+  algunaDisponible(conv: ConvocatoriaEntrevistaAgrupada): boolean {
+    return conv.solicitudes.some(s => s.disponible);
   }
 
   volver(): void {
