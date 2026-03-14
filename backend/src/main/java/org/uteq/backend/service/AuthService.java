@@ -158,10 +158,16 @@ public class AuthService {
 
         // 9) Generar JWT
         log.info("[LOGIN] Generando JWT...");
+//        String token = jwtService.generateToken(
+//                usuario.getUsuarioApp(),
+//                roles,
+//                usuario.getTokenVersion()
+//        );
         String token = jwtService.generateToken(
                 usuario.getUsuarioApp(),
                 roles,
-                usuario.getTokenVersion()
+                usuario.getTokenVersion(),
+                usuario.getUsuarioBd()
         );
 
         try {

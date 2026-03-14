@@ -19,7 +19,13 @@ import java.util.stream.Collectors;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
+    /**
+     * Nombre del atributo del request donde se guarda el usuarioBd extraído del JWT.
+     * AuditContextInterceptor lo lee de aquí para inyectarlo en app.usuario_bd.
+     */
+    public static final String ATTR_USUARIO_BD = "jwt_usuario_bd";
+
+    private final JwtService                jwtService;
     private final PostgresProcedureRepository procedureRepository;
 
     public JwtAuthFilter(JwtService jwtService,
@@ -36,13 +42,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response); return;
+            filterChain.doFilter(request, response);
+            return;
         }
 
         String token = authHeader.substring(7);
-//        if (!jwtService.isTokenValid(token)) {
-//            filterChain.doFilter(request, response); return;
-//        }
+
         if (!jwtService.isTokenValid(token)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
@@ -55,7 +60,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         Integer tvToken  = jwtService.extractTokenVersion(token);
 
         // Verificar versión solo si el token trae el claim "tv"
-        // Tokens emitidos antes de este cambio no tienen "tv" → pasan
         if (tvToken != null) {
             Integer tvBd = procedureRepository.obtenerTokenVersion(username);
             if (tvBd == null || !tvBd.equals(tvToken)) {
@@ -67,14 +71,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         }
 
-        List<String> roles = jwtService.extractRoles(token);
-        List<SimpleGrantedAuthority> authorities = roles.stream()
+        // Extraer usuarioBd del claim y dejarlo en el request para AuditContextInterceptor.
+        String usuarioBd = jwtService.extractUsuarioBd(token);
+        if (usuarioBd != null) {
+            request.setAttribute(ATTR_USUARIO_BD, usuarioBd);
+        }
+
+        List<SimpleGrantedAuthority> authorities = jwtService.extractRoles(token).stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
 
         UsernamePasswordAuthenticationToken auth =
                 new UsernamePasswordAuthenticationToken(username, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(auth);
+
         filterChain.doFilter(request, response);
     }
 }

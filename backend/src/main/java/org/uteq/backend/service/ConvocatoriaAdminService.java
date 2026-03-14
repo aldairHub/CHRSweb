@@ -23,9 +23,10 @@ import java.util.stream.Collectors;
 public class ConvocatoriaAdminService {
 
     private final JdbcTemplate                      jdbcTemplate;
-    private final AccionAuditoriaService             auditoriaService;
     private final ConvocatoriaSolicitudRepository    convSolicitudRepo;
     private final SolicitudDocenteRepository         solicitudRepo;
+
+    // ── SOLICITUDES DISPONIBLES ───────────────────────────────────────────
 
     // Excluye las que ya están asociadas a convocatorias 'abierta' o 'en_proceso'
     @Transactional(readOnly = true)
@@ -66,8 +67,9 @@ public class ConvocatoriaAdminService {
     }
 
     // ── CREAR ─────────────────────────────────────────────────────────────
+
     @Transactional
-    public MensajeResponse crear(CrearRequest req, String usuarioApp, String ip) {
+    public MensajeResponse crear(CrearRequest req, String usuarioApp, String usuarioBd, String ip) {
         try {
             Long[] idsArray = req.getIdsSolicitudes() == null
                     ? new Long[0]
@@ -95,12 +97,6 @@ public class ConvocatoriaAdminService {
 
             boolean exito = idNuevo != null;
 
-            if (exito) {
-                auditoriaService.registrar(
-                        usuarioApp, "CREAR", "Convocatoria", idNuevo,
-                        "Convocatoria creada: " + req.getTitulo(), ip
-                );
-            }
 
             return MensajeResponse.builder()
                     .exito(exito)
@@ -114,14 +110,16 @@ public class ConvocatoriaAdminService {
         }
     }
 
+    /** Sobrecarga sin auditoría — para llamadas internas del sistema */
     @Transactional
     public MensajeResponse crear(CrearRequest req) {
-        return crear(req, "sistema", null);
+        return crear(req, "sistema", "sistema", null);
     }
 
     // ── ACTUALIZAR ────────────────────────────────────────────────────────
+
     @Transactional
-    public MensajeResponse actualizar(Long id, ActualizarRequest req, String usuarioApp, String ip) {
+    public MensajeResponse actualizar(Long id, ActualizarRequest req, String usuarioApp, String usuarioBd, String ip) {
         try {
             Map<String, Object> result = new SimpleJdbcCall(jdbcTemplate)
                     .withProcedureName("sp_actualizar_convocatoria")
@@ -137,10 +135,7 @@ public class ConvocatoriaAdminService {
             int    filas   = ((Number) result.get("p_filas")).intValue();
             String mensaje = (String) result.get("p_mensaje");
 
-            if (filas > 0) {
-                auditoriaService.registrar(usuarioApp, "ACTUALIZAR", "Convocatoria", id,
-                        "Convocatoria actualizada: " + req.getTitulo(), ip);
-            }
+
 
             return MensajeResponse.builder().exito(filas > 0).mensaje(mensaje).build();
 
@@ -150,14 +145,16 @@ public class ConvocatoriaAdminService {
         }
     }
 
+    /** Sobrecarga sin auditoría — para llamadas internas del sistema */
     @Transactional
     public MensajeResponse actualizar(Long id, ActualizarRequest req) {
-        return actualizar(id, req, "sistema", null);
+        return actualizar(id, req, "sistema", "sistema", null);
     }
 
     // ── CAMBIAR ESTADO ────────────────────────────────────────────────────
+
     @Transactional
-    public MensajeResponse cambiarEstado(Long id, String nuevoEstado, String usuarioApp, String ip) {
+    public MensajeResponse cambiarEstado(Long id, String nuevoEstado, String usuarioApp, String usuarioBd, String ip) {
         try {
             Map<String, Object> result = new SimpleJdbcCall(jdbcTemplate)
                     .withProcedureName("sp_cambiar_estado_convocatoria")
@@ -169,10 +166,7 @@ public class ConvocatoriaAdminService {
             String mensaje = (String) result.get("p_mensaje");
             boolean exito  = !mensaje.startsWith("Error");
 
-            if (exito) {
-                auditoriaService.registrar(usuarioApp, "CAMBIAR_ESTADO", "Convocatoria", id,
-                        "Estado cambiado a '" + nuevoEstado + "'", ip);
-            }
+
 
             return MensajeResponse.builder().exito(exito).mensaje(mensaje).build();
 
@@ -182,12 +176,14 @@ public class ConvocatoriaAdminService {
         }
     }
 
+    /** Sobrecarga sin auditoría — para llamadas internas del sistema */
     @Transactional
     public MensajeResponse cambiarEstado(Long id, String nuevoEstado) {
-        return cambiarEstado(id, nuevoEstado, "sistema", null);
+        return cambiarEstado(id, nuevoEstado, "sistema", "sistema", null);
     }
 
     // ── ELIMINAR ──────────────────────────────────────────────────────────
+
     @Transactional
     public MensajeResponse eliminar(Long id) {
         try {
@@ -209,6 +205,7 @@ public class ConvocatoriaAdminService {
     }
 
     // ── LISTAR ────────────────────────────────────────────────────────────
+
     public List<ListaResponse> listar(String estado, String titulo) {
         return jdbcTemplate.query(
                 "SELECT * FROM fn_listar_convocatorias(?::varchar, ?::varchar)",
@@ -227,6 +224,7 @@ public class ConvocatoriaAdminService {
     }
 
     // ── DETALLE ───────────────────────────────────────────────────────────
+
     public DetalleResponse detalle(Long id) {
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(
                 "SELECT * FROM fn_detalle_convocatoria(?)", id

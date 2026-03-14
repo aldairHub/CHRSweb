@@ -10,18 +10,20 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
- * Interceptor que, en cada request HTTP autenticado, ejecuta:
+ * Interceptor que inyecta variables de sesión PostgreSQL en cada request autenticado.
  *
- *   SELECT set_config('app.usuario_app', '<correo>', false)
- *   SELECT set_config('app.ip_cliente',  '<ip>',    false)
+ * Variables que se inyectan:
+ *   app.usuario_app  → correo del JWT (auth.getName())
+ *   app.ip_cliente   → IP real del cliente HTTP
+ *   app.usuario_bd   → usuario de PostgreSQL del JWT (claim "usuario_bd")
  *
- * Esto deja las variables disponibles para toda la sesión PostgreSQL
- * de ese request. Los triggers fn_auditar_accion y fn_auditar_usuario
- * las leen con current_setting('app.usuario_app', true) en lugar de
- * hardcodear 'db_directo'.
+ * Los triggers de auditoría (fn_aud_cambio) leen estas variables con
+ * current_setting('app.usuario_bd', true) para saber quién hizo el cambio,
+ * incluso cuando la operación pasa por una función SECURITY DEFINER
+ * (donde current_user y session_user no son confiables con connection pooling).
  *
- * Se usa false (no local) porque los triggers corren dentro de la misma
- * transacción/conexión y necesitan ver la variable.
+ * Si el token no tiene el claim usuario_bd (tokens anteriores al cambio),
+ * app.usuario_bd queda como cadena vacía — el trigger lo lee como NULL.
  */
 @Component
 public class AuditContextInterceptor implements HandlerInterceptor {
@@ -45,8 +47,10 @@ public class AuditContextInterceptor implements HandlerInterceptor {
             String usuarioApp = auth.getName();
             String ip         = obtenerIp(request);
 
+            // usuarioBd viene del claim del JWT, extraído y guardado por JwtAuthFilter
+            String usuarioBd = (String) request.getAttribute(JwtAuthFilter.ATTR_USUARIO_BD);
+
             try {
-                // Setea variables de sesión PostgreSQL que los triggers leerán
                 jdbcTemplate.queryForObject(
                         "SELECT set_config('app.usuario_app', ?, false)",
                         String.class, usuarioApp
@@ -54,6 +58,10 @@ public class AuditContextInterceptor implements HandlerInterceptor {
                 jdbcTemplate.queryForObject(
                         "SELECT set_config('app.ip_cliente', ?, false)",
                         String.class, ip != null ? ip : "desconocida"
+                );
+                jdbcTemplate.queryForObject(
+                        "SELECT set_config('app.usuario_bd', ?, false)",
+                        String.class, usuarioBd != null ? usuarioBd : ""
                 );
             } catch (Exception e) {
                 // No bloquear el request si falla el set_config

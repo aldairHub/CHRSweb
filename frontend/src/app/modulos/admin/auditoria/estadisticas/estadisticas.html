@@ -1,4 +1,4 @@
-
+<app-navbar></app-navbar>
 
 <div class="main-container">
   <div class="content-wrapper">
@@ -7,228 +7,797 @@
     <div class="page-header">
       <div>
         <h2>Estadísticas de auditoría</h2>
-        <p class="page-subtitle">Resumen de actividad y métricas de acceso al sistema</p>
+        <p class="page-subtitle">Panel configurable de métricas de accesos y cambios en datos</p>
       </div>
       <div class="header-actions">
-        <button class="btn btn-outline" (click)="cargar()" [disabled]="isLoading">
+        <button class="btn btn-outline" (click)="cargarTodo()" [disabled]="loadingLogin || loadingCambios">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
           </svg>
           Actualizar
         </button>
+        <button class="btn btn-primary" (click)="abrirReporte()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                   stroke="currentColor" width="18" height="18">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586
+                         a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Exportar reporte
+          </button>
       </div>
     </div>
 
-    <!-- Tabs de submódulos -->
+    <!-- Tabs -->
     <div class="submodule-tabs">
-      <a routerLink="/admin/auditoria/sesiones" routerLinkActive="tab-active" [routerLinkActiveOptions]="{exact: true}" class="tab-item">
+      <a routerLink="/admin/auditoria/sesiones" routerLinkActive="tab-active"
+         [routerLinkActiveOptions]="{exact: true}" class="tab-item">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
         </svg>
         Sesiones activas
       </a>
-      <a routerLink="/admin/auditoria/historial" routerLinkActive="tab-active" [routerLinkActiveOptions]="{exact: true}" class="tab-item">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-        Registro de eventos
-      </a>
-      <a routerLink="/admin/auditoria/estadisticas" routerLinkActive="tab-active" [routerLinkActiveOptions]="{exact: true}" class="tab-item">
+      <a routerLink="/admin/auditoria/estadisticas" routerLinkActive="tab-active"
+         [routerLinkActiveOptions]="{exact: true}" class="tab-item">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
         </svg>
         Estadísticas
       </a>
+      <a routerLink="/admin/auditoria/cambios" routerLinkActive="tab-active"
+         [routerLinkActiveOptions]="{exact: true}" class="tab-item">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+        </svg>
+        Cambios en datos
+      </a>
     </div>
 
-    <!-- Loading -->
-    <div *ngIf="isLoading" class="loading-state" style="padding: 4rem; text-align:center;">
-      <svg class="spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="40" height="40">
+    <!-- ── PANEL DE FILTROS GLOBALES ───────────────────────────────────── -->
+    <div class="filters-panel">
+      <div class="filters-header">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+        </svg>
+        <span>Filtros globales</span>
+        <span class="filters-note">Aplican a ambas secciones. Los filtros de tabla/operación solo afectan a Cambios.</span>
+      </div>
+      <div class="filters-grid">
+        <div class="filter-group">
+          <label>Desde</label>
+          <input type="date" class="form-input" [(ngModel)]="filtros.desde"/>
+        </div>
+        <div class="filter-group">
+          <label>Hasta</label>
+          <input type="date" class="form-input" [(ngModel)]="filtros.hasta"/>
+        </div>
+        <div class="filter-group">
+          <label>Usuario (correo)</label>
+          <input type="text" class="form-input" placeholder="ej: reinosove" [(ngModel)]="filtros.usuarioApp"/>
+        </div>
+        <div class="filter-group">
+          <label>Resultado acceso</label>
+          <select class="form-select" [(ngModel)]="filtros.resultado">
+            <option value="">Todos</option>
+            <option value="SUCCESS">Exitoso</option>
+            <option value="FAIL">Fallido</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Tabla (cambios)</label>
+          <select class="form-select" [(ngModel)]="filtros.tabla">
+            <option value="">Todas</option>
+            <option value="usuario">usuario</option>
+            <option value="convocatoria">convocatoria</option>
+            <option value="prepostulacion">prepostulacion</option>
+            <option value="postulacion">postulacion</option>
+            <option value="solicitud_docente">solicitud_docente</option>
+            <option value="evaluacion">evaluacion</option>
+            <option value="proceso_evaluacion">proceso_evaluacion</option>
+            <option value="documento">documento</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Operación (cambios)</label>
+          <select class="form-select" [(ngModel)]="filtros.operacion">
+            <option value="">Todas</option>
+            <option value="INSERT">INSERT</option>
+            <option value="UPDATE">UPDATE</option>
+            <option value="DELETE">DELETE</option>
+          </select>
+        </div>
+      </div>
+      <div class="filters-actions">
+        <button class="btn btn-primary" (click)="cargarTodo()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          Aplicar filtros
+        </button>
+        <button class="btn btn-outline" (click)="limpiarFiltros()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          Limpiar
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!--  BLOQUE 1 — ACCESOS (aud_login_app)                                -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="section-divider">
+      <span>Auditoría de accesos</span>
+    </div>
+
+    <div *ngIf="loadingLogin" class="loading-state">
+      <svg class="spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="32" height="32">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 1 1-6.219-8.56"/>
       </svg>
-      <p style="margin-top:1rem; color:#6b7280;">Cargando estadísticas...</p>
+      <span>Cargando estadísticas de accesos...</span>
     </div>
 
-    <ng-container *ngIf="!isLoading && stats">
+    <ng-container *ngIf="!loadingLogin && login">
 
-      <!-- KPIs principales -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon blue">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <h3>Total registros</h3>
-            <div class="stat-value">{{ stats.totalRegistros | number }}</div>
-          </div>
+      <!-- KPIs de accesos -->
+      <div class="collapsible-card">
+        <div class="collapsible-header" (click)="toggle('kpisLogin')">
+          <h3>Resumen de accesos</h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20"
+               [style.transform]="secciones.kpisLogin ? 'rotate(180deg)' : 'rotate(0)'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
         </div>
-
-        <div class="stat-card">
-          <div class="stat-icon success">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <h3>Accesos exitosos</h3>
-            <div class="stat-value">{{ stats.totalExitosos | number }}</div>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon danger">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <h3>Accesos fallidos</h3>
-            <div class="stat-value">{{ stats.totalFallidos | number }}</div>
-          </div>
-        </div>
-
-        <div class="stat-card" [class.stat-danger]="stats.tasaExito < 50">
-          <div class="stat-icon" [ngClass]="stats.tasaExito >= 80 ? 'success' : stats.tasaExito >= 50 ? '' : 'danger'">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <h3>Tasa de éxito</h3>
-            <div class="stat-value">{{ stats.tasaExito }}%</div>
-            <div class="stat-bar-bg">
-              <div class="stat-bar-fill"
-                   [style.width]="stats.tasaExito + '%'"
-                   [class.fill-success]="stats.tasaExito >= 80"
-                   [class.fill-warning]="stats.tasaExito >= 50 && stats.tasaExito < 80"
-                   [class.fill-danger]="stats.tasaExito < 50">
+        <div class="collapsible-body" *ngIf="secciones.kpisLogin">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon blue">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                </svg>
+              </div>
+              <div class="stat-content">
+                <h4>Total registros</h4>
+                <div class="stat-value">{{ login.totalRegistros | number }}</div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Panel de configuración del gráfico -->
-      <div class="chart-config-card">
-        <div class="chart-config-row">
-          <h3 class="chart-title">Tendencia de accesos</h3>
-          <div class="chart-controls">
-            <!-- Selector de métrica -->
-            <div class="control-group">
-              <label class="control-label">Mostrar</label>
-              <div class="toggle-group">
-                <button class="toggle-btn" [class.active]="chartMetric === 'todos'" (click)="chartMetric = 'todos'">Todos</button>
-                <button class="toggle-btn" [class.active]="chartMetric === 'exitosos'" (click)="chartMetric = 'exitosos'">Exitosos</button>
-                <button class="toggle-btn" [class.active]="chartMetric === 'fallidos'" (click)="chartMetric = 'fallidos'">Fallidos</button>
+            <div class="stat-card">
+              <div class="stat-icon success">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div class="stat-content">
+                <h4>Exitosos</h4>
+                <div class="stat-value">{{ login.totalExitosos | number }}</div>
               </div>
             </div>
-          </div>
-        </div>
-
-        <div *ngIf="stats.tendenciaSemanal.length === 0" class="empty-chart">
-          <p>No hay datos de los últimos 7 días</p>
-        </div>
-
-        <div class="bar-chart" *ngIf="stats.tendenciaSemanal.length > 0">
-          <div class="bar-group" *ngFor="let dia of stats.tendenciaSemanal">
-            <div class="bars">
-              <ng-container [ngSwitch]="chartMetric">
-                <!-- Todos: barras apiladas -->
-                <ng-container *ngSwitchCase="'todos'">
-                  <div class="bar bar-success"
-                       [style.height]="getBarHeight(dia.exitosos, getMaxForMetric())"
-                       [title]="'Exitosos: ' + dia.exitosos">
-                  </div>
-                  <div class="bar bar-danger"
-                       [style.height]="getBarHeight(dia.fallidos, getMaxForMetric())"
-                       [title]="'Fallidos: ' + dia.fallidos">
-                  </div>
-                </ng-container>
-                <!-- Solo exitosos -->
-                <ng-container *ngSwitchCase="'exitosos'">
-                  <div class="bar bar-success bar-wide"
-                       [style.height]="getBarHeight(dia.exitosos, getMaxForMetric())"
-                       [title]="'Exitosos: ' + dia.exitosos">
-                  </div>
-                </ng-container>
-                <!-- Solo fallidos -->
-                <ng-container *ngSwitchCase="'fallidos'">
-                  <div class="bar bar-danger bar-wide"
-                       [style.height]="getBarHeight(dia.fallidos, getMaxForMetric())"
-                       [title]="'Fallidos: ' + dia.fallidos">
-                  </div>
-                </ng-container>
-              </ng-container>
+            <div class="stat-card">
+              <div class="stat-icon danger">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div class="stat-content">
+                <h4>Fallidos</h4>
+                <div class="stat-value">{{ login.totalFallidos | number }}</div>
+              </div>
             </div>
-            <div class="bar-totals">
-              <span class="bar-total-num">
-                {{ chartMetric === 'todos' ? dia.total : (chartMetric === 'exitosos' ? dia.exitosos : dia.fallidos) }}
-              </span>
-            </div>
-            <div class="bar-label">{{ formatFecha(dia.fecha) }}</div>
-          </div>
-        </div>
-
-        <div class="chart-legend" *ngIf="stats.tendenciaSemanal.length > 0">
-          <span class="legend-item" *ngIf="chartMetric !== 'fallidos'">
-            <span class="legend-dot success"></span>Exitosos
-          </span>
-          <span class="legend-item" *ngIf="chartMetric !== 'exitosos'">
-            <span class="legend-dot danger"></span>Fallidos
-          </span>
-        </div>
-      </div>
-
-      <!-- Top usuarios con intentos fallidos -->
-      <div class="table-card" *ngIf="stats.topFallidosPorUsuario.length > 0">
-        <div class="table-header">
-          <div class="table-header-row">
-            <h3>Top usuarios con más intentos fallidos</h3>
-            <span class="badge badge-fail">Alerta de seguridad</span>
-          </div>
-          <p class="table-header-sub">Usuarios con mayor cantidad de intentos de acceso fallidos en el historial</p>
-        </div>
-        <div class="ranking-list">
-          <div class="ranking-item" *ngFor="let u of stats.topFallidosPorUsuario; let i = index">
-            <span class="ranking-pos" [ngClass]="{'gold': i===0, 'silver': i===1, 'bronze': i===2}">
-              {{ i + 1 }}
-            </span>
-            <div class="ranking-info">
-              <span class="ranking-nombre">{{ u.usuario }}</span>
-              <div class="ranking-bar-bg">
-                <div class="ranking-bar"
-                     [style.width]="getBarWidth(u.intentos, getMaxIntentos())">
+            <div class="stat-card">
+              <div class="stat-icon" [ngClass]="login.tasaExito >= 80 ? 'success' : login.tasaExito >= 50 ? '' : 'danger'">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+              </div>
+              <div class="stat-content">
+                <h4>Tasa de éxito</h4>
+                <div class="stat-value">{{ login.tasaExito }}%</div>
+                <div class="stat-bar-bg">
+                  <div class="stat-bar-fill"
+                       [style.width]="login.tasaExito + '%'"
+                       [class.fill-success]="login.tasaExito >= 80"
+                       [class.fill-warning]="login.tasaExito >= 50 && login.tasaExito < 80"
+                       [class.fill-danger]="login.tasaExito < 50">
+                  </div>
                 </div>
               </div>
             </div>
-            <span class="ranking-intentos">
-              <span class="badge badge-fail">{{ u.intentos }} intentos</span>
-            </span>
           </div>
         </div>
       </div>
 
-      <div class="empty-state-card" *ngIf="stats.topFallidosPorUsuario.length === 0">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <p>¡Sin intentos fallidos registrados!</p>
-        <small>El sistema no reporta intentos de acceso fallidos</small>
+      <!-- Tendencia de accesos -->
+      <div class="collapsible-card">
+        <div class="collapsible-header" (click)="toggle('tendenciaLogin')">
+          <h3>Tendencia de accesos por día</h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20"
+               [style.transform]="secciones.tendenciaLogin ? 'rotate(180deg)' : 'rotate(0)'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+        <div class="collapsible-body" *ngIf="secciones.tendenciaLogin">
+          <div class="chart-controls">
+            <div class="toggle-group">
+              <button class="toggle-btn" [class.active]="metricaLogin === 'todos'"    (click)="metricaLogin = 'todos'">Todos</button>
+              <button class="toggle-btn" [class.active]="metricaLogin === 'exitosos'" (click)="metricaLogin = 'exitosos'">Exitosos</button>
+              <button class="toggle-btn" [class.active]="metricaLogin === 'fallidos'" (click)="metricaLogin = 'fallidos'">Fallidos</button>
+            </div>
+          </div>
+          <div *ngIf="login.tendenciaDiaria.length === 0" class="empty-chart">
+            <p>Sin datos para el período seleccionado</p>
+          </div>
+          <div class="bar-chart" *ngIf="login.tendenciaDiaria.length > 0">
+            <div class="bar-group" *ngFor="let dia of login.tendenciaDiaria">
+              <div class="bars">
+                <ng-container [ngSwitch]="metricaLogin">
+                  <ng-container *ngSwitchCase="'todos'">
+                    <div class="bar bar-success" [style.height]="barHeight(dia.exitosos, maxLogin())" [title]="'Exitosos: ' + dia.exitosos"></div>
+                    <div class="bar bar-danger"  [style.height]="barHeight(dia.fallidos, maxLogin())" [title]="'Fallidos: ' + dia.fallidos"></div>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'exitosos'">
+                    <div class="bar bar-success bar-wide" [style.height]="barHeight(dia.exitosos, maxLogin())" [title]="'Exitosos: ' + dia.exitosos"></div>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'fallidos'">
+                    <div class="bar bar-danger bar-wide" [style.height]="barHeight(dia.fallidos, maxLogin())" [title]="'Fallidos: ' + dia.fallidos"></div>
+                  </ng-container>
+                </ng-container>
+              </div>
+              <div class="bar-total">{{ metricaLogin === 'todos' ? dia.total : metricaLogin === 'exitosos' ? dia.exitosos : dia.fallidos }}</div>
+              <div class="bar-label">{{ formatFecha(dia.dia) }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top usuarios -->
+      <div class="collapsible-card">
+        <div class="collapsible-header" (click)="toggle('topUsuarios')">
+          <h3>Top usuarios</h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20"
+               [style.transform]="secciones.topUsuarios ? 'rotate(180deg)' : 'rotate(0)'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+        <div class="collapsible-body" *ngIf="secciones.topUsuarios">
+          <div class="two-col">
+            <!-- Fallidos -->
+            <div>
+              <h4 class="sub-title danger-text">⚠ Mayor cantidad de fallos</h4>
+              <div *ngIf="login.topFallidos.length === 0" class="empty-mini">Sin registros fallidos</div>
+              <div class="ranking-list">
+                <div class="ranking-item" *ngFor="let u of login.topFallidos; let i = index">
+                  <span class="ranking-pos" [ngClass]="{'gold': i===0, 'silver': i===1, 'bronze': i===2}">{{ i+1 }}</span>
+                  <div class="ranking-info">
+                    <span class="ranking-nombre">{{ u.usuario }}</span>
+                    <div class="ranking-bar-bg">
+                      <div class="ranking-bar danger-bar" [style.width]="barWidth(u.intentos, maxFallidos())"></div>
+                    </div>
+                  </div>
+                  <span class="badge badge-fail">{{ u.intentos }}</span>
+                </div>
+              </div>
+            </div>
+            <!-- Exitosos -->
+            <div>
+              <h4 class="sub-title success-text">✓ Mayor actividad exitosa</h4>
+              <div *ngIf="login.topExitosos.length === 0" class="empty-mini">Sin registros exitosos</div>
+              <div class="ranking-list">
+                <div class="ranking-item" *ngFor="let u of login.topExitosos; let i = index">
+                  <span class="ranking-pos" [ngClass]="{'gold': i===0, 'silver': i===1, 'bronze': i===2}">{{ i+1 }}</span>
+                  <div class="ranking-info">
+                    <span class="ranking-nombre">{{ u.usuario }}</span>
+                    <div class="ranking-bar-bg">
+                      <div class="ranking-bar success-bar" [style.width]="barWidth(u.accesos, maxExitosos())"></div>
+                    </div>
+                  </div>
+                  <span class="badge badge-success">{{ u.accesos }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Por hora del día -->
+      <div class="collapsible-card">
+        <div class="collapsible-header" (click)="toggle('porHora')">
+          <h3>Distribución por hora del día</h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20"
+               [style.transform]="secciones.porHora ? 'rotate(180deg)' : 'rotate(0)'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+        <div class="collapsible-body" *ngIf="secciones.porHora">
+          <div *ngIf="login.porHora.length === 0" class="empty-chart"><p>Sin datos</p></div>
+          <div class="hora-chart" *ngIf="login.porHora.length > 0">
+            <div class="hora-item" *ngFor="let h of login.porHora">
+              <span class="hora-label">{{ formatHora(h.hora) }}</span>
+              <div class="hora-bar-bg">
+                <div class="hora-bar" [style.width]="barWidth(h.total, maxHora())">
+                  <span class="hora-val">{{ h.total }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!--  BLOQUE 2 — CAMBIOS EN DATOS (aud_cambio)                          -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="section-divider">
+      <span>Auditoría de cambios en datos</span>
+    </div>
+
+    <div *ngIf="loadingCambios" class="loading-state">
+      <svg class="spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="32" height="32">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 1 1-6.219-8.56"/>
+      </svg>
+      <span>Cargando estadísticas de cambios...</span>
+    </div>
+
+    <ng-container *ngIf="!loadingCambios && cambios">
+
+      <!-- KPIs de cambios -->
+      <div class="collapsible-card">
+        <div class="collapsible-header" (click)="toggle('kpisCambios')">
+          <h3>Resumen de cambios</h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20"
+               [style.transform]="secciones.kpisCambios ? 'rotate(180deg)' : 'rotate(0)'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+        <div class="collapsible-body" *ngIf="secciones.kpisCambios">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon blue">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+                </svg>
+              </div>
+              <div class="stat-content">
+                <h4>Total cambios</h4>
+                <div class="stat-value">{{ cambios.totalCambios | number }}</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon success">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+              </div>
+              <div class="stat-content">
+                <h4>INSERT</h4>
+                <div class="stat-value">{{ cambios.totalInsert | number }}</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon blue">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </div>
+              <div class="stat-content">
+                <h4>UPDATE</h4>
+                <div class="stat-value">{{ cambios.totalUpdate | number }}</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon danger">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </div>
+              <div class="stat-content">
+                <h4>DELETE</h4>
+                <div class="stat-value">{{ cambios.totalDelete | number }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tendencia de cambios -->
+      <div class="collapsible-card">
+        <div class="collapsible-header" (click)="toggle('tendenciaCambios')">
+          <h3>Tendencia de cambios por día</h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20"
+               [style.transform]="secciones.tendenciaCambios ? 'rotate(180deg)' : 'rotate(0)'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+        <div class="collapsible-body" *ngIf="secciones.tendenciaCambios">
+          <div class="chart-controls">
+            <div class="toggle-group">
+              <button class="toggle-btn" [class.active]="metricaCambios === 'total'"   (click)="metricaCambios = 'total'">Total</button>
+              <button class="toggle-btn" [class.active]="metricaCambios === 'inserts'" (click)="metricaCambios = 'inserts'">INSERT</button>
+              <button class="toggle-btn" [class.active]="metricaCambios === 'updates'" (click)="metricaCambios = 'updates'">UPDATE</button>
+              <button class="toggle-btn" [class.active]="metricaCambios === 'deletes'" (click)="metricaCambios = 'deletes'">DELETE</button>
+            </div>
+          </div>
+          <div *ngIf="cambios.tendenciaDiaria.length === 0" class="empty-chart"><p>Sin datos para el período seleccionado</p></div>
+          <div class="bar-chart" *ngIf="cambios.tendenciaDiaria.length > 0">
+            <div class="bar-group" *ngFor="let dia of cambios.tendenciaDiaria">
+              <div class="bars">
+                <ng-container [ngSwitch]="metricaCambios">
+                  <ng-container *ngSwitchCase="'total'">
+                    <div class="bar bar-insert" [style.height]="barHeight(dia.inserts, maxCambios())" title="INSERT"></div>
+                    <div class="bar bar-update" [style.height]="barHeight(dia.updates, maxCambios())" title="UPDATE"></div>
+                    <div class="bar bar-delete" [style.height]="barHeight(dia.deletes, maxCambios())" title="DELETE"></div>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'inserts'">
+                    <div class="bar bar-insert bar-wide" [style.height]="barHeight(dia.inserts, maxCambios())"></div>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'updates'">
+                    <div class="bar bar-update bar-wide" [style.height]="barHeight(dia.updates, maxCambios())"></div>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'deletes'">
+                    <div class="bar bar-delete bar-wide" [style.height]="barHeight(dia.deletes, maxCambios())"></div>
+                  </ng-container>
+                </ng-container>
+              </div>
+              <div class="bar-total">{{ metricaCambios === 'total' ? dia.total : metricaCambios === 'inserts' ? dia.inserts : metricaCambios === 'updates' ? dia.updates : dia.deletes }}</div>
+              <div class="bar-label">{{ formatFecha(dia.dia) }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cambios por tabla -->
+      <div class="collapsible-card">
+        <div class="collapsible-header" (click)="toggle('porTabla')">
+          <h3>Cambios por tabla</h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20"
+               [style.transform]="secciones.porTabla ? 'rotate(180deg)' : 'rotate(0)'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+        <div class="collapsible-body" *ngIf="secciones.porTabla">
+          <div *ngIf="cambios.porTabla.length === 0" class="empty-mini">Sin cambios registrados</div>
+          <div class="tabla-list">
+            <div class="tabla-item" *ngFor="let t of cambios.porTabla">
+              <span class="tabla-badge" [style.background]="tablaColor(t.tabla)">{{ t.tabla }}</span>
+              <div class="ranking-bar-bg" style="flex:1">
+                <div class="ranking-bar" [style.width]="barWidth(t.cambios, maxPorTabla())"
+                     [style.background]="tablaColor(t.tabla)"></div>
+              </div>
+              <span class="tabla-count">{{ t.cambios | number }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Campos más modificados -->
+      <div class="collapsible-card">
+        <div class="collapsible-header" (click)="toggle('camposFrecuentes')">
+          <h3>Campos más modificados</h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20"
+               [style.transform]="secciones.camposFrecuentes ? 'rotate(180deg)' : 'rotate(0)'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+        <div class="collapsible-body" *ngIf="secciones.camposFrecuentes">
+          <div *ngIf="cambios.camposFrecuentes.length === 0" class="empty-mini">Sin datos</div>
+          <table class="mini-table" *ngIf="cambios.camposFrecuentes.length > 0">
+            <thead><tr><th>#</th><th>Campo</th><th>Tabla</th><th>Veces</th></tr></thead>
+            <tbody>
+            <tr *ngFor="let c of cambios.camposFrecuentes; let i = index">
+              <td class="td-num">{{ i + 1 }}</td>
+              <td><code>{{ c.campo }}</code></td>
+              <td><span class="tabla-badge-sm" [style.background]="tablaColor(c.tabla)">{{ c.tabla }}</span></td>
+              <td class="td-num">{{ c.veces | number }}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Cambios externos -->
+      <div class="collapsible-card">
+        <div class="collapsible-header" (click)="toggle('externos')">
+          <h3>Cambios externos (pgAdmin / scripts)</h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20"
+               [style.transform]="secciones.externos ? 'rotate(180deg)' : 'rotate(0)'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+        <div class="collapsible-body" *ngIf="secciones.externos">
+          <p class="section-note">Cambios realizados sin sesión activa en la app — sin usuario_app registrado.</p>
+          <div *ngIf="cambios.cambiosExternos.length === 0" class="empty-mini">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Sin cambios externos registrados
+          </div>
+          <div class="tabla-list" *ngIf="cambios.cambiosExternos.length > 0">
+            <div class="tabla-item" *ngFor="let e of cambios.cambiosExternos">
+              <span class="tabla-badge warn-badge">{{ e.tabla }}</span>
+              <div class="ranking-bar-bg" style="flex:1">
+                <div class="ranking-bar warn-bar" [style.width]="barWidth(e.cambios, cambios.totalCambios)"></div>
+              </div>
+              <span class="tabla-count">{{ e.cambios | number }}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
     </ng-container>
 
   </div>
+
+  <div class="modal-overlay" *ngIf="modalReporteAbierto" (click)="cerrarReporte()">
+    <div class="modal-box modal-reporte" (click)="$event.stopPropagation()">
+
+      <!-- Header -->
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor" width="22" height="22">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <h3>Configurar reporte</h3>
+        </div>
+        <button class="modal-close" (click)="cerrarReporte()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body reporte-body">
+
+        <!-- ── FORMATO Y TIPO ─────────────────────────────────────────── -->
+        <div class="reporte-seccion">
+          <h4 class="reporte-seccion-titulo">Formato y tipo</h4>
+          <div class="reporte-grid-2">
+
+            <div class="reporte-campo">
+              <label>Formato de salida</label>
+              <div class="toggle-group">
+                <button class="toggle-btn" [class.active]="cfgReporte.formato === 'PDF'"
+                        (click)="cfgReporte.formato = 'PDF'">
+                  📄 PDF
+                </button>
+                <button class="toggle-btn" [class.active]="cfgReporte.formato === 'EXCEL'"
+                        (click)="cfgReporte.formato = 'EXCEL'">
+                  📊 Excel
+                </button>
+              </div>
+            </div>
+
+            <div class="reporte-campo">
+              <label>Tipo de reporte</label>
+              <div class="toggle-group">
+                <button class="toggle-btn" [class.active]="cfgReporte.tipoReporte === 'COMPLETO'"
+                        (click)="cfgReporte.tipoReporte = 'COMPLETO'">Completo</button>
+                <button class="toggle-btn" [class.active]="cfgReporte.tipoReporte === 'LOGIN'"
+                        (click)="cfgReporte.tipoReporte = 'LOGIN'">Solo accesos</button>
+                <button class="toggle-btn" [class.active]="cfgReporte.tipoReporte === 'CAMBIOS'"
+                        (click)="cfgReporte.tipoReporte = 'CAMBIOS'">Solo cambios</button>
+              </div>
+            </div>
+
+            <div class="reporte-campo" *ngIf="cfgReporte.formato === 'PDF'">
+              <label>Orientación (PDF)</label>
+              <div class="toggle-group">
+                <button class="toggle-btn" [class.active]="cfgReporte.orientacion === 'VERTICAL'"
+                        (click)="cfgReporte.orientacion = 'VERTICAL'">↕ Vertical</button>
+                <button class="toggle-btn" [class.active]="cfgReporte.orientacion === 'HORIZONTAL'"
+                        (click)="cfgReporte.orientacion = 'HORIZONTAL'">↔ Horizontal</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── METADATOS ──────────────────────────────────────────────── -->
+        <div class="reporte-seccion">
+          <h4 class="reporte-seccion-titulo">Personalización</h4>
+          <div class="reporte-grid-2">
+            <div class="reporte-campo">
+              <label>Título del reporte</label>
+              <input type="text" class="form-input" placeholder="Ej: Auditoría Marzo 2026"
+                     [(ngModel)]="cfgReporte.titulo"/>
+            </div>
+            <div class="reporte-campo">
+              <label>Subtítulo / descripción</label>
+              <input type="text" class="form-input" placeholder="Opcional"
+                     [(ngModel)]="cfgReporte.subtitulo"/>
+            </div>
+            <div class="reporte-campo" *ngIf="cfgReporte.formato === 'PDF'">
+              <label>Color primario</label>
+              <div class="color-picker-row">
+                <input type="color" [(ngModel)]="cfgReporte.colorPrimario" class="color-input"/>
+                <input type="text"  [(ngModel)]="cfgReporte.colorPrimario" class="form-input color-hex"
+                       placeholder="#00A63E"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── FILTROS ────────────────────────────────────────────────── -->
+        <div class="reporte-seccion">
+          <h4 class="reporte-seccion-titulo">Filtros de datos</h4>
+          <div class="reporte-grid-3">
+            <div class="reporte-campo">
+              <label>Desde</label>
+              <input type="date" class="form-input" [(ngModel)]="cfgReporte.desde"/>
+            </div>
+            <div class="reporte-campo">
+              <label>Hasta</label>
+              <input type="date" class="form-input" [(ngModel)]="cfgReporte.hasta"/>
+            </div>
+            <div class="reporte-campo">
+              <label>Usuario (correo)</label>
+              <input type="text" class="form-input" placeholder="Filtrar por usuario"
+                     [(ngModel)]="cfgReporte.usuarioApp"/>
+            </div>
+            <div class="reporte-campo"
+                 *ngIf="cfgReporte.tipoReporte === 'LOGIN' || cfgReporte.tipoReporte === 'COMPLETO'">
+              <label>Resultado acceso</label>
+              <select class="form-select" [(ngModel)]="cfgReporte.resultado">
+                <option value="">Todos</option>
+                <option value="SUCCESS">Exitoso</option>
+                <option value="FAIL">Fallido</option>
+              </select>
+            </div>
+            <div class="reporte-campo"
+                 *ngIf="cfgReporte.tipoReporte === 'CAMBIOS' || cfgReporte.tipoReporte === 'COMPLETO'">
+              <label>Tabla</label>
+              <select class="form-select" [(ngModel)]="cfgReporte.tabla">
+                <option value="">Todas</option>
+                <option value="usuario">usuario</option>
+                <option value="convocatoria">convocatoria</option>
+                <option value="prepostulacion">prepostulacion</option>
+                <option value="postulacion">postulacion</option>
+                <option value="solicitud_docente">solicitud_docente</option>
+                <option value="evaluacion">evaluacion</option>
+                <option value="proceso_evaluacion">proceso_evaluacion</option>
+                <option value="documento">documento</option>
+              </select>
+            </div>
+            <div class="reporte-campo"
+                 *ngIf="cfgReporte.tipoReporte === 'CAMBIOS' || cfgReporte.tipoReporte === 'COMPLETO'">
+              <label>Operación</label>
+              <select class="form-select" [(ngModel)]="cfgReporte.operacion">
+                <option value="">Todas</option>
+                <option value="INSERT">INSERT</option>
+                <option value="UPDATE">UPDATE</option>
+                <option value="DELETE">DELETE</option>
+              </select>
+            </div>
+            <div class="reporte-campo">
+              <label>Límite de filas en detalle</label>
+              <select class="form-select" [(ngModel)]="cfgReporte.limite">
+                <option [ngValue]="100">100 filas</option>
+                <option [ngValue]="250">250 filas</option>
+                <option [ngValue]="500">500 filas</option>
+                <option [ngValue]="1000">1,000 filas</option>
+                <option [ngValue]="5000">5,000 filas</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SECCIONES ──────────────────────────────────────────────── -->
+        <div class="reporte-seccion">
+          <h4 class="reporte-seccion-titulo">Secciones a incluir</h4>
+          <div class="checks-grid">
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfgReporte.incluirPortada"/>
+              <span>Portada con resumen ejecutivo</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfgReporte.incluirInstitucion"/>
+              <span>Información de la institución</span>
+            </label>
+            <label class="check-item" *ngIf="cfgReporte.formato === 'PDF'">
+              <input type="checkbox" [(ngModel)]="cfgReporte.incluirLogo"/>
+              <span>Logo en encabezado (PDF)</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfgReporte.incluirKpis"/>
+              <span>KPIs / resumen numérico</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfgReporte.incluirDetalle"/>
+              <span>Tabla de detalle registro por registro</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfgReporte.incluirTopUsuarios"/>
+              <span>Top usuarios más activos</span>
+            </label>
+            <label class="check-item"
+                   *ngIf="cfgReporte.tipoReporte !== 'LOGIN'">
+              <input type="checkbox" [(ngModel)]="cfgReporte.incluirPorTabla"/>
+              <span>Distribución por tabla</span>
+            </label>
+            <label class="check-item"
+                   *ngIf="cfgReporte.tipoReporte !== 'LOGIN'">
+              <input type="checkbox" [(ngModel)]="cfgReporte.incluirExternos"/>
+              <span>Cambios externos (pgAdmin/scripts)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- ── OPCIONES PDF ───────────────────────────────────────────── -->
+        <div class="reporte-seccion" *ngIf="cfgReporte.formato === 'PDF'">
+          <h4 class="reporte-seccion-titulo">Opciones PDF</h4>
+          <div class="checks-grid">
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfgReporte.mostrarNumeroPagina"/>
+              <span>Número de página en pie de página</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfgReporte.mostrarFechaGeneracion"/>
+              <span>Fecha de generación en pie de página</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- ── OPCIONES EXCEL ─────────────────────────────────────────── -->
+        <div class="reporte-seccion" *ngIf="cfgReporte.formato === 'EXCEL'">
+          <h4 class="reporte-seccion-titulo">Opciones Excel</h4>
+          <div class="checks-grid">
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfgReporte.excelHojasPorSeccion"/>
+              <span>Una hoja por sección (accesos / cambios / resumen)</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfgReporte.excelCongelarEncabezado"/>
+              <span>Congelar fila de encabezados</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfgReporte.excelFiltrosAutomaticos"/>
+              <span>Activar filtros automáticos en columnas</span>
+            </label>
+          </div>
+        </div>
+
+      </div><!-- /modal-body -->
+
+      <!-- Footer con acciones -->
+      <div class="modal-footer">
+        <div class="footer-info">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor" width="16" height="16">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>El archivo se descargará automáticamente</span>
+        </div>
+        <div class="footer-acciones">
+          <button class="btn btn-outline" (click)="cerrarReporte()" [disabled]="generandoReporte">
+            Cancelar
+          </button>
+          <button class="btn btn-primary" (click)="generarReporte()" [disabled]="generandoReporte">
+            <svg *ngIf="!generandoReporte" xmlns="http://www.w3.org/2000/svg" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <svg *ngIf="generandoReporte" class="spinner" xmlns="http://www.w3.org/2000/svg"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
+            {{ generandoReporte ? 'Generando...' : 'Generar ' + cfgReporte.formato }}
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
 
 <app-toast></app-toast>

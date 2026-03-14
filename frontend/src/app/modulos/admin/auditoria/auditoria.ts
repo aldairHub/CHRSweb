@@ -98,15 +98,17 @@ export class AuditoriaComponent implements OnInit {
   }
 
   cargarStats(): void {
-    this.http.get<any[]>(`${this.apiUrl}/login/stats`).subscribe({
-      next: (rows) => {
-        const hoy = new Date().toISOString().slice(0, 10);
-        const fila = rows.find(r => r[0] === hoy);
+    const hoy = new Date().toISOString().slice(0, 10);
+    this.http.get<any>(`${this.apiUrl}/estadisticas/login`).subscribe({
+      next: (data) => {
+        const tendencia = Array.isArray(data.tendenciaDiaria) ? data.tendenciaDiaria : [];
+        const fila = tendencia.find((r: any) => r.dia === hoy);
         if (fila) {
-          this.totalHoy    = Number(fila[1]);
-          this.exitososHoy = Number(fila[2]);
-          this.fallidosHoy = Number(fila[3]);
+          this.totalHoy    = Number(fila.total);
+          this.exitososHoy = Number(fila.exitosos);
+          this.fallidosHoy = Number(fila.fallidos);
         }
+        this.totalElements = data.totalRegistros ?? this.totalElements;
         this.cdr.detectChanges();
       }
     });
