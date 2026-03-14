@@ -179,5 +179,6 @@
     <orderEntry type="library" name="Maven: org.xhtmlrenderer:flying-saucer-pdf:9.1.22" level="project" />
     <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
     <orderEntry type="library" name="Maven: org.apache.poi:poi-ooxml:5.2.5" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.poi:poi:5.2.5" level="project" />
   </component>
 </module>

@@ -145,98 +145,98 @@
           </tr>
         </ng-container>
         <ng-container *ngIf="!cargando">
-        <tr *ngFor="let doc of documentosPaginados">
-          <td><strong>#{{ doc.id }}</strong></td>
-          <td>
-            <div class="postulante-info">
-              <div class="postulante-nombre">{{ doc.nombreCompleto }}</div>
-              <div class="postulante-email">{{ doc.correo }}</div>
-            </div>
-          </td>
-          <td>{{ doc.cedula }}</td>
+          <tr *ngFor="let doc of documentosPaginados">
+            <td><strong>#{{ doc.id }}</strong></td>
+            <td>
+              <div class="postulante-info">
+                <div class="postulante-nombre">{{ doc.nombreCompleto }}</div>
+                <div class="postulante-email">{{ doc.correo }}</div>
+              </div>
+            </td>
+            <td>{{ doc.cedula }}</td>
 
-          <!-- Columna Convocatoria -->
-          <td>
-            <div *ngIf="doc.idConvocatoria; else sinConvocatoria">
+            <!-- Columna Convocatoria -->
+            <td>
+              <div *ngIf="doc.idConvocatoria; else sinConvocatoria">
               <span class="convocatoria-tag">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="13" height="13">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                 </svg>
                 #{{ doc.idConvocatoria }}
               </span>
-              <div class="solicitud-sub" *ngIf="doc.idSolicitud">Sol. #{{ doc.idSolicitud }}</div>
-            </div>
-            <ng-template #sinConvocatoria>
-              <span class="text-muted">—</span>
-            </ng-template>
-          </td>
+                <div class="solicitud-sub" *ngIf="doc.idSolicitud">Sol. #{{ doc.idSolicitud }}</div>
+              </div>
+              <ng-template #sinConvocatoria>
+                <span class="text-muted">—</span>
+              </ng-template>
+            </td>
 
-          <td>
-            <div class="documentos-list">
+            <td>
+              <div class="documentos-list">
               <span class="documento-tag">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 Cédula
               </span>
-              <span class="documento-tag">
+                <span class="documento-tag">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 Foto
               </span>
-              <span class="documento-tag">
+                <span class="documento-tag">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zM12 14l6.16-3.422A12.083 12.083 0 0121 13c0 5.523-3.954 10.122-9.285 10.898A12.13 12.13 0 013 13c0-.593.045-1.175.13-1.744L12 14z" />
                 </svg>
                 Títulos
               </span>
-            </div>
-          </td>
+              </div>
+            </td>
 
-          <td>
+            <td>
             <span class="badge" [ngClass]="getEstadoBadgeClass(doc.estado)">
               <span class="status-dot"></span>
               {{ getEstadoLabel(doc.estado) }}
             </span>
-          </td>
-          <td>
-            <div class="fecha-info">
-              {{ doc.fechaEnvio | date: 'dd/MM/yyyy' }}
-              <small>{{ doc.fechaEnvio | date: 'HH:mm' }}</small>
-            </div>
-          </td>
-          <td>
-            <div class="action-buttons">
-              <button class="btn-icon" (click)="verDocumentos(doc)" title="Ver Documentos">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button class="btn-icon info" (click)="verDetalle(doc)" title="Ver Convocatoria y Solicitud">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </button>
-              <button class="btn-icon success" (click)="validarDocumentos(doc)" title="Validar" *ngIf="doc.estado === 'pendiente'">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-              </button>
-              <button class="btn-icon danger" (click)="rechazarDocumentos(doc)" title="Rechazar" *ngIf="doc.estado === 'pendiente'">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-              <button class="btn-icon" (click)="descargarDocumentos(doc)" title="Descargar Todo">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-              </button>
-            </div>
-          </td>
-        </tr>
+            </td>
+            <td>
+              <div class="fecha-info">
+                {{ doc.fechaEnvio | date: 'dd/MM/yyyy' }}
+                <small>{{ doc.fechaEnvio | date: 'HH:mm' }}</small>
+              </div>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-icon" (click)="verDocumentos(doc)" title="Ver Documentos">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
+                <button class="btn-icon info" (click)="verDetalle(doc)" title="Ver Convocatoria y Solicitud">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </button>
+                <button class="btn-icon success" (click)="validarDocumentos(doc)" title="Validar" *ngIf="doc.estado === 'pendiente'">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </button>
+                <button class="btn-icon danger" (click)="rechazarDocumentos(doc)" title="Rechazar" *ngIf="doc.estado === 'pendiente'">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+                <button class="btn-icon" (click)="descargarDocumentos(doc)" title="Descargar Todo">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
 
         </ng-container>
         <tr *ngIf="documentosFiltrados.length === 0 && !cargando">
@@ -577,5 +577,360 @@
       <button class="btn btn-outline" (click)="closeRechazarModal()">Cancelar</button>
       <button class="btn btn-danger" (click)="confirmarRechazo()" [disabled]="!motivoRechazo">Confirmar Rechazo</button>
     </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- MODAL: CONFIGURAR REPORTE                                     -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay reporte-overlay" *ngIf="showReporteModal" (click)="cerrarReporteModal()">
+  <div class="modal-reporte" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="reporte-header-left">
+        <div class="reporte-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 12h6M9 16h6M17 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/>
+          </svg>
+        </div>
+        <div>
+          <h3>Configurar Reporte</h3>
+          <p class="modal-subtitle">Prepostulaciones · {{ reporteSeccionesActivas }} secciones activas</p>
+        </div>
+      </div>
+      <button class="close-btn" (click)="cerrarReporteModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="reporte-tabs">
+      <button class="reporte-tab" [class.active]="reporteTabActiva === 'filtros'" (click)="cambiarReporteTab('filtros')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M3 6h18M7 12h10M11 18h2"/>
+        </svg>
+        Filtros
+      </button>
+      <button class="reporte-tab" [class.active]="reporteTabActiva === 'secciones'" (click)="cambiarReporteTab('secciones')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        Secciones
+      </button>
+      <button class="reporte-tab" [class.active]="reporteTabActiva === 'visual'" (click)="cambiarReporteTab('visual')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
+        </svg>
+        Visual
+      </button>
+      <button class="reporte-tab" [class.active]="reporteTabActiva === 'exportar'" (click)="cambiarReporteTab('exportar')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+        </svg>
+        Exportar
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="reporte-body">
+
+      <!-- ── TAB FILTROS ──────────────────────────────── -->
+      <div *ngIf="reporteTabActiva === 'filtros'">
+
+        <div class="r-section">
+          <h4 class="r-label">Metadatos del Reporte</h4>
+          <div class="form-group" style="margin-bottom:10px">
+            <label>Título</label>
+            <input type="text" class="form-input" [(ngModel)]="reporteConfig.titulo" placeholder="Ej: Reporte Q1 2025">
+          </div>
+          <div class="form-group">
+            <label>Subtítulo <span style="color:#aaa;font-weight:400;font-size:.78rem">opcional</span></label>
+            <input type="text" class="form-input" [(ngModel)]="reporteConfig.subtitulo" placeholder="Descripción adicional...">
+          </div>
+        </div>
+
+        <div class="r-section">
+          <h4 class="r-label">Intervalo de Tiempo</h4>
+          <div class="r-two-col">
+            <div class="form-group">
+              <label>Desde</label>
+              <input type="date" class="form-input" [(ngModel)]="reporteConfig.desde">
+            </div>
+            <div class="form-group">
+              <label>Hasta</label>
+              <input type="date" class="form-input" [(ngModel)]="reporteConfig.hasta">
+            </div>
+          </div>
+        </div>
+
+        <div class="r-section">
+          <h4 class="r-label">Estado de Revisión</h4>
+          <div class="r-chips">
+            <button class="r-chip" [class.active]="reporteConfig.estadoRevision === ''" (click)="reporteConfig.estadoRevision = ''">Todos</button>
+            <button class="r-chip r-chip-warn" [class.active]="reporteConfig.estadoRevision === 'PENDIENTE'" (click)="reporteConfig.estadoRevision = 'PENDIENTE'">Pendiente</button>
+            <button class="r-chip r-chip-ok"   [class.active]="reporteConfig.estadoRevision === 'APROBADO'"  (click)="reporteConfig.estadoRevision = 'APROBADO'">Aprobado</button>
+            <button class="r-chip r-chip-err"  [class.active]="reporteConfig.estadoRevision === 'RECHAZADO'" (click)="reporteConfig.estadoRevision = 'RECHAZADO'">Rechazado</button>
+          </div>
+        </div>
+
+        <div class="r-section">
+          <h4 class="r-label">
+            Por Convocatoria
+            <span class="r-badge-count" *ngIf="reporteConfig.idsConvocatoria.length > 0">
+              {{ reporteConfig.idsConvocatoria.length }} sel.
+            </span>
+          </h4>
+          <div class="r-conv-list">
+            <label class="r-conv-item" *ngFor="let c of convocatorias">
+              <input type="checkbox" [checked]="isConvocatoriaReporteSeleccionada(c.idConvocatoria)"
+                     (change)="toggleConvocatoriaReporte(c.idConvocatoria)">
+              <span class="r-conv-titulo">{{ c.titulo }}</span>
+              <span class="badge" [ngClass]="getEstadoConvocatoriaClass(c.estadoConvocatoria)" style="font-size:.7rem;padding:2px 7px">
+                {{ c.estadoConvocatoria }}
+              </span>
+            </label>
+            <p *ngIf="!convocatorias.length" style="color:#aaa;font-size:.83rem;padding:8px">Sin convocatorias — se incluirán todas.</p>
+          </div>
+        </div>
+
+        <div class="r-section">
+          <h4 class="r-label">Límite de Registros en Detalle</h4>
+          <select class="form-select" [(ngModel)]="reporteConfig.limite" style="max-width:220px">
+            <option [value]="100">100 registros</option>
+            <option [value]="250">250 registros</option>
+            <option [value]="500">500 registros</option>
+            <option [value]="1000">1 000 registros</option>
+            <option [value]="9999">Sin límite</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- ── TAB SECCIONES ────────────────────────────── -->
+      <div *ngIf="reporteTabActiva === 'secciones'">
+
+        <div class="r-section">
+          <h4 class="r-label">Estructura</h4>
+          <div class="r-toggle-list">
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Portada</span><br><span class="r-toggle-desc">Título, período y KPIs al inicio</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.incluirPortada"><span class="slider"></span></label>
+            </div>
+            <div class="r-toggle-item" *ngIf="reporteConfig.incluirPortada">
+              <div style="padding-left:16px"><span class="r-toggle-title">Datos de Institución</span><br><span class="r-toggle-desc">Nombre y correo en el encabezado</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.incluirInstitucion"><span class="slider"></span></label>
+            </div>
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">KPIs / Resumen Numérico</span><br><span class="r-toggle-desc">Total, aprobadas, rechazadas, pendientes</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.incluirKpis"><span class="slider"></span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="r-section">
+          <h4 class="r-label">Gráficos</h4>
+          <div class="r-toggle-list">
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Distribución por Estado</span><br><span class="r-toggle-desc">Barras: Pendiente / Aprobado / Rechazado</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.incluirGraficoEstados"><span class="slider"></span></label>
+            </div>
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Por Convocatoria</span><br><span class="r-toggle-desc">Prepostulaciones por cada convocatoria</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.incluirGraficoConvocatoria"><span class="slider"></span></label>
+            </div>
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Evolución Temporal</span><br><span class="r-toggle-desc">Prepostulaciones recibidas por mes</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.incluirGraficoTemporal"><span class="slider"></span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="r-section">
+          <h4 class="r-label">Tabla de Detalle</h4>
+          <div class="r-toggle-list">
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Incluir Detalle Registro a Registro</span><br><span class="r-toggle-desc">Lista con nombres, estado, fechas y convocatoria</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.incluirDetalle"><span class="slider"></span></label>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── TAB VISUAL ────────────────────────────────── -->
+      <div *ngIf="reporteTabActiva === 'visual'">
+
+        <div class="r-section">
+          <h4 class="r-label">Apariencia (PDF)</h4>
+          <div class="r-two-col">
+            <div class="form-group">
+              <label>Color Primario</label>
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" [(ngModel)]="reporteConfig.colorPrimario"
+                       style="width:44px;height:40px;border:1.5px solid #e5e7eb;border-radius:8px;padding:3px;cursor:pointer">
+                <input type="text" class="form-input" [(ngModel)]="reporteConfig.colorPrimario"
+                       style="font-family:monospace;flex:1">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Orientación</label>
+              <div style="display:flex;gap:8px">
+                <button class="r-orient-btn" [class.active]="reporteConfig.orientacion === 'VERTICAL'"   (click)="reporteConfig.orientacion = 'VERTICAL'">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/></svg> Vertical
+                </button>
+                <button class="r-orient-btn" [class.active]="reporteConfig.orientacion === 'HORIZONTAL'" (click)="reporteConfig.orientacion = 'HORIZONTAL'">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/></svg> Horizontal
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="r-toggle-list" style="margin-top:14px">
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Número de Página</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.mostrarNumeroPagina"><span class="slider"></span></label>
+            </div>
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Fecha de Generación</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.mostrarFechaGeneracion"><span class="slider"></span></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="r-section">
+          <h4 class="r-label">Vista Previa</h4>
+          <div class="r-preview" [style.border-color]="reporteConfig.colorPrimario + '40'">
+            <div class="r-preview-header" [style.background]="reporteConfig.colorPrimario">
+              {{ reporteConfig.titulo || 'Reporte de Prepostulaciones' }}
+            </div>
+            <div class="r-preview-kpis">
+              <div class="r-preview-card" [style.border-left-color]="reporteConfig.colorPrimario">
+                <span [style.color]="reporteConfig.colorPrimario" style="font-size:1.5rem;font-weight:800">24</span>
+                <span style="font-size:.7rem;color:#999">Total</span>
+              </div>
+              <div class="r-preview-card" style="border-left-color:#16a34a">
+                <span style="color:#16a34a;font-size:1.5rem;font-weight:800">18</span>
+                <span style="font-size:.7rem;color:#999">Aprobadas</span>
+              </div>
+              <div class="r-preview-card" style="border-left-color:#dc2626">
+                <span style="color:#dc2626;font-size:1.5rem;font-weight:800">4</span>
+                <span style="font-size:.7rem;color:#999">Rechazadas</span>
+              </div>
+              <div class="r-preview-card" style="border-left-color:#d97706">
+                <span style="color:#d97706;font-size:1.5rem;font-weight:800">2</span>
+                <span style="font-size:.7rem;color:#999">Pendientes</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── TAB EXPORTAR ──────────────────────────────── -->
+      <div *ngIf="reporteTabActiva === 'exportar'">
+
+        <div class="r-section">
+          <h4 class="r-label">Formato de Exportación</h4>
+          <div class="r-formato-cards">
+            <div class="r-formato-card" [class.active]="reporteConfig.formato === 'PDF'" (click)="reporteConfig.formato = 'PDF'">
+              <div class="r-formato-icon r-pdf-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6M9 13h6M9 17h4"/>
+                </svg>
+              </div>
+              <div>
+                <div style="font-weight:700;font-size:.95rem">PDF</div>
+                <div style="font-size:.78rem;color:#888">Portada, gráficos, listo para imprimir</div>
+              </div>
+              <span *ngIf="reporteConfig.formato === 'PDF'" class="r-check">✓</span>
+            </div>
+            <div class="r-formato-card" [class.active]="reporteConfig.formato === 'EXCEL'" (click)="reporteConfig.formato = 'EXCEL'">
+              <div class="r-formato-icon r-excel-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6M8 13l2 2 4-4M8 17h8"/>
+                </svg>
+              </div>
+              <div>
+                <div style="font-weight:700;font-size:.95rem">Excel (.xlsx)</div>
+                <div style="font-size:.78rem;color:#888">Hojas separadas, filtros, análisis de datos</div>
+              </div>
+              <span *ngIf="reporteConfig.formato === 'EXCEL'" class="r-check">✓</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="r-section" *ngIf="reporteConfig.formato === 'EXCEL'">
+          <h4 class="r-label">Opciones Excel</h4>
+          <div class="r-toggle-list">
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Hojas por Sección</span><br><span class="r-toggle-desc">Resumen / Estadísticas / Evolución / Detalle separados</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.excelHojasPorSeccion"><span class="slider"></span></label>
+            </div>
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Congelar Encabezados</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.excelCongelarEncabezado"><span class="slider"></span></label>
+            </div>
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Filtros Automáticos</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.excelFiltrosAutomaticos"><span class="slider"></span></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resumen -->
+        <div class="r-section">
+          <h4 class="r-label">Resumen de Configuración</h4>
+          <div class="r-summary">
+            <div class="r-summary-row">
+              <span style="color:#888">Formato</span>
+              <span class="r-format-badge" [class.r-badge-pdf]="reporteConfig.formato==='PDF'" [class.r-badge-excel]="reporteConfig.formato==='EXCEL'">
+                {{ reporteConfig.formato }}
+              </span>
+            </div>
+            <div class="r-summary-row" *ngIf="reporteConfig.desde || reporteConfig.hasta">
+              <span style="color:#888">Período</span>
+              <span style="font-weight:600">{{ reporteConfig.desde || '—' }} → {{ reporteConfig.hasta || 'hoy' }}</span>
+            </div>
+            <div class="r-summary-row" *ngIf="reporteConfig.estadoRevision">
+              <span style="color:#888">Estado</span>
+              <span style="font-weight:600">{{ reporteConfig.estadoRevision }}</span>
+            </div>
+            <div class="r-summary-row" *ngIf="reporteConfig.idsConvocatoria.length > 0">
+              <span style="color:#888">Convocatorias</span>
+              <span style="font-weight:600">{{ reporteConfig.idsConvocatoria.length }} seleccionadas</span>
+            </div>
+            <div class="r-summary-row">
+              <span style="color:#888">Secciones activas</span>
+              <span style="font-weight:600">{{ reporteSeccionesActivas }} de 6</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- /reporte-body -->
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="cerrarReporteModal()" [disabled]="reporteGenerando">Cancelar</button>
+      <button class="btn btn-primary btn-reporte-generar" (click)="generarReporte()" [disabled]="reporteGenerando">
+        <ng-container *ngIf="!reporteGenerando">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+          Generar {{ reporteConfig.formato }}
+        </ng-container>
+        <ng-container *ngIf="reporteGenerando">
+          <span class="btn-spinner"></span> Generando...
+        </ng-container>
+      </button>
+    </div>
+
   </div>
 </div>

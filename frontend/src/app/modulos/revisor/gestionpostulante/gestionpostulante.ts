@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../../services/toast.service';
 import {
   PrepostulacionService,
@@ -10,6 +11,33 @@ import {
   DetallePostulacion
 } from '../../../services/prepostulacion.service';
 import {ToastComponent} from '../../../component/toast.component';
+
+interface ReporteConfig {
+  titulo: string;
+  subtitulo: string;
+  formato: 'PDF' | 'EXCEL';
+  orientacion: 'VERTICAL' | 'HORIZONTAL';
+  desde: string;
+  hasta: string;
+  idsConvocatoria: number[];
+  idsSolicitud: number[];
+  estadoRevision: string;
+  limite: number;
+  incluirPortada: boolean;
+  incluirInstitucion: boolean;
+  incluirKpis: boolean;
+  incluirDetalle: boolean;
+  incluirGraficoEstados: boolean;
+  incluirGraficoTemporal: boolean;
+  incluirGraficoConvocatoria: boolean;
+  tipoGrafico: 'PIE' | 'BAR';
+  colorPrimario: string;
+  mostrarNumeroPagina: boolean;
+  mostrarFechaGeneracion: boolean;
+  excelCongelarEncabezado: boolean;
+  excelFiltrosAutomaticos: boolean;
+  excelHojasPorSeccion: boolean;
+}
 
 export interface DocumentoAcademico {
   idDocumento: number;
@@ -59,6 +87,39 @@ export class GestionPostulanteComponent implements OnInit {
   filtroModalSolicitud = '';
   String = String;
 
+  // ── Modal Reporte ─────────────────────────────────────────
+  showReporteModal = false;
+  reporteGenerando = false;
+  reporteTabActiva: 'filtros' | 'secciones' | 'visual' | 'exportar' = 'filtros';
+  reporteConfig: ReporteConfig = {
+    titulo: 'Reporte de Prepostulaciones',
+    subtitulo: '',
+    formato: 'PDF',
+    orientacion: 'VERTICAL',
+    desde: '',
+    hasta: '',
+    idsConvocatoria: [],
+    idsSolicitud: [],
+    estadoRevision: '',
+    limite: 500,
+    incluirPortada: true,
+    incluirInstitucion: true,
+    incluirKpis: true,
+    incluirDetalle: true,
+    incluirGraficoEstados: true,
+    incluirGraficoTemporal: true,
+    incluirGraficoConvocatoria: true,
+    tipoGrafico: 'BAR',
+    colorPrimario: '#00A63E',
+    mostrarNumeroPagina: true,
+    mostrarFechaGeneracion: true,
+    excelCongelarEncabezado: true,
+    excelFiltrosAutomaticos: true,
+    excelHojasPorSeccion: true,
+  };
+
+  private apiUrl = 'http://localhost:8080/api';
+
   currentPage = 1;
   pageSize = 10;
   totalPages = 1;
@@ -73,7 +134,8 @@ export class GestionPostulanteComponent implements OnInit {
   constructor(
     private prepostulacionService: PrepostulacionService,
     private cdr: ChangeDetectorRef,
-    private toast: ToastService
+    private toast: ToastService,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -425,6 +487,66 @@ export class GestionPostulanteComponent implements OnInit {
     this.applyFilters();
   }
 
-  exportarReporte(): void { alert('Funcionalidad de exportación pendiente'); }
+  exportarReporte(): void {
+    this.showReporteModal = true;
+    this.reporteTabActiva = 'filtros';
+  }
+
+  cerrarReporteModal(): void {
+    this.showReporteModal = false;
+  }
+
+  cambiarReporteTab(tab: 'filtros' | 'secciones' | 'visual' | 'exportar'): void {
+    this.reporteTabActiva = tab;
+  }
+
+  toggleConvocatoriaReporte(id: number): void {
+    const idx = this.reporteConfig.idsConvocatoria.indexOf(id);
+    if (idx === -1) this.reporteConfig.idsConvocatoria.push(id);
+    else this.reporteConfig.idsConvocatoria.splice(idx, 1);
+  }
+
+  isConvocatoriaReporteSeleccionada(id: number): boolean {
+    return this.reporteConfig.idsConvocatoria.includes(id);
+  }
+
+  get reporteSeccionesActivas(): number {
+    const s = this.reporteConfig;
+    return [s.incluirPortada, s.incluirKpis, s.incluirDetalle,
+      s.incluirGraficoEstados, s.incluirGraficoTemporal, s.incluirGraficoConvocatoria]
+      .filter(Boolean).length;
+  }
+
+  generarReporte(): void {
+    this.reporteGenerando = true;
+
+    this.http.post(`${this.apiUrl}/admin/prepostulaciones/reporte/generar`, this.reporteConfig, {
+      responseType: 'blob',
+      observe: 'response'
+    }).subscribe({
+      next: (response) => {
+        const blob = response.body!;
+        const cd = response.headers.get('content-disposition') || '';
+        const match = cd.match(/filename="?([^";\n]+)"?/);
+        const nombre = match ? match[1]
+          : `reporte_prepostulaciones.${this.reporteConfig.formato === 'EXCEL' ? 'xlsx' : 'pdf'}`;
+
+        const url = window.URL.createObjectURL(blob);
+        const a   = document.createElement('a');
+        a.href = url; a.download = nombre; a.click();
+        window.URL.revokeObjectURL(url);
+
+        this.reporteGenerando = false;
+        this.cerrarReporteModal();
+        this.toast.success('Reporte generado correctamente');
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.reporteGenerando = false;
+        this.toast.error('Error al generar el reporte');
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
 }
