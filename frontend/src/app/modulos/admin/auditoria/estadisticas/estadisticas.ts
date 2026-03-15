@@ -1,8 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgSwitch, NgSwitchCase } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { NavbarComponent } from '../../../../component/navbar';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ToastComponent } from '../../../../component/toast.component';
 import { ToastService } from '../../../../services/toast.service';
@@ -36,7 +35,7 @@ interface StatsCambios {
 @Component({
   selector: 'app-estadisticas-auditoria',
   standalone: true,
-  imports: [CommonModule,  NavbarComponent, FormsModule, RouterLink, RouterLinkActive, ToastComponent],
+  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive, ToastComponent, NgSwitch, NgSwitchCase],
   templateUrl: './estadisticas.html',
   styleUrls: ['./estadisticas.scss']
 })
@@ -143,29 +142,72 @@ export class EstadisticasAuditoriaComponent implements OnInit {
   // ── Mapeo de respuesta del backend ────────────────────────────────────────
 
   private mapLogin(d: any): StatsLogin {
+    const tendencia = this.parseJson(d.tendenciaDiaria).map((r: any) => ({
+      dia:      String(r.dia ?? ''),
+      total:    Number(r.total    ?? 0),
+      exitosos: Number(r.exitosos ?? 0),
+      fallidos: Number(r.fallidos ?? 0),
+    }));
+    const topFallidos = this.parseJson(d.topFallidos).map((r: any) => ({
+      usuario: String(r.usuario ?? ''),
+      intentos: Number(r.intentos ?? 0),
+    }));
+    const topExitosos = this.parseJson(d.topExitosos).map((r: any) => ({
+      usuario: String(r.usuario ?? ''),
+      accesos: Number(r.accesos ?? 0),
+    }));
+    const porHora = this.parseJson(d.porHora).map((r: any) => ({
+      hora:  Number(r.hora  ?? 0),
+      total: Number(r.total ?? 0),
+    }));
     return {
-      totalRegistros:  d.totalRegistros  ?? 0,
-      totalExitosos:   d.totalExitosos   ?? 0,
-      totalFallidos:   d.totalFallidos   ?? 0,
-      tasaExito:       d.tasaExito       ?? 0,
-      tendenciaDiaria: this.parseJson(d.tendenciaDiaria),
-      topFallidos:     this.parseJson(d.topFallidos),
-      topExitosos:     this.parseJson(d.topExitosos),
-      porHora:         this.parseJson(d.porHora),
+      totalRegistros:  Number(d.totalRegistros  ?? 0),
+      totalExitosos:   Number(d.totalExitosos   ?? 0),
+      totalFallidos:   Number(d.totalFallidos   ?? 0),
+      tasaExito:       Number(d.tasaExito       ?? 0),
+      tendenciaDiaria: tendencia,
+      topFallidos,
+      topExitosos,
+      porHora,
     };
   }
 
   private mapCambios(d: any): StatsCambios {
+    const tendencia = this.parseJson(d.tendenciaDiaria).map((r: any) => ({
+      dia:     String(r.dia     ?? ''),
+      total:   Number(r.total   ?? 0),
+      inserts: Number(r.inserts ?? 0),
+      updates: Number(r.updates ?? 0),
+      deletes: Number(r.deletes ?? 0),
+    }));
+    const porTabla = this.parseJson(d.porTabla).map((r: any) => ({
+      tabla:   String(r.tabla   ?? ''),
+      cambios: Number(r.cambios ?? 0),
+    }));
+    const topUsuarios = this.parseJson(d.topUsuarios).map((r: any) => ({
+      usuario:   String(r.usuario   ?? ''),
+      usuarioBd: String(r.usuarioBd ?? ''),
+      cambios:   Number(r.cambios   ?? 0),
+    }));
+    const camposFrecuentes = this.parseJson(d.camposFrecuentes).map((r: any) => ({
+      campo: String(r.campo ?? ''),
+      tabla: String(r.tabla ?? ''),
+      veces: Number(r.veces ?? 0),
+    }));
+    const cambiosExternos = this.parseJson(d.cambiosExternos).map((r: any) => ({
+      tabla:   String(r.tabla   ?? ''),
+      cambios: Number(r.cambios ?? 0),
+    }));
     return {
-      totalCambios:    d.totalCambios    ?? 0,
-      totalInsert:     d.totalInsert     ?? 0,
-      totalUpdate:     d.totalUpdate     ?? 0,
-      totalDelete:     d.totalDelete     ?? 0,
-      porTabla:        this.parseJson(d.porTabla),
-      tendenciaDiaria: this.parseJson(d.tendenciaDiaria),
-      topUsuarios:     this.parseJson(d.topUsuarios),
-      camposFrecuentes:this.parseJson(d.camposFrecuentes),
-      cambiosExternos: this.parseJson(d.cambiosExternos),
+      totalCambios:    Number(d.totalCambios ?? 0),
+      totalInsert:     Number(d.totalInsert  ?? 0),
+      totalUpdate:     Number(d.totalUpdate  ?? 0),
+      totalDelete:     Number(d.totalDelete  ?? 0),
+      porTabla,
+      tendenciaDiaria: tendencia,
+      topUsuarios,
+      camposFrecuentes,
+      cambiosExternos,
     };
   }
 

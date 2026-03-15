@@ -494,19 +494,27 @@ public class PostgresProcedureRepository {
             String correo, String urlCedula, String urlFoto, Long idSolicitud) {
 
         String sql = "SELECT * FROM sp_registrar_prepostulacion(?,?,?,?,?,?,?)";
-        return jdbcTemplate.execute((java.sql.Connection conn) -> {
-            var ps = conn.prepareStatement(sql);
-            ps.setString(1, nombres);
-            ps.setString(2, apellidos);
-            ps.setString(3, identificacion);
-            ps.setString(4, correo);
-            ps.setString(5, urlCedula);
-            ps.setString(6, urlFoto);
-            ps.setObject(7, idSolicitud);
-            var rs = ps.executeQuery();
-            if (rs.next()) return rs.getLong("out_id_prepostulacion");
-            throw new RuntimeException("sp_registrar_prepostulacion sin resultado");
-        });
+        try {
+            return jdbcTemplate.execute((java.sql.Connection conn) -> {
+                var ps = conn.prepareStatement(sql);
+                ps.setString(1, nombres);
+                ps.setString(2, apellidos);
+                ps.setString(3, identificacion);
+                ps.setString(4, correo);
+                ps.setString(5, urlCedula);
+                ps.setString(6, urlFoto);
+                ps.setObject(7, idSolicitud);
+                var rs = ps.executeQuery();
+                if (rs.next()) return rs.getLong("out_id_prepostulacion");
+                throw new RuntimeException("sp_registrar_prepostulacion sin resultado");
+            });
+        } catch (Exception e) {
+            // Ver el error COMPLETO con causa raíz
+            Throwable cause = e;
+            while (cause.getCause() != null) cause = cause.getCause();
+            System.err.println("ERROR COMPLETO sp_registrar_prepostulacion: " + cause.getMessage());
+            throw e;
+        }
     }
 
     /** Agregar un documento académico a una prepostulacion */

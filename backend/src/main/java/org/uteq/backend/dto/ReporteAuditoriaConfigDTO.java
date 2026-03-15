@@ -17,6 +17,9 @@ public class ReporteAuditoriaConfigDTO {
     /** Subtítulo / descripción adicional. Opcional. */
     private String  subtitulo;
 
+    /** Usuario que genera el reporte — se rellena en el backend desde el JWT */
+    private String  generadoPor;
+
     /** 'PDF' o 'EXCEL' */
     private String  formato;
 

@@ -17,8 +17,8 @@ $shadow:   0 1px 3px rgba(0,0,0,.08);
 
 .main-container {
   min-height: 100vh;
-  background: $gray-lt;
-  padding: 1.5rem;
+  background: #EEF9EC;
+  padding: 2rem 1rem;
 }
 
 .content-wrapper {
@@ -38,59 +38,90 @@ $shadow:   0 1px 3px rgba(0,0,0,.08);
   flex-wrap: wrap;
   gap: 1rem;
 
-  h2 { margin: 0; font-size: 1.5rem; font-weight: 700; color: $text; }
-  .page-subtitle { margin: 0.25rem 0 0; color: $gray; font-size: 0.875rem; }
+  h2 { margin: 0; font-size: 1.75rem; font-weight: 700; color: #016630; }
+  .page-subtitle { margin: 0.25rem 0 0; color: #536b50; font-size: 0.95rem; }
 }
 
 .header-actions { display: flex; gap: 0.75rem; }
 
 // ── Tabs ───────────────────────────────────────────────────────────────────
 
+// ── Tabs — estilo canónico idéntico al resto del módulo ────────────────────
 .submodule-tabs {
   display: flex;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 1.75rem;
   background: white;
-  border-radius: $radius;
-  padding: 0.375rem;
-  box-shadow: $shadow;
-  flex-wrap: wrap;
+  border: 1px solid $border;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
 }
 
 .tab-item {
+  flex: 1;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  padding: 0.625rem 1rem;
-  border-radius: 8px;
+  padding: 0.85rem 1rem;
   font-size: 0.875rem;
-  font-weight: 500;
-  color: $gray;
+  font-weight: 600;
+  color: #536b50;
   text-decoration: none;
+  border-right: 1px solid #B9F8CF;
   transition: all 0.2s;
+  position: relative;
   cursor: pointer;
 
-  &:hover { background: $gray-lt; color: $text-md; }
-  &.tab-active { background: $primary; color: white; }
+  svg { flex-shrink: 0; stroke: #536b50; transition: stroke 0.2s; }
+  &:last-child { border-right: none; }
+
+  &:hover {
+    background: #EEF9EC;
+    color: #016630;
+    svg { stroke: #016630; }
+  }
+
+  &.tab-active {
+    background: #EEF9EC;
+    color: #00A63E;
+    font-weight: 700;
+    svg { stroke: #00A63E; }
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: #00A63E;
+      border-radius: 3px 3px 0 0;
+    }
+  }
 }
 
 // ── Filtros ────────────────────────────────────────────────────────────────
 
-.filters-panel {
+// ── Filtros — estilo canónico ──────────────────────────────────────────────
+.filters-card {
   background: white;
+  border: 1px solid #e5e7eb;
   border-radius: $radius;
-  padding: 1.25rem;
+  padding: 1.5rem;
+  margin-bottom: 0;
   box-shadow: $shadow;
-  border-left: 4px solid $primary;
 }
 
-.filters-header {
+.filters-title {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  color: $text-md;
-  font-size: 0.9rem;
+  color: #016630;
+  margin-bottom: 1rem;
+  svg { stroke: $primary; flex-shrink: 0; }
 
   .filters-note {
     margin-left: auto;
@@ -103,40 +134,51 @@ $shadow:   0 1px 3px rgba(0,0,0,.08);
 .filters-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 0.75rem;
+  gap: 1rem;
   margin-bottom: 1rem;
 }
 
 .filter-group {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.375rem;
 
   label {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: $gray;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #536b50;
     text-transform: uppercase;
-    letter-spacing: .04em;
+    letter-spacing: 0.04em;
   }
 }
 
+.input-wrapper {
+  position: relative;
+  .input-icon {
+    position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);
+    width: 16px; height: 16px; stroke: #9ca3af; pointer-events: none;
+  }
+  .form-input { padding-left: 2.25rem; }
+}
+
 .form-input, .form-select {
+  width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid $border;
+  border: 1.5px solid #e5e7eb;
   border-radius: 8px;
   font-size: 0.875rem;
-  color: $text;
-  background: white;
-  width: 100%;
+  color: #1a1a1a;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
 
-  &:focus { outline: none; border-color: $primary; box-shadow: 0 0 0 2px rgba($primary,.15); }
+  &:focus { outline: none; border-color: $primary; box-shadow: 0 0 0 3px rgba($primary, 0.12); }
 }
 
 .filters-actions {
   display: flex;
   gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 // ── Divisor de sección ─────────────────────────────────────────────────────
@@ -636,7 +678,7 @@ $shadow:   0 1px 3px rgba(0,0,0,.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1050;
   padding: 1rem;
 }
 
@@ -822,4 +864,26 @@ $shadow:   0 1px 3px rgba(0,0,0,.08);
 @keyframes spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
+}
+.back-to-audit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $gray;
+  text-decoration: none;
+  padding: 0.85rem 0.9rem;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  &:hover { background: $gray-lt; color: $text; }
+}
+
+.tab-divider-v {
+  width: 1px;
+  height: 24px;
+  background: $border;
+  margin: 0 0.1rem;
+  flex-shrink: 0;
 }

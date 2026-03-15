@@ -236,6 +236,12 @@ export const routes: Routes = [
         loadComponent: () => import('./modulos/admin/auditoria/sesiones-activas/sesiones-activas').then(m => m.SesionesActivasComponent)
       },
       {
+        path: 'auditoria/accesos',
+        title: 'SSDC - Registro de accesos',
+        canActivate: [NoPrimerLoginGuard],
+        loadComponent: () => import('./modulos/admin/auditoria/accesos/accesos').then(m => m.AccesosComponent)
+      },
+      {
         path: 'niveles-academicos',
         title: 'SSDC - Niveles académicos',
         loadComponent: () => import('./modulos/admin/gestion-niveles/gestion-niveles')
@@ -252,6 +258,22 @@ export const routes: Routes = [
         title: 'SSDC - Auditoría de cambios',
         canActivate: [NoPrimerLoginGuard],
         loadComponent: () => import('./modulos/admin/auditoria/cambios-datos/cambios-datos').then(m => m.CambiosDatosComponent)
+      },
+      {
+        path: 'auditoria/integridad',
+        title: 'SSDC - Integridad de auditoría',
+        canActivate: [NoPrimerLoginGuard],
+        loadComponent: () =>
+          import('./modulos/admin/auditoria/integridad/integridad')
+            .then(m => m.IntegridadAuditoriaComponent)
+      },
+      {
+        path: 'auditoria/monitor',
+        title: 'SSDC - Monitor de queries',
+        canActivate: [NoPrimerLoginGuard],
+        loadComponent: () =>
+          import('./modulos/admin/auditoria/monitor-queries/monitor-queries')
+            .then(m => m.MonitorQueriesComponent)
       },
       {
         path: 'gestion-opciones',

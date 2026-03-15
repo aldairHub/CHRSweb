@@ -126,12 +126,32 @@ public class AuditoriaController {
 
     /**
      * Convierte las claves snake_case que devuelve PostgreSQL a camelCase
-     * para que el frontend reciba nombres consistentes.
+     * y normaliza valores desconocidos (PGobject, byte[], etc.) a String
+     * para que el frontend reciba los arrays JSON como texto parseable.
      */
     private Map<String, Object> toCamel(Map<String, Object> map) {
         Map<String, Object> result = new LinkedHashMap<>();
-        map.forEach((k, v) -> result.put(snakeToCamel(k), v));
+        map.forEach((k, v) -> result.put(snakeToCamel(k), normalizeValue(v)));
         return result;
+    }
+
+    /**
+     * Normaliza el valor sin depender de clases específicas de PostgreSQL:
+     * - null         → null
+     * - String       → String (ya está bien)
+     * - Number/Bool  → tal cual (son tipos primitivos serializables)
+     * - byte[]       → String UTF-8 (bytea que contiene texto JSON)
+     * - cualquier otro objeto (PGobject, etc.) → .toString() que para
+     *   PGobject devuelve el valor JSON, y para jsonb el texto plano
+     */
+    private Object normalizeValue(Object v) {
+        if (v == null)             return null;
+        if (v instanceof String)   return v;
+        if (v instanceof Number)   return v;
+        if (v instanceof Boolean)  return v;
+        if (v instanceof byte[])   return new String((byte[]) v, java.nio.charset.StandardCharsets.UTF_8);
+        // PGobject, PgArray y cualquier tipo desconocido de JDBC/PostgreSQL
+        return v.toString();
     }
 
     private String snakeToCamel(String snake) {

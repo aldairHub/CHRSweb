@@ -1,5 +1,4 @@
 @use "sass:color";
-// ─── Variables (igual que auditoria.scss) ──────────────────────
 $primary:    #00A63E;
 $dark:       #016630;
 $border:     #B9F8CF;
@@ -9,7 +8,8 @@ $text-gray:  #536b50;
 $bg:         #f5f7f5;
 $white:      #ffffff;
 $error:      #dc2626;
-
+$error-bg:   #fef2f2;
+$error-border: #fecaca;
 
 // ─── Layout ────────────────────────────────────────────────────
 .main-container {
@@ -18,132 +18,201 @@ $error:      #dc2626;
   padding: 2rem 1rem;
 }
 .content-wrapper {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
 // ─── Header ────────────────────────────────────────────────────
 .page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1.5rem;
-
+  margin-bottom: 2rem;
   h2 { font-size: 1.75rem; color: $dark; font-weight: 700; margin: 0; }
-  .page-subtitle { font-size: 0.95rem; color: $text-gray; margin: 0.25rem 0 0; }
+  .page-subtitle { font-size: 0.95rem; color: $text-gray; margin: 0.25rem 0 0 0; }
 }
 
-.header-actions { display: flex; gap: 0.75rem; align-items: center; flex-shrink: 0; }
-.page-subtitle { font-size: 0.95rem; color: $text-gray; margin: 0.25rem 0 0 0; }
+// ─── Stats ─────────────────────────────────────────────────────────────────
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: $card-bg;
+  border-radius: 10px;
+  border: 1px solid $border;
+}
+
+.stat-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  background: #e5e7eb;
+  display: flex; align-items: center; justify-content: center;
+  color: $text-gray;
+  flex-shrink: 0;
+  svg { width: 22px; height: 22px; stroke: currentColor; }
+
+  &.success { background: #dcfce7; color: #16a34a; svg { stroke: #16a34a; } }
+  &.danger  { background: #fee2e2; color: $error;  svg { stroke: $error;  } }
+  &.blue    { background: #dbeafe; color: #2563eb; svg { stroke: #2563eb; } }
+}
+
+.stat-content {
+  h4 { margin: 0 0 0.2rem; font-size: 0.72rem; font-weight: 500; color: $text-gray; text-transform: uppercase; letter-spacing: .04em; }
+  .stat-value { font-size: 1.6rem; font-weight: 700; color: $dark; line-height: 1; }
+}
 
 
-// ─── Buttons ───────────────────────────────────────────────────
+// ─── Filtros ───────────────────────────────────────────────────
+.filters-card {
+  background: $white;
+  border: 1px solid $border;
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.filters-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: $dark;
+  margin-bottom: 1rem;
+  svg { stroke: $primary; flex-shrink: 0; }
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filter-group {
+  label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: $dark;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+.input-wrapper {
+  position: relative;
+  .input-icon {
+    position: absolute;
+    left: 10px; top: 50%; transform: translateY(-50%);
+    width: 16px; height: 16px;
+    stroke: $primary; pointer-events: none;
+  }
+  .form-input { padding-left: 34px; }
+}
+
+.form-input, .form-select {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1.5px solid $border;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: $text-dark;
+  background: #f8fafc;
+  outline: none;
+  transition: all 0.2s;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: $primary;
+    background: $white;
+    box-shadow: 0 0 0 3px rgba($primary, 0.1);
+  }
+}
+
+.filters-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-start;
+}
+
+// ─── Botones ───────────────────────────────────────────────────
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.5rem 1.1rem;
+  gap: 6px;
+  padding: 0 16px;
+  height: 38px;
   border-radius: 8px;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   border: none;
   transition: all 0.2s;
 
-  &:disabled { opacity: 0.6; cursor: not-allowed; }
+  &.btn-primary {
+    background: $primary;
+    color: $white;
+    &:hover { background: $dark; }
+  }
 
   &.btn-outline {
-    background: $white;
+    background: transparent;
     border: 1.5px solid $border;
     color: $dark;
-    &:hover:not(:disabled) { background: $card-bg; border-color: $primary; }
-  }
-
-  &.btn-danger {
-    background: $error;
-    color: $white;
-    &:hover:not(:disabled) { background: color.adjust($error, $lightness: -8%); }
-  }
-
-  &.btn-sm { padding: 0.3rem 0.75rem; font-size: 0.8rem; }
-}
-
-// ─── Alert ─────────────────────────────────────────────────────
-.alert {
-  padding: 0.85rem 1.2rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-
-  &.alert-success {
-    background: #f0fdf4;
-    border: 1px solid #86efac;
-    color: #15803d;
+    &:hover { background: $card-bg; border-color: $primary; }
   }
 }
 
-// ─── Sessions summary ──────────────────────────────────────────
-.sessions-summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding: 0.75rem 1rem;
-  background: $card-bg;
+.btn-icon {
+  width: 32px; height: 32px;
+  border-radius: 7px;
   border: 1px solid $border;
-  border-radius: 10px;
-
-  .session-count {
-    font-size: 0.9rem;
-    color: $text-dark;
-    .count-number {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: $primary;
-      margin-right: 0.25rem;
-    }
-  }
-
-  .auto-refresh-note {
-    font-size: 0.78rem;
-    color: $text-gray;
-  }
-}
-
-// ─── Loading ───────────────────────────────────────────────────
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 3rem;
-  gap: 1rem;
+  background: $white;
   color: $text-gray;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  svg { width: 16px; height: 16px; }
 
-  .spinner {
-    width: 36px;
-    height: 36px;
-    border: 3px solid $border;
-    border-top-color: $primary;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  p { margin: 0; font-size: 0.9rem; }
+  &:hover { background: $card-bg; color: $dark; border-color: $primary; }
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
-
-// ─── Table ─────────────────────────────────────────────────────
+// ─── Tabla ─────────────────────────────────────────────────────
 .table-card {
   background: $white;
   border: 1px solid $border;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
-.table-wrapper {
-  overflow-x: auto;
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid $border;
+  background: $card-bg;
 }
+.table-count { font-size: 0.875rem; color: $text-gray; strong { color: $dark; } }
+
+.table-size-selector {
+  display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: $text-gray;
+}
+.size-select {
+  padding: 0.25rem 0.5rem; border: 1.5px solid $border; border-radius: 6px; font-size: 0.8rem;
+  &:focus { outline: none; border-color: $primary; }
+}
+.table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
 table {
   width: 100%;
@@ -151,94 +220,191 @@ table {
   font-size: 0.875rem;
 
   thead tr {
-    background: $dark;
+    background: $card-bg;
     th {
-      color: $white;
-      padding: 0.85rem 1rem;
+      padding: 0.875rem 1rem;
       text-align: left;
-      font-weight: 600;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: $text-gray;
       text-transform: uppercase;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.5px;
       white-space: nowrap;
     }
   }
 
   tbody tr {
-    border-bottom: 1px solid color.adjust($border, $lightness: 5%);
+    border-bottom: 1px solid color.scale($border, $lightness: 33%);
     transition: background 0.15s;
-    &:hover { background: $card-bg; }
-    &:last-child { border-bottom: none; }
 
-    td { padding: 0.85rem 1rem; color: $text-dark; vertical-align: middle; }
+    &:hover { background: #f9fdf9; }
+    &:last-child { border-bottom: none; }
+    &.row-fail { background: #fff8f8; &:hover { background: #fff0f0; } }
+  }
+
+  td {
+    padding: 0.75rem 1rem;
+    color: $text-dark;
+    vertical-align: middle;
+
+    &.col-id      { color: $text-gray; font-size: 0.8rem; width: 60px; }
+    &.col-fecha   { white-space: nowrap; font-size: 0.83rem; }
+    &.col-usuario { font-weight: 600; }
+    &.col-usuariobd { font-size: 0.83rem; color: $text-gray; }
+    &.col-ip      { font-size: 0.8rem; color: $text-gray; font-family: monospace; }
+    &.col-actions { width: 50px; text-align: center; }
   }
 }
 
-// ─── User cell ─────────────────────────────────────────────────
-.user-cell {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-}
-
-.user-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: $primary;
-  color: $white;
-  font-size: 0.85rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-// ─── Cells ─────────────────────────────────────────────────────
-.ip-code {
-  background: #f1f5f9;
-  color: #475569;
-  padding: 0.15rem 0.4rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-family: monospace;
-}
-
-.fecha-cell { white-space: nowrap; color: $text-gray; }
-.ua-cell { color: $text-gray; font-size: 0.8rem; max-width: 220px; }
-
-// ─── Badge ─────────────────────────────────────────────────────
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.2rem 0.6rem;
+  padding: 3px 10px;
   border-radius: 20px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 
-  &.badge-active {
-    background: #dcfce7;
-    color: #15803d;
-  }
+  &.badge-success { background: rgba(22,163,74,0.1); color: #15803d; }
+  &.badge-fail    { background: rgba(220,38,38,0.1); color: $error;  }
 }
 
-// ─── Empty state ───────────────────────────────────────────────
+// ─── Loading / Empty ───────────────────────────────────────────
+.loading-state {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; padding: 3rem;
+  color: $text-gray;
+  .spinner { width: 24px; height: 24px; animation: spin 1s linear infinite; stroke: $primary; }
+}
+
 .empty-state {
   text-align: center;
-  padding: 3rem !important;
-  color: $text-gray;
+  padding: 3rem 1rem;
 
   .empty-icon {
-    width: 56px;
-    height: 56px;
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: $card-bg;
+    display: flex; align-items: center; justify-content: center;
     margin: 0 auto 1rem;
-    color: color.adjust($text-gray, $lightness: 15%);
+    svg { width: 28px; height: 28px; stroke: $primary; }
   }
 
-  p { margin: 0 0 0.25rem; font-size: 0.95rem; }
+  p     { font-weight: 600; color: $dark; margin: 0 0 4px 0; }
+  small { color: $text-gray; font-size: 0.85rem; }
 }
+
+// ─── Paginación ────────────────────────────────────────────────
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 1.25rem;
+  border-top: 1px solid $border;
+}
+
+.page-btn {
+  min-width: 34px; height: 34px;
+  border-radius: 8px;
+  border: 1.5px solid $border;
+  background: $white;
+  color: $dark;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0 8px;
+
+  &:hover:not(:disabled) { background: $card-bg; border-color: $primary; }
+  &.active               { background: $primary; color: $white; border-color: $primary; }
+  &:disabled             { opacity: 0.4; cursor: default; }
+}
+
+.page-info {
+  margin-left: 8px;
+  font-size: 0.85rem;
+  color: $text-gray;
+}
+
+// ─── Modal ─────────────────────────────────────────────────────
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.15s ease;
+}
+
+.modal-box {
+  background: $white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  margin: 1rem;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: slideUp 0.2s ease;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid $border;
+
+  h3 { margin: 0; font-size: 1.1rem; color: $dark; font-weight: 700; }
+}
+
+.modal-close {
+  background: none; border: none; cursor: pointer;
+  color: $text-gray; padding: 4px; border-radius: 6px;
+  display: flex; align-items: center;
+  &:hover { background: $card-bg; color: $dark; }
+}
+
+.modal-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.detail-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+
+  .detail-label {
+    min-width: 110px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: $text-gray;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding-top: 2px;
+  }
+
+  .detail-value {
+    font-size: 0.9rem;
+    color: $text-dark;
+    font-weight: 500;
+    word-break: break-all;
+
+    &.detail-ua {
+      font-size: 0.78rem;
+      color: $text-gray;
+      font-family: monospace;
+    }
+  }
+}
+
+// ─── Keyframes ─────────────────────────────────────────────────
+@keyframes spin    { to { transform: rotate(360deg); } }
+@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
 // Tabs de submódulos (reemplaza .submodule-nav)
 .submodule-tabs {
   display: flex;

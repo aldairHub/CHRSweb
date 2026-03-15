@@ -44,9 +44,14 @@ $bg-white:      #ffffff;
 // TABS
 // ══════════════════════════════════════════════════════════
 .submodule-tabs {
-  display: flex; gap: 0; margin-bottom: 1.75rem;
-  background: $bg-white; border: 1px solid $border;
-  border-radius: 12px; overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 1.75rem;
+  background: $bg-white;
+  border: 1px solid $border;
+  border-radius: 12px;
+  overflow: hidden;
   box-shadow: 0 2px 6px rgba(0,0,0,0.04);
 }
 .tab-item {
@@ -79,6 +84,45 @@ $bg-white:      #ffffff;
 }
 .legend-title { font-weight: 600; color: $text-gray; margin-right: 0.25rem; }
 .divider-v    { width: 1px; height: 20px; background: $border; margin: 0 0.25rem; }
+
+// ══════════════════════════════════════════════════════════
+// KPI CARDS (mismo patrón que estadísticas)
+// ══════════════════════════════════════════════════════════
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: $light-card-bg;
+  border-radius: 10px;
+  border: 1px solid $border;
+}
+
+.stat-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  background: #e5e7eb;
+  display: flex; align-items: center; justify-content: center;
+  color: $text-gray;
+  flex-shrink: 0;
+  svg { width: 22px; height: 22px; stroke: currentColor; }
+
+  &.success { background: #dcfce7; color: #16a34a; svg { stroke: #16a34a; } }
+  &.danger  { background: #fee2e2; color: #dc2626; svg { stroke: #dc2626; } }
+  &.blue    { background: #dbeafe; color: #2563eb; svg { stroke: #2563eb; } }
+}
+
+.stat-content {
+  h4 { margin: 0 0 0.2rem; font-size: 0.72rem; font-weight: 500; color: $text-gray; text-transform: uppercase; letter-spacing: .04em; }
+  .stat-value { font-size: 1.6rem; font-weight: 700; color: $dark; line-height: 1; }
+}
 
 // ══════════════════════════════════════════════════════════
 // FILTROS
@@ -330,6 +374,9 @@ table {
 // ── DARK MODE ─────────────────────────────────────────────
 :host-context(html.dark) {
   .page-container, .main-container, .content-wrapper { background: #000 !important; color: #e5e5e5 !important; }
+  .stat-card { background: #1a1a1a !important; border-color: rgba(255,255,255,0.08) !important; }
+  .stat-content h4 { color: #6b7280 !important; }
+  .stat-content .stat-value { color: #e5e5e5 !important; }
   .filters-card, .table-card, .legend-bar { background: #0f0f0f !important; border-color: rgba(255,255,255,0.08) !important; }
   table { background: #0a0a0a !important; color: #e5e5e5 !important; }
   th { background: #111 !important; color: #9ca3af !important; border-color: rgba(255,255,255,0.07) !important; }
@@ -533,4 +580,27 @@ table {
 .footer-acciones {
   display: flex;
   gap: 0.75rem;
+}
+
+.back-to-audit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $text-gray;
+  text-decoration: none;
+  padding: 0.85rem 0.9rem;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  &:hover { background: $light-card-bg; color: $text-dark; }
+}
+
+.tab-divider-v {
+  width: 1px;
+  height: 24px;
+  background: $border;
+  margin: 0 0.1rem;
+  flex-shrink: 0;
 }

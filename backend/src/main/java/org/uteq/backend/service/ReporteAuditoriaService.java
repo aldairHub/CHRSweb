@@ -222,15 +222,20 @@ public class ReporteAuditoriaService {
             Font fNombre = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14, colorPrimario);
             Font fSub    = FontFactory.getFont(FontFactory.HELVETICA, 9, Color.GRAY);
 
-            Paragraph pInst = new Paragraph(
-                    inst.getNombre() != null ? inst.getNombre() : "Institución", fNombre);
-            pInst.setAlignment(Element.ALIGN_CENTER);
-            doc.add(pInst);
+            // Nombre del sistema (appName) — si no existe, se usa el nombre de la institución
+            String nombreSistema = (inst.getAppName() != null && !inst.getAppName().isBlank())
+                    ? inst.getAppName()
+                    : (inst.getNombre() != null ? inst.getNombre() : "Sistema");
+            Paragraph pSistema = new Paragraph(nombreSistema, fNombre);
+            pSistema.setAlignment(Element.ALIGN_CENTER);
+            doc.add(pSistema);
 
-            if (inst.getCorreo() != null) {
-                Paragraph pCorreo = new Paragraph(inst.getCorreo(), fSub);
-                pCorreo.setAlignment(Element.ALIGN_CENTER);
-                doc.add(pCorreo);
+            // Nombre de la institución (si es distinto del sistema)
+            if (inst.getAppName() != null && !inst.getAppName().isBlank()
+                    && inst.getNombre() != null && !inst.getNombre().isBlank()) {
+                Paragraph pInst = new Paragraph(inst.getNombre(), fSub);
+                pInst.setAlignment(Element.ALIGN_CENTER);
+                doc.add(pInst);
             }
             doc.add(new Paragraph("\n"));
         }
@@ -307,10 +312,13 @@ public class ReporteAuditoriaService {
             doc.add(tabla2);
         }
 
-        // Fecha de generación
+        // Generado por + fecha
         Font fGen = FontFactory.getFont(FontFactory.HELVETICA, 9, Color.GRAY);
-        Paragraph pGen = new Paragraph(
-                "Generado el " + LocalDateTime.now().format(FMT_TS), fGen);
+        String textoGen = "Generado el " + LocalDateTime.now().format(FMT_TS);
+        if (cfg.getGeneradoPor() != null && !cfg.getGeneradoPor().isBlank()) {
+            textoGen += "  |  Generado por: " + cfg.getGeneradoPor();
+        }
+        Paragraph pGen = new Paragraph(textoGen, fGen);
         pGen.setAlignment(Element.ALIGN_RIGHT);
         pGen.setSpacingBefore(20);
         doc.add(pGen);
@@ -375,8 +383,8 @@ public class ReporteAuditoriaService {
 
     private void agregarTablaCambiosPdf(Document doc, List<Map<String, Object>> rows, Color color)
             throws DocumentException {
-        String[] headers = {"Fecha", "Tabla", "ID", "Op.", "Campo", "Antes", "Después", "Usuario"};
-        float[]  widths  = {16, 12, 5, 7, 12, 16, 16, 16};
+        String[] headers = {"Fecha", "Tabla", "ID", "Op.", "Campo", "Antes", "Después", "Usuario app", "Usuario BD"};
+        float[]  widths  = {14, 10, 5, 6, 10, 13, 13, 15, 14};
         PdfPTable t = crearTablaPdf(headers, widths, color);
         Font fCell = FontFactory.getFont(FontFactory.HELVETICA, 7.5f, Color.DARK_GRAY);
 
@@ -396,6 +404,8 @@ public class ReporteAuditoriaService {
             t.addCell(celdaDato(truncar(str(row.get("valor_antes")), 30), fCell));
             t.addCell(celdaDato(truncar(str(row.get("valor_despues")), 30), fCell));
             t.addCell(celdaDato(str(row.get("usuario_app")), fCell));
+            String usuBd = str(row.get("usuario_bd"));
+            t.addCell(celdaDato("-".equals(usuBd) ? "—" : usuBd, fCell));
         }
         doc.add(t);
     }
@@ -446,12 +456,34 @@ public class ReporteAuditoriaService {
                                       DatosReporte datos, ExcelEstilos estilos) {
         int fila = 0;
 
+        // Nombre del sistema / institución
+        if (datos.institucion != null) {
+            Institucion inst = datos.institucion;
+            String nombreSist = (inst.getAppName() != null && !inst.getAppName().isBlank())
+                    ? inst.getAppName() : (inst.getNombre() != null ? inst.getNombre() : "");
+            if (!nombreSist.isBlank()) {
+                Row rSist = sheet.createRow(fila++);
+                Cell cSist = rSist.createCell(0);
+                cSist.setCellValue(nombreSist);
+                cSist.setCellStyle(estilos.titulo);
+                sheet.addMergedRegion(new CellRangeAddress(fila-1, fila-1, 0, 5));
+            }
+            if (inst.getAppName() != null && !inst.getAppName().isBlank()
+                    && inst.getNombre() != null && !inst.getNombre().isBlank()) {
+                Row rInst = sheet.createRow(fila++);
+                Cell cInst = rInst.createCell(0);
+                cInst.setCellValue(inst.getNombre());
+                cInst.setCellStyle(estilos.subInfo);
+                sheet.addMergedRegion(new CellRangeAddress(fila-1, fila-1, 0, 5));
+            }
+        }
+
         // Título
         Row rTitulo = sheet.createRow(fila++);
         Cell cTitulo = rTitulo.createCell(0);
         cTitulo.setCellValue(cfg.getTitulo() != null ? cfg.getTitulo() : "Reporte de Auditoría");
         cTitulo.setCellStyle(estilos.titulo);
-        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 5));
+        sheet.addMergedRegion(new CellRangeAddress(fila-1, fila-1, 0, 5));
 
         // Período
         Row rPeriodo = sheet.createRow(fila++);
@@ -505,11 +537,15 @@ public class ReporteAuditoriaService {
             Cell cVal   = r.createCell(1); cVal.setCellValue(kpi[1]);   cVal.setCellStyle(estilos.valor);
         }
 
-        // Fecha generación
+        // Generado por + fecha
         fila++;
         Row rGen = sheet.createRow(fila);
         Cell cGen = rGen.createCell(0);
-        cGen.setCellValue("Generado: " + LocalDateTime.now().format(FMT_TS));
+        String textoGenExcel = "Generado: " + LocalDateTime.now().format(FMT_TS);
+        if (cfg.getGeneradoPor() != null && !cfg.getGeneradoPor().isBlank()) {
+            textoGenExcel += "  |  Por: " + cfg.getGeneradoPor();
+        }
+        cGen.setCellValue(textoGenExcel);
         cGen.setCellStyle(estilos.subInfo);
 
         sheet.setColumnWidth(0, 6000);

@@ -3,8 +3,8 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { NavbarComponent } from '../../../../component/navbar';
 import { ToastComponent } from '../../../../component/toast.component';
 import { LoadingSpinnerComponent } from '../../../../component/loading-spinner.component';
 import { ToastService } from '../../../../services/toast.service';
@@ -17,6 +17,7 @@ import {
   ReporteAuditoriaService,
   ReporteAuditoriaConfig
 } from '../../../../services/reporte-auditoria.service';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-cambios-datos',
@@ -24,7 +25,6 @@ import {
   imports: [
     CommonModule,
     FormsModule,
-    NavbarComponent,
     RouterLink,
     RouterLinkActive,
     ToastComponent,
@@ -48,6 +48,10 @@ export class CambiosDatosComponent implements OnInit {
 
   detalle: AudCambio | null = null;
 
+  // ── KPIs de hoy ─────────────────────────────────────────────────────────
+  private readonly apiStats = `${environment.apiUrl}/admin/auditoria`;
+  kpiHoy = { total: 0, inserts: 0, updates: 0, deletes: 0 };
+
   // ── Reporte ─────────────────────────────────────────────────────────────
   modalReporteAbierto = false;
   generandoReporte    = false;
@@ -70,12 +74,14 @@ export class CambiosDatosComponent implements OnInit {
   constructor(
     private svc:        AuditoriaCambiosService,
     private reporteSvc: ReporteAuditoriaService,
+    private http:       HttpClient,
     private cdr:        ChangeDetectorRef,
     private toast:      ToastService
   ) {}
 
   ngOnInit(): void {
     this.cargar();
+    this.cargarKpiHoy();
   }
 
   // ── Carga de datos ───────────────────────────────────────────────────────
@@ -102,6 +108,33 @@ export class CambiosDatosComponent implements OnInit {
   }
 
   aplicarFiltros(): void { this.cargar(0); }
+
+  private parseJson(val: any): any[] {
+    if (!val) return [];
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string') { try { return JSON.parse(val); } catch { return []; } }
+    return [];
+  }
+
+  cargarKpiHoy(): void {
+    const hoy = new Date().toISOString().slice(0, 10);
+    this.http.get<any>(`${this.apiStats}/estadisticas/cambios`).subscribe({
+      next: (data) => {
+        const tendencia = this.parseJson(data.tendenciaDiaria);
+        const fila = tendencia.find((r: any) => r.dia === hoy);
+        if (fila) {
+          this.kpiHoy = {
+            total:   Number(fila.total   ?? 0),
+            inserts: Number(fila.inserts ?? 0),
+            updates: Number(fila.updates ?? 0),
+            deletes: Number(fila.deletes ?? 0),
+          };
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
+  }
 
   limpiarFiltros(): void {
     this.filtros = { tabla: '', operacion: '', campo: '', usuarioApp: '', desde: '', hasta: '' };

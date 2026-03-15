@@ -1,0 +1,391 @@
+@use 'sass:color';
+
+$primary:  #00A63E;
+$success:  #16a34a;
+$danger:   #dc2626;
+$blue:     #2563eb;
+$warn:     #d97706;
+$gray:     #6b7280;
+$gray-lt:  #f3f4f6;
+$border:   #e5e7eb;
+$text:     #111827;
+$text-md:  #374151;
+$radius:   12px;
+$shadow:   0 1px 3px rgba(0,0,0,.08);
+
+// ── Layout ────────────────────────────────────────────────────────────────
+.main-container {
+  min-height: 100vh;
+  background: #EEF9EC;
+  padding: 2rem 1rem;
+}
+
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  h2 { margin: 0; font-size: 1.75rem; font-weight: 700; color: #016630; }
+  .page-subtitle { margin: 0.25rem 0 0; color: #536b50; font-size: 0.95rem; }
+}
+
+.header-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.limite-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+
+  label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: $gray;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+}
+
+.limite-input {
+  width: 100px;
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid $border;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: $text;
+  background: white;
+  &:focus { outline: none; border-color: $primary; box-shadow: 0 0 0 3px rgba($primary,.12); }
+}
+
+// ── Tabs — Grupo 2 ────────────────────────────────────────────────────────
+.submodule-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 1.75rem;
+  background: white;
+  border: 1px solid #B9F8CF;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,.04);
+}
+
+.back-to-audit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $gray;
+  text-decoration: none;
+  padding: 0.85rem 0.9rem;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+
+  &:hover { background: $gray-lt; color: $text; }
+  svg { flex-shrink: 0; }
+}
+
+.tab-divider-v {
+  width: 1px;
+  height: 24px;
+  background: $border;
+  margin: 0 0.1rem;
+  flex-shrink: 0;
+}
+
+.tab-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #536b50;
+  text-decoration: none;
+  border-right: 1px solid #B9F8CF;
+  transition: all 0.2s;
+  position: relative;
+  cursor: pointer;
+
+  svg { flex-shrink: 0; stroke: #536b50; transition: stroke 0.2s; }
+  &:last-child { border-right: none; }
+
+  &:hover { background: #EEF9EC; color: #016630; svg { stroke: #016630; } }
+
+  &.tab-active {
+    background: #EEF9EC;
+    color: #00A63E;
+    font-weight: 700;
+    svg { stroke: #00A63E; }
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: #00A63E;
+      border-radius: 3px 3px 0 0;
+    }
+  }
+}
+
+// ── Banners ───────────────────────────────────────────────────────────────
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-radius: $radius;
+  font-size: 0.9rem;
+
+  &-ok {
+    background: #dcfce7;
+    color: $success;
+    border: 1px solid #bbf7d0;
+    svg { stroke: $success; flex-shrink: 0; }
+  }
+
+  &-warn {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    svg { stroke: $warn; flex-shrink: 0; }
+  }
+
+  &-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    svg { stroke: $danger; flex-shrink: 0; }
+  }
+}
+
+// ── Stats grid (reutilizado de estadisticas.scss) ─────────────────────────
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 10px;
+  box-shadow: $shadow;
+}
+
+.stat-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  background: $gray-lt;
+  display: flex; align-items: center; justify-content: center;
+  color: $gray;
+  flex-shrink: 0;
+  svg { width: 22px; height: 22px; }
+
+  &.success { background: #dcfce7; color: $success; }
+  &.danger  { background: #fee2e2; color: $danger;  }
+  &.blue    { background: #dbeafe; color: $blue;    }
+  &.warn    { background: #fef3c7; color: $warn;    }
+}
+
+.stat-content {
+  h4 { margin: 0 0 0.2rem; font-size: 0.72rem; font-weight: 500; color: $gray;
+    text-transform: uppercase; letter-spacing: .04em; }
+  .stat-value { font-size: 1.6rem; font-weight: 700; color: $text; line-height: 1; }
+}
+
+.stat-bar-bg {
+  margin-top: 0.4rem; height: 4px; background: $border;
+  border-radius: 2px; overflow: hidden;
+}
+.stat-bar-fill {
+  height: 100%; border-radius: 2px; transition: width .5s ease;
+  &.fill-success { background: $success; }
+}
+
+// ── Tabla sospechosos ─────────────────────────────────────────────────────
+.result-card {
+  background: white;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  overflow: hidden;
+}
+
+.result-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid $border;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $text;
+  svg { stroke: $warn; }
+}
+
+.table-wrap { overflow-x: auto; }
+
+.mini-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+
+  th {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: $gray;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    border-bottom: 1px solid $border;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid $border;
+    color: $text-md;
+    vertical-align: middle;
+
+    &.td-num   { text-align: right; font-weight: 600; color: $text; }
+    &.td-fecha { white-space: nowrap; font-size: 0.78rem; color: $gray; }
+    &.td-hash  { font-family: monospace; font-size: 0.78rem; color: $gray; cursor: default; }
+    &.td-user  { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  }
+
+  code {
+    background: $gray-lt;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    color: $blue;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: $gray-lt; }
+}
+
+// ── Badges de estado ──────────────────────────────────────────────────────
+.estado-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  white-space: nowrap;
+
+  &.badge-ok       { background: #dcfce7; color: $success; }
+  &.badge-alterado { background: #fee2e2; color: $danger;  }
+  &.badge-sin-hash { background: #fef3c7; color: #92400e;  }
+}
+
+.tabla-badge-sm {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: white;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+}
+
+.tabla-neutral { background: $gray; }
+
+.op-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+
+  &.op-insert { background: #dcfce7; color: $success; }
+  &.op-update { background: #dbeafe; color: $blue; }
+  &.op-delete { background: #fee2e2; color: $danger; }
+}
+
+// ── Info note ─────────────────────────────────────────────────────────────
+.info-note {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: $radius;
+  font-size: 0.85rem;
+  color: #166534;
+  svg { stroke: $success; flex-shrink: 0; }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  background: white;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  gap: 0.5rem;
+  color: $gray;
+
+  .empty-icon { color: #b9f8cf; margin-bottom: 0.5rem; }
+  p { margin: 0; font-size: 0.9rem; }
+  .empty-hint { font-size: 0.8rem; color: #9ca3af; }
+}
+
+// ── Loading ───────────────────────────────────────────────────────────────
+.loading-state {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 2rem; color: $gray; font-size: 0.875rem;
+}
+
+.spinner { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+// ── Botones ───────────────────────────────────────────────────────────────
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+
+  &-primary {
+    background: $primary;
+    color: white;
+    &:hover { background: color.adjust($primary, $lightness: -8%); }
+    &:disabled { opacity: .6; cursor: not-allowed; }
+  }
+}
