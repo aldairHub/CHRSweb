@@ -19,10 +19,11 @@ export class PostulantesService {
 
   constructor(private http: HttpClient) {}
 
-  listar(estado?: string, query?: string): Observable<PostulanteResumen[]> {
+  listar(estado?: string, query?: string, idSolicitud?: number): Observable<PostulanteResumen[]> {
     let params = new HttpParams();
-    if (estado) params = params.set('estado', estado);
-    if (query)  params = params.set('query', query);
+    if (estado)     params = params.set('estado', estado);
+    if (query)      params = params.set('query', query);
+    if (idSolicitud) params = params.set('idSolicitud', idSolicitud.toString());
     return this.http.get<PostulanteResumen[]>(this.apiUrl, { params });
   }
 

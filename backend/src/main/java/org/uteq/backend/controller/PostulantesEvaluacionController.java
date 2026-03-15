@@ -34,8 +34,9 @@ public class PostulantesEvaluacionController {
     @GetMapping
     public ResponseEntity<List<PostulanteEvaluacionDTO>> listar(
             @RequestParam(required = false) String estado,
-            @RequestParam(required = false) String query) {
-        return ResponseEntity.ok(procesoService.listarPostulantes());
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) Long idSolicitud) {
+        return ResponseEntity.ok(procesoService.listarPostulantes(idSolicitud));
     }
 
     /** GET /api/evaluacion/procesos/{idProceso} */

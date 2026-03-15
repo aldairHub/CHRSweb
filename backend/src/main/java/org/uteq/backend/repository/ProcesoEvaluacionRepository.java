@@ -17,6 +17,8 @@ public interface ProcesoEvaluacionRepository extends JpaRepository<ProcesoEvalua
 
     Optional<ProcesoEvaluacion> findByCodigo(String codigo);
 
+    List<ProcesoEvaluacion> findBySolicitudDocente_IdSolicitudOrderByFechaInicioDesc(Long idSolicitud);
+
     boolean existsByPostulante_IdPostulanteAndSolicitudDocente_IdSolicitud(Long idPostulante, Long idSolicitud);
 
     @Query("SELECT COUNT(p) FROM ProcesoEvaluacion p WHERE p.estadoGeneral NOT IN ('completado', 'rechazado')")
