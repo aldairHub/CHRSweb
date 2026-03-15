@@ -78,18 +78,71 @@ public class ReportePrepostulacionService {
         d.institucion   = instRepo.findAll().stream().filter(i -> Boolean.TRUE.equals(i.getActivo())).findFirst().orElse(null);
         d.convocatorias = convRepo.findAllByOrderByFechaPublicacionDesc();
         Date desde = parseDate(cfg.getDesde()), hasta = parseDate(cfg.getHasta());
-        d.rows       = jdbc.queryForList(buildSql(cfg), buildParams(cfg, desde, hasta).toArray());
-        d.kpiEstados = calcEstados(d.rows);
-        d.kpiConv    = calcConvocatoria(d.rows);
-        d.kpiTemp    = calcTemporal(d.rows);
-        d.total      = d.rows.size();
+
+        // ── Query A: prepostulaciones ÚNICAS (sin JOIN a convocatoria) ──────
+        // Usada para KPIs, gráficos y conteos. Nunca tiene duplicados.
+        List<Map<String,Object>> rowsUnicos = jdbc.queryForList(
+                buildSqlUnicos(cfg), buildParams(cfg, desde, hasta).toArray());
+
+        d.kpiEstados = calcEstados(rowsUnicos);
+        d.kpiConv    = calcConvocatoria(rowsUnicos);
+        d.kpiTemp    = calcTemporal(rowsUnicos);
+        d.total      = rowsUnicos.size();
         d.aprobadas  = d.kpiEstados.getOrDefault("APROBADO",  0);
         d.rechazadas = d.kpiEstados.getOrDefault("RECHAZADO", 0);
         d.pendientes = d.kpiEstados.getOrDefault("PENDIENTE", 0);
+
+        // ── Query B: con JOIN para el detalle (puede tener múltiples convocatorias por persona) ──
+        if (cfg.isIncluirDetalle()) {
+            d.rows = jdbc.queryForList(
+                    buildSqlDetalle(cfg), buildParams(cfg, desde, hasta).toArray());
+        } else {
+            d.rows = rowsUnicos;
+        }
         return d;
     }
 
-    private String buildSql(ReportePrepostulacionConfigDTO c) {
+    /**
+     * Query A — solo tabla prepostulacion + filtros por convocatoria/solicitud via EXISTS.
+     * Nunca produce duplicados. Usada para KPIs y gráficos.
+     */
+    private String buildSqlUnicos(ReportePrepostulacionConfigDTO c) {
+        StringBuilder sb = new StringBuilder(
+                "SELECT p.id_prepostulacion, p.nombres, p.apellidos, p.identificacion," +
+                        " p.correo, p.estado_revision AS \"estadoRevision\"," +
+                        " p.fecha_envio AS \"fechaEnvio\", p.fecha_revision AS \"fechaRevision\"," +
+                        " p.observaciones_revision AS \"observacionesRevision\"," +
+                        " NULL::bigint AS \"idSolicitud\"," +
+                        " NULL::bigint AS \"idConvocatoria\", NULL::text AS \"tituloConvocatoria\"" +
+                        " FROM prepostulacion p" +
+                        " WHERE 1=1");
+        if (ok(c.getDesde()))          sb.append(" AND p.fecha_envio >= ?");
+        if (ok(c.getHasta()))          sb.append(" AND p.fecha_envio <= ?");
+        if (ok(c.getEstadoRevision())) sb.append(" AND UPPER(p.estado_revision) = UPPER(?)");
+        // Filtro por convocatoria: usa EXISTS para no duplicar
+        if (c.getIdsConvocatoria() != null && !c.getIdsConvocatoria().isEmpty()) {
+            sb.append(" AND EXISTS (SELECT 1 FROM prepostulacion_solicitud ps2" +
+                            " JOIN convocatoria_solicitud cs2 ON cs2.id_solicitud = ps2.id_solicitud" +
+                            " WHERE ps2.id_prepostulacion = p.id_prepostulacion" +
+                            " AND cs2.id_convocatoria IN (")
+                    .append(c.getIdsConvocatoria().stream().map(x->"?").collect(java.util.stream.Collectors.joining(","))).append("))");
+        }
+        if (c.getIdsSolicitud() != null && !c.getIdsSolicitud().isEmpty()) {
+            sb.append(" AND EXISTS (SELECT 1 FROM prepostulacion_solicitud ps3" +
+                            " WHERE ps3.id_prepostulacion = p.id_prepostulacion" +
+                            " AND ps3.id_solicitud IN (")
+                    .append(c.getIdsSolicitud().stream().map(x->"?").collect(java.util.stream.Collectors.joining(","))).append("))");
+        }
+        sb.append(" ORDER BY p.fecha_envio DESC");
+        return sb.toString();
+    }
+
+    /**
+     * Query B — con JOINs para mostrar convocatoria en el detalle.
+     * Puede tener múltiples filas por persona (una por convocatoria).
+     * Solo se usa para la tabla de detalle del PDF/Excel.
+     */
+    private String buildSqlDetalle(ReportePrepostulacionConfigDTO c) {
         StringBuilder sb = new StringBuilder(
                 "SELECT p.id_prepostulacion, p.nombres, p.apellidos, p.identificacion," +
                         " p.correo, p.estado_revision AS \"estadoRevision\"," +
@@ -106,11 +159,14 @@ public class ReportePrepostulacionService {
         if (ok(c.getHasta()))          sb.append(" AND p.fecha_envio <= ?");
         if (ok(c.getEstadoRevision())) sb.append(" AND UPPER(p.estado_revision) = UPPER(?)");
         if (c.getIdsConvocatoria() != null && !c.getIdsConvocatoria().isEmpty())
-            sb.append(" AND cv.id_convocatoria IN (").append(c.getIdsConvocatoria().stream().map(x->"?").collect(Collectors.joining(","))).append(")");
+            sb.append(" AND cv.id_convocatoria IN (")
+                    .append(c.getIdsConvocatoria().stream().map(x->"?").collect(java.util.stream.Collectors.joining(","))).append(")");
         if (c.getIdsSolicitud() != null && !c.getIdsSolicitud().isEmpty())
-            sb.append(" AND ps.id_solicitud IN (").append(c.getIdsSolicitud().stream().map(x->"?").collect(Collectors.joining(","))).append(")");
-        sb.append(" ORDER BY p.fecha_envio DESC");
-        if (c.getLimite() != null && c.getLimite() > 0) sb.append(" LIMIT ").append(c.getLimite());
+            sb.append(" AND ps.id_solicitud IN (")
+                    .append(c.getIdsSolicitud().stream().map(x->"?").collect(java.util.stream.Collectors.joining(","))).append(")");
+        sb.append(" ORDER BY p.fecha_envio DESC, cv.titulo");
+        if (c.getLimite() != null && c.getLimite() > 0 && c.getLimite() < 9999)
+            sb.append(" LIMIT ").append(c.getLimite() * 4); // margen para múltiples convocatorias
         return sb.toString();
     }
 
@@ -326,7 +382,7 @@ public class ReportePrepostulacionService {
 
             if (cfg.isIncluirDetalle() && !d.rows.isEmpty()) {
                 doc.newPage();
-                sec(doc, "Detalle de prepostulaciones  (" + d.rows.size() + " registros)", cp);
+                sec(doc, "Detalle de prepostulaciones  (" + d.total + " postulantes)", cp);
                 detalle(doc, d.rows, cp);
             }
 
@@ -684,7 +740,7 @@ public class ReportePrepostulacionService {
 
     private void xlsDet(XSSFSheet sh, List<Map<String,Object>> rows, ReportePrepostulacionConfigDTO cfg, XlsEst ex, XSSFWorkbook wb) {
         String[] hs={"ID","Nombres","Apellidos","Identificación","Correo","Estado","Fecha Envío","Fecha Revisión","Convocatoria","ID Solicitud","Observaciones"};
-        Row rH=sh.createRow(0); for(int i=0;i<hs.length;i++){Cell c=rH.createCell(i);c.setCellValue(hs[i]);c.setCellStyle(ex.header);}
+        Row rH=sh.createRow(0); for(int i = 0; i<hs.length; i++){Cell c=rH.createCell(i);c.setCellValue(hs[i]);c.setCellStyle(ex.header);}
         XSSFCellStyle stA=xlsBg(wb,new Color(220,252,231)), stR=xlsBg(wb,new Color(254,226,226)), stP=xlsBg(wb,new Color(254,249,195));
         int f=1;
         for(var row:rows){
