@@ -6,48 +6,58 @@ import { Observable } from 'rxjs';
 import { RolAppDTO } from './roles-app.service';
 
 export interface UsuarioConRolesDTO {
-  idUsuario: number;
-  usuarioApp: string;
-  usuarioBd: string;
-  correo: string;
-  activo: boolean;
+  idUsuario:     number;
+  usuarioApp:    string;
+  usuarioBd:     string;
+  correo:        string;
+  activo:        boolean;
   fechaCreacion: string;
-  rolesApp: RolAppDTO[];
+  rolesApp:      RolAppDTO[];
 }
 
 export interface AutoridadConRolesDTO {
-  idAutoridad: number;
-  nombres: string;
-  apellidos: string;
-  correo: string;
+  idAutoridad:     number;
+  nombres:         string;
+  apellidos:       string;
+  correo:          string;
   fechaNacimiento: string;
-  estado: boolean;
-  idInstitucion: number;
-  idUsuario: number;
-  usuarioApp: string;
-  usuarioBd: string;
-  rolesApp: RolAppDTO[];
+  estado:          boolean;
+  idInstitucion:   number;
+  idUsuario:       number;
+  usuarioApp:      string;
+  usuarioBd:       string;
+  rolesApp:        RolAppDTO[];
+  fotoPerfil:     string | null;
 }
 
-// Payload exacto que acepta AutoridadRegistroRequestDTO del backend
+/** DTO de postulante para la vista admin (solo lectura) */
+export interface PostulanteAdminDTO {
+  idPostulante:   number;
+  nombres:        string;
+  apellidos:      string;
+  identificacion: string;
+  correo:         string;
+  usuarioApp:     string | null;
+  activo:         boolean | null;
+  fotoPerfil:     string | null;
+}
+
 export interface AutoridadCreatePayload {
-  nombres: string;
-  apellidos: string;
-  correo: string;
+  nombres:         string;
+  apellidos:       string;
+  correo:          string;
   fechaNacimiento: string | null;
-  idInstitucion: number | null;
-  idFacultad?: number | null;
-  rolesApp: string[];        // nombres de roles, no IDs
+  idInstitucion:   number | null;
+  idFacultad?:     number | null;
+  rolesApp:        string[];
   idsRolAutoridad: number[];
 }
 
-// Payload para POST /api/admin/usuarios → sp_registrar_usuario_simple
-// Genera credenciales automáticamente y envía correo
 export interface UsuarioCreatePayload {
-  correo: string;
-  nombres: string;
+  correo:    string;
+  nombres:   string;
   apellidos: string;
-  rolesApp: string[];        // nombres de roles, no IDs
+  rolesApp:  string[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -58,22 +68,16 @@ export class UsuarioAdminService {
 
   constructor(private http: HttpClient) {}
 
-  // --- USUARIOS: /api/admin/usuarios --------------------------
+  // --- USUARIOS: /api/admin/usuarios ----------------------------------
 
   listarUsuarios(): Observable<UsuarioConRolesDTO[]> {
     return this.http.get<UsuarioConRolesDTO[]>(`${this.api}/usuarios`);
   }
 
-  /**
-   * POST /api/admin/usuarios
-   * Usa sp_registrar_usuario_simple: genera credenciales, crea user en PG,
-   * asigna roles BD y envia correo automaticamente.
-   */
   crearUsuario(payload: UsuarioCreatePayload): Observable<any> {
     return this.http.post(`${this.api}/usuarios`, payload);
   }
 
-  /** PATCH /api/admin/usuarios/{id}/estado?activo=true|false */
   cambiarEstadoUsuario(id: number, activo: boolean): Observable<void> {
     return this.http.patch<void>(
       `${this.api}/usuarios/${id}/estado`,
@@ -82,7 +86,6 @@ export class UsuarioAdminService {
     );
   }
 
-  /** PUT /api/admin/usuarios/{id}/roles — body: { idsRolApp: [...] } */
   actualizarRolesUsuario(id: number, idsRolApp: number[]): Observable<UsuarioConRolesDTO> {
     return this.http.put<UsuarioConRolesDTO>(
       `${this.api}/usuarios/${id}/roles`,
@@ -90,21 +93,16 @@ export class UsuarioAdminService {
     );
   }
 
-  // --- AUTORIDADES: /api/admin/autoridades --------------------
+  // --- AUTORIDADES: /api/admin/autoridades ----------------------------
 
   listarAutoridades(): Observable<AutoridadConRolesDTO[]> {
     return this.http.get<AutoridadConRolesDTO[]>(`${this.api}/autoridades`);
   }
 
-  /**
-   * POST /api/autoridades-academicas/registro
-   * Genera usuario, crea credenciales y envia correo.
-   */
   crearAutoridad(payload: AutoridadCreatePayload): Observable<any> {
     return this.http.post(`${this.apiAutoridades}/registro`, payload);
   }
 
-  /** PATCH /api/admin/autoridades/{id}/estado?estado=true|false */
   cambiarEstadoAutoridad(id: number, estado: boolean): Observable<void> {
     return this.http.patch<void>(
       `${this.api}/autoridades/${id}/estado`,
@@ -113,11 +111,17 @@ export class UsuarioAdminService {
     );
   }
 
-  /** PUT /api/admin/autoridades/{id}/roles — body: { idsRolApp: [...] } */
   actualizarRolesAutoridad(id: number, idsRolApp: number[]): Observable<AutoridadConRolesDTO> {
     return this.http.put<AutoridadConRolesDTO>(
       `${this.api}/autoridades/${id}/roles`,
       { idsRolApp }
     );
+  }
+
+  // --- NUEVO: POSTULANTES (solo lectura) ------------------------------
+
+  /** GET /api/admin/postulantes — lista completa de postulantes registrados. */
+  listarPostulantes(): Observable<PostulanteAdminDTO[]> {
+    return this.http.get<PostulanteAdminDTO[]>(`${this.api}/postulantes`);
   }
 }

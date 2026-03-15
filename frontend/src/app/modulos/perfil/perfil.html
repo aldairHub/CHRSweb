@@ -1,5 +1,3 @@
-
-
 <div class="main-container">
   <div class="content-wrapper">
 
@@ -7,24 +5,108 @@
     <div class="page-header">
       <div>
         <h2>Mi perfil</h2>
-        <p class="page-subtitle">Administra tu información y seguridad de cuenta</p>
+        <p class="page-subtitle">Administra la información y seguridad de cuenta</p>
       </div>
     </div>
 
     <div class="perfil-grid">
 
-      <!-- Tarjeta info usuario -->
-      <div class="card info-card">
-        <div class="avatar-grande">
-          {{ nombreUsuario.substring(0, 2).toUpperCase() }}
-        </div>
-        <div class="user-data">
-          <h2>{{ nombreUsuario }}</h2>
-          <span class="badge-rol">{{ rolUsuario | uppercase }}</span>
-        </div>
-      </div>
+      <!-- ═══════════ COLUMNA IZQUIERDA: info + foto ═══════════ -->
+      <div class="left-col">
 
-      <!-- Tarjeta cambio de contraseña -->
+        <!-- Tarjeta info usuario -->
+        <div class="card info-card">
+          <!-- Avatar: foto si existe, iniciales si no -->
+          <div class="avatar-wrap">
+            <img *ngIf="fotoActual" [src]="fotoActual" alt="Foto de perfil" class="avatar-img" />
+            <div *ngIf="!fotoActual" class="avatar-grande">
+              {{ nombreUsuario.substring(0, 2).toUpperCase() }}
+            </div>
+          </div>
+          <div class="user-data">
+            <h2>{{ nombreUsuario }}</h2>
+            <span class="badge-rol">{{ rolUsuario | uppercase }}</span>
+          </div>
+        </div>
+
+        <!-- Tarjeta foto de perfil -->
+        <div class="card foto-card">
+
+          <div class="card-title">
+            <div class="card-title-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <div>
+              <h3>Foto de perfil</h3>
+              <p>JPG, PNG o WebP · máx. 2 MB</p>
+            </div>
+          </div>
+
+          <!-- Preview circular -->
+          <div class="foto-preview-wrap">
+            <img *ngIf="fotoActual" [src]="fotoActual" alt="Preview" class="foto-preview-img" />
+            <div *ngIf="!fotoActual" class="foto-preview-placeholder">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <!-- Badge "nuevo" cuando hay preview no guardado -->
+            <span class="foto-badge-nuevo" *ngIf="fotoPreview">nuevo</span>
+          </div>
+
+          <!-- Error de foto -->
+          <div class="alert alert-error" *ngIf="errorFoto">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            {{ errorFoto }}
+          </div>
+
+          <!-- Input file oculto -->
+          <input #inputFoto type="file" accept="image/*" class="input-file-hidden"
+                 (change)="onFotoSeleccionada($event)" />
+
+          <!-- Botón seleccionar (siempre visible) -->
+          <button class="btn btn-outline-foto" (click)="abrirSelectorFoto()"
+                  [disabled]="subiendoFoto">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+            </svg>
+            {{ fotoPerfil && !fotoPreview ? 'Cambiar foto' : 'Seleccionar foto' }}
+          </button>
+
+          <!-- Botones guardar / cancelar — solo si hay preview pendiente -->
+          <ng-container *ngIf="fotoPreview">
+            <button class="btn btn-primary" (click)="guardarFoto()" [disabled]="subiendoFoto">
+              <svg *ngIf="subiendoFoto" class="spinner" xmlns="http://www.w3.org/2000/svg"
+                   fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M21 12a9 9 0 1 1-6.219-8.56"/>
+              </svg>
+              <svg *ngIf="!subiendoFoto" xmlns="http://www.w3.org/2000/svg" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              {{ subiendoFoto ? 'Subiendo...' : 'Guardar foto' }}
+            </button>
+            <button class="btn btn-cancel-foto" (click)="cancelarFoto()" [disabled]="subiendoFoto">
+              Cancelar
+            </button>
+          </ng-container>
+
+        </div>
+        <!-- /foto-card -->
+
+      </div>
+      <!-- /left-col -->
+
+      <!-- ═══════════ COLUMNA DERECHA: cambio de clave ═══════════ -->
       <div class="card clave-card">
 
         <div class="card-title">
@@ -64,13 +146,8 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
             </svg>
-            <input
-              [type]="showClaveActual ? 'text' : 'password'"
-              [(ngModel)]="claveActual"
-              class="form-input"
-              placeholder="Tu contraseña actual"
-              autocomplete="current-password"
-            />
+            <input [type]="showClaveActual ? 'text' : 'password'" [(ngModel)]="claveActual"
+                   class="form-input" placeholder="Tu contraseña actual" autocomplete="current-password" />
             <button type="button" class="eye-btn" (click)="toggleClaveActual()">
               <svg *ngIf="!showClaveActual" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -91,13 +168,8 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
             </svg>
-            <input
-              [type]="showClaveNueva ? 'text' : 'password'"
-              [(ngModel)]="claveNueva"
-              class="form-input"
-              placeholder="Mínimo 8 caracteres"
-              autocomplete="new-password"
-            />
+            <input [type]="showClaveNueva ? 'text' : 'password'" [(ngModel)]="claveNueva"
+                   class="form-input" placeholder="Mínimo 8 caracteres" autocomplete="new-password" />
             <button type="button" class="eye-btn" (click)="toggleClaveNueva()">
               <svg *ngIf="!showClaveNueva" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -118,13 +190,8 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
             </svg>
-            <input
-              [type]="showClaveConfirm ? 'text' : 'password'"
-              [(ngModel)]="claveNuevaConfirmacion"
-              class="form-input"
-              placeholder="Repite la nueva contraseña"
-              autocomplete="new-password"
-            />
+            <input [type]="showClaveConfirm ? 'text' : 'password'" [(ngModel)]="claveNuevaConfirmacion"
+                   class="form-input" placeholder="Repite la nueva contraseña" autocomplete="new-password" />
             <button type="button" class="eye-btn" (click)="toggleClaveConfirm()">
               <svg *ngIf="!showClaveConfirm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -148,6 +215,12 @@
         </button>
 
       </div>
+      <!-- /clave-card -->
+
     </div>
+    <!-- /perfil-grid -->
+
   </div>
 </div>
+
+<app-toast></app-toast>

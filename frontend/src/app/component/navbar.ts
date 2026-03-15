@@ -4,13 +4,14 @@ import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators';
 import { LogoService } from '../services/logo.service';
-import { Observable, of } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
 import { NotificacionService } from '../services/notificacion.service';
 import { AuthStateService } from '../services/auth-state.service';  // ← compañero
 import { ThemeService } from '../services/theme.service';            // ← tuyo
+import { UsuarioService } from '../services/usuario.service';        // ← foto perfil
 
 @Component({
   selector: 'app-navbar',
@@ -32,9 +33,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
   isDashboard      = false;
   showPerfilMenu   = false;
 
+  // ── Foto de perfil (reactivo) ────────────────────────────────
+  fotoPerfil: string | null = null;
+
   // ── Institución ─────────────────────────────────────────────
   appSubtitulo  = localStorage.getItem('inst_nombreInstitucion') || localStorage.getItem('inst_appName') || 'Sistema de selección docente';
   nombreCorto$: Observable<string> = of(localStorage.getItem('inst_nombreCorto') ?? '');
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private router: Router,
@@ -45,7 +51,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     public  notifService: NotificacionService,
     private authState: AuthStateService,       // ← compañero
     private cdr: ChangeDetectorRef,            // ← tuyo
-    public  themeService: ThemeService         // ← tuyo
+    public  themeService: ThemeService,        // ← tuyo
+    private usuarioService: UsuarioService     // ← foto perfil
   ) {
     this.cargarDatosUsuario();
     this.syncIsHome();
@@ -68,11 +75,22 @@ export class NavbarComponent implements OnInit, OnDestroy {
     // Refrescar desde API y actualizar nombreCorto$ dinámicamente
     this.nombreCorto$ = this.logoService.getNombreCorto();
     this.logoService.cargar();
+
+    // Suscribirse a la foto de perfil reactiva — se actualiza sin recargar página
+    this.usuarioService.fotoPerfil$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(url => {
+        this.fotoPerfil = url;
+        this.cdr.detectChanges();
+      });
+
     this.cdr.detectChanges();
   }
 
   ngOnDestroy(): void {
     this.notifService.detenerPolling();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   // ── Cierre de dropdowns al hacer click fuera ────────────────
@@ -171,6 +189,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   logout(): void {
     this.notifService.detenerPolling();
+    this.usuarioService.limpiarFoto();  // limpia foto al hacer logout
     this.authService.logoutYSalir();
   }
 
@@ -188,6 +207,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.rolUsuario       = this.authService.getRolNombre() || 'Sin rol';
     this.rolesDisponibles = this.authService.getRolesDisponibles();
     this.iniciales        = this.obtenerIniciales(this.nombreUsuario);
+    // Cargar foto desde localStorage al iniciar (por si ya existía de sesión anterior)
+    this.fotoPerfil       = localStorage.getItem('foto_perfil') || null;
   }
 
   obtenerIniciales(nombre: string): string {

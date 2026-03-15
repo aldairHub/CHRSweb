@@ -341,6 +341,16 @@ public class PostgresProcedureRepository {
                 "CALL public.sp_cambiar_estado_autoridad(?, ?)", idAutoridad, estado);
     }
 
+    /**
+     * Actualiza solo foto_perfil_url del usuario autenticado.
+     * SECURITY DEFINER en el SP permite que cualquier rol BD lo ejecute
+     * sin necesitar GRANT UPDATE directo sobre la tabla usuario.
+     */
+    public void actualizarFotoPerfil(String usuarioApp, String urlFoto) {
+        jdbcTemplate.update(
+                "CALL public.sp_actualizar_foto_perfil(?, ?)", usuarioApp, urlFoto);
+    }
+
     // Obtener módulo y opciones del usuario (llamar después del switch)
     public ModuloOpcionesDTO obtenerOpcionesUsuario(Integer idRolApp) {
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(
@@ -445,25 +455,25 @@ public class PostgresProcedureRepository {
 //            throw new RuntimeException("sp_registrar_prepostulacion no retornó datos");
 //        });
 //    }
-        // Registrar inicio de sesión
-            public Long registrarSesion(String usuarioApp, int tokenVersion,
-                                        String ip, String userAgent) {
-                return jdbcTemplate.queryForObject(
-                        "SELECT public.sp_registrar_sesion(?, ?, ?, ?)",
-                        Long.class, usuarioApp, tokenVersion, ip, userAgent);
-            }
+    // Registrar inicio de sesión
+    public Long registrarSesion(String usuarioApp, int tokenVersion,
+                                String ip, String userAgent) {
+        return jdbcTemplate.queryForObject(
+                "SELECT public.sp_registrar_sesion(?, ?, ?, ?)",
+                Long.class, usuarioApp, tokenVersion, ip, userAgent);
+    }
 
-            // Cerrar sesión por logout / force-logout
-            public void cerrarSesion(String usuarioApp, String motivo) {
-                jdbcTemplate.update(
-                        "CALL public.sp_cerrar_sesion(?, ?)", usuarioApp, motivo);
-            }
+    // Cerrar sesión por logout / force-logout
+    public void cerrarSesion(String usuarioApp, String motivo) {
+        jdbcTemplate.update(
+                "CALL public.sp_cerrar_sesion(?, ?)", usuarioApp, motivo);
+    }
 
-            // Listar sesiones activas (para el panel de auditoría)
-            public List<Map<String, Object>> listarSesionesActivas() {
-                return jdbcTemplate.queryForList(
-                        "SELECT * FROM public.v_sesiones_activas");
-            }
+    // Listar sesiones activas (para el panel de auditoría)
+    public List<Map<String, Object>> listarSesionesActivas() {
+        return jdbcTemplate.queryForList(
+                "SELECT * FROM public.v_sesiones_activas");
+    }
 
     /**
      * Re-postulación: copia el último registro RECHAZADO de esa cédula con nuevos documentos.
@@ -581,11 +591,11 @@ public class PostgresProcedureRepository {
         });
     }
     public void guardarEntrevistaDocente(Long idProceso) {
-       jdbcTemplate.execute((java.sql.Connection conn) -> {
-           var ps = conn.prepareStatement("CALL public.sp_guardar_entrevista_docente(?)");
-           ps.setLong(1, idProceso);
-           ps.execute();
-           return null;
-       });
-   }
+        jdbcTemplate.execute((java.sql.Connection conn) -> {
+            var ps = conn.prepareStatement("CALL public.sp_guardar_entrevista_docente(?)");
+            ps.setLong(1, idProceso);
+            ps.execute();
+            return null;
+        });
+    }
 }

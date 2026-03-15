@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 /**
  * Servicio de administración de usuarios y autoridades con roles_app.
  *
- * WHY: Centraliza toda la gestión de roles_app para la pantalla
+ * Centraliza toda la gestión de roles_app para la pantalla
  * "Gestión de Usuarios" (pestañas Autoridades / Usuarios).
  */
 @Service
@@ -132,6 +132,7 @@ public class UsuarioAdminService {
             dto.setIdUsuario(u.getIdUsuario());
             dto.setUsuarioApp(u.getUsuarioApp());
             dto.setUsuarioBd(u.getUsuarioBd());
+            dto.setFotoPerfil(u.getFotoPerfil());
             dto.setRolesApp(toRolAppDTOList(u.getRolesApp()));
         }
 

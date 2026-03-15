@@ -15,10 +15,11 @@ import java.util.Set;
 @Table(name = "usuario",
         uniqueConstraints = {
                 @UniqueConstraint(name = "uq_usuario_usuario_app", columnNames = "usuario_app"),
-                @UniqueConstraint(name = "uq_usuario_usuario_bd", columnNames = "usuario_bd"),
-                @UniqueConstraint(name = "uq_usuario_correo", columnNames = "correo")
+                @UniqueConstraint(name = "uq_usuario_usuario_bd",  columnNames = "usuario_bd"),
+                @UniqueConstraint(name = "uq_usuario_correo",      columnNames = "correo")
         })
 public class Usuario {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
@@ -53,6 +54,10 @@ public class Usuario {
 
     @Column(name = "token_version", nullable = false)
     private Integer tokenVersion = 1;
+
+    /** URL pública de la foto de perfil en Supabase Storage. Puede ser null. */
+    @Column(name = "foto_perfil_url")
+    private String fotoPerfil;
 
     // Relación N:N con roles de aplicación
     @ManyToMany(fetch = FetchType.LAZY)

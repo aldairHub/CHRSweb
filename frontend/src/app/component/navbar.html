@@ -152,7 +152,12 @@
 
     <!-- PERFIL CON DROPDOWN -->
     <div class="user-profile" (click)="togglePerfilMenu()">
-      <div class="avatar">{{ iniciales }}</div>
+      <!-- Avatar: foto si existe, iniciales si no -->
+      <div class="avatar avatar--foto" *ngIf="fotoPerfil">
+        <img [src]="fotoPerfil" alt="Foto de perfil" class="avatar-foto-img"
+             (error)="fotoPerfil = null" />
+      </div>
+      <div class="avatar" *ngIf="!fotoPerfil">{{ iniciales }}</div>
       <div class="user-info">
         <span class="name">{{ nombreUsuario }}</span>
         <span class="role">{{ rolUsuario }}</span>
@@ -160,7 +165,7 @@
 
       <div class="perfil-dropdown" *ngIf="showPerfilMenu" (click)="$event.stopPropagation()">
         <button class="perfil-item" (click)="irAlPerfil()">
-          Cambiar contraseña
+          Mi perfil
         </button>
 
         <ng-container *ngIf="rolesDisponibles.length > 1">

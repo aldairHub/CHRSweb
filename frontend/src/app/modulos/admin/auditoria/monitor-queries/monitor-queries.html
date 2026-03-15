@@ -162,6 +162,14 @@
                   (click)="cargar('llamadas')">
             Más frecuentes
           </button>
+          <button class="toggle-btn" [class.active]="ordenActual === 'recientes'"
+                  (click)="cargar('recientes')">
+            Más recientes
+          </button>
+          <button class="toggle-btn" [class.active]="ordenActual === 'mas_rapidas'"
+                  (click)="cargar('mas_rapidas')">
+            Más rápidas
+          </button>
         </div>
 
         <!-- Leyenda colores -->
@@ -171,6 +179,7 @@
           <span class="ley-item rojo">&#9632; &gt;100 ms</span>
         </div>
       </div>
+
 
       <!-- Tabla queries -->
       <div class="result-card">

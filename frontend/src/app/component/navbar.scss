@@ -394,3 +394,19 @@ $border:    #e2e8f0;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
   pointer-events: none;
 }
+
+/* Avatar con foto de perfil */
+.avatar--foto {
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+.avatar-foto-img {
+  width: 100%;    /* hereda 32px / 36px / tamaño que ya tenga .avatar */
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+

@@ -7,7 +7,7 @@
 //import org.springframework.security.crypto.password.PasswordEncoder;
 //import org.springframework.stereotype.Component;
 //import org.uteq.backend.service.AesCipherService;
-//import org.uteq.backend.util.CredencialesGenerator;
+//import org.uteq.backend.service.util.CredencialesGenerator;
 //
 //@Component
 //public class AdminInitializer implements ApplicationRunner {
@@ -27,7 +27,7 @@
 //            System.out.println(">>> admin ya existe, skip");
 //            return;
 //        }
-//        String claveAppPlain = CredencialesGenerator.generarClaveApp();
+//        String claveAppPlain = "admin";//CredencialesGenerator.generarClaveApp();
 //        String claveAppHash  = passwordEncoder.encode(claveAppPlain);
 //
 //        String claveBdReal   = generarClaveTemporal(16);

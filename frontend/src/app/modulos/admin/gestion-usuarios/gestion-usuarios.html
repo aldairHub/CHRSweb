@@ -10,8 +10,11 @@
         <h2>Gestión de usuarios</h2>
         <p class="page-subtitle">Administra autoridades académicas y usuarios del sistema</p>
       </div>
-      <button class="btn btn-primary" (click)="openCreate()">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+      <button class="btn btn-primary"
+              *ngIf="activeTab !== 'postulantes'"
+              (click)="openCreate()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor" width="20" height="20">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
         {{ activeTab === 'autoridades' ? 'Nueva autoridad' : 'Nuevo usuario' }}
@@ -27,6 +30,10 @@
       <button class="tab-btn" [class.active]="activeTab === 'usuarios'"
               (click)="activeTab = 'usuarios'; applyFiltersUsuarios()">
         Usuarios del sistema
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'postulantes'"
+              (click)="activeTab = 'postulantes'; loadPostulantes()">
+        Postulantes
       </button>
     </div>
 
@@ -77,6 +84,7 @@
         <table class="table">
           <thead>
           <tr>
+            <th class="th-foto">Foto</th>
             <th>Autoridad</th><th>Correo</th><th>Usuario App</th>
             <th>Roles de aplicación</th><th>Estado</th><th>Acciones</th>
           </tr>
@@ -94,7 +102,19 @@
           </tr>
         </ng-container>
           <ng-container *ngIf="!cargando">
-          <tr *ngFor="let a of autoridadesPaginadas">
+            <tr *ngFor="let a of autoridadesPaginadas">
+              <!-- NUEVA CELDA FOTO -->
+              <td class="td-foto">
+                <img *ngIf="a.fotoPerfil"
+                     [src]="a.fotoPerfil"
+                     [alt]="a.nombres"
+                     width="36" height="36"
+                     class="avatar-tabla"
+                     (error)="a.fotoPerfil = null" />
+                <div *ngIf="!a.fotoPerfil" class="avatar-tabla avatar-tabla--iniciales">
+                  {{ getIniciales(a.nombres, a.apellidos) }}
+                </div>
+              </td>
             <td><strong>{{ a.nombres }} {{ a.apellidos }}</strong></td>
             <td>{{ a.correo }}</td>
             <td>{{ a.usuarioApp }}</td>
@@ -276,7 +296,145 @@
         </div>
       </div>
     </ng-container>
+    <!-- ──PESTAÑA POSTULANTES -->
+    <ng-container *ngIf="activeTab === 'postulantes'">
 
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <h3>Total Postulantes</h3>
+            <div class="stat-value">{{ postulantes.length }}</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon success">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <h3>Activos</h3>
+            <div class="stat-value">{{ postulantesActivos }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filters-section">
+        <div class="search-box">
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input type="text" class="form-input"
+                 placeholder="Buscar por nombre, identificación o correo..."
+                 [(ngModel)]="searchPostulante" (input)="applyFiltersPostulantes()" />
+        </div>
+        <select class="form-select" [(ngModel)]="filterEstadoPostulante" (change)="applyFiltersPostulantes()">
+          <option value="">Todos los estados</option>
+          <option value="true">Activos</option>
+          <option value="false">Inactivos</option>
+        </select>
+      </div>
+
+      <!-- Tabla -->
+      <div class="table-container">
+        <table class="table">
+          <thead>
+          <tr>
+            <th class="th-foto">Foto</th>
+            <th>Postulante</th>
+            <th>Identificación</th>
+            <th>Correo</th>
+            <th>Usuario App</th>
+            <th>Estado</th>
+          </tr>
+          </thead>
+          <tbody>
+
+          <!-- Skeleton loader -->
+          <ng-container *ngIf="cargandoPostulantes">
+            <tr class="skeleton-row-tr" *ngFor="let s of [1,2,3,4,5]">
+              <td><div class="skeleton-cell skeleton-cell--avatar"></div></td>
+              <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+              <td><div class="skeleton-cell skeleton-cell--lg"></div></td>
+              <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+              <td><div class="skeleton-cell skeleton-cell--sm"></div></td>
+            </tr>
+          </ng-container>
+
+          <ng-container *ngIf="!cargandoPostulantes">
+            <tr *ngFor="let p of postulantesPaginados">
+              <!-- NUEVA CELDA FOTO -->
+              <td class="td-foto">
+                <img *ngIf="p.fotoPerfil"
+                     [src]="p.fotoPerfil"
+                     [alt]="p.nombres"
+                     width="36" height="36"
+                     class="avatar-tabla"
+                     (error)="p.fotoPerfil = null" />
+                <div *ngIf="!p.fotoPerfil" class="avatar-tabla avatar-tabla--iniciales">
+                  {{ getIniciales(p.nombres, p.apellidos) }}
+                </div>
+              </td>
+              <td><strong>{{ p.nombres }} {{ p.apellidos }}</strong></td>
+              <td>{{ p.identificacion }}</td>
+              <td>{{ p.correo }}</td>
+              <td>{{ p.usuarioApp || '—' }}</td>
+              <td>
+              <span class="badge" [ngClass]="p.activo ? 'success' : 'danger'">
+                <span class="status-dot"></span>{{ p.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+              </td>
+            </tr>
+
+            <tr *ngIf="postulantesPaginados.length === 0">
+              <td colspan="5" class="empty-state">
+                <div class="empty-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                  </svg>
+                </div>
+                <p>No se encontraron postulantes</p>
+                <small>Intenta ajustar los filtros de búsqueda</small>
+              </td>
+            </tr>
+          </ng-container>
+
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div class="pagination" *ngIf="postulantesFiltrados.length > 0">
+        <div class="pagination-info">
+          Mostrando {{ (pagePostulante-1)*pageSize+1 }} – {{ Math.min(pagePostulante*pageSize, postulantesFiltrados.length) }}
+          de {{ postulantesFiltrados.length }} postulantes
+        </div>
+        <div class="pagination-controls">
+          <button class="page-btn" [disabled]="pagePostulante===1" (click)="pagePostulante=pagePostulante-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <button *ngFor="let p of getPageNums(totalPagesPostulante)" class="page-btn"
+                  [class.active]="p===pagePostulante" (click)="pagePostulante=p">{{ p }}</button>
+          <button class="page-btn" [disabled]="pagePostulante===totalPagesPostulante" (click)="pagePostulante=pagePostulante+1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+    </ng-container>
   </div>
 </div>
 

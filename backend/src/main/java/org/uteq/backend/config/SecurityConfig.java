@@ -34,6 +34,7 @@ public class SecurityConfig {
                         // Públicos
                         .requestMatchers(
                                 "/api/usuarios",
+                                "/api/usuarios/**",
                                 "/api/auth/login",
                                 "/api/registro/**",
                                 "/api/prepostulacion/**",

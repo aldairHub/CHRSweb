@@ -19,6 +19,7 @@ public class AutoridadConRolesDTO {
     private Long idUsuario;
     private String usuarioApp;
     private String usuarioBd;
+    private String fotoPerfil;
 
     /** Roles de aplicación asignados al usuario de la autoridad. */
     private List<RolAppDTO> rolesApp;

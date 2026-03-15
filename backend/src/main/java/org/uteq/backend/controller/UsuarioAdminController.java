@@ -5,13 +5,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.uteq.backend.dto.ActualizarRolesAppDTO;
 import org.uteq.backend.dto.AutoridadConRolesDTO;
+import org.uteq.backend.dto.PostulanteAdminDTO;
 import org.uteq.backend.dto.RegistroUsuarioDTO;
 import org.uteq.backend.dto.UsuarioConRolesDTO;
+import org.uteq.backend.entity.Postulante;
+import org.uteq.backend.repository.PostulanteRepository;
 import org.uteq.backend.service.AutoridadAcademicaService;
 import org.uteq.backend.service.DbRoleSyncService;
 import org.uteq.backend.service.UsuarioAdminService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Controlador de administración de usuarios (y autoridades con sus roles_app).
@@ -24,29 +28,30 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class UsuarioAdminController {
 
-    private final UsuarioAdminService usuarioAdminService;
-    private final AutoridadAcademicaService autoridadAcademicaService;
-    private final DbRoleSyncService dbRoleSyncService;
+    private final UsuarioAdminService        usuarioAdminService;
+    private final AutoridadAcademicaService  autoridadAcademicaService;
+    private final DbRoleSyncService          dbRoleSyncService;
+    private final PostulanteRepository       postulanteRepository;
 
     public UsuarioAdminController(UsuarioAdminService usuarioAdminService,
                                   AutoridadAcademicaService autoridadAcademicaService,
-                                  DbRoleSyncService dbRoleSyncService) {
-        this.usuarioAdminService = usuarioAdminService;
+                                  DbRoleSyncService dbRoleSyncService,
+                                  PostulanteRepository postulanteRepository) {
+        this.usuarioAdminService       = usuarioAdminService;
         this.autoridadAcademicaService = autoridadAcademicaService;
-        this.dbRoleSyncService = dbRoleSyncService;
+        this.dbRoleSyncService         = dbRoleSyncService;
+        this.postulanteRepository      = postulanteRepository;
     }
 
     // ─── Pestaña USUARIOS ──────────────────────────────────────
 
-    /** Lista todos los usuarios con sus roles_app (excluye los que son autoridades si quieres). */
+    /** Lista todos los usuarios con sus roles_app. */
     @GetMapping("/usuarios")
     public List<UsuarioConRolesDTO> listarUsuarios() {
         return usuarioAdminService.listarUsuariosConRoles();
     }
 
-    /**
-     * Crea un usuario simple desde el panel de administración.
-     */
+    /** Crea un usuario simple desde el panel de administración. */
     @PostMapping("/usuarios")
     public ResponseEntity<?> crearUsuario(@RequestBody RegistroUsuarioDTO dto) {
         try {
@@ -72,20 +77,19 @@ public class UsuarioAdminController {
             @PathVariable Long id,
             @RequestBody ActualizarRolesAppDTO dto) {
         UsuarioConRolesDTO resultado = usuarioAdminService.actualizarRolesUsuario(id, dto.getIdsRolApp());
-        // El @Transactional del service ya hizo commit aquí — el SP lee datos correctos
         dbRoleSyncService.syncRolesUsuarioBd(id.intValue(), true);
         return ResponseEntity.ok(resultado);
     }
 
     // ─── Pestaña AUTORIDADES ───────────────────────────────────
 
-    /** Lista autoridades académicas con sus roles_app (del usuario relacionado). */
+    /** Lista autoridades académicas con sus roles_app. */
     @GetMapping("/autoridades")
     public List<AutoridadConRolesDTO> listarAutoridades() {
         return usuarioAdminService.listarAutoridadesConRoles();
     }
 
-    /** Activa / desactiva una autoridad (campo estado en autoridad_academica). */
+    /** Activa / desactiva una autoridad. */
     @PatchMapping("/autoridades/{id}/estado")
     public ResponseEntity<?> cambiarEstadoAutoridad(
             @PathVariable Long id,
@@ -100,8 +104,33 @@ public class UsuarioAdminController {
             @PathVariable Long id,
             @RequestBody ActualizarRolesAppDTO dto) {
         AutoridadConRolesDTO resultado = usuarioAdminService.actualizarRolesAutoridad(id, dto.getIdsRolApp());
-        // resultado.getIdUsuario() viene del DTO — es el id_usuario de la tabla usuario
         dbRoleSyncService.syncRolesUsuarioBd(resultado.getIdUsuario().intValue(), true);
+        return ResponseEntity.ok(resultado);
+    }
+
+    // ─── Pestaña POSTULANTES (solo lectura) ────────────────────
+
+    /**
+     * GET /api/admin/postulantes
+     * Lista todos los postulantes con sus datos básicos y el usuario asociado.
+     */
+    @GetMapping("/postulantes")
+    public ResponseEntity<List<PostulanteAdminDTO>> listarPostulantes() {
+        List<Postulante> postulantes = postulanteRepository.findAll();
+
+        List<PostulanteAdminDTO> resultado = postulantes.stream()
+                .map(p -> new PostulanteAdminDTO(
+                        p.getIdPostulante(),
+                        p.getNombresPostulante(),
+                        p.getApellidosPostulante(),
+                        p.getIdentificacion(),
+                        p.getCorreoPostulante(),
+                        p.getUsuario() != null ? p.getUsuario().getUsuarioApp() : null,
+                        p.getUsuario() != null ? p.getUsuario().getActivo()     : null,
+                        p.getUsuario() != null ? p.getUsuario().getFotoPerfil() : null
+                ))
+                .collect(Collectors.toList());
+
         return ResponseEntity.ok(resultado);
     }
 }
