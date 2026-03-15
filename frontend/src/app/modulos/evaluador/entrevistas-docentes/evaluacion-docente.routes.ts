@@ -1,9 +1,11 @@
 // evaluacion-docente.routes.ts
 // Rutas del módulo entrevistas-docentes
 
+// evaluacion-docente.routes.ts
 import { Routes } from '@angular/router';
 
 export const EVALUACION_DOCENTE_ROUTES: Routes = [
+  // Lista de convocatorias — punto de entrada
   {
     path: '',
     title: 'SSDC - Entrevistas Docentes',
@@ -11,13 +13,25 @@ export const EVALUACION_DOCENTE_ROUTES: Routes = [
       import('./entrevistas-lista/entrevistas-lista.component')
         .then(m => m.EntrevistasListaComponent)
   },
+
+  // Dashboard por solicitud
+  // {
+  //   path: 'dashboard/:idSolicitud',
+  //   title: 'SSDC - Dashboard Entrevistas',
+  //   loadComponent: () =>
+  //     import('./dashboard/dashboard.component')
+  //       .then(m => m.EvaluacionDashboardComponent)
+  // },
+
   {
     path: 'dashboard',
-    title: 'SSDC - Dashboard Evaluación',
+    title: 'SSDC - Dashboard Entrevistas',
     loadComponent: () =>
       import('./dashboard/dashboard.component')
         .then(m => m.EvaluacionDashboardComponent)
   },
+
+  // Config global (sin idSolicitud)
   {
     path: 'fases',
     loadComponent: () =>
@@ -42,6 +56,8 @@ export const EVALUACION_DOCENTE_ROUTES: Routes = [
       import('./config-criterios/config-criterios.component')
         .then(m => m.ConfigCriteriosComponent)
   },
+
+  // Postulantes por solicitud
   {
     path: 'postulantes/:idSolicitud',
     title: 'SSDC - Postulantes',
@@ -55,12 +71,8 @@ export const EVALUACION_DOCENTE_ROUTES: Routes = [
       import('./postulantes/postulantes.component')
         .then(m => m.PostulantesComponent)
   },
-  {
-    path: 'postulantes/:id',
-    loadComponent: () =>
-      import('./postulantes/postulantes.component')
-        .then(m => m.PostulantesComponent)
-  },
+
+  // Programar reunión
   {
     path: 'programar-reunion',
     loadComponent: () =>
@@ -79,6 +91,8 @@ export const EVALUACION_DOCENTE_ROUTES: Routes = [
       import('./programar-reunion/programar-reunion.component')
         .then(m => m.ProgramarReunionComponent)
   },
+
+  // Evaluación
   {
     path: 'evaluacion',
     redirectTo: 'postulantes',
@@ -90,6 +104,8 @@ export const EVALUACION_DOCENTE_ROUTES: Routes = [
       import('./evaluacion/evaluacion.component')
         .then(m => m.EvaluacionComponent)
   },
+
+  // Resultados
   {
     path: 'resultados',
     loadComponent: () =>

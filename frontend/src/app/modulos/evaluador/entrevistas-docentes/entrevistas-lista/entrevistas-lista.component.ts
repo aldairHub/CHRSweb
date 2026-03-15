@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { NavbarComponent } from '../../../../component/navbar';
+import { FooterComponent } from '../../../../component/footer';
+import { EntrevistasEstadoService } from '../../../../services/entrevistas/entrevistas-estado.service';
 
 export interface SolicitudEntrevista {
   idSolicitud: number;
@@ -37,10 +40,12 @@ export class EntrevistasListaComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private estado: EntrevistasEstadoService
   ) {}
 
   ngOnInit(): void {
+    this.estado.limpiar();
     this.cargarConvocatorias();
   }
 
@@ -76,12 +81,12 @@ export class EntrevistasListaComponent implements OnInit {
 
       const conv = map.get(row.idConvocatoria)!;
       conv.solicitudes.push({
-        idSolicitud:       row.idSolicitud,
-        materia:           row.materia,
-        totalCandidatos:   row.totalCandidatos,
+        idSolicitud:         row.idSolicitud,
+        materia:             row.materia,
+        totalCandidatos:     row.totalCandidatos,
         candidatosConMatriz: row.candidatosConMatriz,
-        disponible:        row.disponible,
-        mensajeBloqueo:    row.mensajeBloqueo
+        disponible:          row.disponible,
+        mensajeBloqueo:      row.mensajeBloqueo
       });
     }
 
@@ -99,7 +104,8 @@ export class EntrevistasListaComponent implements OnInit {
 
   abrirEntrevistas(sol: SolicitudEntrevista): void {
     if (!sol.disponible) return;
-    this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', sol.idSolicitud]);
+    this.estado.setIdSolicitud(sol.idSolicitud);
+    this.router.navigate(['/evaluador/entrevistas-docentes/dashboard']);
   }
 
   algunaDisponible(conv: ConvocatoriaEntrevistaAgrupada): boolean {
