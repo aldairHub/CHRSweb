@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RouterModule } from '@angular/router';
 import { PostulantesService } from '../../../../services/entrevistas/postulantes.service';
+import { EntrevistasEstadoService } from '../../../../services/entrevistas/entrevistas-estado.service';
 import {
   PostulanteResumen, PostulanteDetalle,
   FaseProcesoDetalle, HistorialAccion
@@ -33,6 +34,8 @@ export class PostulantesComponent implements OnInit {
   pageSize = 10;
   Math     = Math;
 
+  idSolicitud = 0;
+
   get paginados(): PostulanteResumen[] {
     const s = (this.page - 1) * this.pageSize;
     return this.postulanteFiltrados.slice(s, s + this.pageSize);
@@ -52,33 +55,47 @@ export class PostulantesComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
-    private postulantesService: PostulantesService
+    private postulantesService: PostulantesService,
+    private estado: EntrevistasEstadoService
   ) {}
 
   ngOnInit(): void {
     this.searchSubject.pipe(debounceTime(350)).subscribe((q: string) => this.buscarBackend(q));
 
     this.route.params.subscribe(params => {
-      if (params['id']) {
-        this.cargarListado().then(() => {
-          const p = this.postulantes.find(x => x.idProceso === +params['id']);
-          if (p) this.verDetalle(p);
-        });
+      if (params['idSolicitud']) {
+        this.idSolicitud = +params['idSolicitud'];
+        this.estado.setIdSolicitud(this.idSolicitud);
       } else {
-        this.cargarListado();
+        const id = this.estado.getIdSolicitud();
+        if (id) this.idSolicitud = id;
       }
+      this.cargarListado();
     });
+  }
+
+  // Siempre navega con this.idSolicitud que está en el componente
+  navegarPostulantes(): void {
+    if (this.idSolicitud) {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', this.idSolicitud]);
+    } else {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']);
+    }
+  }
+
+  esRutaActiva(segmento: string): boolean {
+    return this.router.url.includes(segmento);
   }
 
   cargarListado(estado?: string): Promise<void> {
     this.isLoading = true; this.error = '';
     return new Promise(resolve => {
-      this.postulantesService.listar(estado).subscribe({
+      this.postulantesService.listar(estado, undefined, this.idSolicitud || undefined).subscribe({
         next: (data: PostulanteResumen[]) => {
           this.postulantes = data; this.postulanteFiltrados = [...data];
           this.isLoading = false; this.cdr.detectChanges(); resolve();
         },
-        error: (err: unknown) => {
+        error: () => {
           this.isLoading = false; this.cdr.detectChanges(); resolve();
         }
       });
@@ -102,7 +119,7 @@ export class PostulantesComponent implements OnInit {
   }
 
   private buscarBackend(q: string): void {
-    this.postulantesService.listar(this.filterEstado || undefined, q).subscribe({
+    this.postulantesService.listar(this.filterEstado || undefined, q, this.idSolicitud || undefined).subscribe({
       next: (data: PostulanteResumen[]) => { this.postulanteFiltrados = data; this.page = 1; this.cdr.detectChanges(); }
     });
   }
@@ -116,9 +133,7 @@ export class PostulantesComponent implements OnInit {
 
     this.postulantesService.obtenerDetalle(p.idProceso).subscribe({
       next: (d: PostulanteDetalle) => { this.detalleCompleto = d; this.isLoadingDetalle = false; this.cdr.detectChanges(); },
-      error: (err: unknown) => {
-        alert('Error al cargar el detalle.'); this.cdr.detectChanges();
-      }
+      error: () => { alert('Error al cargar el detalle.'); this.cdr.detectChanges(); }
     });
   }
 
@@ -129,16 +144,14 @@ export class PostulantesComponent implements OnInit {
   programarReunion(idProceso?: number, idFase?: number): void {
     const base = '/evaluador/entrevistas-docentes/programar-reunion';
     if (idProceso && idFase) {
-      // Desde botón de fase específica: lleva idProceso e idFase
       this.router.navigate([base, idProceso, idFase]);
     } else if (idProceso) {
-      // Desde botón del header: solo idProceso, sin idFase
       this.router.navigate([base, idProceso]);
     } else {
-      // Sin contexto: va a programar sin parámetros
       this.router.navigate([base]);
     }
   }
+
   irEvaluar(idReunion: number): void {
     this.router.navigate(['/evaluador/entrevistas-docentes/evaluacion', idReunion]);
   }

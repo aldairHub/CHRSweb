@@ -1,11 +1,10 @@
-// entrevistas-docentes/config-fases/config-fases.component.ts
-
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { FasesService } from '../../../../services/entrevistas/config-fases.service';
+import { EntrevistasEstadoService } from '../../../../services/entrevistas/entrevistas-estado.service';
 import { FaseRequest, FaseResponse } from '../../../../models/entrevistas-models';
 
 interface EvaluadorUsuario {
@@ -47,9 +46,11 @@ export class ConfigFasesComponent implements OnInit {
   evaluadoresOpciones: EvaluadorUsuario[] = [];
 
   constructor(
+    private router: Router,
     private cdr: ChangeDetectorRef,
     private fasesService: FasesService,
-    private http: HttpClient
+    private http: HttpClient,
+    private estado: EntrevistasEstadoService
   ) {}
 
   ngOnInit(): void {
@@ -57,30 +58,33 @@ export class ConfigFasesComponent implements OnInit {
     this.cargarEvaluadores();
   }
 
+  navegarPostulantes(): void {
+    const id = this.estado.getIdSolicitud();
+    if (id) {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', id]);
+    } else {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']);
+    }
+  }
+
+  esRutaActiva(segmento: string): boolean {
+    return this.router.url.includes(segmento);
+  }
+
   cargarEvaluadores(): void {
     this.http.get<EvaluadorUsuario[]>('http://localhost:8080/api/evaluacion/evaluadores')
       .subscribe({
-        next: (data) => {
-          this.evaluadoresOpciones = data;
-          this.cdr.detectChanges();
-        },
-        error: (err) => { }  });
+        next: (data) => { this.evaluadoresOpciones = data; this.cdr.detectChanges(); },
+        error: () => {}
+      });
   }
 
   cargarFases(): void {
     this.isLoading = true;
     this.error = '';
     this.fasesService.listar().subscribe({
-      next: (data) => {
-        this.fases     = data;
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.error     = 'No se pudieron cargar las fases.';
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      }
+      next: (data) => { this.fases = data; this.isLoading = false; this.cdr.detectChanges(); },
+      error: () => { this.error = 'No se pudieron cargar las fases.'; this.isLoading = false; this.cdr.detectChanges(); }
     });
   }
 
@@ -119,7 +123,6 @@ export class ConfigFasesComponent implements OnInit {
   }
 
   save(): void {
-
     if (!this.form.nombre?.trim()) { alert('El nombre es obligatorio.'); return; }
     if (!this.form.peso || this.form.peso < 1) { alert('El peso debe ser mayor a 0.'); return; }
 
@@ -136,11 +139,7 @@ export class ConfigFasesComponent implements OnInit {
 
     op$.subscribe({
       next: () => { this.isSaving = false; this.closeModal(); this.cargarFases(); },
-      error: (err) => {
-        alert('Error al guardar la fase.');
-        this.isSaving = false;
-        this.cdr.detectChanges();
-      }
+      error: () => { alert('Error al guardar la fase.'); this.isSaving = false; this.cdr.detectChanges(); }
     });
   }
 

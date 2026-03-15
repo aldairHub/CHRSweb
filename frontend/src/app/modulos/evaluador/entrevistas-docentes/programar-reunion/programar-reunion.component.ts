@@ -1,5 +1,3 @@
-// entrevistas-docentes/programar-reunion/programar-reunion.component.ts
-
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,6 +7,7 @@ import { HttpClient } from '@angular/common/http';
 import { ProgramarReunionService } from '../../../../services/entrevistas/programar-reunion.service';
 import { PostulantesService } from '../../../../services/entrevistas/postulantes.service';
 import { FasesService } from '../../../../services/entrevistas/config-fases.service';
+import { EntrevistasEstadoService } from '../../../../services/entrevistas/entrevistas-estado.service';
 import { ReunionRequest, PostulanteResumen, FaseResponse } from '../../../../models/entrevistas-models';
 import { forkJoin } from 'rxjs';
 
@@ -73,7 +72,8 @@ export class ProgramarReunionComponent implements OnInit {
     private http: HttpClient,
     private reunionService: ProgramarReunionService,
     private postulantesService: PostulantesService,
-    private fasesService: FasesService
+    private fasesService: FasesService,
+    private estado: EntrevistasEstadoService
   ) {}
 
   ngOnInit(): void {
@@ -84,22 +84,34 @@ export class ProgramarReunionComponent implements OnInit {
     this.cargarDatos();
   }
 
+  navegarPostulantes(): void {
+    const id = this.estado.getIdSolicitud();
+    if (id) {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', id]);
+    } else {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']);
+    }
+  }
+
+  esRutaActiva(segmento: string): boolean {
+    return this.router.url.includes(segmento);
+  }
+
   cargarDatos(): void {
     this.isLoading = true;
+    const idSolicitud = this.estado.getIdSolicitud();
     forkJoin({
-      postulantes: this.postulantesService.listar(),
+      postulantes: this.postulantesService.listar(undefined, undefined, idSolicitud || undefined),
       fases:       this.fasesService.listar()
     }).subscribe({
       next: ({ postulantes, fases }) => {
         this.postulantes = postulantes;
         this.fases       = fases.filter(f => f.estado && f.tipo !== 'automatica' && f.tipo !== 'decision');
         this.isLoading   = false;
-        // Si viene idFase por params, cargar evaluadores automáticamente
         if (this.form.idFase) this.onFaseChange();
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error(err);
+      error: () => {
         this.error     = 'No se pudieron cargar los datos.';
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -108,29 +120,20 @@ export class ProgramarReunionComponent implements OnInit {
   }
 
   onFaseChange(): void {
-    if (!this.form.idFase) {
-      this.evaluadores = [];
-      return;
-    }
+    if (!this.form.idFase) { this.evaluadores = []; return; }
     this.isLoadingEvaluadores = true;
     this.evaluadores = [];
     this.http.get<any[]>(`http://localhost:8080/api/evaluacion/evaluadores/por-fase/${this.form.idFase}`)
       .subscribe({
         next: (data) => {
           this.evaluadores = data.map(e => ({
-            id:          e.id_usuario,
-            nombre:      e.nombre_completo,
-            usuario_app: e.usuario_app,
-            seleccionado: false
+            id: e.id_usuario, nombre: e.nombre_completo,
+            usuario_app: e.usuario_app, seleccionado: false
           }));
           this.isLoadingEvaluadores = false;
           this.cdr.detectChanges();
         },
-        error: (err) => {
-          console.error('Error cargando evaluadores:', err);
-          this.isLoadingEvaluadores = false;
-          this.cdr.detectChanges();
-        }
+        error: () => { this.isLoadingEvaluadores = false; this.cdr.detectChanges(); }
       });
   }
 
@@ -143,7 +146,6 @@ export class ProgramarReunionComponent implements OnInit {
     if (!this.form.hora)       { alert('La hora es obligatoria.'); return; }
 
     this.isSaving = true;
-
     const payload: ReunionRequest = {
       idProceso:       this.form.idProceso,
       idFase:          this.form.idFase,
@@ -161,7 +163,14 @@ export class ProgramarReunionComponent implements OnInit {
         this.isSaving = false;
         this.saved    = true;
         this.cdr.detectChanges();
-        setTimeout(() => this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']), 1500);
+        const id = this.estado.getIdSolicitud();
+        setTimeout(() => {
+          if (id) {
+            this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', id]);
+          } else {
+            this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']);
+          }
+        }, 1500);
       },
       error: (err) => {
         alert(err?.error?.mensaje || 'Error al programar la reunión.');
@@ -172,6 +181,11 @@ export class ProgramarReunionComponent implements OnInit {
   }
 
   cancelar(): void {
-    this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']);
+    const id = this.estado.getIdSolicitud();
+    if (id) {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', id]);
+    } else {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']);
+    }
   }
 }

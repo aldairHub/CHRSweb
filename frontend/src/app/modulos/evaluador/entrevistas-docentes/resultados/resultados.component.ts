@@ -1,5 +1,3 @@
-// entrevistas-docentes/resultados/resultados.component.ts
-
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { RouterModule } from '@angular/router';
 import { ResultadosService } from '../../../../services/entrevistas/resultados.service';
 import { PostulantesService } from '../../../../services/entrevistas/postulantes.service';
+import { EntrevistasEstadoService } from '../../../../services/entrevistas/entrevistas-estado.service';
 import { PostulanteResumen, ResultadoProceso, ResultadoFase, DecisionFinalRequest } from '../../../../models/entrevistas-models';
 
 @Component({
@@ -51,11 +50,13 @@ export class ResultadosComponent implements OnInit {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private resultadosService: ResultadosService,
-    private postulantesService: PostulantesService
+    private postulantesService: PostulantesService,
+    private estado: EntrevistasEstadoService
   ) {}
 
   ngOnInit(): void {
-    this.postulantesService.listar().subscribe({
+    const idSolicitud = this.estado.getIdSolicitud();
+    this.postulantesService.listar(undefined, undefined, idSolicitud || undefined).subscribe({
       next: (data: PostulanteResumen[]) => {
         this.postulantes = data;
         this.isLoading   = false;
@@ -69,10 +70,21 @@ export class ResultadosComponent implements OnInit {
         });
         this.cdr.detectChanges();
       },
-      error: (err: unknown) => {
-        this.isLoading = false; this.cdr.detectChanges();
-      }
+      error: () => { this.isLoading = false; this.cdr.detectChanges(); }
     });
+  }
+
+  navegarPostulantes(): void {
+    const id = this.estado.getIdSolicitud();
+    if (id) {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', id]);
+    } else {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']);
+    }
+  }
+
+  esRutaActiva(segmento: string): boolean {
+    return this.router.url.includes(segmento);
   }
 
   cargarResultados(): void {
@@ -88,8 +100,7 @@ export class ResultadosComponent implements OnInit {
         if (data.justificacionDecision) this.justificacion = data.justificacionDecision;
         this.isLoadingResultado = false; this.cdr.detectChanges();
       },
-      error: (err: unknown) => {
-      }
+      error: () => {}
     });
   }
 
@@ -115,9 +126,7 @@ export class ResultadosComponent implements OnInit {
         this.resultado = data; this.isSaving = false;
         alert('✅ Decisión final guardada correctamente.'); this.cdr.detectChanges();
       },
-      error: (err: unknown) => {
-        this.isSaving = false; this.cdr.detectChanges();
-      }
+      error: () => { this.isSaving = false; this.cdr.detectChanges(); }
     });
   }
 

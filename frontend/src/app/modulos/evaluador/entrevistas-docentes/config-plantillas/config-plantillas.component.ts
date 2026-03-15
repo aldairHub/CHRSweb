@@ -1,5 +1,3 @@
-// entrevistas-docentes/config-plantillas/config-plantillas.component.ts
-
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,6 +5,7 @@ import { Router } from '@angular/router';
 import { RouterModule } from '@angular/router';
 import { ConfigPlantillasService } from '../../../../services/entrevistas/config-plantillas.service';
 import { FasesService } from '../../../../services/entrevistas/config-fases.service';
+import { EntrevistasEstadoService } from '../../../../services/entrevistas/entrevistas-estado.service';
 import { PlantillaRequest, PlantillaResponse, FaseResponse } from '../../../../models/entrevistas-models';
 import { forkJoin } from 'rxjs';
 
@@ -34,10 +33,24 @@ export class ConfigPlantillasComponent implements OnInit {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private plantillasService: ConfigPlantillasService,
-    private fasesService: FasesService
+    private fasesService: FasesService,
+    private estado: EntrevistasEstadoService
   ) {}
 
   ngOnInit(): void { this.cargarDatos(); }
+
+  navegarPostulantes(): void {
+    const id = this.estado.getIdSolicitud();
+    if (id) {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', id]);
+    } else {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']);
+    }
+  }
+
+  esRutaActiva(segmento: string): boolean {
+    return this.router.url.includes(segmento);
+  }
 
   cargarDatos(): void {
     this.isLoading = true;
@@ -47,12 +60,12 @@ export class ConfigPlantillasComponent implements OnInit {
       fases:      this.fasesService.listar()
     }).subscribe({
       next: ({ plantillas, fases }) => {
-        this.plantillas      = plantillas;
+        this.plantillas       = plantillas;
         this.fasesDisponibles = fases.filter(f => f.estado);
-        this.isLoading       = false;
+        this.isLoading        = false;
         this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: () => {
         this.error     = 'No se pudieron cargar los datos.';
         this.isLoading = false;
         this.cdr.detectChanges();

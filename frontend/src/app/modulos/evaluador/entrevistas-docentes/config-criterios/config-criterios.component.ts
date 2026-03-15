@@ -1,10 +1,11 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { RouterModule } from '@angular/router';
 import { ConfigCriteriosService } from '../../../../services/entrevistas/config-criterios.service';
 import { ConfigPlantillasService } from '../../../../services/entrevistas/config-plantillas.service';
+import { EntrevistasEstadoService } from '../../../../services/entrevistas/entrevistas-estado.service';
 import { CriterioRequest, CriterioResponse } from '../../../../models/entrevistas-models';
 
 @Component({
@@ -39,9 +40,11 @@ export class ConfigCriteriosComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private cdr: ChangeDetectorRef,
     private criteriosService: ConfigCriteriosService,
-    private plantillasService: ConfigPlantillasService
+    private plantillasService: ConfigPlantillasService,
+    private estado: EntrevistasEstadoService
   ) {}
 
   ngOnInit(): void {
@@ -55,17 +58,31 @@ export class ConfigCriteriosComponent implements OnInit {
     });
   }
 
+  navegarPostulantes(): void {
+    const id = this.estado.getIdSolicitud();
+    if (id) {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', id]);
+    } else {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']);
+    }
+  }
+
+  esRutaActiva(segmento: string): boolean {
+    return this.router.url.includes(segmento);
+  }
+
   cargarDatos(): void {
     this.isLoading = true;
     this.error = '';
 
     this.plantillasService.obtener(this.idPlantilla).subscribe({
       next: (p) => { this.nombrePlantilla = `${p.nombre} (${p.codigo})`; this.cdr.detectChanges(); },
-      error: (err) => { }  });
+      error: () => {}
+    });
 
     this.criteriosService.listarPorPlantilla(this.idPlantilla).subscribe({
       next: (data) => { this.criterios = data; this.isLoading = false; this.cdr.detectChanges(); },
-      error: (err) => {
+      error: () => {
         this.error = 'No se pudieron cargar los criterios.';
         this.isLoading = false;
         this.cdr.detectChanges();

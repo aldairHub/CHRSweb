@@ -1,9 +1,10 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DashboardService } from '../../../../services/entrevistas/dashboard.service';
 import { PostulantesService } from '../../../../services/entrevistas/postulantes.service';
 import { ReunionesService } from '../../../../services/entrevistas/reuniones.service';
+import { EntrevistasEstadoService } from '../../../../services/entrevistas/entrevistas-estado.service';
 import { DashboardStats, PostulanteResumen, ReunionResumen } from '../../../../models/entrevistas-models';
 import { forkJoin } from 'rxjs';
 
@@ -28,15 +29,16 @@ export class EvaluacionDashboardComponent implements OnInit {
   isLoading = true;
   error = '';
 
-  // Mapa idProceso → próxima reunión (para mostrar en la tabla)
   private reunionesPorProceso = new Map<number, ReunionResumen>();
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
     private dashboardService: DashboardService,
     private postulantesService: PostulantesService,
-    private reunionesService: ReunionesService
+    private reunionesService: ReunionesService,
+    private estado: EntrevistasEstadoService
   ) {}
 
   ngOnInit(): void {
@@ -46,9 +48,12 @@ export class EvaluacionDashboardComponent implements OnInit {
   cargarDatos(): void {
     this.isLoading = true;
     this.error = '';
+
+    const idSolicitud = this.estado.getIdSolicitud() || undefined;
+
     forkJoin({
       stats:       this.dashboardService.obtenerStats(),
-      postulantes: this.postulantesService.listar('en_proceso'),
+      postulantes: this.postulantesService.listar('en_proceso', undefined, idSolicitud),
       reuniones:   this.reunionesService.listarProgramadas()
     }).subscribe({
       next: ({ stats, postulantes, reuniones }) => {
@@ -56,7 +61,6 @@ export class EvaluacionDashboardComponent implements OnInit {
         this.postulantesRecientes = postulantes.slice(0, 5);
         this.reunionesProximas    = reuniones.slice(0, 5);
 
-        // Mapear reuniones por proceso para consulta rápida en la tabla
         this.reunionesPorProceso.clear();
         reuniones.forEach(r => {
           if (r.idProceso && !this.reunionesPorProceso.has(r.idProceso)) {
@@ -67,7 +71,7 @@ export class EvaluacionDashboardComponent implements OnInit {
         this.isLoading = false;
         this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: () => {
         this.error     = 'No se pudo cargar la información. Intente nuevamente.';
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -75,19 +79,32 @@ export class EvaluacionDashboardComponent implements OnInit {
     });
   }
 
-  navegarPostulante(idProceso: number): void {
-    this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', idProceso]);
+  navegarPostulantes(): void {
+    const id = this.estado.getIdSolicitud();
+    if (id) {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', id]);
+    } else {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']);
+    }
   }
 
-  navegarPostulantes(): void {
-    this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']);
+  navegarPostulante(idProceso: number): void {
+    const id = this.estado.getIdSolicitud();
+    if (id) {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', id]);
+    } else {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']);
+    }
+  }
+
+  esRutaActiva(segmento: string): boolean {
+    return this.router.url.includes(segmento);
   }
 
   getNombreCompleto(p: PostulanteResumen): string {
     return `${p.nombres} ${p.apellidos}`;
   }
 
-  /** Devuelve "fecha hora" de la próxima reunión del postulante, o null si no tiene */
   getProximaReunion(p: PostulanteResumen): string | null {
     const r = this.reunionesPorProceso.get(p.idProceso);
     if (!r) return null;

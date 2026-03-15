@@ -27,9 +27,15 @@ export const AuthGuard: CanActivateFn = (route, state) => {
   if (moduloRuta) {
     const raizModulo   = '/' + moduloRuta.replace(/^\//, '');
     const urlSinParams = state.url.split('?')[0];
+    console.log('=== AUTH GUARD DEBUG ===');
+    console.log('moduloRuta:', moduloRuta);
+    console.log('raizModulo:', raizModulo);
+    console.log('urlSinParams:', urlSinParams);
+    console.log('startsWith:', urlSinParams.startsWith(raizModulo + '/'));
     if (urlSinParams === raizModulo ||
-        urlSinParams === raizModulo + '/' ||
-        urlSinParams.startsWith(raizModulo + '/')) {
+      urlSinParams === raizModulo + '/' ||
+      urlSinParams.startsWith(raizModulo + '/') ||
+      urlSinParams.startsWith(raizModulo)) {  // ← agregar esta línea
       return true;
     }
   }

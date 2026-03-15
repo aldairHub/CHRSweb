@@ -1,5 +1,3 @@
-// entrevistas-docentes/evaluacion/evaluacion.component.ts
-
 import { Component, OnInit, AfterViewInit, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,6 +6,7 @@ import { RouterModule } from '@angular/router';
 import { EvaluacionService } from '../../../../services/entrevistas/evaluacion.service';
 import { ReunionesService } from '../../../../services/entrevistas/reuniones.service';
 import { ConfigCriteriosService } from '../../../../services/entrevistas/config-criterios.service';
+import { EntrevistasEstadoService } from '../../../../services/entrevistas/entrevistas-estado.service';
 import { EvaluacionRequest, CriterioResponse, ReunionResumen } from '../../../../models/entrevistas-models';
 
 interface CriterioForm extends CriterioResponse {
@@ -70,7 +69,8 @@ export class EvaluacionComponent implements OnInit, AfterViewInit {
     private cdr: ChangeDetectorRef,
     private evaluacionService: EvaluacionService,
     private reunionesService: ReunionesService,
-    private criteriosService: ConfigCriteriosService
+    private criteriosService: ConfigCriteriosService,
+    private estado: EntrevistasEstadoService
   ) {}
 
   ngOnInit(): void {
@@ -81,6 +81,19 @@ export class EvaluacionComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void { this.inicializarCanvas(); }
+
+  navegarPostulantes(): void {
+    const id = this.estado.getIdSolicitud();
+    if (id) {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', id]);
+    } else {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']);
+    }
+  }
+
+  esRutaActiva(segmento: string): boolean {
+    return this.router.url.includes(segmento);
+  }
 
   cargarDatos(idReunion: number): void {
     this.isLoading = true;
@@ -94,14 +107,10 @@ export class EvaluacionComponent implements OnInit, AfterViewInit {
             this.cdr.detectChanges();
             setTimeout(() => this.inicializarCanvas(), 150);
           },
-          error: (err: unknown) => {
-            this.isLoading = false; this.cdr.detectChanges();
-          }
+          error: () => { this.isLoading = false; this.cdr.detectChanges(); }
         });
       },
-      error: (err: unknown) => {
-        this.isLoading = false; this.cdr.detectChanges();
-      }
+      error: () => { this.isLoading = false; this.cdr.detectChanges(); }
     });
   }
 
@@ -171,7 +180,14 @@ export class EvaluacionComponent implements OnInit, AfterViewInit {
         this.isSaving = false; this.isConfirmado = true;
         localStorage.removeItem(`ev_borrador_${this.reunion?.idReunion}`);
         this.cdr.detectChanges();
-        setTimeout(() => this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', this.reunion?.idProceso]), 2000);
+        const id = this.estado.getIdSolicitud();
+        setTimeout(() => {
+          if (id) {
+            this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', id]);
+          } else {
+            this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', this.reunion?.idProceso]);
+          }
+        }, 2000);
       },
       error: (err: { error?: { mensaje?: string } }) => {
         alert(err?.error?.mensaje || 'Error al guardar la evaluación.');
