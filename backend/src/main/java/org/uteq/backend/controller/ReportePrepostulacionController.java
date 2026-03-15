@@ -3,10 +3,12 @@ package org.uteq.backend.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.uteq.backend.dto.ReportePrepostulacionConfigDTO;
-import org.uteq.backend.entity.Convocatoria;
+import org.uteq.backend.entity.Usuario;
 import org.uteq.backend.repository.ConvocatoriaRepository;
+import org.uteq.backend.repository.UsuarioRepository;
 import org.uteq.backend.service.ReportePrepostulacionService;
 
 import java.util.List;
@@ -21,15 +23,16 @@ public class ReportePrepostulacionController {
 
     private final ReportePrepostulacionService reporteService;
     private final ConvocatoriaRepository       convRepo;
+    private final UsuarioRepository            usuarioRepo;
 
-    /**
-     * POST /api/admin/prepostulaciones/reporte/generar
-     * Genera el reporte (PDF o Excel) según la configuración del modal.
-     */
     @PostMapping("/generar")
     public ResponseEntity<byte[]> generar(@RequestBody ReportePrepostulacionConfigDTO cfg) {
 
-        byte[] archivo   = reporteService.generar(cfg);
+        // Obtener el usuario autenticado desde el JWT
+        String usuarioApp = SecurityContextHolder.getContext().getAuthentication().getName();
+        Usuario usuario = usuarioRepo.findByUsuarioApp(usuarioApp).orElse(null);
+
+        byte[] archivo   = reporteService.generar(cfg, usuario);
         String nombre    = reporteService.nombreArchivo(cfg);
         String mediaType = "EXCEL".equalsIgnoreCase(cfg.getFormato())
                 ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -42,10 +45,6 @@ public class ReportePrepostulacionController {
                 .body(archivo);
     }
 
-    /**
-     * GET /api/admin/prepostulaciones/reporte/convocatorias
-     * Devuelve el listado de convocatorias para poblar el selector del modal.
-     */
     @GetMapping("/convocatorias")
     public ResponseEntity<List<Map<String, Object>>> listarConvocatorias() {
         List<Map<String, Object>> lista = convRepo.findAllByOrderByFechaPublicacionDesc()

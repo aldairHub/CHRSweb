@@ -488,6 +488,15 @@ export class GestionPostulanteComponent implements OnInit {
   }
 
   exportarReporte(): void {
+    // Pre-cargar filtros activos de la tabla para que el PDF refleje lo que se ve
+    const estadoMap: Record<string, string> = {
+      validado:  'APROBADO',
+      rechazado: 'RECHAZADO',
+      pendiente: 'PENDIENTE',
+    };
+    this.reporteConfig.estadoRevision    = estadoMap[this.filterEstado] ?? '';
+    this.reporteConfig.idsConvocatoria   = this.filterConvocatoria ? [Number(this.filterConvocatoria)] : [];
+    this.reporteConfig.idsSolicitud      = this.filterSolicitud    ? [Number(this.filterSolicitud)]    : [];
     this.showReporteModal = true;
     this.reporteTabActiva = 'filtros';
   }
