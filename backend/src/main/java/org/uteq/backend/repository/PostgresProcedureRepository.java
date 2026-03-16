@@ -42,6 +42,15 @@ public class PostgresProcedureRepository {
         String sql = "SELECT * FROM sp_obtener_roles_app_usuario()";
         return jdbcTemplate.queryForList(sql, String.class);
     }
+
+    /**
+     * Obtiene roles de BD para el JWT pasando el usuario_bd explícitamente
+     * Evita depender de current_user que puede ser incorrecto por el pool de HikariCP
+     */
+    public List<String> obtenerRolesAppUsuarioPorNombre(String usuarioBd) {
+        String sql = "SELECT * FROM sp_obtener_roles_app_usuario_por_nombre(?)";
+        return jdbcTemplate.queryForList(sql, String.class, usuarioBd);
+    }
     public List<Map<String, Object>> obtenerRolesAppConIdUsuario(String usuarioApp) {
         String sql = "SELECT * FROM sp_obtener_roles_app_usuario_con_id(?)";
         return jdbcTemplate.queryForList(sql, usuarioApp);

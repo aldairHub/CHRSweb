@@ -191,13 +191,17 @@ public class BackupService {
             }
 
             if (Boolean.TRUE.equals(cfg.getNotificarExito())) {
-                notificacionService.notificarRol(
-                        "admin", "success",
-                        "Backup exitoso ✅",
-                        "Backup " + cfg.getTipoBackup() + " completado. "
-                                + nombreZip + " (" + formatearTamano(tamano) + ") en " + duracion + "s.",
-                        "BACKUP", historial.getIdHistorial()
-                );
+                try {
+                    notificacionService.notificarRol(
+                            "admin", "success",
+                            "Backup exitoso ✅",
+                            "Backup " + cfg.getTipoBackup() + " completado. "
+                                    + nombreZip + " (" + formatearTamano(tamano) + ") en " + duracion + "s.",
+                            "BACKUP", historial.getIdHistorial()
+                    );
+                } catch (Exception ne) {
+                    log.warn("No se pudo enviar notificacion de exito: {}", ne.getMessage());
+                }
             }
 
             log.info("Backup exitoso: {} en {}s", nombreZip, duracion);
@@ -211,12 +215,16 @@ public class BackupService {
             historialRepo.save(historial);
 
             if (Boolean.TRUE.equals(cfg.getNotificarError())) {
-                notificacionService.notificarRol(
-                        "admin", "error",
-                        "Error en backup ❌",
-                        "El backup falló: " + e.getMessage(),
-                        "BACKUP", null
-                );
+                try {
+                    notificacionService.notificarRol(
+                            "admin", "error",
+                            "Error en backup ❌",
+                            "El backup falló: " + e.getMessage(),
+                            "BACKUP", null
+                    );
+                } catch (Exception ne) {
+                    log.warn("No se pudo enviar notificacion de error: {}", ne.getMessage());
+                }
             }
             log.error("Error en backup: {}", e.getMessage());
         }

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -46,7 +46,7 @@ export class BackupComponent implements OnInit, OnDestroy {
     destinoLocal: false, destinoEmail: false,
     rutaDestino: '', emailDestino: '',
     tipoDestino: 'NINGUNO',
-    notificarError: true, notificarExito: false
+    notificarError: true, notificarExito: true
   };
 
   emailChips: string[] = []; emailInput = ''; emailInputError = '';
@@ -131,7 +131,7 @@ export class BackupComponent implements OnInit, OnDestroy {
     });
   }
 
-  constructor(private http: HttpClient, private toast: ToastService, private cdr: ChangeDetectorRef) {}
+  constructor(private http: HttpClient, private toast: ToastService, private cdr: ChangeDetectorRef, private ngZone: NgZone) {}
 
   ngOnInit() {
     this.cargarConfig(); this.cargarHistorial();
@@ -184,12 +184,20 @@ export class BackupComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
     this.http.post<any>('/api/backup/ejecutar',{}).subscribe({
       next: (res) => {
-        this.ejecutando=false;
-        res.estado==='EXITOSO' ? this.toast.success('Backup ejecutado correctamente') : this.toast.error('Backup falló: '+res.mensajeError);
-        this.cargarHistorial(); this.activeTab='historial';
-        this.cdr.detectChanges();
+        this.ngZone.run(() => {
+          this.ejecutando=false;
+          res.estado==='EXITOSO' ? this.toast.success('Backup ejecutado correctamente') : this.toast.error('Backup falló: '+res.mensajeError);
+          this.cargarHistorial(); this.activeTab='historial';
+          this.cdr.detectChanges();
+        });
       },
-      error: () => { this.ejecutando=false; this.toast.error('Error al ejecutar backup'); this.cdr.detectChanges(); }
+      error: () => {
+        this.ngZone.run(() => {
+          this.ejecutando=false;
+          this.toast.error('Error al ejecutar backup');
+          this.cdr.detectChanges();
+        });
+      }
     });
   }
   get horasConfiguradas(): string[] {

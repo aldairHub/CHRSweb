@@ -122,13 +122,14 @@ public class AuthService {
                 .collect(Collectors.toList());
 
         // 7) Obtener nombres de roles de BD via SP (para el JWT)
-        log.info("[LOGIN] Llamando a sp_obtener_roles_app_usuario()...");
+        // Usamos la versión con parámetro para evitar depender de current_user
+        log.info("[LOGIN] Llamando a sp_obtener_roles_app_usuario_por_nombre({})...", usuario.getUsuarioBd());
         List<String> roles;
         try {
-            roles = postgresProcedureRepository.obtenerRolesAppUsuario();
+            roles = postgresProcedureRepository.obtenerRolesAppUsuarioPorNombre(usuario.getUsuarioBd());
             log.info("[LOGIN] Roles obtenidos del SP: {}", roles);
         } catch (Exception e) {
-            log.error("[LOGIN] Error en sp_obtener_roles_app_usuario: {}", e.getMessage(), e);
+            log.error("[LOGIN] Error en sp_obtener_roles_app_usuario_por_nombre: {}", e.getMessage(), e);
             dbSwitchService.resetToDefault();
             throw new RuntimeException("Error al obtener roles: " + e.getMessage());
         }

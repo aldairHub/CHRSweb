@@ -1,3 +1,4 @@
+@use "sass:color";
 // ── Variables (idénticas al archivo original) ───────────────
 $primary:        #00A63E;
 $dark:           #016630;
@@ -170,7 +171,7 @@ $bg-white:       #ffffff;
       display: flex;
       align-items: center;
       justify-content: center;
-      svg { width: 36px; height: 36px; stroke: darken($border, 20%); }
+      svg { width: 36px; height: 36px; stroke: color.adjust($border, $lightness: -20%); }
     }
 
     .foto-badge-nuevo {
