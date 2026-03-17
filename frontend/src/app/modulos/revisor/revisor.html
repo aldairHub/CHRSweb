@@ -21,17 +21,67 @@
     <div class="stat-card" style="opacity:0.4" *ngFor="let i of [1,2,3,4]"><div class="stat-icon stat-icon--blue"></div><div class="stat-body"><span class="stat-label">Cargando...</span><span class="stat-value">—</span></div></div>
   </div>
   <div class="mid-row">
-    <div class="panel panel--activity">
-      <div class="panel-header"><h2 class="panel-title">Actividad reciente</h2><span class="panel-badge">últimos cambios</span></div>
-      <div *ngIf="cargandoStats" class="activity-empty"><span>Cargando...</span></div>
-      <div *ngIf="!cargandoStats && actividadReciente.length === 0" class="activity-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Sin actividad reciente</span></div>
-      <ul class="activity-list" *ngIf="!cargandoStats && actividadReciente.length > 0">
-        <li *ngFor="let item of actividadReciente" class="act-item">
-          <span class="act-dot" [ngClass]="'act-dot--' + getActColor(item.accion)"></span>
-          <div class="act-content"><span class="act-desc">{{ item.descripcion }}</span><div class="act-footer"><span class="act-user" *ngIf="item.usuario">{{ item.usuario }}</span><span class="act-meta">{{ item.fecha }}</span></div></div>
-        </li>
-      </ul>
+
+    <!-- Mi rendimiento de revisión -->
+    <div class="panel panel--pulse">
+      <div class="panel-header">
+        <h2 class="panel-title">Revisiones</h2>
+        <span class="pulse-live"><span class="pulse-dot"></span>en vivo</span>
+      </div>
+      <ng-container *ngIf="cargandoStats">
+        <div class="pulse-skeleton" *ngFor="let i of [1,2,3]"></div>
+      </ng-container>
+      <ng-container *ngIf="!cargandoStats">
+        <div class="rev-tasa-wrap">
+          <div class="rev-tasa-ring">
+            <svg viewBox="0 0 64 64" class="rev-ring-svg">
+              <circle cx="32" cy="32" r="27" fill="none" stroke="#f1f5f9" stroke-width="7"/>
+              <circle cx="32" cy="32" r="27" fill="none" stroke="#22c55e" stroke-width="7"
+                stroke-dasharray="169.6"
+                [attr.stroke-dashoffset]="getRingOffset()"
+                stroke-linecap="round"
+                transform="rotate(-90 32 32)"/>
+            </svg>
+            <div class="rev-tasa-pct">{{ getTasaAprobacion() }}<span>%</span></div>
+          </div>
+          <div class="rev-tasa-info">
+            <span class="rev-tasa-label">Tasa de aprobación</span>
+            <div class="rev-tasa-detail">
+              <span class="rev-chip rev-chip--green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                {{ stats.aprobadas ?? 0 }} aprobadas
+              </span>
+              <span class="rev-chip rev-chip--red">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                {{ stats.rechazadas ?? 0 }} rechazadas
+              </span>
+            </div>
+            <span class="rev-tasa-pending" *ngIf="(stats.prepostulacionesPendientes ?? 0) > 0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              {{ stats.prepostulacionesPendientes }} por revisar
+            </span>
+            <span class="rev-tasa-pending rev-tasa-pending--ok" *ngIf="(stats.prepostulacionesPendientes ?? 0) === 0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Al día
+            </span>
+          </div>
+        </div>
+        <div class="pulse-last" *ngIf="actividadReciente.length > 0">
+          <span class="pulse-section-label">Última revisión realizada</span>
+          <div class="pulse-last-item">
+            <span class="act-dot" [ngClass]="'act-dot--' + getActColor(actividadReciente[0].accion)"></span>
+            <span class="pulse-last-desc">{{ actividadReciente[0].descripcion }}</span>
+            <span class="pulse-last-time">{{ actividadReciente[0].fecha }}</span>
+          </div>
+        </div>
+        <div *ngIf="actividadReciente.length === 0 && (stats.aprobadas ?? 0) === 0 && (stats.rechazadas ?? 0) === 0" class="activity-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>Sin revisiones hoy</span>
+        </div>
+      </ng-container>
     </div>
+
+    <!-- Acceso rápido -->
     <div class="panel panel--quick">
       <div class="panel-header"><h2 class="panel-title">Acceso rápido</h2><button class="btn-config-quick" (click)="toggleConfigQuick()"><svg *ngIf="!editandoQuick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg><svg *ngIf="editandoQuick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></button></div>
       <div class="quick-edit" *ngIf="editandoQuick"><p class="quick-edit-hint">Elige hasta 4 módulos favoritos:</p><div class="quick-edit-list"><label *ngFor="let card of cards" class="quick-edit-item" [class.selected]="isQuickSelected(card.ruta)"><input type="checkbox" [checked]="isQuickSelected(card.ruta)" (change)="toggleQuickItem(card.ruta)" [disabled]="!isQuickSelected(card.ruta) && quickAccesos.length >= 4"/><span>{{ card.titulo }}</span></label></div></div>

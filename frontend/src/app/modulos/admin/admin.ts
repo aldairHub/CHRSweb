@@ -73,6 +73,31 @@ export class AdminComponent implements OnInit {
     return ({ INSERT: 'green', UPDATE: 'blue', DELETE: 'red', CREAR: 'green', ACTUALIZAR: 'blue', ELIMINAR: 'red', CAMBIAR_ESTADO: 'amber' } as any)[a?.toUpperCase()] ?? 'gray';
   }
 
+  getActCount(accion: string): number {
+    return this.actividadReciente.filter(i => i.accion?.toUpperCase() === accion.toUpperCase()).length;
+  }
+
+  getTopUsuarios(): { usuario: string; count: number }[] {
+    const map: Record<string, number> = {};
+    for (const item of this.actividadReciente) {
+      if (item.usuario) map[item.usuario] = (map[item.usuario] || 0) + 1;
+    }
+    return Object.entries(map)
+      .map(([usuario, count]) => ({ usuario, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3);
+  }
+
+  getInitials(nombre: string): string {
+    if (!nombre) return '?';
+    const parts = nombre.trim().split(/\s+/);
+    return parts.length >= 2 ? (parts[0][0] + parts[1][0]).toUpperCase() : nombre.slice(0, 2).toUpperCase();
+  }
+
+  getBarWidth(count: number, max: number): number {
+    return max > 0 ? Math.round((count / max) * 100) : 0;
+  }
+
   isQuickSelected(r: string) { return this.quickAccesos.includes(r); }
   toggleQuickItem(r: string) { this.quickAccesos = this.isQuickSelected(r) ? this.quickAccesos.filter(x => x !== r) : this.quickAccesos.length < 4 ? [...this.quickAccesos, r] : this.quickAccesos; localStorage.setItem(QUICK_KEY, JSON.stringify(this.quickAccesos)); }
   getQuickCards(): DashCard[] { return this.quickAccesos.map(r => this.cards.find(c => c.ruta === r)).filter((c): c is DashCard => !!c); }

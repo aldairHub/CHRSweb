@@ -49,9 +49,12 @@ export class PostulanteComponent implements OnInit {
   }
 
   private cargarStats(): void {
-    const token = localStorage.getItem('token');
-    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
-    this.http.get<any>(`${environment.apiUrl}/dashboard/postulante`, headers ? { headers } : {}).subscribe({
+    const token    = localStorage.getItem('token');
+    const usuario  = localStorage.getItem('usuario') ?? '';
+    const headers  = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    const params   = usuario ? { params: { usuarioApp: usuario } } : {};
+    const options  = headers ? { headers, ...params } : params;
+    this.http.get<any>(`${environment.apiUrl}/dashboard/postulante`, options).subscribe({
       next: (d) => { this.stats = d; this.actividadReciente = d.actividadReciente || []; this.cargandoStats = false; this.cdr.detectChanges(); },
       error: () => { this.cargandoStats = false; }
     });
@@ -60,6 +63,22 @@ export class PostulanteComponent implements OnInit {
   getActColor(a: string): string {
     return ({ INSERT: 'green', UPDATE: 'blue', DELETE: 'red', CREAR: 'green', ACTUALIZAR: 'blue', ELIMINAR: 'red', CAMBIAR_ESTADO: 'amber' } as any)[a?.toUpperCase()] ?? 'gray';
   }
+
+  getStepClass(step: string): string {
+    const s = this.stats;
+    if (step === 'convocatoria') return (s.convocatoriasAbiertas ?? 0) > 0 ? 'post-step--active' : 'post-step--idle';
+    if (step === 'proceso')      return (s.procesosEnCurso ?? 0) > 0 ? 'post-step--progress' : 'post-step--idle';
+    if (step === 'entrevista')   return (s.entrevistasHoy ?? 0) > 0 ? 'post-step--today' : 'post-step--idle';
+    return 'post-step--idle';
+  }
+
+  getActCount(accion: string): number {
+    return this.actividadReciente.filter(i => i.accion?.toUpperCase() === accion.toUpperCase()).length;
+  }
+
+  getTopUsuarios(): { usuario: string; count: number }[] { return []; }
+  getInitials(n: string): string { return ''; }
+  getBarWidth(c: number, m: number): number { return 0; }
   isQuickSelected(r: string) { return this.quickAccesos.includes(r); }
   toggleQuickItem(r: string) { this.quickAccesos = this.isQuickSelected(r) ? this.quickAccesos.filter(x => x !== r) : this.quickAccesos.length < 4 ? [...this.quickAccesos, r] : this.quickAccesos; localStorage.setItem(QUICK_KEY, JSON.stringify(this.quickAccesos)); }
   getQuickCards(): DashCard[] { return this.quickAccesos.map(r => this.cards.find(c => c.ruta === r)).filter((c): c is DashCard => !!c); }

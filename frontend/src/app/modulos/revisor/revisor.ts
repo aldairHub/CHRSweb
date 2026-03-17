@@ -51,8 +51,28 @@ export class RevisorComponent implements OnInit {
   }
 
   getActColor(a: string): string {
-    return ({ INSERT: 'green', UPDATE: 'blue', DELETE: 'red', CREAR: 'green', ACTUALIZAR: 'blue', ELIMINAR: 'red', CAMBIAR_ESTADO: 'amber' } as any)[a?.toUpperCase()] ?? 'gray';
+    return ({ INSERT: 'green', UPDATE: 'blue', DELETE: 'red', CREAR: 'green', ACTUALIZAR: 'blue', ELIMINAR: 'red', CAMBIAR_ESTADO: 'amber', APROBAR: 'green', RECHAZAR: 'red' } as any)[a?.toUpperCase()] ?? 'gray';
   }
+
+  getTasaAprobacion(): number {
+    const ap = this.stats.aprobadas ?? 0;
+    const re = this.stats.rechazadas ?? 0;
+    const total = ap + re;
+    return total > 0 ? Math.round((ap / total) * 100) : 0;
+  }
+
+  getRingOffset(): number {
+    const circ = 169.6;
+    return circ - (circ * this.getTasaAprobacion() / 100);
+  }
+
+  getActCount(accion: string): number {
+    return this.actividadReciente.filter(i => i.accion?.toUpperCase() === accion.toUpperCase()).length;
+  }
+
+  getTopUsuarios(): { usuario: string; count: number }[] { return []; }
+  getInitials(n: string): string { return ''; }
+  getBarWidth(c: number, m: number): number { return 0; }
   isQuickSelected(r: string) { return this.quickAccesos.includes(r); }
   toggleQuickItem(r: string) { this.quickAccesos = this.isQuickSelected(r) ? this.quickAccesos.filter(x => x !== r) : this.quickAccesos.length < 4 ? [...this.quickAccesos, r] : this.quickAccesos; localStorage.setItem(QUICK_KEY, JSON.stringify(this.quickAccesos)); }
   getQuickCards(): DashCard[] { return this.quickAccesos.map(r => this.cards.find(c => c.ruta === r)).filter((c): c is DashCard => !!c); }

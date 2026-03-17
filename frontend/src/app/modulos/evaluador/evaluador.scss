@@ -32,23 +32,108 @@ $primary: #00A63E; $primary-glow: #00D149; $dark-green: #016630;
 .panel-title  { font-size: 0.9rem; font-weight: 700; color: $dark-green; margin: 0; }
 .panel-badge  { font-size: 0.7rem; font-weight: 600; color: #94a3b8; background: #f1f5f9; padding: 2px 8px; border-radius: 99px; letter-spacing: .03em; }
 
-// Activity
+// Activity (legacy dot styles kept for pulse-last)
 .activity-empty { display: flex; align-items: center; gap: 8px; justify-content: center; padding: 1.5rem 0; font-size: 0.82rem; color: #94a3b8; }
-.activity-list  { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
-.act-item { display: flex; align-items: flex-start; gap: 10px; padding: 0.65rem 0; border-bottom: 1px solid rgba(0,0,0,0.04); &:last-child { border-bottom: none; } }
-.act-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px;
+.act-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
   &--green  { background: #22c55e; }
   &--blue   { background: #3b82f6; }
   &--red    { background: #ef4444; }
   &--amber  { background: #f59e0b; }
   &--gray   { background: #94a3b8; }
 }
-.act-content { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
-.act-desc    { font-size: 0.82rem; color: #374151; font-weight: 500; line-height: 1.4; }
-.act-footer  { display: flex; align-items: center; gap: 8px; }
-.act-user    { font-size: 0.7rem; color: $primary; font-weight: 600; }
-.act-meta    { font-size: 0.7rem; color: #94a3b8; }
 
+// ── Pulso del sistema ──────────────────────────────────────────
+.pulse-live {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 0.68rem; font-weight: 700; color: #22c55e; text-transform: uppercase; letter-spacing: .05em;
+}
+.pulse-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: #22c55e;
+  animation: pulseBlink 1.8s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(34,197,94,0.5);
+}
+@keyframes pulseBlink {
+  0%   { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
+  50%  { box-shadow: 0 0 0 5px rgba(34,197,94,0); }
+  100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+
+// Pills resumen
+.pulse-summary {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+}
+.pulse-pill {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; padding: 0.7rem 0.4rem; border-radius: 14px; border: 1px solid transparent;
+  svg { width: 16px; height: 16px; opacity: 0.8; }
+  &--green { background: #f0fdf4; border-color: rgba(34,197,94,0.2); color: #16a34a; }
+  &--blue  { background: #eff6ff; border-color: rgba(59,130,246,0.2); color: #2563eb; }
+  &--red   { background: #fef2f2; border-color: rgba(239,68,68,0.2);  color: #dc2626; }
+  &--amber { background: #fffbeb; border-color: rgba(245,158,11,0.2); color: #d97706; }
+}
+.pulse-pill-count { font-size: 1.3rem; font-weight: 800; line-height: 1; }
+.pulse-pill-label { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; opacity: 0.7; }
+
+// Skeleton
+.pulse-skeleton {
+  height: 14px; border-radius: 6px; background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%; animation: shimmer 1.4s infinite;
+  &:nth-child(1) { width: 70%; } &:nth-child(2) { width: 90%; } &:nth-child(3) { width: 55%; }
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+// Usuarios más activos
+.pulse-section { display: flex; flex-direction: column; gap: 8px; }
+.pulse-section-label { font-size: 0.65rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; }
+.pulse-users { display: flex; flex-direction: column; gap: 6px; }
+.pulse-user {
+  display: flex; align-items: center; gap: 9px;
+}
+.pulse-avatar {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, rgba(0,166,62,0.15), rgba(0,209,73,0.08));
+  border: 1.5px solid rgba(0,166,62,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; font-weight: 800; color: $dark-green; letter-spacing: .02em;
+  &[data-rank="1"] { background: linear-gradient(135deg, #fef9c3, #fef08a); border-color: #fbbf24; color: #92400e; }
+  &[data-rank="2"] { background: linear-gradient(135deg, #f1f5f9, #e2e8f0); border-color: #94a3b8; color: #475569; }
+}
+.pulse-user-info { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.pulse-user-name { font-size: 0.75rem; font-weight: 600; color: #374151; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pulse-user-bar-wrap { height: 4px; background: #f1f5f9; border-radius: 99px; overflow: hidden; }
+.pulse-user-bar { height: 100%; background: linear-gradient(90deg, $primary, $primary-glow); border-radius: 99px; transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+.pulse-user-count { font-size: 0.72rem; font-weight: 700; color: #94a3b8; flex-shrink: 0; }
+
+// Última acción
+.pulse-last { display: flex; flex-direction: column; gap: 6px; }
+.pulse-last-item {
+  display: flex; align-items: center; gap: 8px;
+  background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+}
+.pulse-last-desc { flex: 1; font-size: 0.77rem; color: #374151; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pulse-last-time { font-size: 0.68rem; color: #94a3b8; flex-shrink: 0; }
+
+
+// ── Evaluador: pipeline ───────────────────────────────────────
+.eval-pipeline { display: flex; flex-direction: column; gap: 10px; }
+.eval-pipe-item { display: flex; flex-direction: column; gap: 4px; }
+.eval-pipe-header { display: flex; align-items: center; justify-content: space-between; }
+.eval-pipe-label { font-size: 0.73rem; font-weight: 600; color: #374151; }
+.eval-pipe-val { font-size: 0.73rem; font-weight: 800;
+  &--blue   { color: #2563eb; }
+  &--amber  { color: #d97706; }
+  &--green  { color: #16a34a; }
+  &--purple { color: #7c3aed; }
+}
+.eval-pipe-bar-wrap { height: 6px; background: #f1f5f9; border-radius: 99px; overflow: hidden; }
+.eval-pipe-bar {
+  height: 100%; border-radius: 99px; transition: width 0.7s cubic-bezier(0.34,1.56,0.64,1);
+  &--blue   { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+  &--amber  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  &--green  { background: linear-gradient(90deg, #22c55e, #4ade80); }
+  &--purple { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+}
 // Quick access
 .btn-config-quick { width: 30px; height: 30px; border-radius: 8px; border: 1px solid rgba(0,166,62,0.2); background: rgba(0,166,62,0.04); color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .18s; svg { width: 14px; height: 14px; } &:hover { background: rgba(0,166,62,0.12); color: $primary; border-color: rgba(0,166,62,0.4); } }
 .quick-edit { display: flex; flex-direction: column; gap: 8px; }
@@ -88,6 +173,11 @@ $primary: #00A63E; $primary-glow: #00D149; $dark-green: #016630;
   .panel { background: #161616 !important; border-color: #2a2a2a !important; box-shadow: 0 1px 3px rgba(0,0,0,.5) !important; }
   .panel-title { color: #e0e0e0 !important; } .panel-badge { background: #1a1a1a !important; color: #444 !important; }
   .act-item { border-bottom-color: #1e1e1e !important; } .act-desc { color: #c0c0c0 !important; } .act-meta { color: #444 !important; } .act-user { color: #00A63E !important; } .activity-empty { color: #444 !important; }
+  
+
+  // Evaluador dark
+  .eval-pipe-label { color: #c0c0c0 !important; }
+  .eval-pipe-bar-wrap { background: #1e1e1e !important; }
   .btn-config-quick { background: rgba(0,210,80,0.04) !important; border-color: #2a2a2a !important; color: #444 !important; &:hover { background: rgba(0,210,80,0.1) !important; color: #00D149 !important; border-color: #00A63E !important; } }
   .quick-edit-hint { color: #444 !important; }
   .quick-edit-item { color: #9ca3af !important; &.selected { background: #0d1f12 !important; border-color: #1a3a20 !important; color: #00D149 !important; } &:hover:not(.selected) { background: #1a1a1a !important; } }

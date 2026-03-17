@@ -58,6 +58,29 @@ export class EvaluadorComponent implements OnInit {
   getActColor(a: string): string {
     return ({ INSERT: 'green', UPDATE: 'blue', DELETE: 'red', CREAR: 'green', ACTUALIZAR: 'blue', ELIMINAR: 'red', CAMBIAR_ESTADO: 'amber' } as any)[a?.toUpperCase()] ?? 'gray';
   }
+
+  getMaxPipeline(): number {
+    return Math.max(
+      this.stats.solicitudesActivas ?? 0,
+      this.stats.entrevistasProgramadas ?? 0,
+      this.stats.evaluacionesCompletadas ?? 0,
+      this.stats.procesosActivos ?? 0,
+      1
+    );
+  }
+
+  getPipelineWidth(val: number | undefined, max: number): number {
+    const v = val ?? 0;
+    return max > 0 ? Math.round((v / max) * 100) : 0;
+  }
+
+  getActCount(accion: string): number {
+    return this.actividadReciente.filter(i => i.accion?.toUpperCase() === accion.toUpperCase()).length;
+  }
+
+  getTopUsuarios(): { usuario: string; count: number }[] { return []; }
+  getInitials(n: string): string { return ''; }
+  getBarWidth(c: number, m: number): number { return 0; }
   isQuickSelected(r: string) { return this.quickAccesos.includes(r); }
   toggleQuickItem(r: string) { this.quickAccesos = this.isQuickSelected(r) ? this.quickAccesos.filter(x => x !== r) : this.quickAccesos.length < 4 ? [...this.quickAccesos, r] : this.quickAccesos; localStorage.setItem(QUICK_KEY, JSON.stringify(this.quickAccesos)); }
   getQuickCards(): DashCard[] { return this.quickAccesos.map(r => this.cards.find(c => c.ruta === r)).filter((c): c is DashCard => !!c); }
