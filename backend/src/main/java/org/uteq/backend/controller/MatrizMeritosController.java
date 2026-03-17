@@ -30,4 +30,12 @@ public class MatrizMeritosController {
     public ResponseEntity<?> listarConvocatorias() {
         return ResponseEntity.ok(service.listarConvocatorias());
     }
+
+    @PostMapping("/habilitar-entrevista")
+    public ResponseEntity<?> habilitarEntrevista(@RequestBody Map<String, Object> body) {
+        Long idProceso = ((Number) body.get("idProceso")).longValue();
+        String justificacion = (String) body.get("justificacion");
+        service.habilitarEntrevista(idProceso, justificacion);
+        return ResponseEntity.ok(Map.of("mensaje", "Candidato habilitado para entrevistas"));
+    }
 }

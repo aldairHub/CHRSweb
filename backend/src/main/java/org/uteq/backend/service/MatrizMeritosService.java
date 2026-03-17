@@ -223,6 +223,10 @@ public class MatrizMeritosService {
         return result;
     }
 
+    public void habilitarEntrevista(Long idProceso, String justificacion) {
+        procedureRepo.habilitarEntrevista(idProceso, justificacion);
+    }
+
     @Transactional(readOnly = true)
     public Map<String, Object> obtenerMatrizPorSolicitud(Long idSolicitud) {
 

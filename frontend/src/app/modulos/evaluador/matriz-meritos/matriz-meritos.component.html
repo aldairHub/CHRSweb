@@ -65,13 +65,29 @@
 
       <!-- ==================== TOTALES ==================== -->
       <div class="totals-bar" *ngIf="candidatos.length > 0">
-        <div class="total-card" *ngFor="let c of candidatos; trackBy: trackById"
-             [class.ganador]="guardado && c === candidatoGanador">
+        <div class="total-card" *ngFor="let c of candidatos; trackBy: trackById">
           <div class="total-card__name">{{ c.apellidos }}</div>
           <div class="total-card__sub">{{ c.nombres }}</div>
           <div class="total-card__score">{{ c.puntajeTotal | number:'1.1-2' }}</div>
           <div class="total-card__label">/ 104 pts</div>
-          <div class="total-card__crown" *ngIf="guardado && c === candidatoGanador">🏆 Ganador</div>
+
+          <!-- Badge de aptitud — solo visible después de guardar -->
+          <ng-container *ngIf="guardado">
+      <span class="aptitud-badge apto" *ngIf="c.puntajeTotal >= PUNTAJE_MINIMO">
+           Apto para entrevistas
+      </span>
+            <span class="aptitud-badge habilitado" *ngIf="c.puntajeTotal < PUNTAJE_MINIMO && c.habilitadoEntrevista">
+           Habilitado manualmente
+      </span>
+            <span class="aptitud-badge no-apto" *ngIf="c.puntajeTotal < PUNTAJE_MINIMO && !c.habilitadoEntrevista">
+           No apto (mín. {{ PUNTAJE_MINIMO }} pts)
+      </span>
+            <button class="btn-habilitar"
+                    *ngIf="c.puntajeTotal < PUNTAJE_MINIMO && !c.habilitadoEntrevista"
+                    (click)="abrirModalOverride(c)">
+                Habilitar para entrevistas
+            </button>
+          </ng-container>
         </div>
       </div>
 
@@ -228,10 +244,8 @@
             <!-- TOTAL GENERAL -->
             <tr class="total-row">
               <td class="total-label">PUNTAJE TOTAL (1 + 2 + 3)</td>
-              <td *ngFor="let c of candidatos" class="total-score"
-                  [class.ganador-cell]="guardado && c === candidatoGanador">
+              <td *ngFor="let c of candidatos" class="total-score">
                 {{ c.puntajeTotal | number:'1.1-2' }}
-                <span *ngIf="guardado && c === candidatoGanador" class="ganador-star">🏆</span>
               </td>
             </tr>
 
@@ -257,9 +271,9 @@
 </div>
 
 <!-- ==================== MODAL GUARDADO ==================== -->
+<!-- Modal guardado -->
 <div class="modal-overlay" *ngIf="mostrarModalGuardado" (click)="cerrarModalGuardado()">
   <div class="modal-card modal-card--success" (click)="$event.stopPropagation()">
-
     <div class="modal-header-icon">
       <div class="check-circle">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="32" height="32">
@@ -267,34 +281,61 @@
         </svg>
       </div>
     </div>
-
     <h2 class="modal-title">¡Evaluación Guardada!</h2>
-
-    <div class="modal-steps" *ngIf="candidatoGanador">
-      <div class="step-item step-item--winner">
-        <div class="step-icon">🏆</div>
-        <div class="step-text">
-          <strong>Candidato Ganador</strong>
-          <span>{{ candidatoGanador.apellidos }} {{ candidatoGanador.nombres }}</span>
-          <span class="score-highlight">{{ candidatoGanador.puntajeTotal | number:'1.1-2' }} puntos</span>
-        </div>
-      </div>
+    <div class="modal-steps">
       <div class="step-item" *ngFor="let c of candidatos">
         <div class="step-icon step-icon--score">{{ c.puntajeTotal | number:'1.0-0' }}</div>
         <div class="step-text">
           <strong>{{ c.apellidos }} {{ c.nombres }}</strong>
           <span>{{ c.titulos }}</span>
+          <span class="score-highlight">{{ c.puntajeTotal | number:'1.1-2' }} pts</span>
         </div>
       </div>
     </div>
-
     <div class="modal-info-box">
       Los resultados han sido registrados. Puede generar el informe final desde el módulo de Reportes.
     </div>
-
     <button class="btn btn--primary btn--block" (click)="cerrarModalGuardado()">
       ENTENDIDO
     </button>
+  </div>
+</div>
+
+<!-- Modal override evaluador -->
+<div class="modal-overlay" *ngIf="mostrarModalOverride" (click)="cerrarModalOverride()">
+  <div class="modal-card modal-card--override" (click)="$event.stopPropagation()">
+
+    <h2 class="modal-title">Habilitar para Entrevistas</h2>
+
+    <div class="override-candidato" *ngIf="candidatoOverride">
+      <strong>{{ candidatoOverride.apellidos }} {{ candidatoOverride.nombres }}</strong>
+      <span>Puntaje: {{ candidatoOverride.puntajeTotal | number:'1.1-2' }} / 104 pts
+        (mínimo requerido: {{ PUNTAJE_MINIMO }})</span>
+    </div>
+
+    <div class="override-warning">
+      Esta acción permite al candidato pasar a la fase de entrevistas
+      aunque no alcanzó el puntaje mínimo requerido. Debe ingresar una justificación.
+    </div>
+
+    <label>Justificación obligatoria <span style="color:#ef4444">*</span></label>
+    <textarea
+      [(ngModel)]="justificacionOverride"
+      placeholder="Ingrese la razón por la que habilita a este candidato..."
+      maxlength="500">
+    </textarea>
+    <div class="char-count">{{ justificacionOverride.length }} / 500</div>
+
+    <div class="modal-actions">
+      <button class="btn btn--outline-back" (click)="cerrarModalOverride()" [disabled]="guardandoOverride">
+        Cancelar
+      </button>
+      <button class="btn btn--primary"
+              (click)="confirmarOverride()"
+              [disabled]="!justificacionOverride.trim() || guardandoOverride">
+        {{ guardandoOverride ? 'Guardando...' : 'Confirmar Habilitación' }}
+      </button>
+    </div>
   </div>
 </div>
 

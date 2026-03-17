@@ -4,9 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
-// =====================================================
-// INTERFACES
-// =====================================================
 export interface ItemRubrica {
   id: string;
   label: string;
@@ -41,6 +38,7 @@ export interface Candidato {
   totalExperienciaEntrevista: number;
   totalAccionAfirmativa: number;
   puntajeTotal: number;
+  habilitadoEntrevista: boolean;
 }
 
 export interface ConvocatoriaInfo {
@@ -63,6 +61,9 @@ export class MatrizMeritosComponent implements OnInit {
 
   private readonly API = 'http://localhost:8080/api/matriz-meritos';
 
+  // Puntaje mínimo para pasar a entrevistas
+  readonly PUNTAJE_MINIMO = 75;
+
   cargando = false;
   guardando = false;
   guardado = false;
@@ -70,16 +71,16 @@ export class MatrizMeritosComponent implements OnInit {
   mostrarAccionAfirmativa = false;
   error = '';
 
+  // Override del evaluador
+  mostrarModalOverride = false;
+  candidatoOverride: Candidato | null = null;
+  justificacionOverride = '';
+  guardandoOverride = false;
+
   convocatoriaInfo: ConvocatoriaInfo | null = null;
   candidatos: Candidato[] = [];
-  candidatoGanador: Candidato | null = null;
-
-  // ID de convocatoria que viene por query param o ruta
   idConvocatoria = 0;
 
-  // ====================================================
-  // MATRIZ DE MÉRITOS — Arts. 15 y 16 de la Normativa UTEQ
-  // ====================================================
   rubrica: SeccionRubrica[] = [
     {
       codigo: 'A',
@@ -138,18 +139,12 @@ export class MatrizMeritosComponent implements OnInit {
     }
   ];
 
-  // ====================================================
-  // EXPERIENCIA + ENTREVISTA (50 puntos)
-  // ====================================================
   bloqueExperiencia = [
     { id: 'exp_docencia', label: 'Experiencia profesional en la docencia', max: 15 },
     { id: 'exp_area',    label: 'Experiencia profesional en el área de formación', max: 10 },
     { id: 'entrevista',  label: 'Entrevista con la autoridad académica', max: 25 }
   ];
 
-  // ====================================================
-  // ACCIÓN AFIRMATIVA — Art. 17
-  // ====================================================
   accionesAfirmativas: AccionAfirmativa[] = [
     { id: 'af_a', label: 'Ecuatoriana/o en el exterior ≥3 años (certificado consulado)', puntos: 2 },
     { id: 'af_b', label: 'Persona con discapacidad (certificado CONADIS/MSP)', puntos: 2 },
@@ -175,19 +170,8 @@ export class MatrizMeritosComponent implements OnInit {
         this.cargarDatos();
       }
     });
-
-    // También revisar query params
-    this.route.params.subscribe(params => {
-      if (params['idSolicitud']) {
-        this.idConvocatoria = +params['idSolicitud'];  // reusar la variable, ahora guarda idSolicitud
-        this.cargarDatos();
-      }
-    });
   }
 
-  // ====================================================
-  // CARGAR DATOS DESDE BACKEND
-  // ====================================================
   cargarDatos(): void {
     if (!this.idConvocatoria) return;
     this.cargando = true;
@@ -197,20 +181,25 @@ export class MatrizMeritosComponent implements OnInit {
       next: (data) => {
         this.convocatoriaInfo = data.convocatoria;
         this.candidatos = data.candidatos.map((c: any) => ({
-          id:             c.idPostulante,
-          idProceso:      c.idProceso,
-          idSolicitud:    c.idSolicitud,
-          nombres:        c.nombres,
-          apellidos:      c.apellidos,
-          titulos:        c.titulos || '',
-          puntajes:       c.puntajes || {},
+          id:                  c.idPostulante,
+          idProceso:           c.idProceso,
+          idSolicitud:         c.idSolicitud,
+          nombres:             c.nombres,
+          apellidos:           c.apellidos,
+          titulos:             c.titulos || '',
+          puntajes:            c.puntajes || {},
           accionesAfirmativas: c.accionesAfirmativas || {},
-          totalMerecimientos: 0,
+          totalMerecimientos:        0,
           totalExperienciaEntrevista: 0,
-          totalAccionAfirmativa: 0,
-          puntajeTotal: 0
+          totalAccionAfirmativa:      0,
+          puntajeTotal:              0,
+          habilitadoEntrevista:      c.habilitadoEntrevista || false
         }));
         this.inicializarPuntajes();
+        // Si ya tienen puntaje guardado, mostrar badges
+        if (this.candidatos.some(c => c.puntajeTotal > 0)) {
+          this.guardado = true;
+        }
         this.cargando = false;
       },
       error: (err) => {
@@ -220,9 +209,6 @@ export class MatrizMeritosComponent implements OnInit {
     });
   }
 
-  // ====================================================
-  // INICIALIZACIÓN DE PUNTAJES
-  // ====================================================
   inicializarPuntajes(): void {
     this.candidatos.forEach(c => {
       this.rubrica.forEach(seccion => {
@@ -240,11 +226,7 @@ export class MatrizMeritosComponent implements OnInit {
     });
   }
 
-  // ====================================================
-  // CÁLCULO CON LÍMITES POR SECCIÓN
-  // ====================================================
   recalcular(c: Candidato): void {
-    // 1) Méritos (máx 50)
     const totales: { [codigo: string]: number } = {};
     this.rubrica.forEach(sec => {
       let sumaSeccion = 0;
@@ -253,17 +235,14 @@ export class MatrizMeritosComponent implements OnInit {
     });
     c.totalMerecimientos = Math.min(Object.values(totales).reduce((a, b) => a + b, 0), 50);
 
-    // 2) Experiencia + Entrevista (máx 50)
     c.totalExperienciaEntrevista = Math.min(
       this.bloqueExperiencia.reduce((sum, b) => sum + Math.min(Number(c.puntajes[b.id] || 0), b.max), 0), 50
     );
 
-    // 3) Acción afirmativa (máx 4)
     let totalAf = 0;
     this.accionesAfirmativas.forEach(af => { if (c.accionesAfirmativas[af.id]) totalAf += af.puntos; });
     c.totalAccionAfirmativa = Math.min(totalAf, 4);
 
-    // 4) Total general
     c.puntajeTotal = c.totalMerecimientos + c.totalExperienciaEntrevista + c.totalAccionAfirmativa;
   }
 
@@ -272,9 +251,6 @@ export class MatrizMeritosComponent implements OnInit {
     return Math.min(suma, sec.maximo);
   }
 
-  // ====================================================
-  // GUARDAR EVALUACIÓN
-  // ====================================================
   guardarEvaluacion(): void {
     if (this.convocatoriaInfo?.bloqueada) {
       alert('La matriz de méritos está bloqueada. El período de documentos aún no ha cerrado.');
@@ -286,22 +262,19 @@ export class MatrizMeritosComponent implements OnInit {
     const payload = {
       idConvocatoria: this.idConvocatoria,
       candidatos: this.candidatos.map(c => ({
-        idProceso:   c.idProceso,
-        idSolicitud: c.idSolicitud,
-        puntajes:    c.puntajes,
-        accionesAfirmativas: c.accionesAfirmativas,
-        totalMerecimientos:        c.totalMerecimientos,
+        idProceso:                  c.idProceso,
+        idSolicitud:                c.idSolicitud,
+        puntajes:                   c.puntajes,
+        accionesAfirmativas:        c.accionesAfirmativas,
+        totalMerecimientos:         c.totalMerecimientos,
         totalExperienciaEntrevista: c.totalExperienciaEntrevista,
         totalAccionAfirmativa:      c.totalAccionAfirmativa,
-        puntajeTotal:              c.puntajeTotal
+        puntajeTotal:               c.puntajeTotal
       }))
     };
 
     this.http.post(`${this.API}/guardar`, payload).subscribe({
       next: () => {
-        this.candidatoGanador = this.candidatos.reduce((prev, curr) =>
-          curr.puntajeTotal > prev.puntajeTotal ? curr : prev
-        );
         this.guardando = false;
         this.guardado  = true;
         this.mostrarModalGuardado = true;
@@ -313,9 +286,43 @@ export class MatrizMeritosComponent implements OnInit {
     });
   }
 
+  // ── Override del evaluador ──────────────────────────────
+  abrirModalOverride(c: Candidato): void {
+    this.candidatoOverride    = c;
+    this.justificacionOverride = '';
+    this.mostrarModalOverride  = true;
+  }
+
+  cerrarModalOverride(): void {
+    if (this.guardandoOverride) return;
+    this.mostrarModalOverride  = false;
+    this.candidatoOverride     = null;
+    this.justificacionOverride = '';
+  }
+
+  confirmarOverride(): void {
+    if (!this.justificacionOverride.trim() || !this.candidatoOverride) return;
+    this.guardandoOverride = true;
+
+    this.http.post(`${this.API}/habilitar-entrevista`, {
+      idProceso:     this.candidatoOverride.idProceso,
+      justificacion: this.justificacionOverride.trim()
+    }).subscribe({
+      next: () => {
+        this.candidatoOverride!.habilitadoEntrevista = true;
+        this.guardandoOverride = false;
+        this.cerrarModalOverride();
+      },
+      error: (err) => {
+        alert(err?.error?.mensaje || 'Error al habilitar el candidato.');
+        this.guardandoOverride = false;
+      }
+    });
+  }
+
   cerrarModalGuardado(): void { this.mostrarModalGuardado = false; }
 
-  volver(): void { this.router.navigate(['/evaluador']); }
+  volver(): void { this.router.navigate(['/evaluador/matriz-meritos']); }
 
   trackById(_: number, item: any): number { return item.id; }
 

@@ -63,6 +63,21 @@ public class ProcesoEvaluacion {
     @Column(name = "fecha_decision")
     private LocalDateTime fechaDecision;
 
+    @Column(name = "puntaje_matriz", columnDefinition = "NUMERIC(6,2)")
+    private Double puntajeMatriz;
+
+    @Column(name = "puntaje_entrevista", columnDefinition = "NUMERIC(6,2)")
+    private Double puntajeEntrevista;
+
+    @Column(name = "puntaje_final", columnDefinition = "NUMERIC(6,2)")
+    private Double puntajeFinal;
+
+    @Column(name = "habilitado_entrevista")
+    private Boolean habilitadoEntrevista = false;
+
+    @Column(name = "justificacion_habilitacion", columnDefinition = "TEXT")
+    private String justificacionHabilitacion;
+
     @OneToMany(mappedBy = "proceso", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<FaseProceso> fasesProceso = new ArrayList<>();
 

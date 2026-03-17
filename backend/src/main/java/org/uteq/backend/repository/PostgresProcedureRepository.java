@@ -536,21 +536,15 @@ public class PostgresProcedureRepository {
         }
     }
 
-    /** Agregar un documento académico a una prepostulacion */
-//    public Long agregarDocumentoPrepostulacion(
-//            Long idPrepostulacion, String descripcion, String urlDocumento) {
-//
-//        String sql = "SELECT * FROM sp_agregar_documento_prepostulacion(?,?,?)";
-//        return jdbcTemplate.execute((java.sql.Connection conn) -> {
-//            var ps = conn.prepareStatement(sql);
-//            ps.setLong(1, idPrepostulacion);
-//            ps.setString(2, descripcion);
-//            ps.setString(3, urlDocumento);
-//            var rs = ps.executeQuery();
-//            if (rs.next()) return rs.getLong("out_id_documento");
-//            throw new RuntimeException("sp_agregar_documento sin resultado");
-//        });
-//    }
+    public void habilitarEntrevista(Long idProceso, String justificacion) {
+        jdbcTemplate.execute((java.sql.Connection conn) -> {
+            var ps = conn.prepareStatement("CALL public.sp_habilitar_entrevista(?, ?)");
+            ps.setLong(1, idProceso);
+            ps.setString(2, justificacion);
+            ps.execute();
+            return null;
+        });
+    }
     public Long agregarDocumentoPrepostulacion(
             Long idPrepostulacion, String descripcion, String urlDocumento) {
 
@@ -600,6 +594,10 @@ public class PostgresProcedureRepository {
         });
     }
     public void guardarEntrevistaDocente(Long idProceso) {
+        // Verificar usuario de conexión
+        String usuario = jdbcTemplate.queryForObject("SELECT current_user", String.class);
+        System.out.println("=== Usuario BD en guardarEntrevistaDocente: " + usuario);
+
         jdbcTemplate.execute((java.sql.Connection conn) -> {
             var ps = conn.prepareStatement("CALL public.sp_guardar_entrevista_docente(?)");
             ps.setLong(1, idProceso);
