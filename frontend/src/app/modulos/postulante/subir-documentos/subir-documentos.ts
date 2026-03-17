@@ -43,10 +43,13 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
   documentos:    DocumentoUI[] = [];
   docsPrepostulacion: DocPrepostulacion[] = [];
 
-  // ── NUEVO: soporte multi-convocatoria ─────────────────────
+  // Selector de convocatoria
   misPostulaciones:       PostulanteInfo[] = [];
   idPostulacionSeleccion: number | null    = null;
-  cargandoSelector                         = false;
+
+  // SIEMPRE visible, bloqueado si solo hay 1
+  get mostrarSelector(): boolean { return this.misPostulaciones.length >= 1; }
+  get selectorBloqueado(): boolean { return this.misPostulaciones.length <= 1; }
 
   constructor(
     private router: Router,
@@ -63,39 +66,20 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {}
 
-  // ── NUEVO: carga lista de convocatorias primero ────────────
   private cargarPostulaciones(idUsuario: number): void {
     this.documentoSvc.listarMisPostulaciones(idUsuario).subscribe({
       next: lista => {
         this.misPostulaciones = lista;
-
-        if (lista.length === 0) {
-          // Sin postulaciones: carga directa (flujo original)
-          this.cargarInfoPostulante(idUsuario);
-          return;
-        }
-
-        if (lista.length === 1) {
-          // Solo una: selecciona automáticamente
-          this.idPostulacionSeleccion = lista[0].idPostulacion;
-          this.cargarInfoPostulante(idUsuario);
-          return;
-        }
-
-        // Varias: usa la primera por defecto pero muestra el selector
-        this.idPostulacionSeleccion = lista[0].idPostulacion;
+        this.idPostulacionSeleccion = lista.length > 0 ? lista[0].idPostulacion : null;
         this.cargarInfoPostulante(idUsuario);
         this.cdr.detectChanges();
       },
-      error: () => {
-        // Fallback al flujo original si el endpoint no existe aún
-        this.cargarInfoPostulante(idUsuario);
-      }
+      error: () => this.fallbackCargarInfo(idUsuario)
     });
   }
 
-  // ── NUEVO: usuario cambia la convocatoria ─────────────────
   onConvocatoriaChange(idPostulacion: number): void {
+    if (this.selectorBloqueado) return;
     this.idPostulacionSeleccion = idPostulacion;
     this.cargandoPagina         = true;
     this.documentos             = [];
@@ -117,7 +101,6 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── Carga inicial (igual que antes) ───────────────────────
   private cargarInfoPostulante(idUsuario: number): void {
     if (this.idPostulacionSeleccion) {
       this.documentoSvc.obtenerInfoPorConvocatoria(idUsuario, this.idPostulacionSeleccion).subscribe({
@@ -141,7 +124,6 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
         this.idPostulacion = info.idPostulacion;
         this.cdr.detectChanges();
         this.cargarDocumentos(info.idPostulacion);
-        this.cdr.detectChanges();
       },
       error: () => {
         this.mostrarToast('error', 'Error', 'No se pudo cargar la información del postulante.');
@@ -184,139 +166,63 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
       else                                estado = 'subido';
     }
     const nombreArchivo = d.rutaArchivo
-      ? d.rutaArchivo.replace(/\\/g, '/').split('/').pop() ?? ''
-      : '';
+      ? d.rutaArchivo.replace(/\\/g, '/').split('/').pop() ?? '' : '';
     return {
-      idTipoDocumento: d.idTipoDocumento,
-      nombre:          d.nombreTipo,
+      idTipoDocumento: d.idTipoDocumento, nombre: d.nombreTipo,
       descripcion:     d.descripcionTipo ?? 'Documento requerido para el proceso.',
-      obligatorio:     d.obligatorio,
-      idDocumento:     d.idDocumento,
-      archivo:         null,
-      nombreArchivo,
-      estado,
-      observacion:     d.observacionesIa ?? '',
-      progreso:        d.idDocumento ? 100 : 0
+      obligatorio:     d.obligatorio, idDocumento: d.idDocumento,
+      archivo: null, nombreArchivo, estado,
+      observacion: d.observacionesIa ?? '', progreso: d.idDocumento ? 100 : 0
     };
   }
 
-  // ── Getters ────────────────────────────────────────────────
-  get totalSubidos(): number {
-    return this.documentos.filter(d => d.estado === 'subido' || d.estado === 'validado').length;
-  }
-
-  get obligatoriosCompletos(): boolean {
-    return this.documentos.filter(d => d.obligatorio).every(d => d.estado === 'subido' || d.estado === 'validado');
-  }
-
-  get tieneDocRechazado(): boolean {
-    return this.documentos.some(d => d.estado === 'rechazado');
-  }
-
-  get porcentajeCompletado(): number {
-    if (!this.documentos.length) return 0;
-    return Math.round((this.totalSubidos / this.documentos.length) * 100);
-  }
-
-  get nombreCompleto(): string {
-    if (!this.postulante) return '';
-    return `${this.postulante.nombres} ${this.postulante.apellidos}`;
-  }
-
+  get totalSubidos(): number { return this.documentos.filter(d => d.estado === 'subido' || d.estado === 'validado').length; }
+  get obligatoriosCompletos(): boolean { return this.documentos.filter(d => d.obligatorio).every(d => d.estado === 'subido' || d.estado === 'validado'); }
+  get tieneDocRechazado(): boolean { return this.documentos.some(d => d.estado === 'rechazado'); }
+  get porcentajeCompletado(): number { if (!this.documentos.length) return 0; return Math.round((this.totalSubidos / this.documentos.length) * 100); }
+  get nombreCompleto(): string { if (!this.postulante) return ''; return `${this.postulante.nombres} ${this.postulante.apellidos}`; }
   get procesoLabel(): string {
     if (!this.postulante) return '';
-    const conv = this.postulante.nombreConvocatoria
-      ? `${this.postulante.nombreConvocatoria} — ` : '';
+    const conv = this.postulante.nombreConvocatoria ? `${this.postulante.nombreConvocatoria} — ` : '';
     return `${conv}${this.postulante.nombreMateria} · ${this.postulante.nombreCarrera}`;
   }
 
-  // ── Soporte multi-convocatoria en template ─────────────────
-  get mostrarSelector(): boolean {
-    return this.misPostulaciones.length > 1;
-  }
-
-  // ── Subida de archivo (sin cambios) ───────────────────────
   onFileSelected(event: Event, doc: DocumentoUI): void {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
     const archivo = input.files[0];
-    if (archivo.type !== 'application/pdf') {
-      this.mostrarToast('error', 'Formato inválido', 'Solo se aceptan archivos PDF.');
-      input.value = ''; return;
-    }
-    if (archivo.size > 10 * 1024 * 1024) {
-      this.mostrarToast('error', 'Archivo muy grande', 'El tamaño máximo es 10 MB.');
-      input.value = ''; return;
-    }
-    if (!this.idPostulacion) {
-      this.mostrarToast('error', 'Error', 'No se encontró la postulación activa.');
-      return;
-    }
+    if (archivo.type !== 'application/pdf') { this.mostrarToast('error', 'Formato inválido', 'Solo se aceptan archivos PDF.'); input.value = ''; return; }
+    if (archivo.size > 10 * 1024 * 1024) { this.mostrarToast('error', 'Archivo muy grande', 'El tamaño máximo es 10 MB.'); input.value = ''; return; }
+    if (!this.idPostulacion) { this.mostrarToast('error', 'Error', 'No se encontró la postulación activa.'); return; }
     if (doc.idDocumento) {
-      this.documentoSvc.eliminarDocumento(doc.idDocumento, this.idPostulacion).subscribe({
-        next:  () => this.ejecutarSubida(doc, archivo, input),
-        error: () => this.ejecutarSubida(doc, archivo, input)
-      });
-    } else {
-      this.ejecutarSubida(doc, archivo, input);
-    }
+      this.documentoSvc.eliminarDocumento(doc.idDocumento, this.idPostulacion).subscribe({ next: () => this.ejecutarSubida(doc, archivo, input), error: () => this.ejecutarSubida(doc, archivo, input) });
+    } else { this.ejecutarSubida(doc, archivo, input); }
   }
 
   private ejecutarSubida(doc: DocumentoUI, archivo: File, input: HTMLInputElement): void {
-    doc.archivo       = archivo;
-    doc.nombreArchivo = archivo.name;
-    doc.progreso      = 0;
-    doc.estado        = 'pendiente';
-    doc.idDocumento   = null;
-    this.documentoSubiendoId = doc.idTipoDocumento;
-    this.cdr.detectChanges();
-
+    doc.archivo = archivo; doc.nombreArchivo = archivo.name; doc.progreso = 0; doc.estado = 'pendiente'; doc.idDocumento = null;
+    this.documentoSubiendoId = doc.idTipoDocumento; this.cdr.detectChanges();
     const progreso$ = new Subject<number>();
     progreso$.subscribe(pct => { doc.progreso = pct; this.cdr.detectChanges(); });
-
     this.documentoSvc.subirDocumento(this.idPostulacion!, doc.idTipoDocumento, archivo, progreso$).subscribe({
       next: res => {
-        if (res.exitoso) {
-          doc.estado      = 'subido';
-          doc.idDocumento = res.idDocumento;
-          doc.progreso    = 100;
-          this.mostrarToast('success', '¡Cargado!', `"${doc.nombre}" subido correctamente.`);
-        } else {
-          this.limpiarDocUI(doc);
-          this.mostrarToast('error', 'Error al subir', res.mensaje);
-        }
-        this.documentoSubiendoId = null;
-        progreso$.complete();
-        input.value = '';
-        this.cdr.detectChanges();
+        if (res.exitoso) { doc.estado = 'subido'; doc.idDocumento = res.idDocumento; doc.progreso = 100; this.mostrarToast('success', '¡Cargado!', `"${doc.nombre}" subido correctamente.`); }
+        else { this.limpiarDocUI(doc); this.mostrarToast('error', 'Error al subir', res.mensaje); }
+        this.documentoSubiendoId = null; progreso$.complete(); input.value = ''; this.cdr.detectChanges();
       },
-      error: () => {
-        this.limpiarDocUI(doc);
-        this.documentoSubiendoId = null;
-        progreso$.complete();
-        input.value = '';
-        this.mostrarToast('error', 'Error', 'No se pudo conectar con el servidor.');
-        this.cdr.detectChanges();
-      }
+      error: () => { this.limpiarDocUI(doc); this.documentoSubiendoId = null; progreso$.complete(); input.value = ''; this.mostrarToast('error', 'Error', 'No se pudo conectar con el servidor.'); this.cdr.detectChanges(); }
     });
   }
 
   eliminarArchivo(doc: DocumentoUI): void {
     if (!doc.idDocumento || !this.idPostulacion) { this.limpiarDocUI(doc); return; }
     this.documentoSvc.eliminarDocumento(doc.idDocumento, this.idPostulacion).subscribe({
-      next: res => {
-        if (res.exitoso) { this.limpiarDocUI(doc); this.mostrarToast('info', 'Eliminado', 'El documento fue eliminado correctamente.'); }
-        else { this.mostrarToast('error', 'Error', res.mensaje ?? 'No se pudo eliminar el documento.'); }
-        this.cdr.detectChanges();
-      },
+      next: res => { if (res.exitoso) { this.limpiarDocUI(doc); this.mostrarToast('info', 'Eliminado', 'El documento fue eliminado correctamente.'); } else { this.mostrarToast('error', 'Error', res.mensaje ?? 'No se pudo eliminar el documento.'); } this.cdr.detectChanges(); },
       error: () => { this.mostrarToast('error', 'Error', 'No se pudo conectar con el servidor.'); this.cdr.detectChanges(); }
     });
   }
 
-  private limpiarDocUI(doc: DocumentoUI): void {
-    doc.archivo = null; doc.nombreArchivo = ''; doc.estado = 'pendiente'; doc.progreso = 0; doc.idDocumento = null;
-    this.cdr.detectChanges();
-  }
+  private limpiarDocUI(doc: DocumentoUI): void { doc.archivo = null; doc.nombreArchivo = ''; doc.estado = 'pendiente'; doc.progreso = 0; doc.idDocumento = null; this.cdr.detectChanges(); }
 
   triggerInput(idTipoDocumento: number): void {
     const input = document.getElementById(`file-input-${idTipoDocumento}`) as HTMLInputElement;
@@ -331,8 +237,7 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
         if (res.exitoso) {
           this.documentoSvc.notificarRevision(this.idPostulacion!).subscribe({ next: () => {}, error: () => {} });
           if (this.postulante) this.postulante = { ...this.postulante, estadoPostulacion: 'en_revision' };
-          this.mostrarModalExito = true;
-          this.cdr.detectChanges();
+          this.mostrarModalExito = true; this.cdr.detectChanges();
         } else { this.mostrarToast('error', 'No se pudo finalizar', res.mensaje); }
       },
       error: () => this.mostrarToast('error', 'Error', 'No se pudo conectar con el servidor.')
@@ -340,10 +245,7 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
   }
 
   volver(): void { this.router.navigate(['/postulante']); }
-
-  mostrarToast(tipo: 'success' | 'error' | 'info', titulo: string, mensaje: string): void {
-    this.toast[tipo](titulo, mensaje);
-  }
+  mostrarToast(tipo: 'success' | 'error' | 'info', titulo: string, mensaje: string): void { this.toast[tipo](titulo, mensaje); }
 
   private obtenerIdUsuarioActual(): number | null {
     const token = localStorage.getItem('token');

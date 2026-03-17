@@ -19,13 +19,15 @@ export class EntrevistaPostulanteComponent implements OnInit {
   error: string | null = null;
 
   entrevista: EntrevistaInfo | null = null;
-
   postulante = { nombre: '', proceso: '' };
 
-  // ── NUEVO: selector de convocatoria ───────────────────────
+  // Selector de convocatoria
   misPostulaciones:       PostulanteInfo[] = [];
   idPostulacionSeleccion: number | null    = null;
-  mostrarSelector         = false;
+
+  // Siempre visible, bloqueado si solo hay 1
+  get mostrarSelector(): boolean { return this.misPostulaciones.length >= 1; }
+  get selectorBloqueado(): boolean { return this.misPostulaciones.length <= 1; }
 
   constructor(
     private router: Router,
@@ -37,12 +39,10 @@ export class EntrevistaPostulanteComponent implements OnInit {
     const idUsuario = Number(localStorage.getItem('idUsuario'));
     if (!idUsuario) { this.router.navigate(['/login']); return; }
 
-    // Carga el listado de postulaciones primero
     this.documentoSvc.listarMisPostulaciones(idUsuario).subscribe({
       next: lista => {
-        this.misPostulaciones = lista;
-        this.mostrarSelector  = lista.length > 1;
-        if (lista.length > 0) this.idPostulacionSeleccion = lista[0].idPostulacion;
+        this.misPostulaciones      = lista;
+        this.idPostulacionSeleccion = lista.length > 0 ? lista[0].idPostulacion : null;
         this.cargarEntrevista(idUsuario);
       },
       error: () => this.cargarEntrevista(idUsuario)
@@ -64,16 +64,14 @@ export class EntrevistaPostulanteComponent implements OnInit {
     });
   }
 
-  // ── NUEVO: usuario cambia convocatoria ────────────────────
   onConvocatoriaChange(idPostulacion: number): void {
+    if (this.selectorBloqueado) return;
     this.idPostulacionSeleccion = idPostulacion;
     const idUsuario = Number(localStorage.getItem('idUsuario'));
     this.cargarEntrevista(idUsuario);
   }
 
-  get esVirtual(): boolean {
-    return this.entrevista?.modalidad !== 'presencial';
-  }
+  get esVirtual(): boolean { return this.entrevista?.modalidad !== 'presencial'; }
 
   get colorEstado(): string {
     if (this.entrevista?.estado === 'en_curso')   return 'en-curso';

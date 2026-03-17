@@ -6,58 +6,73 @@
         <h2 class="page-header__title">Mis Resultados</h2>
         <p class="page-header__description">{{ postulante.proceso }}</p>
       </div>
-      <!-- SELECTOR DE CONVOCATORIA -->
+
+      <!-- SELECTOR DE CONVOCATORIA — siempre visible, bloqueado si solo hay 1 -->
       <div class="convocatoria-selector" *ngIf="mostrarSelector">
         <label class="selector-label">
-          <i class="pi pi-filter"></i> Convocatoria
+          <i class="pi pi-building"></i> Convocatoria activa
         </label>
-        <select
-          class="selector-select"
-          [(ngModel)]="idPostulacionSeleccion"
-          (change)="onConvocatoriaChange(+$any($event.target).value)">
-          <option *ngFor="let p of misPostulaciones" [value]="p.idPostulacion">
-            {{ p.nombreConvocatoria ?? 'Convocatoria' }} — {{ p.nombreMateria }}
-          </option>
-        </select>
+        <div class="selector-wrap">
+          <i class="pi pi-briefcase selector-icon"></i>
+          <select
+            class="selector-select"
+            [(ngModel)]="idPostulacionSeleccion"
+            [disabled]="selectorBloqueado"
+            (change)="onConvocatoriaChange(+$any($event.target).value)">
+            <option *ngFor="let p of misPostulaciones" [value]="p.idPostulacion">
+              {{ p.nombreConvocatoria ?? 'Convocatoria' }} — {{ p.nombreMateria }}
+            </option>
+          </select>
+          <i class="pi pi-chevron-down selector-chevron" *ngIf="!selectorBloqueado"></i>
+          <i class="pi pi-lock selector-chevron" *ngIf="selectorBloqueado"></i>
+        </div>
+        <span class="selector-locked-hint" *ngIf="selectorBloqueado">
+          <i class="pi pi-info-circle"></i> Solo tienes una convocatoria activa
+        </span>
       </div>
     </header>
 
-    <!-- Spinner -->
+    <!-- Spinner carga inicial -->
     <div *ngIf="cargando" class="loading-state">
       <div class="spinner"></div>
       <p>Cargando resultados...</p>
     </div>
 
-    <!-- =========== TABS (incluye la nueva pestaña Progreso) =========== -->
+    <!-- =========== TABS =========== -->
     <div class="tabs-bar" *ngIf="!cargando">
       <button class="tab" [class.tab--active]="tabActiva === 'progreso'"
               (click)="tabActiva = 'progreso'">
         <i class="pi pi-chart-line"></i> Progreso
         <span class="tab-badge tab-badge--live" *ngIf="ultimaActualizacion">en vivo</span>
       </button>
-      <button class="tab" [class.tab--active]="tabActiva === 'resumen'"
-              (click)="tabActiva = 'resumen'">Resumen</button>
-      <button class="tab" [class.tab--active]="tabActiva === 'meritos'"
-              (click)="tabActiva = 'meritos'">Méritos</button>
-      <button class="tab" [class.tab--active]="tabActiva === 'entrevista'"
-              (click)="tabActiva = 'entrevista'">Entrevista</button>
-      <button class="tab" [class.tab--active]="tabActiva === 'observaciones'"
-              (click)="tabActiva = 'observaciones'">Observaciones</button>
+      <button class="tab" [class.tab--active]="tabActiva === 'resumen'"      (click)="tabActiva = 'resumen'">Resumen</button>
+      <button class="tab" [class.tab--active]="tabActiva === 'meritos'"      (click)="tabActiva = 'meritos'">Méritos</button>
+      <button class="tab" [class.tab--active]="tabActiva === 'entrevista'"   (click)="tabActiva = 'entrevista'">Entrevista</button>
+      <button class="tab" [class.tab--active]="tabActiva === 'observaciones'" (click)="tabActiva = 'observaciones'">Observaciones</button>
     </div>
 
-    <!-- =========== TAB: PROGRESO (NUEVO — tiempo real) =========== -->
+    <!-- =========== TAB: PROGRESO =========== -->
     <div *ngIf="tabActiva === 'progreso'">
 
-      <!-- Cargando progreso -->
+      <!-- Cargando -->
       <div *ngIf="cargandoProgreso" class="loading-state">
         <div class="spinner"></div>
         <p>Cargando estado del proceso...</p>
       </div>
 
-      <!-- Sin proceso activo -->
-      <div *ngIf="!cargandoProgreso && errorProgreso" class="sin-datos">
-        <i class="pi pi-info-circle"></i>
-        <p>{{ errorProgreso }}</p>
+      <!-- Sin proceso activo — diseño tipo sin-entrevista -->
+      <div *ngIf="!cargandoProgreso && errorProgreso" class="sin-proceso-fullpage">
+        <div class="sin-proceso-card">
+          <div class="sin-proceso-icon sin-proceso-icon--naranja">
+            <i class="pi pi-chart-line"></i>
+          </div>
+          <h3>Proceso no iniciado</h3>
+          <p>{{ errorProgreso }}</p>
+          <div class="sin-proceso-info">
+            <i class="pi pi-info-circle"></i>
+            El progreso aparecerá aquí en cuanto el evaluador inicie las etapas de evaluación.
+          </div>
+        </div>
       </div>
 
       <!-- Contenido de progreso -->
@@ -69,7 +84,7 @@
           Actualizado a las {{ ultimaActualizacion }} · se actualiza cada 15 s
         </div>
 
-        <!-- Estado general y barra de progreso -->
+        <!-- Estado general y barra -->
         <div class="form-card progreso-general-card">
           <div class="progreso-header">
             <div>
@@ -82,15 +97,14 @@
           </div>
 
           <div class="barra-container barra-container--grande">
-            <div class="barra-fill barra-fill--animada"
-                 [style.width.%]="porcentajeProgreso"></div>
+            <div class="barra-fill barra-fill--animada" [style.width.%]="porcentajeProgreso"></div>
           </div>
           <div class="progreso-pct-row">
             <span>Avance del proceso</span>
             <strong>{{ porcentajeProgreso }}%</strong>
           </div>
 
-          <!-- Puntajes parciales si ya están disponibles -->
+          <!-- Puntajes parciales -->
           <div class="puntajes-parciales" *ngIf="progreso.puntajeMatriz || progreso.puntajeEntrevista">
             <div class="puntaje-chip" *ngIf="progreso.puntajeMatriz">
               <span class="chip-label">Matriz de méritos</span>
@@ -108,7 +122,7 @@
         </div>
 
         <!-- Línea de tiempo de fases -->
-        <div class="form-card">
+        <div class="form-card" style="margin-top: 16px;">
           <h3 class="seccion-titulo">Etapas del proceso</h3>
           <div class="fases-timeline">
             <div *ngFor="let fase of fasesProgreso; let last = last"
@@ -116,15 +130,10 @@
                  [class.fase-item--completada]="fase.estado === 'completada'"
                  [class.fase-item--en-curso]="fase.estado === 'en_curso'"
                  [class.fase-item--pendiente]="fase.estado === 'pendiente'">
-
-              <!-- Círculo indicador -->
               <div class="fase-circulo">
                 <i class="pi" [ngClass]="iconoFase(fase.estado)"></i>
               </div>
-              <!-- Línea conectora (excepto el último) -->
               <div class="fase-linea" *ngIf="!last"></div>
-
-              <!-- Info de la fase -->
               <div class="fase-contenido">
                 <div class="fase-nombre-row">
                   <strong class="fase-nombre">{{ fase.nombre }}</strong>
@@ -148,8 +157,9 @@
           </div>
         </div>
 
-        <!-- Decisión final si ya existe -->
+        <!-- Decisión final -->
         <div class="form-card decision-card"
+             style="margin-top: 16px;"
              *ngIf="progreso.decision"
              [class.decision-card--aprobado]="progreso.decision != null && progreso.decision.includes('aprobado')"
              [class.decision-card--rechazado]="progreso.decision === 'no_aprobado'">
@@ -163,17 +173,26 @@
       </div>
     </div>
 
-    <!-- =========== RESTO DE TABS (sin cambios) =========== -->
+    <!-- =========== RESTO DE TABS =========== -->
 
-    <!-- Sin datos para tabs de puntajes -->
-    <div *ngIf="!cargando && sinDatos && tabActiva !== 'progreso'" class="sin-datos">
-      <i class="pi pi-chart-bar"></i>
-      <p>Aún no hay resultados disponibles para tu proceso.</p>
+    <!-- Sin datos para puntajes -->
+    <div *ngIf="!cargando && sinDatos && tabActiva !== 'progreso'" class="sin-proceso-fullpage">
+      <div class="sin-proceso-card">
+        <div class="sin-proceso-icon sin-proceso-icon--gris">
+          <i class="pi pi-chart-bar"></i>
+        </div>
+        <h3>Sin resultados disponibles</h3>
+        <p>Aún no hay resultados registrados para tu proceso de evaluación.</p>
+        <div class="sin-proceso-info">
+          <i class="pi pi-info-circle"></i>
+          Los puntajes estarán disponibles una vez que el evaluador complete las etapas del proceso.
+        </div>
+      </div>
     </div>
 
     <div *ngIf="!cargando && !sinDatos && tabActiva !== 'progreso'">
 
-      <!-- =========== ESTADO GENERAL =========== -->
+      <!-- ESTADO GENERAL -->
       <div class="estado-card" [class]="'estado-card--' + colorEstado">
         <div class="estado-icon">
           <i class="pi"
@@ -195,7 +214,7 @@
         </div>
       </div>
 
-      <!-- =========== RESUMEN PUNTAJE =========== -->
+      <!-- RESUMEN PUNTAJE -->
       <div class="puntaje-banner">
         <div class="puntaje-bloque">
           <span class="pb-num">{{ resultados.totalMeritos }}</span>
@@ -223,7 +242,7 @@
         </div>
       </div>
 
-      <!-- =========== TAB: RESUMEN =========== -->
+      <!-- TAB: RESUMEN -->
       <div class="form-card" *ngIf="tabActiva === 'resumen'">
         <h3 class="seccion-titulo">Resumen de Puntajes</h3>
         <div class="resumen-barras">
@@ -250,7 +269,7 @@
         </div>
       </div>
 
-      <!-- =========== TAB: MÉRITOS =========== -->
+      <!-- TAB: MÉRITOS -->
       <div class="form-card" *ngIf="tabActiva === 'meritos'">
         <h3 class="seccion-titulo">Detalle — Etapa de Merecimientos</h3>
         <div class="detalle-list">
@@ -270,7 +289,7 @@
         </div>
       </div>
 
-      <!-- =========== TAB: ENTREVISTA =========== -->
+      <!-- TAB: ENTREVISTA -->
       <div class="form-card" *ngIf="tabActiva === 'entrevista'">
         <h3 class="seccion-titulo">Detalle — Experiencia y Entrevista</h3>
         <div class="detalle-list">
@@ -290,7 +309,7 @@
         </div>
       </div>
 
-      <!-- =========== TAB: OBSERVACIONES =========== -->
+      <!-- TAB: OBSERVACIONES -->
       <div class="form-card" *ngIf="tabActiva === 'observaciones'">
         <h3 class="seccion-titulo">Observaciones del Evaluador</h3>
         <div class="obs-box">
@@ -306,4 +325,4 @@
     </div>
 
   </div>
-</div>
+</div>x

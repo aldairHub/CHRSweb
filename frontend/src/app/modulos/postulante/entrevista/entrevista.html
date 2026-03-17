@@ -1,14 +1,39 @@
-
-
 <!-- Spinner -->
 <div *ngIf="cargando" class="estado-fullpage">
   <div class="spinner"></div>
   <p>Cargando entrevista...</p>
 </div>
 
-<!-- Sin entrevista -->
+<!-- Sin entrevista — con selector arriba si aplica -->
 <div *ngIf="!cargando && error" class="estado-fullpage">
-  <div class="sin-entrevista-card">
+
+  <!-- Selector siempre visible también en estado vacío -->
+  <div class="sin-proceso-card" style="margin-bottom: 0; padding-bottom: 28px;">
+
+    <!-- Selector de convocatoria -->
+    <div class="convocatoria-selector" *ngIf="mostrarSelector" style="margin: 0 auto 28px; text-align: left;">
+      <label class="selector-label">
+        <i class="pi pi-building"></i> Convocatoria activa
+      </label>
+      <div class="selector-wrap">
+        <i class="pi pi-briefcase selector-icon"></i>
+        <select
+          class="selector-select"
+          [(ngModel)]="idPostulacionSeleccion"
+          [disabled]="selectorBloqueado"
+          (change)="onConvocatoriaChange(+$any($event.target).value)">
+          <option *ngFor="let p of misPostulaciones" [value]="p.idPostulacion">
+            {{ p.nombreConvocatoria ?? 'Convocatoria' }} — {{ p.nombreMateria }}
+          </option>
+        </select>
+        <i class="pi pi-chevron-down selector-chevron" *ngIf="!selectorBloqueado"></i>
+        <i class="pi pi-lock selector-chevron" *ngIf="selectorBloqueado"></i>
+      </div>
+      <span class="selector-locked-hint" *ngIf="selectorBloqueado">
+        <i class="pi pi-info-circle"></i> Solo tienes una convocatoria activa
+      </span>
+    </div>
+
     <div class="sin-entrevista-icon">
       <i class="pi pi-calendar"></i>
     </div>
@@ -29,6 +54,30 @@
       <div>
         <h2 class="page-header__title">Mi Entrevista</h2>
         <p class="page-header__description">{{ entrevista.nombreFase }}</p>
+      </div>
+
+      <!-- SELECTOR DE CONVOCATORIA -->
+      <div class="convocatoria-selector" *ngIf="mostrarSelector">
+        <label class="selector-label">
+          <i class="pi pi-building"></i> Convocatoria activa
+        </label>
+        <div class="selector-wrap">
+          <i class="pi pi-briefcase selector-icon"></i>
+          <select
+            class="selector-select"
+            [(ngModel)]="idPostulacionSeleccion"
+            [disabled]="selectorBloqueado"
+            (change)="onConvocatoriaChange(+$any($event.target).value)">
+            <option *ngFor="let p of misPostulaciones" [value]="p.idPostulacion">
+              {{ p.nombreConvocatoria ?? 'Convocatoria' }} — {{ p.nombreMateria }}
+            </option>
+          </select>
+          <i class="pi pi-chevron-down selector-chevron" *ngIf="!selectorBloqueado"></i>
+          <i class="pi pi-lock selector-chevron" *ngIf="selectorBloqueado"></i>
+        </div>
+        <span class="selector-locked-hint" *ngIf="selectorBloqueado">
+          <i class="pi pi-info-circle"></i> Solo tienes una convocatoria activa
+        </span>
       </div>
     </header>
 
@@ -108,40 +157,19 @@
       <div class="form-card instrucciones-card">
         <h3 class="card-title"><i class="pi pi-list"></i> Instrucciones Importantes</h3>
         <ul class="instrucciones-list">
-          <li>
-            <div class="inst-num">1</div>
-            <span>Conéctese 5 minutos antes de la hora indicada para verificar audio y cámara.</span>
-          </li>
-          <li>
-            <div class="inst-num">2</div>
-            <span>Tenga a la mano todos los documentos de soporte de su hoja de vida.</span>
-          </li>
-          <li>
-            <div class="inst-num">3</div>
-            <span>La clase demostrativa tendrá una duración máxima de 20 minutos.</span>
-          </li>
-          <li>
-            <div class="inst-num">4</div>
-            <span>Prepare el tema indicado por la comisión evaluadora con anticipación.</span>
-          </li>
-          <li>
-            <div class="inst-num">5</div>
-            <span>Asegúrese de estar en un lugar tranquilo con buena conexión a internet.</span>
-          </li>
-          <li>
-            <div class="inst-num">6</div>
-            <span>Vista ropa formal para la sesión de videoconferencia.</span>
-          </li>
+          <li><div class="inst-num">1</div><span>Conéctese 5 minutos antes de la hora indicada para verificar audio y cámara.</span></li>
+          <li><div class="inst-num">2</div><span>Tenga a la mano todos los documentos de soporte de su hoja de vida.</span></li>
+          <li><div class="inst-num">3</div><span>La clase demostrativa tendrá una duración máxima de 20 minutos.</span></li>
+          <li><div class="inst-num">4</div><span>Prepare el tema indicado por la comisión evaluadora con anticipación.</span></li>
+          <li><div class="inst-num">5</div><span>Asegúrese de estar en un lugar tranquilo con buena conexión a internet.</span></li>
+          <li><div class="inst-num">6</div><span>Vista ropa formal para la sesión de videoconferencia.</span></li>
         </ul>
-
         <div class="criterios-info">
           <h4><i class="pi pi-star"></i> Aspectos a Evaluar (25 puntos)</h4>
           <div class="criterio-badge">Vocación Docente — 5 pts</div>
           <div class="criterio-badge">Actitud y Habilidades — 10 pts</div>
           <div class="criterio-badge">Clase Demostrativa — 10 pts</div>
         </div>
-
-        <!-- Observaciones del evaluador -->
         <div class="observaciones-box" *ngIf="entrevista.observaciones">
           <h4><i class="pi pi-comment"></i> Observaciones</h4>
           <p>{{ entrevista.observaciones }}</p>
@@ -155,18 +183,10 @@
 <!-- MODAL VIDEOCONFERENCIA -->
 <div class="modal-overlay" *ngIf="mostrarModalVideoconf">
   <div class="modal-card">
-    <div class="modal-icon">
-      <i class="pi pi-video"></i>
-    </div>
+    <div class="modal-icon"><i class="pi pi-video"></i></div>
     <h2 class="modal-title">¿Listo para unirse?</h2>
-    <p class="modal-desc">
-      Se abrirá la sala de videoconferencia en una nueva pestaña.<br>
-      Asegúrese de tener cámara y micrófono disponibles.
-    </p>
-    <div class="modal-link-box">
-      <i class="pi pi-link"></i>
-      <span>{{ entrevista?.enlace }}</span>
-    </div>
+    <p class="modal-desc">Se abrirá la sala de videoconferencia en una nueva pestaña.<br>Asegúrese de tener cámara y micrófono disponibles.</p>
+    <div class="modal-link-box"><i class="pi pi-link"></i><span>{{ entrevista?.enlace }}</span></div>
     <div class="modal-checklist">
       <div class="check-item"><i class="pi pi-check"></i> Conexión a internet estable</div>
       <div class="check-item"><i class="pi pi-check"></i> Cámara y micrófono funcionando</div>
@@ -174,11 +194,7 @@
     </div>
     <div class="modal-actions">
       <button class="btn btn--outline-back" (click)="mostrarModalVideoconf = false">Cancelar</button>
-      <button class="btn btn--primary" (click)="confirmarUnirse()">
-        <i class="pi pi-external-link"></i> Entrar a la Sala
-      </button>
+      <button class="btn btn--primary" (click)="confirmarUnirse()"><i class="pi pi-external-link"></i> Entrar a la Sala</button>
     </div>
   </div>
 </div>
-
-
