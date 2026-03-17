@@ -1,5 +1,5 @@
 <div class="login-container">
-  <div class="login-content" style="max-width: 540px;">
+  <div class="login-content" style="max-width: 580px;">
 
     <div class="login-header">
       <div class="logo-box">
@@ -19,12 +19,12 @@
           <line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
         <p>Ingresa tu cédula para verificar tu solicitud anterior. Luego sube
-          los nuevos documentos para re-postular.</p>
+          los documentos actualizados para re-postular.</p>
       </div>
 
       <div *ngIf="error" class="server-error">{{ error }}</div>
 
-      <!-- Éxito -->
+      <!-- ── Éxito ─────────────────────────────────────────────── -->
       <div class="success-msg" *ngIf="exito">
         ✅ {{ mensajeExito }}
         <button class="btn-ir-inicio" (click)="irAInicio()">Ir al inicio</button>
@@ -32,7 +32,9 @@
 
       <ng-container *ngIf="!exito">
 
-        <!-- Paso 1: verificar cédula -->
+        <!-- ═══════════════════════════════════════════════════════
+             PASO 1 – Verificar cédula
+        ═══════════════════════════════════════════════════════ -->
         <ng-container *ngIf="!cedulaVerificada">
           <h3 class="form-title">Verificar identidad</h3>
           <div class="form-group">
@@ -57,7 +59,9 @@
           </button>
         </ng-container>
 
-        <!-- Paso 2: subir documentos -->
+        <!-- ═══════════════════════════════════════════════════════
+             PASO 2 – Subir documentos (nueva lógica)
+        ═══════════════════════════════════════════════════════ -->
         <ng-container *ngIf="cedulaVerificada">
 
           <div class="verified-badge">
@@ -69,78 +73,129 @@
             Identidad verificada — {{ cedula }}
           </div>
 
-          <h3 class="form-title" style="margin-top:1.5rem;">Nuevos documentos</h3>
-          <p class="form-subtitle">Sube los documentos actualizados</p>
+          <!-- ── Cédula PDF ──────────────────────────────────── -->
+          <h3 class="form-title" style="margin-top:1.5rem;">Documentos de identidad</h3>
 
-          <!-- Cédula PDF -->
           <div class="form-group">
             <label>CÉDULA / PASAPORTE (PDF)</label>
             <div class="file-upload-box" [class.has-file]="!!archivoCedula">
               <input type="file" id="fileCedula" accept=".pdf"
                      (change)="onFileCedulaSelected($event)" hidden>
               <label for="fileCedula" class="file-label">
-                <svg *ngIf="!archivoCedula" width="22" height="22" viewBox="0 0 24 24"
-                     fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12
-                           a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-                </svg>
-                <svg *ngIf="archivoCedula" width="22" height="22" viewBox="0 0 24 24"
-                     fill="none" stroke="#00A63E" stroke-width="2">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                  <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-                <span>{{ archivoCedula ? nombreArchivoCedula : 'Subir cédula (PDF)' }}</span>
+                <div class="icon-area">
+                  <svg *ngIf="!archivoCedula" width="22" height="22" viewBox="0 0 24 24"
+                       fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12
+                             a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                  <svg *ngIf="archivoCedula" width="22" height="22" viewBox="0 0 24 24"
+                       fill="none" stroke="#00A63E" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                </div>
+                <div class="text-area">
+                  <span class="main-text">{{ archivoCedula ? 'PDF seleccionado' : 'Subir cédula (PDF)' }}</span>
+                  <span class="sub-text">{{ nombreArchivoCedula || 'Máx. 5MB' }}</span>
+                </div>
               </label>
             </div>
           </div>
 
-          <!-- Foto -->
+          <!-- ── Foto ───────────────────────────────────────── -->
           <div class="form-group">
             <label>FOTO (JPG / PNG)</label>
             <div class="file-upload-box" [class.has-file]="!!archivoFoto">
               <input type="file" id="fileFoto" accept="image/*"
                      (change)="onFileFotoSelected($event)" hidden>
               <label for="fileFoto" class="file-label">
-                <svg *ngIf="!archivoFoto" width="22" height="22" viewBox="0 0 24 24"
-                     fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                  <circle cx="8.5" cy="8.5" r="1.5"/>
-                  <polyline points="21 15 16 10 5 21"/>
-                </svg>
-                <svg *ngIf="archivoFoto" width="22" height="22" viewBox="0 0 24 24"
-                     fill="none" stroke="#00A63E" stroke-width="2">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                  <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-                <span>{{ archivoFoto ? nombreArchivoFoto : 'Subir foto' }}</span>
+                <div class="icon-area">
+                  <svg *ngIf="!archivoFoto" width="22" height="22" viewBox="0 0 24 24"
+                       fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                  </svg>
+                  <svg *ngIf="archivoFoto" width="22" height="22" viewBox="0 0 24 24"
+                       fill="none" stroke="#00A63E" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                </div>
+                <div class="text-area">
+                  <span class="main-text">{{ archivoFoto ? 'Imagen seleccionada' : 'Subir foto' }}</span>
+                  <span class="sub-text">{{ nombreArchivoFoto || 'JPG, PNG — Máx. 5MB' }}</span>
+                </div>
               </label>
             </div>
           </div>
 
-          <!-- Prerrequisitos -->
-          <div class="form-group">
-            <label>PRERREQUISITOS (PDF)</label>
-            <div class="file-upload-box" [class.has-file]="!!archivoPrerrequisitos">
-              <input type="file" id="filePre" accept=".pdf"
-                     (change)="onFilePreSelected($event)" hidden>
-              <label for="filePre" class="file-label">
-                <svg *ngIf="!archivoPrerrequisitos" width="22" height="22"
-                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12
-                           a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-                </svg>
-                <svg *ngIf="archivoPrerrequisitos" width="22" height="22"
-                     viewBox="0 0 24 24" fill="none" stroke="#00A63E" stroke-width="2">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                  <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-                <span>{{ archivoPrerrequisitos ? nombreArchivoPrerrequisitos
-                  : 'Subir prerrequisitos (PDF)' }}</span>
-              </label>
-            </div>
+          <!-- ══════════════════════════════════════════════════
+               DOCUMENTOS ACADÉMICOS DINÁMICOS (nueva lógica)
+          ══════════════════════════════════════════════════ -->
+          <div class="form-section-title" style="margin-top:1.5rem;">
+            <label>Documentos Académicos (Títulos)</label>
+            <button type="button" class="btn-add-doc" (click)="agregarDocumento()">
+              + Agregar documento
+            </button>
           </div>
 
-          <button class="btn-submit" (click)="enviarRepostulacion()" [disabled]="enviando">
+          <div *ngFor="let doc of documentosAcademicos; let i = index"
+               class="documento-card">
+
+            <div class="doc-header">
+              <span class="doc-number">Documento {{ i + 1 }}</span>
+              <button type="button" class="btn-remove-doc"
+                      (click)="eliminarDocumento(i)"
+                      [disabled]="documentosAcademicos.length === 1">
+                ✕
+              </button>
+            </div>
+
+            <div class="form-group">
+              <input type="text"
+                     class="form-input"
+                     [(ngModel)]="doc.descripcion"
+                     [name]="'descripcion_' + i"
+                     placeholder="Ej: Ingeniería en Software - Universidad X"
+                     required>
+            </div>
+
+            <div class="file-upload-box" [class.has-file]="!!doc.archivo">
+              <input type="file"
+                     [id]="'fileDoc_' + i"
+                     accept=".pdf"
+                     (change)="onFileDocumentoSelected($event, i)"
+                     hidden>
+              <label [for]="'fileDoc_' + i" class="file-label">
+                <div class="icon-area">
+                  <svg *ngIf="!doc.archivo" width="24" height="24" viewBox="0 0 24 24"
+                       fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                  <svg *ngIf="doc.archivo" width="24" height="24" viewBox="0 0 24 24"
+                       fill="none" stroke="#00A63E" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                </div>
+                <div class="text-area">
+                  <span class="main-text">{{ doc.archivo ? 'PDF seleccionado' : 'Subir PDF del título' }}</span>
+                  <span class="sub-text">{{ doc.nombreArchivo || 'Máx. 5MB' }}</span>
+                </div>
+              </label>
+            </div>
+
+          </div>
+          <!-- ════════════════════════════════════════════════ -->
+
+          <button class="btn-submit" (click)="enviarRepostulacion()" [disabled]="enviando"
+                  style="margin-top: 1.5rem;">
+            <svg *ngIf="enviando" class="spinner" width="18" height="18"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
             {{ enviando ? 'Enviando...' : 'Enviar Re-postulación' }}
           </button>
 

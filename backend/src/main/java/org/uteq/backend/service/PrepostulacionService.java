@@ -126,44 +126,101 @@ public class PrepostulacionService {
     }
 
     // =========================================================================
-    // REPOSTULACIÓN
+    // REPOSTULACIÓN  (lógica nueva — igual que prepostulación inicial)
     // =========================================================================
 
+    /**
+     * Re-postulación adaptada a la nueva lógica de documentos dinámicos.
+     *
+     * Flujo:
+     *   1. Subir cédula y foto a Supabase.
+     *   2. Llamar sp_repostular(cedula, idSolicitud, urlCedula, urlFoto)
+     *      → crea una NUEVA fila en prepostulacion con estado PENDIENTE.
+     *   3. Para cada documento académico, subir a Supabase y registrar
+     *      con sp_agregar_documento_prepostulacion(idNuevaPrepostulacion, descripcion, urlDoc).
+     *   4. Notificar al revisor.
+     */
     @Transactional
     public PrepostulacionResponseDTO repostular(
             String cedula,
             MultipartFile archivoCedula,
             MultipartFile archivoFoto,
-            MultipartFile archivoPrerrequisitos,
+            List<MultipartFile> archivosDocumentos,
+            List<String> descripcionesDocumentos,
             Long idSolicitud
     ) {
-        String urlCedula, urlFoto, urlPrerrequisitos;
+        // ── 1. Validaciones básicas ──────────────────────────────────────────
+        if (archivosDocumentos == null || archivosDocumentos.isEmpty()) {
+            throw new RuntimeException("Debe incluir al menos un documento académico.");
+        }
+
+        // ── 2. Subir archivos base ───────────────────────────────────────────
+        String urlCedula, urlFoto;
         try {
             String tag = cedula + "_repost_" + System.currentTimeMillis();
-            urlCedula         = supabaseService.subirArchivo(archivoCedula,         "cedulas",        tag);
-            urlFoto           = supabaseService.subirArchivo(archivoFoto,           "fotos",          tag);
-            urlPrerrequisitos = supabaseService.subirArchivo(archivoPrerrequisitos, "prerrequisitos", tag);
+            urlCedula = supabaseService.subirArchivo(archivoCedula, "cedulas", tag);
+            urlFoto   = supabaseService.subirArchivo(archivoFoto,   "fotos",   tag);
+            log.info("Archivos base de re-postulacion subidos para cedula: {}", cedula);
         } catch (Exception e) {
             throw new RuntimeException("Error al subir documentos: " + e.getMessage());
         }
 
+        // ── 3. Crear nueva fila de prepostulacion (sp_repostular 4 args) ────
+        Long idNuevaPrepostulacion;
         try {
-            Long idNuevaPrepostulacion = postgresProcedureRepository.repostular(
-                    cedula, idSolicitud, urlCedula, urlFoto, urlPrerrequisitos);
-
-            System.out.println("Re-postulación guardada como nueva fila con ID: " + idNuevaPrepostulacion);
-
-            String correo = prepostulacionRepository
-                    .findTopByIdentificacionOrderByFechaEnvioDesc(cedula)
-                    .map(Prepostulacion::getCorreo)
-                    .orElse("");
-
-            return new PrepostulacionResponseDTO(
-                    "Re-postulación enviada. Su solicitud está nuevamente en revisión.",
-                    correo, idNuevaPrepostulacion, true, LocalDateTime.now());
+            idNuevaPrepostulacion = postgresProcedureRepository.repostular(
+                    cedula, idSolicitud, urlCedula, urlFoto);
+            log.info("Re-postulacion guardada como nueva fila con ID: {}", idNuevaPrepostulacion);
         } catch (Exception e) {
             throw new RuntimeException(extraerMensajeTrigger(e));
         }
+
+        // ── 4. Subir y registrar documentos académicos dinámicos ─────────────
+        String tag = cedula + "_repost_" + System.currentTimeMillis();
+        for (int i = 0; i < archivosDocumentos.size(); i++) {
+            MultipartFile archivo = archivosDocumentos.get(i);
+            String descripcion = (descripcionesDocumentos != null && i < descripcionesDocumentos.size())
+                    ? descripcionesDocumentos.get(i)
+                    : "Documento " + (i + 1);
+            try {
+                log.debug("Re-post: subiendo documento {} '{}' para prepostulacion {}",
+                        i + 1, descripcion, idNuevaPrepostulacion);
+                String urlDoc = supabaseService.subirArchivo(
+                        archivo, "documentos_academicos", tag + "_" + i);
+                postgresProcedureRepository.agregarDocumentoPrepostulacion(
+                        idNuevaPrepostulacion, descripcion, urlDoc);
+                log.debug("Re-post: documento {} registrado correctamente", i + 1);
+            } catch (Exception e) {
+                log.error("Error al subir documento academico {} en re-postulacion: {}", i + 1, e.getMessage());
+                throw new RuntimeException("Error al subir documento académico " + (i + 1) + ": " + e.getMessage());
+            }
+        }
+
+        log.info("Re-postulacion {} completada con {} documento(s) academico(s)",
+                idNuevaPrepostulacion, archivosDocumentos.size());
+
+        // ── 5. Notificar al revisor ──────────────────────────────────────────
+        try {
+            Prepostulacion ultima = prepostulacionRepository
+                    .findTopByIdentificacionOrderByFechaEnvioDesc(cedula)
+                    .orElse(null);
+            String nombreCompleto = ultima != null
+                    ? ultima.getNombres() + " " + ultima.getApellidos()
+                    : cedula;
+            notifService.notifRevisorNuevaPrepostulacion(idNuevaPrepostulacion, nombreCompleto);
+        } catch (Exception e) {
+            log.warn("No se pudo enviar notificacion de re-postulacion: {}", e.getMessage());
+        }
+
+        // ── 6. Recuperar correo para la respuesta ────────────────────────────
+        String correo = prepostulacionRepository
+                .findTopByIdentificacionOrderByFechaEnvioDesc(cedula)
+                .map(Prepostulacion::getCorreo)
+                .orElse("");
+
+        return new PrepostulacionResponseDTO(
+                "Re-postulación enviada. Su solicitud está nuevamente en revisión.",
+                correo, idNuevaPrepostulacion, true, LocalDateTime.now());
     }
 
     private String extraerMensajeTrigger(Exception e) {

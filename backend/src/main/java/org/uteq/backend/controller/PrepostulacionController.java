@@ -20,8 +20,8 @@ public class PrepostulacionController {
     private final PrepostulacionService prepostulacionService;
 
     /**
-     * registro inicial de postulante.
-     * Recibe idSolicitud (no idConvocatoria) — el postulante ya eligió la solicitud específica en el front.
+     * Registro inicial de postulante.
+     * Recibe idSolicitud — el postulante ya eligió la solicitud específica en el front.
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> registrarPrepostulacion(
@@ -54,6 +54,7 @@ public class PrepostulacionController {
             ));
         }
     }
+
     /**
      * Verifica si una cédula está disponible (no ha postulado nunca).
      */
@@ -94,20 +95,29 @@ public class PrepostulacionController {
 
     /**
      * Re-postulación: solo para postulantes con estado RECHAZADO.
-     * Guarda una NUEVA fila en prepostulacion (historial) via stored procedure.
-     * Recibe idSolicitud (el postulante elige de nuevo a cuál solicitud aplica).
+     *
+     * Ahora sigue la misma lógica que la prepostulación inicial:
+     *   - archivoCedula   (PDF obligatorio)
+     *   - archivoFoto     (imagen obligatoria)
+     *   - archivosDocumentos + descripcionesDocumentos  (documentos académicos dinámicos)
+     *
+     * Llama a sp_repostular(cedula, idSolicitud, urlCedula, urlFoto)
+     * y luego sube cada documento académico con sp_agregar_documento_prepostulacion.
      */
     @PostMapping(value = "/repostular", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> repostular(
-            @RequestParam("cedula")                  String cedula,
-            @RequestParam("archivoCedula")           MultipartFile archivoCedula,
-            @RequestParam("archivoFoto")             MultipartFile archivoFoto,
-            @RequestParam("archivoPrerrequisitos")   MultipartFile archivoPrerrequisitos,
-            @RequestParam(value = "idSolicitud", required = false) Long idSolicitud
+            @RequestParam("cedula")                                                    String cedula,
+            @RequestParam("archivoCedula")                                             MultipartFile archivoCedula,
+            @RequestParam("archivoFoto")                                               MultipartFile archivoFoto,
+            @RequestParam(value = "archivosDocumentos", required = false)              List<MultipartFile> archivosDocumentos,
+            @RequestParam(value = "descripcionesDocumentos", required = false)         List<String> descripcionesDocumentos,
+            @RequestParam(value = "idSolicitud", required = false)                     Long idSolicitud
     ) {
         try {
             PrepostulacionResponseDTO response = prepostulacionService.repostular(
-                    cedula, archivoCedula, archivoFoto, archivoPrerrequisitos, idSolicitud
+                    cedula, archivoCedula, archivoFoto,
+                    archivosDocumentos, descripcionesDocumentos,
+                    idSolicitud
             );
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {

@@ -4,6 +4,16 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
+// ==========================================
+// INTERFAZ PARA DOCUMENTOS ACADÉMICOS
+// (igual que en prepostulacion/registro)
+// ==========================================
+export interface DocumentoEntrada {
+  archivo: File | null;
+  descripcion: string;
+  nombreArchivo: string;
+}
+
 @Component({
   selector: 'app-repostulacion',
   standalone: true,
@@ -13,22 +23,24 @@ import { HttpClient } from '@angular/common/http';
 })
 export class RepostulacionComponent implements OnInit {
 
-  cedula = '';
-  cedulaVerificada = false;
-  verificando = false;
-  enviando    = false;
-  error       = '';
-  exito       = false;
-  mensajeExito = '';
+  cedula            = '';
+  cedulaVerificada  = false;
+  verificando       = false;
+  enviando          = false;
+  error             = '';
+  exito             = false;
+  mensajeExito      = '';
 
   idSolicitud: number | null = null;
 
-  archivoCedula:              File | null = null;
-  archivoFoto:                File | null = null;
-  archivoPrerrequisitos:      File | null = null;
-  nombreArchivoCedula         = '';
-  nombreArchivoFoto           = '';
-  nombreArchivoPrerrequisitos = '';
+  // ─── Archivos base ────────────────────────────────────────────
+  archivoCedula:   File | null = null;
+  archivoFoto:     File | null = null;
+  nombreArchivoCedula = '';
+  nombreArchivoFoto   = '';
+
+  // ─── Documentos académicos dinámicos (nueva lógica) ──────────
+  documentosAcademicos: DocumentoEntrada[] = [];
 
   private apiUrl = 'http://localhost:8080/api/prepostulacion';
 
@@ -40,20 +52,24 @@ export class RepostulacionComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.agregarDocumento(); // un campo vacío por defecto
+
     this.route.queryParams.subscribe(params => {
       if (params['idSolicitud']) {
         this.idSolicitud = +params['idSolicitud'];
       } else {
-        // Si no viene idSolicitud, redirigir a convocatorias
         this.router.navigate(['/convocatorias']);
       }
     });
   }
 
+  // ==========================================
+  // PASO 1 – VERIFICAR CÉDULA
+  // ==========================================
   verificarCedula(): void {
     if (!this.cedula) return;
     this.verificando = true;
-    this.error = '';
+    this.error       = '';
 
     this.http.get<any>(`${this.apiUrl}/verificar-estado/${this.cedula}`).subscribe({
       next: (res) => {
@@ -75,29 +91,86 @@ export class RepostulacionComponent implements OnInit {
     });
   }
 
+  // ==========================================
+  // SELECCIÓN DE ARCHIVOS BASE
+  // ==========================================
   onFileCedulaSelected(e: any): void {
     const f = e.target.files[0];
-    if (f?.type === 'application/pdf') { this.archivoCedula = f; this.nombreArchivoCedula = f.name; }
-    else alert('Debe ser un archivo PDF');
+    if (f?.type === 'application/pdf') {
+      this.archivoCedula     = f;
+      this.nombreArchivoCedula = f.name;
+    } else {
+      alert('Debe ser un archivo PDF');
+      e.target.value = '';
+    }
   }
 
   onFileFotoSelected(e: any): void {
     const f = e.target.files[0];
-    if (f?.type.startsWith('image/')) { this.archivoFoto = f; this.nombreArchivoFoto = f.name; }
-    else alert('Debe ser una imagen (JPG, PNG)');
+    if (f?.type.startsWith('image/')) {
+      this.archivoFoto     = f;
+      this.nombreArchivoFoto = f.name;
+    } else {
+      alert('Debe ser una imagen (JPG, PNG)');
+      e.target.value = '';
+    }
   }
 
-  onFilePreSelected(e: any): void {
+  // ==========================================
+  // GESTIÓN DE DOCUMENTOS ACADÉMICOS
+  // ==========================================
+  onFileDocumentoSelected(e: any, index: number): void {
     const f = e.target.files[0];
-    if (f?.type === 'application/pdf') { this.archivoPrerrequisitos = f; this.nombreArchivoPrerrequisitos = f.name; }
-    else alert('Debe ser un archivo PDF');
+    if (f?.type === 'application/pdf') {
+      this.documentosAcademicos[index].archivo      = f;
+      this.documentosAcademicos[index].nombreArchivo = f.name;
+    } else {
+      alert('Solo se permiten archivos PDF');
+      e.target.value = '';
+    }
   }
 
-  enviarRepostulacion(): void {
-    if (!this.archivoCedula || !this.archivoFoto || !this.archivoPrerrequisitos) {
-      this.error = 'Debes subir todos los documentos requeridos.';
+  agregarDocumento(): void {
+    if (this.documentosAcademicos.length >= 10) {
+      alert('Máximo 10 documentos permitidos');
       return;
     }
+    this.documentosAcademicos.push({ archivo: null, descripcion: '', nombreArchivo: '' });
+  }
+
+  eliminarDocumento(index: number): void {
+    if (this.documentosAcademicos.length <= 1) {
+      alert('Debe existir al menos un documento académico');
+      return;
+    }
+    this.documentosAcademicos.splice(index, 1);
+  }
+
+  // ==========================================
+  // ENVIAR RE-POSTULACIÓN
+  // ==========================================
+  enviarRepostulacion(): void {
+    if (!this.archivoCedula || !this.archivoFoto) {
+      this.error = 'Debes subir la cédula y la foto.';
+      return;
+    }
+
+    // Validar documentos académicos
+    if (this.documentosAcademicos.length === 0) {
+      this.error = 'Debe agregar al menos un documento académico.';
+      return;
+    }
+    for (const doc of this.documentosAcademicos) {
+      if (!doc.archivo) {
+        this.error = 'Todos los documentos deben tener un archivo PDF.';
+        return;
+      }
+      if (!doc.descripcion.trim()) {
+        this.error = 'Todos los documentos deben tener una descripción.';
+        return;
+      }
+    }
+
     if (!this.idSolicitud) {
       this.error = 'No se encontró la solicitud. Vuelve a seleccionar la plaza.';
       return;
@@ -107,11 +180,18 @@ export class RepostulacionComponent implements OnInit {
     this.error    = '';
 
     const fd = new FormData();
-    fd.append('cedula',                this.cedula);
-    fd.append('idSolicitud',           String(this.idSolicitud));
-    fd.append('archivoCedula',         this.archivoCedula,         this.nombreArchivoCedula);
-    fd.append('archivoFoto',           this.archivoFoto,           this.nombreArchivoFoto);
-    fd.append('archivoPrerrequisitos', this.archivoPrerrequisitos,  this.nombreArchivoPrerrequisitos);
+    fd.append('cedula',     this.cedula);
+    fd.append('idSolicitud', String(this.idSolicitud));
+    fd.append('archivoCedula', this.archivoCedula, this.nombreArchivoCedula);
+    fd.append('archivoFoto',   this.archivoFoto,   this.nombreArchivoFoto);
+
+    // Documentos académicos dinámicos
+    for (const doc of this.documentosAcademicos) {
+      if (doc.archivo) {
+        fd.append('archivosDocumentos',       doc.archivo, doc.archivo.name);
+        fd.append('descripcionesDocumentos',  doc.descripcion);
+      }
+    }
 
     this.http.post<any>(`${this.apiUrl}/repostular`, fd).subscribe({
       next: (res) => {
