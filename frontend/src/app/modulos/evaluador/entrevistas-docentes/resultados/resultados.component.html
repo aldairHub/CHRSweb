@@ -200,6 +200,37 @@
           </div>
         </div>
 
+        <!-- PUNTAJE FINAL PONDERADO -->
+        <div class="card" *ngIf="resultado.puntajeFinal">
+          <div class="card-header">
+            <h3 class="card-title">Puntaje Final Ponderado</h3>
+            <span class="badge success">Calculado automáticamente</span>
+          </div>
+          <div class="info-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+            <div>
+              <p><strong>Puntaje Matriz de Méritos</strong></p>
+              <p style="font-size: 1.5rem; font-weight: 800; color: #00A63E;">
+                {{ resultado.puntajeMatriz | number:'1.1-2' }} / 104
+              </p>
+              <small style="color: #536b50;">Contribuye 50% al total</small>
+            </div>
+            <div>
+              <p><strong>Puntaje Entrevistas</strong></p>
+              <p style="font-size: 1.5rem; font-weight: 800; color: #00A63E;">
+                {{ resultado.puntajeEntrevista | number:'1.1-2' }} / 100
+              </p>
+              <small style="color: #536b50;">Contribuye 50% al total</small>
+            </div>
+            <div style="background: #EEF9EC; border-radius: 10px; padding: 1rem;">
+              <p><strong>Puntaje Final</strong></p>
+              <p style="font-size: 2rem; font-weight: 800; color: #016630;">
+                {{ resultado.puntajeFinal | number:'1.1-2' }} / 100
+              </p>
+              <small style="color: #536b50;">Fórmula: (Matriz/104×50) + (Entrevista/100×50)</small>
+            </div>
+          </div>
+        </div>
+
         <!-- DECISIÓN FINAL -->
         <div class="card" [class.disabled-card]="!procesoCompleto">
           <div class="card-header">

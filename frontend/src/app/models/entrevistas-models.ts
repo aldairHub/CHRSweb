@@ -201,6 +201,10 @@ export interface ResultadoProceso {
   progreso: number;
   decision?: 'aprobado_contratar' | 'aprobado_espera' | 'no_aprobado' | 'segunda_ronda';
   justificacionDecision?: string;
+  puntajeMatriz?: number;
+  puntajeEntrevista?: number;
+  puntajeFinal?: number;
+
 }
 
 export interface DecisionFinalRequest {

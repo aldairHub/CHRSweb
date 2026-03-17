@@ -17,11 +17,15 @@ public class ResultadoPostulanteDTO {
     private String nombreCompleto;
     private String materia;
     private List<ResultadoFaseDTO> fasesResultados;
-    private Double calificacionTotal;
+    private Double calificacionTotal;  // puntaje entrevistas sobre 100
     private Integer progreso;
-    /** aprobado_contratar | aprobado_espera | no_aprobado | segunda_ronda */
     private String decision;
     private String justificacionDecision;
+
+    // ── Puntajes ponderados ──────────────────────────────
+    private Double puntajeMatriz;      // sobre 104
+    private Double puntajeEntrevista;  // sobre 100
+    private Double puntajeFinal;       // sobre 100 (ponderado 50/50)
 
     @Data
     @NoArgsConstructor
@@ -34,7 +38,6 @@ public class ResultadoPostulanteDTO {
         private Double calificacion;
         private Double ponderado;
         private List<String> evaluadores;
-        /** completada | programada | bloqueada | pendiente */
         private String estado;
         private List<EvaluacionResponseDTO> evaluaciones;
     }

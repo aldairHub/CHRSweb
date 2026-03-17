@@ -26,6 +26,8 @@ public class EvaluacionService {
     private final ProcesoEvaluacionService procesoService;
     private final UsuarioRepository usuarioRepository;
     private final NotificacionService notifService;
+    private final FaseProcesoRepository faseProcesoRepository;
+    private final PostgresProcedureRepository procedureRepo;
 
     private static final DateTimeFormatter DT_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
@@ -104,7 +106,6 @@ public class EvaluacionService {
                 .collect(Collectors.toList());
     }
 
-    // ─── Resultados completos de un postulante ─────────────────
     @Transactional(readOnly = true)
     public ResultadoPostulanteDTO obtenerResultados(Long idProceso) {
         ProcesoEvaluacion proceso = procesoService.findOrThrow(idProceso);
@@ -115,17 +116,14 @@ public class EvaluacionService {
         List<ResultadoPostulanteDTO.ResultadoFaseDTO> fasesDTO = fasesProceso.stream()
                 .sorted((a, b) -> a.getFase().getOrden().compareTo(b.getFase().getOrden()))
                 .map(fp -> {
-                    // Obtener evaluaciones de la reunión de esta fase
                     List<EvaluacionResponseDTO> evals = reunionRepository
                             .findByFaseProceso_IdFaseProceso(fp.getIdFaseProceso())
                             .map(r -> evaluacionRepository.findByReunion_IdReunion(r.getIdReunion())
                                     .stream().map(this::toDTO).collect(Collectors.toList()))
                             .orElse(List.of());
 
-                    // Estado de la fase para resultados
                     String estadoResultado = mapearEstadoFaseResultado(fp.getEstado());
 
-                    // Ponderado = calificación * peso / 100
                     Double ponderado = fp.getCalificacion() != null
                             ? Math.round(fp.getCalificacion() * fp.getFase().getPeso()) / 100.0
                             : null;
@@ -156,6 +154,9 @@ public class EvaluacionService {
                 .progreso(proceso.getProgreso())
                 .decision(proceso.getDecision())
                 .justificacionDecision(proceso.getJustificacionDecision())
+                .puntajeMatriz(proceso.getPuntajeMatriz())
+                .puntajeEntrevista(proceso.getPuntajeEntrevista())
+                .puntajeFinal(proceso.getPuntajeFinal())
                 .build();
     }
 
@@ -181,9 +182,9 @@ public class EvaluacionService {
                     .average()
                     .orElse(0.0);
 
-            // Solo guardar calificación, NO cambiar estado aquí
+            // ← GUARDAR calificación en BD
             faseProceso.setCalificacion(Math.round(promedio * 100.0) / 100.0);
-            // faseProcesoRepository.save(faseProceso); // NO guardar estado aún
+            faseProcesoRepository.save(faseProceso);
 
             reunion.setEstado("completada");
             reunionRepository.save(reunion);
@@ -193,8 +194,25 @@ public class EvaluacionService {
                     "Calificación promedio: " + faseProceso.getCalificacion() + "/5.0",
                     nuevaEval.getEvaluador().getUsuarioApp());
 
-            // avanzarFase se encarga de marcar completada y desbloquear la siguiente
             procesoService.avanzarFase(proceso.getIdProceso());
+
+            // ← Verificar si el proceso está completo para calcular puntaje final
+            // ← Verificar si el proceso está completo para calcular puntaje final
+            ProcesoEvaluacion procesoActualizado = procesoService.findOrThrow(proceso.getIdProceso());
+            System.out.println("=== Estado proceso " + proceso.getIdProceso() + ": " + procesoActualizado.getEstadoGeneral());
+            if ("completado".equals(procesoActualizado.getEstadoGeneral())) {
+                System.out.println("=== Llamando sp_guardar_entrevista_docente para proceso: " + proceso.getIdProceso());
+                try {
+                    procedureRepo.guardarEntrevistaDocente(proceso.getIdProceso());
+                    System.out.println("=== Procedure ejecutado OK");
+                    procesoService.registrarHistorial(procesoActualizado,
+                            "Puntaje Final Calculado",
+                            "Se calculó el puntaje final combinando matriz de méritos y entrevistas.",
+                            "Sistema");
+                } catch (Exception e) {
+                    System.err.println("=== Error al calcular puntaje final: " + e.getMessage());
+                }
+            }
         }
     }
 
