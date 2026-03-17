@@ -39,8 +39,11 @@ public class ReunionController {
     }
 
     @GetMapping("/mi-entrevista")
-    public ResponseEntity<ReunionResponseDTO> miEntrevista(@RequestParam Long idUsuario) {
-        ReunionResponseDTO dto = service.obtenerMiEntrevista(idUsuario);
+    public ResponseEntity<ReunionResponseDTO> miEntrevista(
+            @RequestParam Long idUsuario,
+            @RequestParam(required = false) Long idPostulacion
+    ) {
+        ReunionResponseDTO dto = service.obtenerMiEntrevista(idUsuario, idPostulacion);
         if (dto == null) return ResponseEntity.noContent().build();
         return ResponseEntity.ok(dto);
     }

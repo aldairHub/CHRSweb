@@ -1,6 +1,7 @@
 package org.uteq.backend.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.uteq.backend.dto.ReunionRequestDTO;
@@ -25,6 +26,7 @@ public class ReunionService {
     private final UsuarioRepository usuarioRepository;
     private final ProcesoEvaluacionService procesoService;
     private final NotificacionService notifService;
+    private final JdbcOperations jdbc;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -193,14 +195,34 @@ public class ReunionService {
                 .collect(java.util.stream.Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
-    public ReunionResponseDTO obtenerMiEntrevista(Long idUsuario) {
+//    @Transactional(readOnly = true)
+//    public ReunionResponseDTO obtenerMiEntrevista(Long idUsuario) {
+//        List<Reunion> reuniones = reunionRepository.findByUsuarioPostulante(idUsuario);
+//        if (reuniones.isEmpty()) return null;
+//        Reunion r = reuniones.get(0);
+//        return toDTO(r, r.getFaseProceso().getProceso().getIdProceso());
+//    }
+
+    public ReunionResponseDTO obtenerMiEntrevista(Long idUsuario, Long idPostulacion) {
         List<Reunion> reuniones = reunionRepository.findByUsuarioPostulante(idUsuario);
+        if (reuniones.isEmpty()) return null;
+
+        if (idPostulacion != null) {
+            reuniones = reuniones.stream()
+                    .filter(r -> {
+                        Long idSolicitud = r.getFaseProceso().getProceso()
+                                .getSolicitudDocente().getIdSolicitud();
+                        // Busca la postulacion que coincida con esa solicitud
+                        return jdbc.queryForList(
+                                "SELECT 1 FROM postulacion WHERE id_postulacion = ? AND id_solicitud = ?",
+                                idPostulacion, idSolicitud
+                        ).size() > 0;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+        }
         if (reuniones.isEmpty()) return null;
         Reunion r = reuniones.get(0);
         return toDTO(r, r.getFaseProceso().getProceso().getIdProceso());
     }
-
-
 
 }

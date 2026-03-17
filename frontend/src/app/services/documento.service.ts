@@ -11,7 +11,7 @@ export interface DocumentoBackend {
   nombreTipo:       string;
   obligatorio:      boolean;
   idDocumento:      number | null;
-  estadoValidacion: string | null;  // viene como 'pendiente','subido','validado','rechazado' o null
+  estadoValidacion: string | null;
   descripcionTipo:  string | null;
   rutaArchivo:      string | null;
   fechaCarga:       string | null;
@@ -29,8 +29,11 @@ export interface PostulanteInfo {
   nombreMateria:     string;
   nombreCarrera:     string;
   nombreArea:        string;
-  documentosAbiertos:      boolean;   // true = puede subir docs hoy
-  fechaLimiteDocumentos:   string;    // fecha límite (puede ser posterior al cierre)
+  documentosAbiertos:    boolean;
+  fechaLimiteDocumentos: string;
+  // NUEVO: para el selector de convocatoria
+  idConvocatoria?:      number;
+  nombreConvocatoria?:  string;
 }
 
 export interface SubirDocumentoResponse {
@@ -41,8 +44,32 @@ export interface SubirDocumentoResponse {
 }
 
 export interface OperacionResponse {
-  exitoso:  boolean;
-  mensaje:  string;
+  exitoso: boolean;
+  mensaje: string;
+}
+
+// NUEVO: progreso en tiempo real del proceso de evaluación
+export interface FaseProgresoUI {
+  nombre:          string;
+  orden:           number;
+  peso:            number;
+  estado:          'pendiente' | 'en_curso' | 'completada' | 'omitida';
+  calificacion:    number | null;
+  fechaCompletada: string | null;
+}
+
+export interface ProgresoPostulante {
+  idProceso:          number;
+  estadoGeneral:      string;
+  faseActual:         string | null;
+  progreso:           number;          // 0-100
+  puntajeMatriz:      number | null;
+  puntajeEntrevista:  number | null;
+  puntajeFinal:       number | null;
+  decision:           string | null;
+  justificacion:      string | null;
+  fases:              FaseProgresoUI[];
+  sinProceso?:        boolean;
 }
 
 // ============================================================
@@ -54,6 +81,8 @@ export class DocumentoService {
   private readonly API = `${environment.apiUrl}/documentos`;
 
   constructor(private http: HttpClient) {}
+
+  // ─── Métodos existentes (sin cambios) ─────────────────────
 
   obtenerInfoPostulante(idUsuario: number): Observable<PostulanteInfo> {
     return this.http.get<PostulanteInfo>(`${this.API}/postulante/${idUsuario}`);
@@ -82,9 +111,7 @@ export class DocumentoService {
     formData.append('idTipoDocumento', idTipoDocumento.toString());
     formData.append('archivo',         archivo, archivo.name);
 
-    const req = new HttpRequest('POST', `${this.API}/subir`, formData, {
-      reportProgress: true
-    });
+    const req = new HttpRequest('POST', `${this.API}/subir`, formData, { reportProgress: true });
 
     return new Observable(observer => {
       this.http.request(req).subscribe({
@@ -116,21 +143,50 @@ export class DocumentoService {
   }
 
   obtenerDocumentosConvocatoria(idPostulacion: number): Observable<DocumentoBackend[]> {
-    return this.http.get<DocumentoBackend[]>(
-      `${this.API}/convocatoria/${idPostulacion}`
-    );
+    return this.http.get<DocumentoBackend[]>(`${this.API}/convocatoria/${idPostulacion}`);
   }
 
   obtenerDocsPrepostulacion(idPostulacion: number): Observable<DocPrepostulacion[]> {
-    return this.http.get<DocPrepostulacion[]>(
-      `${this.API}/prepostulacion/${idPostulacion}`
-    );
+    return this.http.get<DocPrepostulacion[]>(`${this.API}/prepostulacion/${idPostulacion}`);
   }
 
   obtenerResultadosPostulante(idUsuario: number): Observable<any> {
     return this.http.get(`${this.API}/resultados/${idUsuario}`);
   }
 
+  // ─── NUEVOS métodos ────────────────────────────────────────
+
+  /**
+   * Lista todas las postulaciones activas del usuario.
+   * Usado para el selector de convocatoria en el header de cada módulo.
+   */
+  listarMisPostulaciones(idUsuario: number): Observable<PostulanteInfo[]> {
+    return this.http.get<PostulanteInfo[]>(
+      `${this.API}/postulante/${idUsuario}/postulaciones`
+    );
+  }
+
+  /**
+   * Info del postulante para una postulación específica (cuando el usuario filtra).
+   */
+  obtenerInfoPorConvocatoria(idUsuario: number, idPostulacion: number): Observable<PostulanteInfo> {
+    return this.http.get<PostulanteInfo>(
+      `${this.API}/postulante/${idUsuario}/postulacion/${idPostulacion}`
+    );
+  }
+
+  /**
+   * Progreso en tiempo real del proceso de evaluación.
+   * El frontend hace polling con interval() para efecto "tiempo real".
+   */
+  obtenerMiProgreso(idUsuario: number, idPostulacion?: number): Observable<ProgresoPostulante> {
+    const params: any = {};
+    if (idPostulacion) params['idPostulacion'] = idPostulacion.toString();
+    return this.http.get<ProgresoPostulante>(
+      `${this.API}/postulante/${idUsuario}/progreso`,
+      { params }
+    );
+  }
 }
 
 export interface DocPrepostulacion {

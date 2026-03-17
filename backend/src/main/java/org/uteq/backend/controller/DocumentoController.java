@@ -174,4 +174,56 @@ public class DocumentoController {
         return ResponseEntity.ok(resultado);
     }
 
+    // ── ENDPOINT 1: Listar todas las postulaciones del postulante ──────────────
+// Coloca esto DENTRO de la clase DocumentoController, después del endpoint existente
+// "/postulante/{idUsuario}"
+
+    /**
+     * GET /api/documentos/postulante/{idUsuario}/postulaciones
+     * Devuelve todas las postulaciones activas del usuario para el filtro de convocatoria.
+     */
+    @GetMapping("/postulante/{idUsuario}/postulaciones")
+    public ResponseEntity<List<PostulanteInfoDTO>> listarPostulacionesUsuario(
+            @PathVariable Long idUsuario
+    ) {
+        List<PostulanteInfoDTO> postulaciones = documentoService.listarPostulacionesUsuario(idUsuario);
+        return ResponseEntity.ok(postulaciones);
+    }
+
+// ── ENDPOINT 2: Info de postulante filtrada por idPostulacion específica ────
+// Coloca esto después del endpoint anterior
+
+    /**
+     * GET /api/documentos/postulante/{idUsuario}/postulacion/{idPostulacion}
+     * Devuelve la info del postulante para UNA postulación específica (filtro activo).
+     */
+    @GetMapping("/postulante/{idUsuario}/postulacion/{idPostulacion}")
+    public ResponseEntity<PostulanteInfoDTO> obtenerInfoPostulanteConvocatoria(
+            @PathVariable Long idUsuario,
+            @PathVariable Long idPostulacion
+    ) {
+        PostulanteInfoDTO info = documentoService.obtenerInfoPostulantePorPostulacion(idUsuario, idPostulacion);
+        if (info == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(info);
+    }
+
+// ── ENDPOINT 3: Progreso en tiempo real del proceso del postulante ──────────
+// GET /api/documentos/postulante/{idUsuario}/progreso?idPostulacion=X
+
+    /**
+     * GET /api/documentos/postulante/{idUsuario}/progreso
+     * Devuelve el ProcesoEvaluacion del postulante para la postulación indicada:
+     *   - faseActual, progreso (0-100), estadoGeneral, fases con sus estados
+     * El frontend hace polling cada 15 s para "tiempo real".
+     */
+    @GetMapping("/postulante/{idUsuario}/progreso")
+    public ResponseEntity<Map<String, Object>> obtenerProgreso(
+            @PathVariable Long idUsuario,
+            @RequestParam(required = false) Long idPostulacion
+    ) {
+        Map<String, Object> progreso = documentoService.obtenerProgresoPostulante(idUsuario, idPostulacion);
+        if (progreso == null) return ResponseEntity.ok(Map.of("sinProceso", true));
+        return ResponseEntity.ok(progreso);
+    }
+
 }

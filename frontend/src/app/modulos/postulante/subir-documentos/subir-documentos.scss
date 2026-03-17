@@ -731,3 +731,270 @@ $blue:        #2563eb;
   color: #fde68a !important;
   i { color: #fbbf24 !important; }
 }
+
+// ── Selector de convocatoria (header) ─────────────────────
+.convocatoria-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 280px;
+
+  .selector-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: $text-gray;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .selector-select {
+    padding: 8px 12px;
+    border: 1px solid $border;
+    border-radius: 8px;
+    background: $white;
+    font-size: 0.9rem;
+    color: $text-dark;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+
+    &:focus { border-color: $green; }
+  }
+}
+
+// ── Tab badge "en vivo" ───────────────────────────────────
+.tab-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 99px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-left: 6px;
+
+  &--live {
+    background: #dcfce7;
+    color: #16a34a;
+    animation: pulse-live 2s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+// ── Indicador de actualización ────────────────────────────
+.actualizacion-info {
+  font-size: 0.78rem;
+  color: $text-gray;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  background: #f9fafb;
+  border-radius: 6px;
+  border: 1px solid $border;
+
+  i { color: $green; }
+}
+
+// ── Card de progreso general ──────────────────────────────
+.progreso-general-card {
+  .progreso-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+
+    .progreso-etiqueta {
+      font-size: 0.78rem;
+      color: $text-gray;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .progreso-fase {
+      font-size: 1.05rem;
+      color: $text-dark;
+    }
+  }
+
+  .estado-badge {
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+
+    &--azul   { background: #dbeafe; color: #1d4ed8; }
+    &--verde  { background: #dcfce7; color: #16a34a; }
+    &--rojo   { background: #fee2e2; color: #dc2626; }
+    &--gris   { background: #f3f4f6; color: #6b7280; }
+  }
+}
+
+.barra-container--grande {
+  height: 12px;
+  background: $border;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.barra-fill--animada {
+  height: 100%;
+  background: linear-gradient(90deg, $green, #4ade80);
+  border-radius: 99px;
+  transition: width 0.6s ease;
+}
+
+.progreso-pct-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: $text-gray;
+  margin-bottom: 16px;
+
+  strong { color: $green-dark; }
+}
+
+// ── Puntajes parciales (chips) ────────────────────────────
+.puntajes-parciales {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid $border;
+}
+
+.puntaje-chip {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 14px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  min-width: 110px;
+
+  .chip-label { font-size: 0.72rem; color: $text-gray; }
+  .chip-valor { font-size: 1.2rem; font-weight: 700; color: $green-dark; }
+
+  &--total {
+    background: $green-light;
+    border-color: $green;
+  }
+}
+
+// ── Línea de tiempo de fases ──────────────────────────────
+.fases-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.fase-item {
+  display: grid;
+  grid-template-columns: 32px 3px 1fr;
+  grid-template-rows: auto;
+  column-gap: 14px;
+  position: relative;
+  padding-bottom: 0;
+
+  .fase-circulo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid $border;
+    background: $white;
+    grid-column: 1;
+    grid-row: 1;
+    z-index: 1;
+
+    i { font-size: 1rem; color: #9ca3af; }
+  }
+
+  .fase-linea {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    width: 2px;
+    background: $border;
+    margin: 32px auto 0;
+    min-height: 32px;
+    align-self: stretch;
+  }
+
+  .fase-contenido {
+    grid-column: 3;
+    grid-row: 1;
+    padding: 4px 0 24px;
+  }
+
+  &--completada {
+    .fase-circulo { border-color: $green; background: $green-light; i { color: $green; } }
+    .fase-linea   { background: $green; }
+  }
+
+  &--en-curso {
+    .fase-circulo { border-color: $blue; background: #dbeafe; i { color: $blue; } }
+  }
+}
+
+.fase-nombre-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+
+  .fase-nombre { font-size: 0.95rem; color: $text-dark; }
+  .fase-peso   { font-size: 0.75rem; color: $text-gray; }
+}
+
+.fase-estado-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  .fase-calificacion { font-weight: 600; color: $green-dark; font-size: 0.88rem; }
+  .fase-fecha        { font-size: 0.78rem; color: $text-gray; }
+}
+
+.fase-estado-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 99px;
+
+  &.fase-estado--verde { background: $green-light; color: $green-dark; }
+  &.fase-estado--azul  { background: #dbeafe; color: #1d4ed8; }
+  &.fase-estado--gris  { background: #f3f4f6; color: #6b7280; }
+}
+
+// ── Card de decisión final ────────────────────────────────
+.decision-card {
+  border-left: 4px solid $border;
+
+  &--aprobado { border-left-color: $green; background: #f0fdf4; }
+  &--rechazado { border-left-color: $red; background: #fef2f2; }
+
+  .decision-label {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: $text-dark;
+    margin-bottom: 8px;
+  }
+
+  .decision-justificacion {
+    font-size: 0.88rem;
+    color: $text-gray;
+    line-height: 1.6;
+  }
+}

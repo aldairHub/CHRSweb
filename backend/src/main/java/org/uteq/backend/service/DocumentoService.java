@@ -8,11 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.uteq.backend.repository.ProcesoEvaluacionRepository;
+import org.uteq.backend.repository.FaseProcesoRepository;
+import org.uteq.backend.entity.ProcesoEvaluacion;
+import org.uteq.backend.entity.FaseProceso;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 // ============================================================
 // DocumentoService
@@ -32,6 +33,12 @@ public class DocumentoService {
 
     @Autowired
     private JdbcTemplate jdbc;
+
+    @Autowired
+    private ProcesoEvaluacionRepository procesoRepository;
+
+    @Autowired
+    private FaseProcesoRepository faseProcesoRepository;
 
     // ----------------------------------------------------------
     // Obtener documentos de una postulación (SP 1)
@@ -235,6 +242,164 @@ public class DocumentoService {
 
     public Map<String, Object> obtenerResultadosPostulante(Long idUsuario) {
         return documentoRepo.obtenerResultadosPostulante(idUsuario);
+    }
+
+    // ── MÉTODO 1: Listar todas las postulaciones de un usuario ─────────────────
+    /**
+     * Devuelve todas las postulaciones activas del usuario.
+     * Delega al SP existente o usa una nueva query.
+     */
+    public List<PostulanteInfoDTO> listarPostulacionesUsuario(Long idUsuario) {
+        String sql = """
+        SELECT
+            p.id_postulante,
+            p.nombres_postulante    AS nombres,
+            p.apellidos_postulante  AS apellidos,
+            p.identificacion,
+            p.correo_postulante     AS correo,
+            pc.id_postulacion,
+            pc.estado_postulacion,
+            m.nombre_materia,
+            ca.nombre_carrera,
+            ar.nombre_area,
+            false                   AS documentos_abiertos,
+            NULL                    AS fecha_limite_documentos,
+            c.titulo                AS nombre_convocatoria,
+            c.id_convocatoria
+        FROM postulacion pc
+        JOIN postulante p   ON p.id_postulante  = pc.id_postulante
+        JOIN usuario u      ON u.id_usuario     = p.id_usuario
+        JOIN solicitud_docente sd ON sd.id_solicitud = pc.id_solicitud
+        LEFT JOIN materia m   ON m.id_materia  = sd.id_materia
+        LEFT JOIN carrera ca  ON ca.id_carrera = sd.id_carrera
+        LEFT JOIN area_conocimiento ar ON ar.id_area = sd.id_area
+        JOIN convocatoria_solicitud cs ON cs.id_solicitud = sd.id_solicitud
+        JOIN convocatoria c ON c.id_convocatoria = cs.id_convocatoria
+        WHERE p.id_usuario = ?
+        ORDER BY pc.fecha DESC
+        """;
+
+        return jdbc.query(sql, new Object[]{idUsuario}, (rs, rowNum) -> {
+            PostulanteInfoDTO dto = new PostulanteInfoDTO();
+            dto.setIdPostulante(rs.getLong("id_postulante"));
+            dto.setNombres(rs.getString("nombres"));
+            dto.setApellidos(rs.getString("apellidos"));
+            dto.setIdentificacion(rs.getString("identificacion"));
+            dto.setCorreo(rs.getString("correo"));
+            dto.setIdPostulacion(rs.getLong("id_postulacion"));
+            dto.setEstadoPostulacion(rs.getString("estado_postulacion"));
+            dto.setNombreMateria(rs.getString("nombre_materia"));
+            dto.setNombreCarrera(rs.getString("nombre_carrera"));
+            dto.setNombreArea(rs.getString("nombre_area"));
+            dto.setDocumentosAbiertos(false);
+            dto.setFechaLimiteDocumentos(null);
+            dto.setNombreConvocatoria(rs.getString("nombre_convocatoria"));
+            long idConv = rs.getLong("id_convocatoria");
+            dto.setIdConvocatoria(rs.wasNull() ? null : idConv);
+            return dto;
+        });
+    }
+
+    // ── MÉTODO 2: Info de postulante para una postulación específica ───────────
+    public PostulanteInfoDTO obtenerInfoPostulantePorPostulacion(Long idUsuario, Long idPostulacion) {
+        // Reutiliza el SP existente pero valida que la postulación pertenece al usuario
+        PostulanteInfoDTO info = documentoRepo.obtenerInfoPostulante(idUsuario);
+        if (info != null && info.getIdPostulacion().equals(idPostulacion)) {
+            return info;
+        }
+        // Si el SP devuelve otra postulación, busca directamente la pedida
+        String sql = """
+        SELECT * FROM sp_obtener_info_postulante_por_postulacion(?, ?)
+        """;
+        // Si el SP no existe aún, usa query directa:
+        String sqlDirecto = """
+        SELECT
+            p.id_postulante,
+            u.nombres,
+            u.apellidos,
+            u.identificacion,
+            u.correo,
+            pc.id_postulacion,
+            pc.estado_postulacion,
+            m.nombre_materia,
+            ca.nombre_carrera,
+            ar.nombre_area,
+            false AS documentos_abiertos,
+            NULL  AS fecha_limite_documentos
+        FROM postulacion pc
+        JOIN postulante p  ON p.id_postulante  = pc.id_postulante
+        JOIN usuario u     ON u.id_usuario     = p.id_usuario
+        JOIN solicitud_docente sd ON sd.id_solicitud = pc.id_solicitud
+        LEFT JOIN materia m   ON m.id_materia   = sd.id_materia
+        LEFT JOIN carrera ca  ON ca.id_carrera  = sd.id_carrera
+        LEFT JOIN area_conocimiento ar ON ar.id_area = sd.id_area
+        WHERE p.id_usuario = ? AND pc.id_postulacion = ?
+        """;
+        List<PostulanteInfoDTO> list = jdbc.query(sqlDirecto,
+                new Object[]{idUsuario, idPostulacion}, (rs, rowNum) -> {
+                    PostulanteInfoDTO dto = new PostulanteInfoDTO();
+                    dto.setIdPostulante(rs.getLong("id_postulante"));
+                    dto.setNombres(rs.getString("nombres"));
+                    dto.setApellidos(rs.getString("apellidos"));
+                    dto.setIdentificacion(rs.getString("identificacion"));
+                    dto.setCorreo(rs.getString("correo"));
+                    dto.setIdPostulacion(rs.getLong("id_postulacion"));
+                    dto.setEstadoPostulacion(rs.getString("estado_postulacion"));
+                    dto.setNombreMateria(rs.getString("nombre_materia"));
+                    dto.setNombreCarrera(rs.getString("nombre_carrera"));
+                    dto.setNombreArea(rs.getString("nombre_area"));
+                    return dto;
+                });
+        return list.isEmpty() ? null : list.get(0);
+    }
+
+    // ── MÉTODO 3: Progreso del proceso de evaluación (para tiempo real) ────────
+    public Map<String, Object> obtenerProgresoPostulante(Long idUsuario, Long idPostulacion) {
+        // Busca el ProcesoEvaluacion vinculado a la postulación del usuario
+        String sql = """
+        SELECT pe.*
+        FROM proceso_evaluacion pe
+        JOIN postulante p ON p.id_postulante = pe.id_postulante
+        WHERE p.id_usuario = ?
+        AND (? IS NULL OR pe.id_solicitud = (
+            SELECT id_solicitud FROM postulacion WHERE id_postulacion = ?
+        ))
+        ORDER BY pe.fecha_inicio DESC
+        LIMIT 1
+        """;
+
+        List<Map<String, Object>> rows = jdbc.queryForList(sql,
+                new Object[]{idUsuario, idPostulacion, idPostulacion});
+
+        if (rows.isEmpty()) return null;
+
+        Map<String, Object> procesoRow = rows.get(0);
+        Long idProceso = ((Number) procesoRow.get("id_proceso")).longValue();
+
+        // Busca las fases de ese proceso
+        String sqlFases = """
+        SELECT fp.id_fase_proceso, f.nombre, f.orden, f.peso,
+               fp.estado, fp.calificacion,
+               to_char(fp.fecha_completada, 'DD/MM/YYYY') AS fecha_completada
+        FROM fase_proceso fp
+        JOIN fase_evaluacion f ON f.id_fase = fp.id_fase
+        WHERE fp.id_proceso = ?
+        ORDER BY f.orden ASC
+        """;
+        List<Map<String, Object>> fases = jdbc.queryForList(sqlFases, new Object[]{idProceso});
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("idProceso",      idProceso);
+        result.put("estadoGeneral",  procesoRow.get("estado_general"));
+        result.put("faseActual",     procesoRow.get("fase_actual"));
+        result.put("progreso",       procesoRow.get("progreso"));
+        result.put("puntajeMatriz",  procesoRow.get("puntaje_matriz"));
+        result.put("puntajeEntrevista", procesoRow.get("puntaje_entrevista"));
+        result.put("puntajeFinal",   procesoRow.get("puntaje_final"));
+        result.put("decision",       procesoRow.get("decision"));
+        result.put("justificacion",  procesoRow.get("justificacion_decision"));
+        result.put("fases",          fases);
+        return result;
     }
 
 }

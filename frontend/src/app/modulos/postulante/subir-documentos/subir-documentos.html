@@ -12,6 +12,7 @@
     <ng-container *ngIf="!cargandoPagina">
 
       <!-- HEADER -->
+      <!-- HEADER (con selector de convocatoria) -->
       <header class="page-header">
         <div class="page-header__info">
           <h2 class="page-header__title">Carga de Documentos</h2>
@@ -24,6 +25,21 @@
               <i class="pi pi-id-card"></i> {{ postulante?.identificacion }}
             </span>
           </div>
+        </div>
+
+        <!-- SELECTOR DE CONVOCATORIA (solo aparece si hay más de una) -->
+        <div class="convocatoria-selector" *ngIf="mostrarSelector">
+          <label class="selector-label">
+            <i class="pi pi-filter"></i> Convocatoria
+          </label>
+          <select
+            class="selector-select"
+            [(ngModel)]="idPostulacionSeleccion"
+            (change)="onConvocatoriaChange(+$any($event.target).value)">
+            <option *ngFor="let p of misPostulaciones" [value]="p.idPostulacion">
+              {{ p.nombreConvocatoria ?? 'Convocatoria' }} — {{ p.nombreMateria }}
+            </option>
+          </select>
         </div>
       </header>
 

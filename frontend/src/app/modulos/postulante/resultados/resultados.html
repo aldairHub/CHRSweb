@@ -1,5 +1,3 @@
-
-
 <div class="main-container">
   <div class="content-wrapper">
 
@@ -7,6 +5,20 @@
       <div>
         <h2 class="page-header__title">Mis Resultados</h2>
         <p class="page-header__description">{{ postulante.proceso }}</p>
+      </div>
+      <!-- SELECTOR DE CONVOCATORIA -->
+      <div class="convocatoria-selector" *ngIf="mostrarSelector">
+        <label class="selector-label">
+          <i class="pi pi-filter"></i> Convocatoria
+        </label>
+        <select
+          class="selector-select"
+          [(ngModel)]="idPostulacionSeleccion"
+          (change)="onConvocatoriaChange(+$any($event.target).value)">
+          <option *ngFor="let p of misPostulaciones" [value]="p.idPostulacion">
+            {{ p.nombreConvocatoria ?? 'Convocatoria' }} — {{ p.nombreMateria }}
+          </option>
+        </select>
       </div>
     </header>
 
@@ -16,172 +28,282 @@
       <p>Cargando resultados...</p>
     </div>
 
-    <!-- Sin datos -->
-    <div *ngIf="!cargando && sinDatos" class="sin-datos">
+    <!-- =========== TABS (incluye la nueva pestaña Progreso) =========== -->
+    <div class="tabs-bar" *ngIf="!cargando">
+      <button class="tab" [class.tab--active]="tabActiva === 'progreso'"
+              (click)="tabActiva = 'progreso'">
+        <i class="pi pi-chart-line"></i> Progreso
+        <span class="tab-badge tab-badge--live" *ngIf="ultimaActualizacion">en vivo</span>
+      </button>
+      <button class="tab" [class.tab--active]="tabActiva === 'resumen'"
+              (click)="tabActiva = 'resumen'">Resumen</button>
+      <button class="tab" [class.tab--active]="tabActiva === 'meritos'"
+              (click)="tabActiva = 'meritos'">Méritos</button>
+      <button class="tab" [class.tab--active]="tabActiva === 'entrevista'"
+              (click)="tabActiva = 'entrevista'">Entrevista</button>
+      <button class="tab" [class.tab--active]="tabActiva === 'observaciones'"
+              (click)="tabActiva = 'observaciones'">Observaciones</button>
+    </div>
+
+    <!-- =========== TAB: PROGRESO (NUEVO — tiempo real) =========== -->
+    <div *ngIf="tabActiva === 'progreso'">
+
+      <!-- Cargando progreso -->
+      <div *ngIf="cargandoProgreso" class="loading-state">
+        <div class="spinner"></div>
+        <p>Cargando estado del proceso...</p>
+      </div>
+
+      <!-- Sin proceso activo -->
+      <div *ngIf="!cargandoProgreso && errorProgreso" class="sin-datos">
+        <i class="pi pi-info-circle"></i>
+        <p>{{ errorProgreso }}</p>
+      </div>
+
+      <!-- Contenido de progreso -->
+      <div *ngIf="!cargandoProgreso && progreso && !progreso.sinProceso">
+
+        <!-- Indicador de última actualización -->
+        <div class="actualizacion-info" *ngIf="ultimaActualizacion">
+          <i class="pi pi-refresh"></i>
+          Actualizado a las {{ ultimaActualizacion }} · se actualiza cada 15 s
+        </div>
+
+        <!-- Estado general y barra de progreso -->
+        <div class="form-card progreso-general-card">
+          <div class="progreso-header">
+            <div>
+              <span class="progreso-etiqueta">Fase actual</span>
+              <strong class="progreso-fase">{{ progreso.faseActual ?? 'Evaluación en curso' }}</strong>
+            </div>
+            <span class="estado-badge" [class]="'estado-badge--' + colorEstadoProgreso">
+              {{ estadoGeneralLabel }}
+            </span>
+          </div>
+
+          <div class="barra-container barra-container--grande">
+            <div class="barra-fill barra-fill--animada"
+                 [style.width.%]="porcentajeProgreso"></div>
+          </div>
+          <div class="progreso-pct-row">
+            <span>Avance del proceso</span>
+            <strong>{{ porcentajeProgreso }}%</strong>
+          </div>
+
+          <!-- Puntajes parciales si ya están disponibles -->
+          <div class="puntajes-parciales" *ngIf="progreso.puntajeMatriz || progreso.puntajeEntrevista">
+            <div class="puntaje-chip" *ngIf="progreso.puntajeMatriz">
+              <span class="chip-label">Matriz de méritos</span>
+              <span class="chip-valor">{{ progreso.puntajeMatriz | number:'1.1-1' }}</span>
+            </div>
+            <div class="puntaje-chip" *ngIf="progreso.puntajeEntrevista">
+              <span class="chip-label">Entrevista</span>
+              <span class="chip-valor">{{ progreso.puntajeEntrevista | number:'1.1-1' }}</span>
+            </div>
+            <div class="puntaje-chip puntaje-chip--total" *ngIf="progreso.puntajeFinal">
+              <span class="chip-label">Total</span>
+              <span class="chip-valor">{{ progreso.puntajeFinal | number:'1.1-1' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Línea de tiempo de fases -->
+        <div class="form-card">
+          <h3 class="seccion-titulo">Etapas del proceso</h3>
+          <div class="fases-timeline">
+            <div *ngFor="let fase of fasesProgreso; let last = last"
+                 class="fase-item"
+                 [class.fase-item--completada]="fase.estado === 'completada'"
+                 [class.fase-item--en-curso]="fase.estado === 'en_curso'"
+                 [class.fase-item--pendiente]="fase.estado === 'pendiente'">
+
+              <!-- Círculo indicador -->
+              <div class="fase-circulo">
+                <i class="pi" [ngClass]="iconoFase(fase.estado)"></i>
+              </div>
+              <!-- Línea conectora (excepto el último) -->
+              <div class="fase-linea" *ngIf="!last"></div>
+
+              <!-- Info de la fase -->
+              <div class="fase-contenido">
+                <div class="fase-nombre-row">
+                  <strong class="fase-nombre">{{ fase.nombre }}</strong>
+                  <span class="fase-peso">peso: {{ fase.peso }}%</span>
+                </div>
+                <div class="fase-estado-row">
+                  <span class="fase-estado-label" [class]="'fase-estado--' + colorFase(fase.estado)">
+                    {{ fase.estado === 'completada' ? 'Completada' :
+                    fase.estado === 'en_curso'   ? 'En curso'   :
+                      fase.estado === 'omitida'    ? 'Omitida'    : 'Pendiente' }}
+                  </span>
+                  <span class="fase-calificacion" *ngIf="fase.calificacion !== null">
+                    {{ fase.calificacion | number:'1.1-1' }} pts
+                  </span>
+                  <span class="fase-fecha" *ngIf="fase.fechaCompletada">
+                    · {{ fase.fechaCompletada }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Decisión final si ya existe -->
+        <div class="form-card decision-card"
+             *ngIf="progreso.decision"
+             [class.decision-card--aprobado]="progreso.decision != null && progreso.decision.includes('aprobado')"
+             [class.decision-card--rechazado]="progreso.decision === 'no_aprobado'">
+          <h3 class="seccion-titulo">Resultado final</h3>
+          <p class="decision-label">{{ decisionLabel }}</p>
+          <p class="decision-justificacion" *ngIf="progreso.justificacion">
+            {{ progreso.justificacion }}
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =========== RESTO DE TABS (sin cambios) =========== -->
+
+    <!-- Sin datos para tabs de puntajes -->
+    <div *ngIf="!cargando && sinDatos && tabActiva !== 'progreso'" class="sin-datos">
       <i class="pi pi-chart-bar"></i>
       <p>Aún no hay resultados disponibles para tu proceso.</p>
     </div>
 
-    <!-- Contenido -->
-    <div *ngIf="!cargando && !sinDatos">
-      ... todo el contenido actual ...
-    </div>
+    <div *ngIf="!cargando && !sinDatos && tabActiva !== 'progreso'">
 
-    <!-- =========== ESTADO GENERAL =========== -->
-    <div class="estado-card" [class]="'estado-card--' + colorEstado">
-      <div class="estado-icon">
-        <i class="pi"
-           [class.pi-check-circle]="estado === 'aprobado'"
-           [class.pi-times-circle]="estado === 'rechazado'"
-           [class.pi-clock]="estado === 'en_proceso'"></i>
-      </div>
-      <div class="estado-info">
-        <span class="estado-label">Estado del proceso</span>
-        <strong class="estado-valor">
-          {{ estado === 'aprobado' ? 'Proceso Completado' :
-             estado === 'rechazado' ? 'No Seleccionado' : 'En Proceso' }}
-        </strong>
-        <span class="estado-fecha">Evaluado el {{ postulante.fecha }}</span>
-      </div>
-      <div class="estado-posicion">
-        <span class="posicion-num">{{ resultados.posicion }}°</span>
-        <span class="posicion-label">de {{ resultados.totalCandidatos }}</span>
-      </div>
-    </div>
-
-    <!-- =========== RESUMEN PUNTAJE =========== -->
-    <div class="puntaje-banner">
-      <div class="puntaje-bloque">
-        <span class="pb-num">{{ resultados.totalMeritos }}</span>
-        <span class="pb-max">/50</span>
-        <span class="pb-label">Méritos</span>
-      </div>
-      <div class="puntaje-sep">+</div>
-      <div class="puntaje-bloque">
-        <span class="pb-num">{{ resultados.totalExperiencia }}</span>
-        <span class="pb-max">/50</span>
-        <span class="pb-label">Exp + Entrevista</span>
-      </div>
-      <div class="puntaje-sep">+</div>
-      <div class="puntaje-bloque">
-        <span class="pb-num">{{ resultados.totalAccionAfirmativa }}</span>
-        <span class="pb-max">/4</span>
-        <span class="pb-label">Acción Afirmativa</span>
-      </div>
-      <div class="puntaje-sep">=</div>
-      <div class="puntaje-bloque puntaje-total">
-        <span class="pb-num">{{ resultados.total }}</span>
-        <span class="pb-max">/104</span>
-        <span class="pb-label">TOTAL</span>
-        <span class="pb-pct">{{ porcentajeTotal }}%</span>
-      </div>
-    </div>
-
-    <!-- =========== TABS =========== -->
-    <div class="tabs-bar">
-      <button class="tab" [class.tab--active]="tabActiva === 'resumen'"   (click)="tabActiva = 'resumen'">Resumen</button>
-      <button class="tab" [class.tab--active]="tabActiva === 'meritos'"   (click)="tabActiva = 'meritos'">Méritos</button>
-      <button class="tab" [class.tab--active]="tabActiva === 'entrevista'" (click)="tabActiva = 'entrevista'">Entrevista</button>
-      <button class="tab" [class.tab--active]="tabActiva === 'observaciones'" (click)="tabActiva = 'observaciones'">Observaciones</button>
-    </div>
-
-    <!-- =========== TAB: RESUMEN =========== -->
-    <div class="form-card" *ngIf="tabActiva === 'resumen'">
-      <h3 class="seccion-titulo">Resumen de Puntajes</h3>
-      <div class="resumen-barras">
-        <div class="barra-row">
-          <span class="barra-label">Méritos (A-E)</span>
-          <div class="barra-track">
-            <div class="barra-fill barra-meritos" [style.width.%]="getBarWidth(resultados.totalMeritos, 50)"></div>
-          </div>
-          <span class="barra-score">{{ resultados.totalMeritos }}/50</span>
+      <!-- =========== ESTADO GENERAL =========== -->
+      <div class="estado-card" [class]="'estado-card--' + colorEstado">
+        <div class="estado-icon">
+          <i class="pi"
+             [class.pi-check-circle]="estado === 'aprobado'"
+             [class.pi-times-circle]="estado === 'rechazado'"
+             [class.pi-clock]="estado === 'en_proceso'"></i>
         </div>
-        <div class="barra-row">
-          <span class="barra-label">Exp + Entrevista</span>
-          <div class="barra-track">
-            <div class="barra-fill barra-experiencia" [style.width.%]="getBarWidth(resultados.totalExperiencia, 50)"></div>
-          </div>
-          <span class="barra-score">{{ resultados.totalExperiencia }}/50</span>
+        <div class="estado-info">
+          <span class="estado-label">Estado del proceso</span>
+          <strong class="estado-valor">
+            {{ estado === 'aprobado' ? 'Proceso Completado' :
+            estado === 'rechazado' ? 'No Seleccionado' : 'En Proceso' }}
+          </strong>
+          <span class="estado-fecha">Evaluado el {{ postulante.fecha }}</span>
         </div>
-        <div class="barra-row">
-          <span class="barra-label">Acción Afirmativa</span>
-          <div class="barra-track">
-            <div class="barra-fill barra-afirmativa" [style.width.%]="getBarWidth(resultados.totalAccionAfirmativa, 4)"></div>
-          </div>
-          <span class="barra-score">{{ resultados.totalAccionAfirmativa }}/4</span>
-        </div>
-        <div class="barra-row barra-total-row">
-          <span class="barra-label barra-label-total">PUNTAJE TOTAL</span>
-          <div class="barra-track">
-            <div class="barra-fill barra-total-fill" [style.width.%]="porcentajeTotal"></div>
-          </div>
-          <span class="barra-score barra-score-total">{{ resultados.total }}/104</span>
+        <div class="estado-posicion">
+          <span class="posicion-num">{{ resultados.posicion }}°</span>
+          <span class="posicion-label">de {{ resultados.totalCandidatos }}</span>
         </div>
       </div>
-    </div>
 
-    <!-- =========== TAB: MÉRITOS =========== -->
-    <div class="form-card" *ngIf="tabActiva === 'meritos'">
-      <h3 class="seccion-titulo">Detalle — Etapa de Merecimientos</h3>
-      <div class="detalle-list">
-        <div *ngFor="let s of seccionesMeritos" class="detalle-seccion">
-          <div class="detalle-header">
-            <span class="det-nombre">{{ s.nombre }}</span>
-            <span class="det-score" [class.det-score-max]="s.puntaje === s.maximo">
-              {{ s.puntaje }}/{{ s.maximo }}
-            </span>
+      <!-- =========== RESUMEN PUNTAJE =========== -->
+      <div class="puntaje-banner">
+        <div class="puntaje-bloque">
+          <span class="pb-num">{{ resultados.totalMeritos }}</span>
+          <span class="pb-max">/50</span>
+          <span class="pb-label">Méritos</span>
+        </div>
+        <div class="puntaje-sep">+</div>
+        <div class="puntaje-bloque">
+          <span class="pb-num">{{ resultados.totalExperiencia }}</span>
+          <span class="pb-max">/50</span>
+          <span class="pb-label">Exp + Entrevista</span>
+        </div>
+        <div class="puntaje-sep">+</div>
+        <div class="puntaje-bloque">
+          <span class="pb-num">{{ resultados.totalAccionAfirmativa }}</span>
+          <span class="pb-max">/4</span>
+          <span class="pb-label">Acción Afirmativa</span>
+        </div>
+        <div class="puntaje-sep">=</div>
+        <div class="puntaje-bloque puntaje-total">
+          <span class="pb-num">{{ resultados.total }}</span>
+          <span class="pb-max">/104</span>
+          <span class="pb-label">TOTAL</span>
+          <span class="pb-pct">{{ porcentajeTotal }}%</span>
+        </div>
+      </div>
+
+      <!-- =========== TAB: RESUMEN =========== -->
+      <div class="form-card" *ngIf="tabActiva === 'resumen'">
+        <h3 class="seccion-titulo">Resumen de Puntajes</h3>
+        <div class="resumen-barras">
+          <div class="barra-row">
+            <span class="barra-label">Méritos (A-E)</span>
+            <div class="barra-track"><div class="barra-fill barra-meritos" [style.width.%]="getBarWidth(resultados.totalMeritos, 50)"></div></div>
+            <span class="barra-score">{{ resultados.totalMeritos }}/50</span>
           </div>
-          <div class="detalle-barra-track">
-            <div class="detalle-barra-fill" [style.width.%]="getBarWidth(s.puntaje, s.maximo)"></div>
+          <div class="barra-row">
+            <span class="barra-label">Exp + Entrevista</span>
+            <div class="barra-track"><div class="barra-fill barra-experiencia" [style.width.%]="getBarWidth(resultados.totalExperiencia, 50)"></div></div>
+            <span class="barra-score">{{ resultados.totalExperiencia }}/50</span>
           </div>
-          <div class="detalle-items">
-            <div *ngFor="let d of s.detalle" class="detalle-item-row">
-              <span class="di-criterio">{{ d.criterio }}</span>
-              <span class="di-puntaje">{{ d.puntaje }}/{{ d.maximo }}</span>
+          <div class="barra-row">
+            <span class="barra-label">Acción Afirmativa</span>
+            <div class="barra-track"><div class="barra-fill barra-afirmativa" [style.width.%]="getBarWidth(resultados.totalAccionAfirmativa, 4)"></div></div>
+            <span class="barra-score">{{ resultados.totalAccionAfirmativa }}/4</span>
+          </div>
+          <div class="barra-row barra-total-row">
+            <span class="barra-label barra-label-total">PUNTAJE TOTAL</span>
+            <div class="barra-track"><div class="barra-fill barra-total-fill" [style.width.%]="porcentajeTotal"></div></div>
+            <span class="barra-score barra-score-total">{{ resultados.total }}/104</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========== TAB: MÉRITOS =========== -->
+      <div class="form-card" *ngIf="tabActiva === 'meritos'">
+        <h3 class="seccion-titulo">Detalle — Etapa de Merecimientos</h3>
+        <div class="detalle-list">
+          <div *ngFor="let s of seccionesMeritos" class="detalle-seccion">
+            <div class="detalle-header">
+              <span class="det-nombre">{{ s.nombre }}</span>
+              <span class="det-score" [class.det-score-max]="s.puntaje === s.maximo">{{ s.puntaje }}/{{ s.maximo }}</span>
+            </div>
+            <div class="detalle-barra-track"><div class="detalle-barra-fill" [style.width.%]="getBarWidth(s.puntaje, s.maximo)"></div></div>
+            <div class="detalle-items">
+              <div *ngFor="let d of s.detalle" class="detalle-item-row">
+                <span class="di-criterio">{{ d.criterio }}</span>
+                <span class="di-puntaje">{{ d.puntaje }}/{{ d.maximo }}</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- =========== TAB: ENTREVISTA =========== -->
-    <div class="form-card" *ngIf="tabActiva === 'entrevista'">
-      <h3 class="seccion-titulo">Detalle — Experiencia y Entrevista</h3>
-      <div class="detalle-list">
-        <div *ngFor="let s of seccionesExperiencia" class="detalle-seccion">
-          <div class="detalle-header">
-            <span class="det-nombre">{{ s.nombre }}</span>
-            <span class="det-score" [class.det-score-max]="s.puntaje === s.maximo">
-              {{ s.puntaje }}/{{ s.maximo }}
-            </span>
-          </div>
-          <div class="detalle-barra-track">
-            <div class="detalle-barra-fill" [style.width.%]="getBarWidth(s.puntaje, s.maximo)"></div>
-          </div>
-          <div class="detalle-items">
-            <div *ngFor="let d of s.detalle" class="detalle-item-row">
-              <span class="di-criterio">{{ d.criterio }}</span>
-              <span class="di-puntaje">{{ d.puntaje }}/{{ d.maximo }}</span>
+      <!-- =========== TAB: ENTREVISTA =========== -->
+      <div class="form-card" *ngIf="tabActiva === 'entrevista'">
+        <h3 class="seccion-titulo">Detalle — Experiencia y Entrevista</h3>
+        <div class="detalle-list">
+          <div *ngFor="let s of seccionesExperiencia" class="detalle-seccion">
+            <div class="detalle-header">
+              <span class="det-nombre">{{ s.nombre }}</span>
+              <span class="det-score" [class.det-score-max]="s.puntaje === s.maximo">{{ s.puntaje }}/{{ s.maximo }}</span>
+            </div>
+            <div class="detalle-barra-track"><div class="detalle-barra-fill" [style.width.%]="getBarWidth(s.puntaje, s.maximo)"></div></div>
+            <div class="detalle-items">
+              <div *ngFor="let d of s.detalle" class="detalle-item-row">
+                <span class="di-criterio">{{ d.criterio }}</span>
+                <span class="di-puntaje">{{ d.puntaje }}/{{ d.maximo }}</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- =========== TAB: OBSERVACIONES =========== -->
-    <div class="form-card" *ngIf="tabActiva === 'observaciones'">
-      <h3 class="seccion-titulo">Observaciones del Evaluador</h3>
-      <div class="obs-box">
-        <i class="pi pi-comments obs-icon"></i>
-        <p class="obs-text">{{ observaciones }}</p>
+      <!-- =========== TAB: OBSERVACIONES =========== -->
+      <div class="form-card" *ngIf="tabActiva === 'observaciones'">
+        <h3 class="seccion-titulo">Observaciones del Evaluador</h3>
+        <div class="obs-box">
+          <i class="pi pi-comments obs-icon"></i>
+          <p class="obs-text">{{ observaciones }}</p>
+        </div>
+        <div class="info-aviso">
+          <i class="pi pi-info-circle"></i>
+          Para consultar detalles adicionales, contacte a la Coordinación de Carrera o al Decanato de la Facultad.
+        </div>
       </div>
-      <div class="info-aviso">
-        <i class="pi pi-info-circle"></i>
-        Para consultar detalles adicionales, contacte a la Coordinación de Carrera o al Decanato de la Facultad.
-      </div>
+
     </div>
 
   </div>
 </div>
-
-
