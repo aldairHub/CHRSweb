@@ -118,7 +118,7 @@ public class UsuarioAdminController {
     @Transactional(readOnly = true)
     @GetMapping("/postulantes")
     public ResponseEntity<List<PostulanteAdminDTO>> listarPostulantes() {
-        List<Postulante> postulantes = postulanteRepository.findAll();
+        List<Postulante> postulantes = postulanteRepository.findAllConUsuario();
 
         List<PostulanteAdminDTO> resultado = postulantes.stream()
                 .map(p -> new PostulanteAdminDTO(

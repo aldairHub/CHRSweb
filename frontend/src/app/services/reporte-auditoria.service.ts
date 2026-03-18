@@ -65,15 +65,23 @@ export class ReporteAuditoriaService {
 
   /** Descarga el blob recibido del backend */
   descargar(blob: Blob, cfg: ReporteAuditoriaConfig): void {
-    const ext      = cfg.formato === 'EXCEL' ? 'xlsx' : 'pdf';
-    const tipo     = cfg.tipoReporte.toLowerCase();
-    const fecha    = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
-    const nombre   = `reporte_auditoria_${tipo}_${fecha}.${ext}`;
-    const url      = window.URL.createObjectURL(blob);
-    const a        = document.createElement('a');
-    a.href         = url;
-    a.download     = nombre;
+    const ext    = cfg.formato === 'EXCEL' ? 'xlsx' : 'pdf';
+    const mime   = cfg.formato === 'EXCEL'
+      ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      : 'application/pdf';
+    const tipo   = cfg.tipoReporte.toLowerCase();
+    const fecha  = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
+    const nombre = `reporte_auditoria_${tipo}_${fecha}.${ext}`;
+
+    // Re-crear el blob con el MIME type correcto
+    const blobConTipo = new Blob([blob], { type: mime });
+    const url  = window.URL.createObjectURL(blobConTipo);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = nombre;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
   }
 

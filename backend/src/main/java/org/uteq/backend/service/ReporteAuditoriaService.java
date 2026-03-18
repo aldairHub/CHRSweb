@@ -493,7 +493,7 @@ public class ReporteAuditoriaService {
                 + " — "
                 + (cfg.getHasta() != null ? cfg.getHasta() : "hoy"));
         cPeriodo.setCellStyle(estilos.subInfo);
-        sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 5));
+        sheet.addMergedRegion(new CellRangeAddress(fila-1, fila-1, 0, 5));
         fila++;
 
         if (datos.resumen == null) return;

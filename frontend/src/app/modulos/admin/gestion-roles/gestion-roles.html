@@ -246,7 +246,8 @@
         </label>
         <select [(ngModel)]="moduloSeleccionado"
                 [ngModelOptions]="{standalone: true}"
-                class="form-control">
+                class="form-select"
+                style="width: 100%">
           <option [ngValue]="null" disabled>-- Seleccionar módulo --</option>
           <option *ngFor="let m of modulosDisponibles"
                   [ngValue]="m.idModulo ?? m.id_modulo">

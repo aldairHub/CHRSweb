@@ -291,23 +291,41 @@ export class GestionUsuariosComponent implements OnInit {
 
   toggleEstadoAutoridad(a: AutoridadConRolesDTO): void {
     const nuevo = !a.estado;
-    if (!confirm(`¿${nuevo ? 'Activar' : 'Desactivar'} a ${a.nombres} ${a.apellidos}?`)) return;
-    const prev = a.estado;
+    const prev  = a.estado;
     a.estado = nuevo;
     this.svc.cambiarEstadoAutoridad(a.idAutoridad, nuevo).subscribe({
-      next: () => this.cdr.detectChanges(),
-      error: () => { a.estado = prev; this.toast.error('Error', 'No se pudo cambiar el estado.'); this.cdr.detectChanges(); }
+      next: () => {
+        this.toast.success(
+          nuevo ? 'Autoridad activada' : 'Autoridad desactivada',
+          `${a.nombres} ${a.apellidos} fue ${nuevo ? 'activada' : 'desactivada'} correctamente.`
+        );
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        a.estado = prev;
+        this.toast.error('Error', 'No se pudo cambiar el estado.');
+        this.cdr.detectChanges();
+      }
     });
   }
 
   toggleEstadoUsuario(u: UsuarioConRolesDTO): void {
     const nuevo = !u.activo;
-    if (!confirm(`¿${nuevo ? 'Activar' : 'Desactivar'} al usuario ${u.usuarioApp}?`)) return;
-    const prev = u.activo;
+    const prev  = u.activo;
     u.activo = nuevo;
     this.svc.cambiarEstadoUsuario(u.idUsuario, nuevo).subscribe({
-      next: () => this.cdr.detectChanges(),
-      error: () => { u.activo = prev; this.toast.error('Error', 'No se pudo cambiar el estado.'); this.cdr.detectChanges(); }
+      next: () => {
+        this.toast.success(
+          nuevo ? 'Usuario activado' : 'Usuario desactivado',
+          `${u.usuarioApp} fue ${nuevo ? 'activado' : 'desactivado'} correctamente.`
+        );
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        u.activo = prev;
+        this.toast.error('Error', 'No se pudo cambiar el estado.');
+        this.cdr.detectChanges();
+      }
     });
   }
 

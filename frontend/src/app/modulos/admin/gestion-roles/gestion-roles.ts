@@ -227,7 +227,7 @@ export class GestionRolesComponent implements OnInit {
         this.isSaving = false;
         this.closeFormModal();
         this.loadData();
-        alert(' Rol guardado correctamente.');
+        this.toast.success('Rol guardado', `${v.nombre} guardado correctamente.`);
       },
       error: err => {
         this.cargando = false;
@@ -242,11 +242,16 @@ export class GestionRolesComponent implements OnInit {
 
   toggleEstado(rol: RolAppConRolesBdDTO): void {
     const nuevoEstado = !rol.activo;
-    if (!confirm(`¿${nuevoEstado ? 'Activar' : 'Desactivar'} el rol "${rol.nombre}"?`)) return;
     const prev = rol.activo;
     rol.activo = nuevoEstado;
     this.svc.cambiarEstado(rol.idRolApp, nuevoEstado).subscribe({
-      next: () => this.cdr.detectChanges(),
+      next: () => {
+        this.toast.success(
+          nuevoEstado ? 'Rol activado' : 'Rol desactivado',
+          `"${rol.nombre}" ${nuevoEstado ? 'activado' : 'desactivado'} correctamente.`
+        );
+        this.cdr.detectChanges();
+      },
       error: err => {
         this.cargando = false;
         rol.activo = prev;
