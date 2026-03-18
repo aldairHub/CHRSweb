@@ -13,6 +13,7 @@ import org.uteq.backend.repository.PostulanteRepository;
 import org.uteq.backend.service.AutoridadAcademicaService;
 import org.uteq.backend.service.DbRoleSyncService;
 import org.uteq.backend.service.UsuarioAdminService;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -114,6 +115,7 @@ public class UsuarioAdminController {
      * GET /api/admin/postulantes
      * Lista todos los postulantes con sus datos básicos y el usuario asociado.
      */
+    @Transactional(readOnly = true)
     @GetMapping("/postulantes")
     public ResponseEntity<List<PostulanteAdminDTO>> listarPostulantes() {
         List<Postulante> postulantes = postulanteRepository.findAll();
