@@ -61,7 +61,6 @@ export class MatrizMeritosComponent implements OnInit {
 
   private readonly API = 'http://localhost:8080/api/matriz-meritos';
 
-  // Puntaje mínimo para pasar a entrevistas
   readonly PUNTAJE_MINIMO = 75;
 
   cargando = false;
@@ -71,7 +70,6 @@ export class MatrizMeritosComponent implements OnInit {
   mostrarAccionAfirmativa = false;
   error = '';
 
-  // Override del evaluador
   mostrarModalOverride = false;
   candidatoOverride: Candidato | null = null;
   justificacionOverride = '';
@@ -196,7 +194,6 @@ export class MatrizMeritosComponent implements OnInit {
           habilitadoEntrevista:      c.habilitadoEntrevista || false
         }));
         this.inicializarPuntajes();
-        // Si ya tienen puntaje guardado, mostrar badges
         if (this.candidatos.some(c => c.puntajeTotal > 0)) {
           this.guardado = true;
         }
@@ -246,6 +243,33 @@ export class MatrizMeritosComponent implements OnInit {
     c.puntajeTotal = c.totalMerecimientos + c.totalExperienciaEntrevista + c.totalAccionAfirmativa;
   }
 
+  // ── Recalcular con límite de sección ────────────────────────
+  recalcularConLimite(c: Candidato, itemId: string, seccion: SeccionRubrica): void {
+    // Subtotal de la sección sin contar el item actual
+    const subtotalSinItem = seccion.items
+      .filter(i => i.id !== itemId)
+      .reduce((s, i) => s + Number(c.puntajes[i.id] || 0), 0);
+
+    // Cuánto queda disponible para este item
+    const disponible = Math.max(0, seccion.maximo - subtotalSinItem);
+
+    // Límite = mínimo entre el disponible y el máximo propio del item
+    const itemMax = seccion.items.find(i => i.id === itemId)?.max ?? 0;
+    const limite = Math.min(disponible, itemMax);
+
+    // Recortar si supera el límite
+    if (Number(c.puntajes[itemId]) > limite) {
+      c.puntajes[itemId] = limite;
+    }
+
+    // También asegurar que no sea negativo
+    if (Number(c.puntajes[itemId]) < 0) {
+      c.puntajes[itemId] = 0;
+    }
+
+    this.recalcular(c);
+  }
+
   subtotalSeccion(c: Candidato, sec: SeccionRubrica): number {
     const suma = sec.items.reduce((s, item) => s + Number(c.puntajes[item.id] || 0), 0);
     return Math.min(suma, sec.maximo);
@@ -286,7 +310,6 @@ export class MatrizMeritosComponent implements OnInit {
     });
   }
 
-  // ── Override del evaluador ──────────────────────────────
   abrirModalOverride(c: Candidato): void {
     this.candidatoOverride    = c;
     this.justificacionOverride = '';

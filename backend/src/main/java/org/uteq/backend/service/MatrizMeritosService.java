@@ -25,7 +25,6 @@ public class MatrizMeritosService {
     @Transactional(readOnly = true)
     public Map<String, Object> obtenerMatriz(Long idConvocatoria) {
 
-        // 1. Info de la convocatoria
         Map<String, Object> conv = jdbc.queryForMap("""
                 SELECT c.id_convocatoria, c.titulo, c.fecha_limite_documentos,
                        m.nombre_materia
@@ -37,7 +36,6 @@ public class MatrizMeritosService {
                 LIMIT 1
                 """, idConvocatoria);
 
-        // 2. Verificar si está bloqueada (fecha_limite_documentos > hoy)
         boolean bloqueada = false;
         String mensajeBloqueo = null;
         Object fechaLimiteObj = conv.get("fecha_limite_documentos");
@@ -61,7 +59,6 @@ public class MatrizMeritosService {
         convocatoriaInfo.put("bloqueada", bloqueada);
         convocatoriaInfo.put("mensajeBloqueo", mensajeBloqueo);
 
-        // 3. Candidatos
         List<Map<String, Object>> candidatosRaw = jdbc.queryForList("""
                 SELECT
                     p.id_postulante,
@@ -78,7 +75,6 @@ public class MatrizMeritosService {
                 ORDER BY p.apellidos_postulante
                 """, idConvocatoria);
 
-        // 4. Para cada candidato, cargar puntajes guardados si existen
         List<Map<String, Object>> candidatos = new ArrayList<>();
         for (Map<String, Object> raw : candidatosRaw) {
             Long idProceso = ((Number) raw.get("id_proceso")).longValue();
@@ -132,17 +128,14 @@ public class MatrizMeritosService {
             Map<String, Object> accionesAfirmativas = (Map<String, Object>) c.get("accionesAfirmativas");
             Object puntajeTotal = c.get("puntajeTotal");
 
-            // Construir arrays de items y valores
             List<String> items = new ArrayList<>();
             List<String> valores = new ArrayList<>();
 
-            // Puntajes normales
             for (Map.Entry<String, Object> entry : puntajes.entrySet()) {
                 items.add(entry.getKey());
                 valores.add(String.valueOf(entry.getValue()));
             }
 
-            // Acciones afirmativas
             for (Map.Entry<String, Object> entry : accionesAfirmativas.entrySet()) {
                 items.add(entry.getKey());
                 valores.add(String.valueOf(entry.getValue()));
@@ -150,7 +143,6 @@ public class MatrizMeritosService {
 
             double total = puntajeTotal != null ? ((Number) puntajeTotal).doubleValue() : 0.0;
 
-            // Llamar al stored procedure
             procedureRepo.guardarMatrizMeritos(idProceso, items, valores, total);
         }
 
@@ -160,6 +152,7 @@ public class MatrizMeritosService {
         return result;
     }
 
+    // ─── Listar convocatorias para la lista de matriz ──────────
     @Transactional(readOnly = true)
     public List<Map<String, Object>> listarConvocatorias() {
 
@@ -223,10 +216,12 @@ public class MatrizMeritosService {
         return result;
     }
 
+    // ─── Habilitar entrevista manualmente ──────────────────────
     public void habilitarEntrevista(Long idProceso, String justificacion) {
         procedureRepo.habilitarEntrevista(idProceso, justificacion);
     }
 
+    // ─── Obtener matriz por solicitud ──────────────────────────
     @Transactional(readOnly = true)
     public Map<String, Object> obtenerMatrizPorSolicitud(Long idSolicitud) {
 
@@ -242,7 +237,7 @@ public class MatrizMeritosService {
             LIMIT 1
             """, idSolicitud);
 
-        // 2. Verificar bloqueo
+        // 2. Verificar bloqueo por fecha
         boolean bloqueada = false;
         String mensajeBloqueo = null;
         String fechaLimiteStr = null;
@@ -258,6 +253,19 @@ public class MatrizMeritosService {
             }
         }
 
+        // 2b. Verificar bloqueo por documentos obligatorios no validados
+        if (!bloqueada) {
+            Integer obligatoriosSinValidar = jdbc.queryForObject(
+                    "select fn_documentos_pendientes_solicitud(?)",
+                    Integer.class, idSolicitud);
+
+            if (obligatoriosSinValidar != null && obligatoriosSinValidar > 0) {
+                bloqueada = true;
+                mensajeBloqueo = "La matriz está bloqueada. Existen " + obligatoriosSinValidar
+                        + " documento(s) obligatorio(s) pendientes de validación.";
+            }
+        }
+
         Map<String, Object> convocatoriaInfo = new HashMap<>();
         convocatoriaInfo.put("idConvocatoria", conv.get("id_convocatoria"));
         convocatoriaInfo.put("idSolicitud", idSolicitud);
@@ -267,7 +275,7 @@ public class MatrizMeritosService {
         convocatoriaInfo.put("bloqueada", bloqueada);
         convocatoriaInfo.put("mensajeBloqueo", mensajeBloqueo);
 
-        // 3. Candidatos por id_solicitud directamente
+        // 3. Candidatos por id_solicitud
         List<Map<String, Object>> candidatosRaw = jdbc.queryForList("""
             SELECT
                 p.id_postulante,
@@ -275,7 +283,8 @@ public class MatrizMeritosService {
                 pe.id_solicitud,
                 p.nombres_postulante AS nombres,
                 p.apellidos_postulante AS apellidos,
-                pre.nombres AS titulos
+                pre.nombres AS titulos,
+                pe.habilitado_entrevista
             FROM proceso_evaluacion pe
             JOIN postulante p ON pe.id_postulante = p.id_postulante
             JOIN prepostulacion pre ON p.id_prepostulacion = pre.id_prepostulacion
@@ -313,6 +322,7 @@ public class MatrizMeritosService {
             candidato.put("titulos", raw.get("titulos"));
             candidato.put("puntajes", puntajes);
             candidato.put("accionesAfirmativas", accionesAfirmativas);
+            candidato.put("habilitadoEntrevista", Boolean.TRUE.equals(raw.get("habilitado_entrevista")));
             candidatos.add(candidato);
         }
 
@@ -321,6 +331,4 @@ public class MatrizMeritosService {
         result.put("candidatos", candidatos);
         return result;
     }
-
-
 }
