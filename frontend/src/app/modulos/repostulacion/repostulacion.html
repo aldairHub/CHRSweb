@@ -129,6 +129,51 @@
               </label>
             </div>
           </div>
+          <!-- ══════════════════════════════════════════════════
+     DOCUMENTOS REQUERIDOS (REQUISITOS)
+══════════════════════════════════════════════════ -->
+          <div class="req-section" *ngIf="requisitos.length > 0" style="margin-top:1.5rem;">
+            <div class="req-section-title">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+              </svg>
+              Documentos Requeridos
+              <span class="req-badge">Obligatorio</span>
+            </div>
+            <p class="req-hint">La convocatoria exige los siguientes documentos. Suba un PDF por cada uno.</p>
+
+            <div class="req-card" *ngFor="let req of requisitos; let i = index">
+              <div class="req-card-header">
+                <span class="req-nombre">{{ req.nombre }}</span>
+                <span class="req-ok" *ngIf="req.archivo">✓</span>
+              </div>
+              <p class="req-desc" *ngIf="req.descripcion">{{ req.descripcion }}</p>
+
+              <div class="file-upload-box" [class.has-file]="!!req.archivo">
+                <input type="file" [id]="'fileReq' + i" accept=".pdf"
+                       (change)="onFileRequisitoSelected($event, i)" hidden>
+                <label [for]="'fileReq' + i" class="file-label">
+                  <div class="icon-area">
+                    <svg *ngIf="!req.archivo" width="22" height="22" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <svg *ngIf="req.archivo" width="22" height="22" viewBox="0 0 24 24"
+                         fill="none" stroke="#00A63E" stroke-width="2">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                      <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                  </div>
+                  <div class="text-area">
+                    <span class="main-text">{{ req.archivo ? 'Archivo seleccionado' : 'Subir PDF' }}</span>
+                    <span class="sub-text">{{ req.nombreArchivo || 'Máx 5MB' }}</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+          <!-- ════════════════════════════════════════════════ -->
 
           <!-- ══════════════════════════════════════════════════
                DOCUMENTOS ACADÉMICOS DINÁMICOS (nueva lógica)

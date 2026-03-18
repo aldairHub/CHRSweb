@@ -75,7 +75,10 @@ public class PrepostulacionService {
             MultipartFile archivoFoto,
             List<MultipartFile> archivosDocumentos,
             List<String> descripcionesDocumentos,
-            Long idSolicitud
+            Long idSolicitud,
+            List<MultipartFile> archivosRequisitos,
+            List<Long> idsRequisitos,
+            List<String> nombresRequisitos
     ) {
         log.info("Procesando prepostulacion para identificacion: {}", cedula);
 
@@ -99,32 +102,56 @@ public class PrepostulacionService {
             log.info("Prepostulacion {} vinculada a solicitud {}", idPrepostulacion, idSolicitud);
         }
 
-        String tag = cedula + "_" + System.currentTimeMillis();
-        for (int i = 0; i < archivosDocumentos.size(); i++) {
-            MultipartFile archivo = archivosDocumentos.get(i);
-            String descripcion = (descripcionesDocumentos != null && i < descripcionesDocumentos.size())
-                    ? descripcionesDocumentos.get(i)
-                    : "Documento " + (i + 1);
-            try {
-                log.debug("Subiendo documento academico {} de {}: {}", i + 1, archivosDocumentos.size(), descripcion);
-                String urlDoc = supabaseService.subirArchivo(archivo, "documentos_academicos", tag + "_" + i);
-                postgresProcedureRepository.agregarDocumentoPrepostulacion(idPrepostulacion, descripcion, urlDoc);
-                log.debug("Documento {} registrado correctamente", i + 1);
-            } catch (Exception e) {
-                log.error("Error al subir documento academico {}: {}", i + 1, e.getMessage());
-                throw new RuntimeException("Error al subir documento académico " + (i + 1) + ": " + e.getMessage());
+        // ── Documentos académicos libres ─────────────────────────────────────
+        if (archivosDocumentos != null) {
+            String tag = cedula + "_" + System.currentTimeMillis();
+            for (int i = 0; i < archivosDocumentos.size(); i++) {
+                MultipartFile archivo = archivosDocumentos.get(i);
+                String descripcion = (descripcionesDocumentos != null && i < descripcionesDocumentos.size())
+                        ? descripcionesDocumentos.get(i)
+                        : "Documento " + (i + 1);
+                try {
+                    log.debug("Subiendo documento academico {} de {}: {}", i + 1, archivosDocumentos.size(), descripcion);
+                    String urlDoc = supabaseService.subirArchivo(archivo, "documentos_academicos", tag + "_" + i);
+                    postgresProcedureRepository.agregarDocumentoPrepostulacion(idPrepostulacion, descripcion, urlDoc);
+                    log.debug("Documento {} registrado correctamente", i + 1);
+                } catch (Exception e) {
+                    log.error("Error al subir documento academico {}: {}", i + 1, e.getMessage());
+                    throw new RuntimeException("Error al subir documento académico " + (i + 1) + ": " + e.getMessage());
+                }
             }
+            log.info("Prepostulacion {} completada con {} documento(s) academico(s)",
+                    idPrepostulacion, archivosDocumentos.size());
         }
 
-        log.info("Prepostulacion {} completada con {} documento(s) academico(s)",
-                idPrepostulacion, archivosDocumentos.size());
+        // ── Documentos de requisitos obligatorios ────────────────────────────
+        if (archivosRequisitos != null && idsRequisitos != null) {
+            for (int i = 0; i < archivosRequisitos.size(); i++) {
+                MultipartFile archivo = archivosRequisitos.get(i);
+                Long idReq = (i < idsRequisitos.size()) ? idsRequisitos.get(i) : null;
+                if (archivo == null || archivo.isEmpty()) continue;
+                try {
+                    log.debug("Subiendo documento de requisito {} para prepostulacion {}", idReq, idPrepostulacion);
+                    String urlDoc = supabaseService.subirArchivo(archivo, "documentos_requisitos",
+                            cedula + "_req_" + idReq + "_" + System.currentTimeMillis());
+                    String descReq = (nombresRequisitos != null && i < nombresRequisitos.size())
+                            ? nombresRequisitos.get(i)
+                            : archivo.getOriginalFilename();
+                    postgresProcedureRepository.agregarDocumentoPrepostulacion(
+                            idPrepostulacion, descReq, urlDoc, idReq);
+                    log.info("Documento requisito {} subido para prepostulacion {}", idReq, idPrepostulacion);
+                } catch (Exception e) {
+                    log.error("Error subiendo documento requisito {}: {}", idReq, e.getMessage());
+                    throw new RuntimeException("Error al subir documento de requisito: " + e.getMessage());
+                }
+            }
+        }
 
         notifService.notifRevisorNuevaPrepostulacion(idPrepostulacion, nombres + " " + apellidos);
 
         return new PrepostulacionResponseDTO(
                 "Solicitud registrada exitosamente", correo, idPrepostulacion, true, LocalDateTime.now());
     }
-
     // =========================================================================
     // REPOSTULACIÓN  (lógica nueva — igual que prepostulación inicial)
     // =========================================================================
@@ -147,7 +174,10 @@ public class PrepostulacionService {
             MultipartFile archivoFoto,
             List<MultipartFile> archivosDocumentos,
             List<String> descripcionesDocumentos,
-            Long idSolicitud
+            Long idSolicitud,
+            List<MultipartFile> archivosRequisitos,
+            List<Long> idsRequisitos,
+            List<String> nombresRequisitos
     ) {
         // ── 1. Validaciones básicas ──────────────────────────────────────────
         if (archivosDocumentos == null || archivosDocumentos.isEmpty()) {
@@ -158,6 +188,7 @@ public class PrepostulacionService {
         String urlCedula, urlFoto;
         try {
             String tag = cedula + "_repost_" + System.currentTimeMillis();
+            log.debug("Subiendo cedula y foto de re-postulacion para cedula: {}", cedula);
             urlCedula = supabaseService.subirArchivo(archivoCedula, "cedulas", tag);
             urlFoto   = supabaseService.subirArchivo(archivoFoto,   "fotos",   tag);
             log.info("Archivos base de re-postulacion subidos para cedula: {}", cedula);
@@ -165,7 +196,7 @@ public class PrepostulacionService {
             throw new RuntimeException("Error al subir documentos: " + e.getMessage());
         }
 
-        // ── 3. Crear nueva fila de prepostulacion (sp_repostular 4 args) ────
+        // ── 3. Crear nueva fila de prepostulacion ────────────────────────────
         Long idNuevaPrepostulacion;
         try {
             idNuevaPrepostulacion = postgresProcedureRepository.repostular(
@@ -175,20 +206,17 @@ public class PrepostulacionService {
             throw new RuntimeException(extraerMensajeTrigger(e));
         }
 
-        // ── 4. Subir y registrar documentos académicos dinámicos ─────────────
+        // ── 4. Documentos académicos libres ──────────────────────────────────
         String tag = cedula + "_repost_" + System.currentTimeMillis();
         for (int i = 0; i < archivosDocumentos.size(); i++) {
-            MultipartFile archivo = archivosDocumentos.get(i);
-            String descripcion = (descripcionesDocumentos != null && i < descripcionesDocumentos.size())
-                    ? descripcionesDocumentos.get(i)
-                    : "Documento " + (i + 1);
+            MultipartFile archivo    = archivosDocumentos.get(i);
+            String        descripcion = (descripcionesDocumentos != null && i < descripcionesDocumentos.size())
+                    ? descripcionesDocumentos.get(i) : "Documento " + (i + 1);
             try {
                 log.debug("Re-post: subiendo documento {} '{}' para prepostulacion {}",
                         i + 1, descripcion, idNuevaPrepostulacion);
-                String urlDoc = supabaseService.subirArchivo(
-                        archivo, "documentos_academicos", tag + "_" + i);
-                postgresProcedureRepository.agregarDocumentoPrepostulacion(
-                        idNuevaPrepostulacion, descripcion, urlDoc);
+                String urlDoc = supabaseService.subirArchivo(archivo, "documentos_academicos", tag + "_" + i);
+                postgresProcedureRepository.agregarDocumentoPrepostulacion(idNuevaPrepostulacion, descripcion, urlDoc);
                 log.debug("Re-post: documento {} registrado correctamente", i + 1);
             } catch (Exception e) {
                 log.error("Error al subir documento academico {} en re-postulacion: {}", i + 1, e.getMessage());
@@ -199,14 +227,36 @@ public class PrepostulacionService {
         log.info("Re-postulacion {} completada con {} documento(s) academico(s)",
                 idNuevaPrepostulacion, archivosDocumentos.size());
 
+        // ── 4b. Documentos de requisitos obligatorios ────────────────────────
+        if (archivosRequisitos != null && idsRequisitos != null) {
+            for (int i = 0; i < archivosRequisitos.size(); i++) {
+                MultipartFile archivo = archivosRequisitos.get(i);
+                Long idReq = (i < idsRequisitos.size()) ? idsRequisitos.get(i) : null;
+                if (archivo == null || archivo.isEmpty()) continue;
+                try {
+                    log.debug("Re-post: subiendo documento de requisito {} para prepostulacion {}",
+                            idReq, idNuevaPrepostulacion);
+                    String urlDoc = supabaseService.subirArchivo(archivo, "documentos_requisitos",
+                            cedula + "_req_" + idReq + "_" + System.currentTimeMillis());
+                    String descReq = (nombresRequisitos != null && i < nombresRequisitos.size())
+                            ? nombresRequisitos.get(i)
+                            : archivo.getOriginalFilename();
+                    postgresProcedureRepository.agregarDocumentoPrepostulacion(
+                            idNuevaPrepostulacion, descReq, urlDoc, idReq);
+                    log.info("Re-post: documento requisito {} subido correctamente", idReq);
+                } catch (Exception e) {
+                    log.error("Error subiendo documento requisito {} en re-postulacion: {}", idReq, e.getMessage());
+                    throw new RuntimeException("Error al subir documento de requisito: " + e.getMessage());
+                }
+            }
+        }
+
         // ── 5. Notificar al revisor ──────────────────────────────────────────
         try {
             Prepostulacion ultima = prepostulacionRepository
-                    .findTopByIdentificacionOrderByFechaEnvioDesc(cedula)
-                    .orElse(null);
+                    .findTopByIdentificacionOrderByFechaEnvioDesc(cedula).orElse(null);
             String nombreCompleto = ultima != null
-                    ? ultima.getNombres() + " " + ultima.getApellidos()
-                    : cedula;
+                    ? ultima.getNombres() + " " + ultima.getApellidos() : cedula;
             notifService.notifRevisorNuevaPrepostulacion(idNuevaPrepostulacion, nombreCompleto);
         } catch (Exception e) {
             log.warn("No se pudo enviar notificacion de re-postulacion: {}", e.getMessage());
@@ -215,8 +265,7 @@ public class PrepostulacionService {
         // ── 6. Recuperar correo para la respuesta ────────────────────────────
         String correo = prepostulacionRepository
                 .findTopByIdentificacionOrderByFechaEnvioDesc(cedula)
-                .map(Prepostulacion::getCorreo)
-                .orElse("");
+                .map(Prepostulacion::getCorreo).orElse("");
 
         return new PrepostulacionResponseDTO(
                 "Re-postulación enviada. Su solicitud está nuevamente en revisión.",

@@ -545,29 +545,60 @@ public class PostgresProcedureRepository {
             return null;
         });
     }
+
     public Long agregarDocumentoPrepostulacion(
             Long idPrepostulacion, String descripcion, String urlDocumento) {
+        return agregarDocumentoPrepostulacion(idPrepostulacion, descripcion, urlDocumento, null);
+    }
 
-        String sql = "SELECT out_id_documento FROM sp_agregar_documento_prepostulacion(?,?,?)";
+    public Long agregarDocumentoPrepostulacion(
+            Long idPrepostulacion, String descripcion, String urlDocumento, Long idRequisito) {
+
+        String sql = "SELECT out_id_documento FROM sp_agregar_documento_prepostulacion(?,?,?,?)";
         List<Map<String, Object>> result = jdbcTemplate.queryForList(sql,
-                idPrepostulacion, descripcion, urlDocumento);
+                idPrepostulacion, descripcion, urlDocumento, idRequisito);
 
         if (!result.isEmpty()) {
             return ((Number) result.get(0).get("out_id_documento")).longValue();
         }
         throw new RuntimeException("sp_agregar_documento sin resultado");
     }
+
+    // =========================================================================
+    // REQUISITOS DE PREPOSTULACIÓN
+    // =========================================================================
+
+    public List<Map<String, Object>> listarRequisitosSolicitud(Long idSolicitud) {
+        return jdbcTemplate.queryForList(
+                "SELECT * FROM sp_listar_requisitos_solicitud(?)", idSolicitud);
+    }
+
+    public Long agregarRequisitoPrepostulacion(Long idSolicitud, String nombre, String descripcion, int orden) {
+        return jdbcTemplate.queryForObject(
+                "SELECT sp_agregar_requisito_prepostulacion(?, ?, ?, ?)",
+                Long.class, idSolicitud, nombre, descripcion, orden);
+    }
+
+    public void actualizarRequisitoPrepostulacion(Long idRequisito, String nombre, String descripcion, int orden) {
+        jdbcTemplate.update(
+                "CALL sp_actualizar_requisito_prepostulacion(?, ?, ?, ?)",
+                idRequisito, nombre, descripcion, orden);
+    }
+
+    public void eliminarRequisitoPrepostulacion(Long idRequisito) {
+        jdbcTemplate.update("CALL sp_eliminar_requisito_prepostulacion(?)", idRequisito);
+    }
+
     public Long iniciarProcesoEvaluacion(Long idPostulante, Long idSolicitud) {
         return jdbcTemplate.queryForObject(
                 "SELECT public.iniciar_proceso_evaluacion(?, ?)",
                 Long.class, idPostulante, idSolicitud);
     }
-    /** Repostular SIN url_prerrequisitos */
+
     public Long repostular(String identificacion, Long idSolicitud,
                            String urlCedula, String urlFoto) {
         return jdbcTemplate.execute((java.sql.Connection conn) -> {
-            var ps = conn.prepareStatement(
-                    "SELECT * FROM sp_repostular(?,?,?,?)");
+            var ps = conn.prepareStatement("SELECT * FROM sp_repostular(?,?,?,?)");
             ps.setString(1, identificacion);
             ps.setObject(2, idSolicitud);
             ps.setString(3, urlCedula);
@@ -577,14 +608,11 @@ public class PostgresProcedureRepository {
             throw new RuntimeException("sp_repostular sin resultado");
         });
     }
-    /**
-     * Guarda puntajes de matriz de méritos para un proceso
-     */
+
     public void guardarMatrizMeritos(Long idProceso, List<String> items,
                                      List<String> valores, Double puntajeTotal) {
         jdbcTemplate.execute((java.sql.Connection conn) -> {
-            var ps = conn.prepareStatement(
-                    "CALL public.sp_guardar_matriz_meritos(?, ?, ?, ?)");
+            var ps = conn.prepareStatement("CALL public.sp_guardar_matriz_meritos(?, ?, ?, ?)");
             ps.setLong(1, idProceso);
             ps.setArray(2, conn.createArrayOf("VARCHAR", items.toArray()));
             ps.setArray(3, conn.createArrayOf("VARCHAR", valores.toArray()));
@@ -593,8 +621,8 @@ public class PostgresProcedureRepository {
             return null;
         });
     }
+
     public void guardarEntrevistaDocente(Long idProceso) {
-        // Verificar usuario de conexión
         String usuario = jdbcTemplate.queryForObject("SELECT current_user", String.class);
         System.out.println("=== Usuario BD en guardarEntrevistaDocente: " + usuario);
 

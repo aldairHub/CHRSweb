@@ -4,13 +4,18 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
-// ==========================================
-// INTERFAZ PARA DOCUMENTOS ACADÉMICOS
-// (igual que en prepostulacion/registro)
-// ==========================================
 export interface DocumentoEntrada {
   archivo: File | null;
   descripcion: string;
+  nombreArchivo: string;
+}
+
+export interface RequisitoPrepostulacion {
+  idRequisito: number;
+  nombre: string;
+  descripcion: string | null;
+  orden: number;
+  archivo: File | null;
   nombreArchivo: string;
 }
 
@@ -39,8 +44,11 @@ export class RepostulacionComponent implements OnInit {
   nombreArchivoCedula = '';
   nombreArchivoFoto   = '';
 
-  // ─── Documentos académicos dinámicos (nueva lógica) ──────────
+  // ─── Documentos académicos dinámicos ─────────────────────────
   documentosAcademicos: DocumentoEntrada[] = [];
+
+  // ─── Requisitos obligatorios de la solicitud ─────────────────
+  requisitos: RequisitoPrepostulacion[] = [];
 
   private apiUrl = 'http://localhost:8080/api/prepostulacion';
 
@@ -52,11 +60,11 @@ export class RepostulacionComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.agregarDocumento(); // un campo vacío por defecto
-
+    this.agregarDocumento();
     this.route.queryParams.subscribe(params => {
       if (params['idSolicitud']) {
         this.idSolicitud = +params['idSolicitud'];
+        this.cargarRequisitos(this.idSolicitud);
       } else {
         this.router.navigate(['/convocatorias']);
       }
@@ -97,7 +105,7 @@ export class RepostulacionComponent implements OnInit {
   onFileCedulaSelected(e: any): void {
     const f = e.target.files[0];
     if (f?.type === 'application/pdf') {
-      this.archivoCedula     = f;
+      this.archivoCedula       = f;
       this.nombreArchivoCedula = f.name;
     } else {
       alert('Debe ser un archivo PDF');
@@ -108,7 +116,7 @@ export class RepostulacionComponent implements OnInit {
   onFileFotoSelected(e: any): void {
     const f = e.target.files[0];
     if (f?.type.startsWith('image/')) {
-      this.archivoFoto     = f;
+      this.archivoFoto       = f;
       this.nombreArchivoFoto = f.name;
     } else {
       alert('Debe ser una imagen (JPG, PNG)');
@@ -122,7 +130,7 @@ export class RepostulacionComponent implements OnInit {
   onFileDocumentoSelected(e: any, index: number): void {
     const f = e.target.files[0];
     if (f?.type === 'application/pdf') {
-      this.documentosAcademicos[index].archivo      = f;
+      this.documentosAcademicos[index].archivo       = f;
       this.documentosAcademicos[index].nombreArchivo = f.name;
     } else {
       alert('Solo se permiten archivos PDF');
@@ -147,6 +155,33 @@ export class RepostulacionComponent implements OnInit {
   }
 
   // ==========================================
+  // REQUISITOS OBLIGATORIOS
+  // ==========================================
+  cargarRequisitos(idSolicitud: number): void {
+    this.http.get<RequisitoPrepostulacion[]>(
+      `${this.apiUrl}/solicitud/${idSolicitud}/requisitos`
+    ).subscribe({
+      next: (data) => {
+        this.requisitos = data.map(r => ({ ...r, archivo: null, nombreArchivo: '' }));
+        this.cdr.detectChanges();
+      },
+      error: () => { this.requisitos = []; this.cdr.detectChanges(); }
+    });
+  }
+
+  onFileRequisitoSelected(event: any, index: number): void {
+    const f = event.target.files[0];
+    if (f?.type === 'application/pdf') {
+      this.requisitos[index].archivo       = f;
+      this.requisitos[index].nombreArchivo = f.name;
+    } else {
+      alert('Debe ser un archivo PDF');
+      event.target.value = '';
+    }
+    this.cdr.detectChanges();
+  }
+
+  // ==========================================
   // ENVIAR RE-POSTULACIÓN
   // ==========================================
   enviarRepostulacion(): void {
@@ -154,8 +189,6 @@ export class RepostulacionComponent implements OnInit {
       this.error = 'Debes subir la cédula y la foto.';
       return;
     }
-
-    // Validar documentos académicos
     if (this.documentosAcademicos.length === 0) {
       this.error = 'Debe agregar al menos un documento académico.';
       return;
@@ -170,7 +203,12 @@ export class RepostulacionComponent implements OnInit {
         return;
       }
     }
-
+    for (const req of this.requisitos) {
+      if (!req.archivo) {
+        this.error = `Debe subir el documento requerido: "${req.nombre}"`;
+        return;
+      }
+    }
     if (!this.idSolicitud) {
       this.error = 'No se encontró la solicitud. Vuelve a seleccionar la plaza.';
       return;
@@ -180,23 +218,30 @@ export class RepostulacionComponent implements OnInit {
     this.error    = '';
 
     const fd = new FormData();
-    fd.append('cedula',     this.cedula);
-    fd.append('idSolicitud', String(this.idSolicitud));
+    fd.append('cedula',        this.cedula);
+    fd.append('idSolicitud',   String(this.idSolicitud));
     fd.append('archivoCedula', this.archivoCedula, this.nombreArchivoCedula);
     fd.append('archivoFoto',   this.archivoFoto,   this.nombreArchivoFoto);
 
-    // Documentos académicos dinámicos
     for (const doc of this.documentosAcademicos) {
       if (doc.archivo) {
-        fd.append('archivosDocumentos',       doc.archivo, doc.archivo.name);
-        fd.append('descripcionesDocumentos',  doc.descripcion);
+        fd.append('archivosDocumentos',      doc.archivo, doc.archivo.name);
+        fd.append('descripcionesDocumentos', doc.descripcion);
+      }
+    }
+
+    for (const req of this.requisitos) {
+      if (req.archivo) {
+        fd.append('archivosRequisitos', req.archivo, req.archivo.name);
+        fd.append('idsRequisitos', String(req.idRequisito));
+        fd.append('nombresRequisitos', req.nombre); // ← agregar esto
       }
     }
 
     this.http.post<any>(`${this.apiUrl}/repostular`, fd).subscribe({
       next: (res) => {
-        this.enviando    = false;
-        this.exito       = true;
+        this.enviando     = false;
+        this.exito        = true;
         this.mensajeExito = res.mensaje || 'Re-postulación enviada exitosamente.';
         this.cdr.detectChanges();
       },

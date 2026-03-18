@@ -243,3 +243,64 @@ $text-dark: #1e293b;
 
   .prepost { background: rgba(79,70,229,0.05) !important; border-color: rgba(79,70,229,0.2) !important; }
 }
+/* ============================================================
+   DOCUMENTOS REQUERIDOS (REQUISITOS)
+   ============================================================ */
+.req-section {
+  margin-top: 1.4rem;
+  padding: 1rem 1.1rem;
+  border: 1.5px solid #dbeafe;
+  border-radius: 10px;
+  background: #f8faff;
+}
+
+.req-section-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+  font-size: 0.84rem;
+  color: #1e293b;
+  margin-bottom: 5px;
+  svg { color: #2563eb; flex-shrink: 0; }
+}
+
+.req-badge {
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 0.69rem;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-weight: 700;
+}
+
+.req-hint {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: 0 0 0.9rem 0;
+}
+
+.req-card {
+  border: 1.5px solid #e0e7ff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fff;
+  margin-bottom: 10px;
+  &:last-child { margin-bottom: 0; }
+}
+
+.req-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.req-nombre {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e40af;
+}
+
+.req-ok   { color: #16a34a; font-weight: 700; font-size: 0.9rem; }
+.req-desc { font-size: 0.76rem; color: #64748b; margin: 0 0 8px 0; }

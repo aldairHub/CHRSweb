@@ -5,12 +5,18 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-// ==========================================
-// INTERFAZ PARA DOCUMENTOS ACADÉMICOS
-// ==========================================
 export interface DocumentoEntrada {
   archivo: File | null;
   descripcion: string;
+  nombreArchivo: string;
+}
+
+export interface RequisitoPrepostulacion {
+  idRequisito: number;
+  nombre: string;
+  descripcion: string | null;
+  orden: number;
+  archivo: File | null;
   nombreArchivo: string;
 }
 
@@ -24,7 +30,7 @@ export interface DocumentoEntrada {
 export class RegistroComponent implements OnDestroy, OnInit {
 
   // ==========================================
-  // SOLICITUD (antes era convocatoriaId)
+  // SOLICITUD
   // ==========================================
   idSolicitud: number | null = null;
 
@@ -63,6 +69,11 @@ export class RegistroComponent implements OnDestroy, OnInit {
   nombreArchivoFoto = '';
 
   // ==========================================
+  // REQUISITOS OBLIGATORIOS
+  // ==========================================
+  requisitos: RequisitoPrepostulacion[] = [];
+
+  // ==========================================
   // URLS BACKEND
   // ==========================================
   private baseUrlVerificacion   = 'http://localhost:8080/api/verificacion';
@@ -79,12 +90,12 @@ export class RegistroComponent implements OnDestroy, OnInit {
   // INIT
   // ==========================================
   ngOnInit(): void {
-    this.agregarDocumento(); // Un campo vacío por defecto
+    this.agregarDocumento();
     this.route.queryParams.subscribe(params => {
       if (params['idSolicitud']) {
         this.idSolicitud = +params['idSolicitud'];
+        this.cargarRequisitos(this.idSolicitud);
       } else {
-        // Si no viene idSolicitud redirigir a convocatorias
         this.router.navigate(['/convocatorias']);
       }
     });
@@ -95,6 +106,36 @@ export class RegistroComponent implements OnDestroy, OnInit {
   }
 
   // ==========================================
+  // REQUISITOS
+  // ==========================================
+  cargarRequisitos(idSolicitud: number): void {
+    this.http.get<RequisitoPrepostulacion[]>(
+      `${this.baseUrlPrepostulacion}/solicitud/${idSolicitud}/requisitos`
+    ).subscribe({
+      next: (data) => {
+        this.requisitos = data.map(r => ({ ...r, archivo: null, nombreArchivo: '' }));
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.requisitos = [];
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onFileRequisitoSelected(event: any, index: number): void {
+    const f = event.target.files[0];
+    if (f?.type === 'application/pdf') {
+      this.requisitos[index].archivo      = f;
+      this.requisitos[index].nombreArchivo = f.name;
+    } else {
+      alert('Debe ser un archivo PDF');
+      event.target.value = '';
+    }
+    this.cdr.detectChanges();
+  }
+
+  // ==========================================
   // PASO 1 - ENVIAR CODIGO
   // ==========================================
   enviarCodigo(): void {
@@ -102,14 +143,10 @@ export class RegistroComponent implements OnDestroy, OnInit {
       alert('Ingrese un correo válido');
       return;
     }
-
     this.enviandoCodigo = true;
-
     const params = new HttpParams().set('correo', this.email);
-
     this.http.post(`${this.baseUrlVerificacion}/enviar`, null, {
-      params,
-      responseType: 'text'
+      params, responseType: 'text'
     }).subscribe({
       next: () => {
         this.enviandoCodigo = false;
@@ -125,9 +162,7 @@ export class RegistroComponent implements OnDestroy, OnInit {
     });
   }
 
-  reenviarCodigo(): void {
-    this.enviarCodigo();
-  }
+  reenviarCodigo(): void { this.enviarCodigo(); }
 
   // ==========================================
   // PASO 2 - VALIDAR CODIGO
@@ -137,13 +172,10 @@ export class RegistroComponent implements OnDestroy, OnInit {
       alert('El código debe tener 6 dígitos');
       return;
     }
-
     this.cargando = true;
-
     const params = new HttpParams()
       .set('correo', this.email)
       .set('codigo', this.codigoVerificacion);
-
     this.http.post<boolean>(`${this.baseUrlVerificacion}/validar`, null, { params })
       .subscribe({
         next: (valido) => {
@@ -167,7 +199,7 @@ export class RegistroComponent implements OnDestroy, OnInit {
   }
 
   // ==========================================
-  // NAVEGACIÓN ENTRE PASOS
+  // NAVEGACIÓN
   // ==========================================
   volverPaso(): void {
     if (this.currentStep > 1) {
@@ -184,7 +216,6 @@ export class RegistroComponent implements OnDestroy, OnInit {
     this.detenerTemporizador();
     this.tiempoRestante = 60;
     this.puedeReenviar = false;
-
     this.intervalId = setInterval(() => {
       if (this.tiempoRestante > 0) {
         this.tiempoRestante--;
@@ -256,11 +287,7 @@ export class RegistroComponent implements OnDestroy, OnInit {
       alert('Máximo 10 documentos permitidos');
       return;
     }
-    this.documentosAcademicos.push({
-      archivo: null,
-      descripcion: '',
-      nombreArchivo: ''
-    });
+    this.documentosAcademicos.push({ archivo: null, descripcion: '', nombreArchivo: '' });
   }
 
   eliminarDocumento(index: number): void {
@@ -271,13 +298,9 @@ export class RegistroComponent implements OnDestroy, OnInit {
     this.documentosAcademicos.splice(index, 1);
   }
 
-  // ==========================================
-  // RENOMBRAR ARCHIVO
-  // ==========================================
   renombrarArchivo(tipo: string): void {
     const nuevoNombre = prompt('Ingrese el nuevo nombre (sin extensión):');
     if (!nuevoNombre?.trim()) return;
-
     if (tipo === 'cedula' && this.archivoCedula) {
       const ext = this.archivoCedula.name.split('.').pop();
       this.nombreArchivoCedula = `${nuevoNombre.trim()}.${ext}`;
@@ -301,23 +324,26 @@ export class RegistroComponent implements OnDestroy, OnInit {
     formData.append('nombres',   this.nombres);
     formData.append('apellidos', this.apellidos);
 
-    // CAMBIO CLAVE: se manda idSolicitud en vez de idConvocatoria
-    if (this.idSolicitud) {
+    if (this.idSolicitud)
       formData.append('idSolicitud', String(this.idSolicitud));
-    }
 
     if (this.archivoCedula)
       formData.append('archivoCedula', this.archivoCedula, this.nombreArchivoCedula);
     if (this.archivoFoto)
-      formData.append('archivoFoto',   this.archivoFoto,   this.nombreArchivoFoto);
+      formData.append('archivoFoto', this.archivoFoto, this.nombreArchivoFoto);
 
-    // NUEVO: Agregar múltiples documentos
     for (const doc of this.documentosAcademicos) {
       if (doc.archivo) {
-        // Usar el nombre original del archivo, no el descripcion
-        const nombreSeguro = doc.archivo.name; // nombre original sin caracteres especiales
-        formData.append('archivosDocumentos', doc.archivo, nombreSeguro);
+        formData.append('archivosDocumentos', doc.archivo, doc.archivo.name);
         formData.append('descripcionesDocumentos', doc.descripcion);
+      }
+    }
+
+    for (const req of this.requisitos) {
+      if (req.archivo) {
+        formData.append('archivosRequisitos', req.archivo, req.archivo.name);
+        formData.append('idsRequisitos', String(req.idRequisito));
+        formData.append('nombresRequisitos', req.nombre); // ← agregar esto
       }
     }
 
@@ -351,8 +377,6 @@ export class RegistroComponent implements OnDestroy, OnInit {
       alert('Suba todos los archivos requeridos');
       return false;
     }
-
-    // Validar documentos académicos
     if (this.documentosAcademicos.length === 0) {
       alert('Debe agregar al menos un documento académico');
       return false;
@@ -367,25 +391,24 @@ export class RegistroComponent implements OnDestroy, OnInit {
         return false;
       }
     }
+    for (const req of this.requisitos) {
+      if (!req.archivo) {
+        alert(`Debe subir el documento requerido: "${req.nombre}"`);
+        return false;
+      }
+    }
     return true;
   }
 
   // ==========================================
-  // NAVEGACIÓN
+  // MODALES / NAVEGACIÓN
   // ==========================================
-  irALogin(): void {
-    this.router.navigate(['/login']);
-  }
+  irALogin(): void { this.router.navigate(['/login']); }
 
-  // ==========================================
-  // MODALES
-  // ==========================================
   cerrarModalExito(): void {
     this.mostrarModalExito = false;
     this.router.navigate(['/login']);
   }
 
-  cerrarModalError(): void {
-    this.mostrarModalError = false;
-  }
+  cerrarModalError(): void { this.mostrarModalError = false; }
 }

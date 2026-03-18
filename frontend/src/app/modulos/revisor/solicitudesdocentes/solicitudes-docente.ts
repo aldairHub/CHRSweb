@@ -1,5 +1,5 @@
 // solicitudes-docente.ts
-import { Component, OnInit,ChangeDetectorRef  } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DecimalPipe, TitleCasePipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -31,11 +31,17 @@ export interface SolicitudDocenteResponseDTO {
   observaciones?:             string;
 }
 
+export interface RequisitoPrepostulacionDTO {
+  idRequisito: number;
+  nombre: string;
+  descripcion: string | null;
+  orden: number;
+}
+
 @Component({
   selector: 'app-solicitudes-docente',
   standalone: true,
-  imports: [CommonModule, FormsModule,
-    DecimalPipe, TitleCasePipe, DatePipe, ToastComponent],
+  imports: [CommonModule, FormsModule, DecimalPipe, TitleCasePipe, DatePipe, ToastComponent],
   templateUrl: './solicitudes-docente.html',
   styleUrls:  ['./solicitudes-docente.scss']
 })
@@ -43,7 +49,7 @@ export class SolicitudesDocenteComponent implements OnInit {
 
   private readonly API = `${environment.apiUrl}/solicitudes-docente`;
 
-  // ── data ─────────────────────────────────────────────────────
+  // ── data ──────────────────────────────────────────────────────
   cargando = false;
   solicitudes:          SolicitudDocenteResponseDTO[] = [];
   solicitudesFiltradas: SolicitudDocenteResponseDTO[] = [];
@@ -62,19 +68,33 @@ export class SolicitudesDocenteComponent implements OnInit {
   // ── modal confirmar acción ────────────────────────────────────
   modalConfirm        = false;
   solicitudParaAccion: SolicitudDocenteResponseDTO | null = null;
-  accionPendiente     = '';          // 'aprobada' | 'rechazada'
+  accionPendiente     = '';
   observacionesAccion = '';
   procesando          = false;
 
-  constructor(private http: HttpClient,   private cdr: ChangeDetectorRef,
-              private toast: ToastService) {}
+  // ── modal requisitos ──────────────────────────────────────────
+  modalRequisitos                      = false;
+  solicitudParaRequisitos: SolicitudDocenteResponseDTO | null = null;
+  requisitosDetalleList: RequisitoPrepostulacionDTO[]  = [];
+  cargandoRequisitos                   = false;
+  nuevoReqNombre                       = '';
+  nuevoReqDesc                         = '';
+  nuevoReqOrden                        = 0;
+  guardandoRequisito                   = false;
+  editandoRequisito: RequisitoPrepostulacionDTO | null = null;
+
+  constructor(
+    private http:  HttpClient,
+    private cdr:   ChangeDetectorRef,
+    private toast: ToastService
+  ) {}
 
   ngOnInit(): void { this.cargar(); }
 
-  // ── carga ──────────────────────────────────────────────────────
+  // ── carga ─────────────────────────────────────────────────────
   cargar(): void {
-    this.cdr.detectChanges();
     this.cargando = true;
+    this.cdr.detectChanges();
     this.http.get<SolicitudDocenteResponseDTO[]>(this.API).subscribe({
       next: data => {
         this.solicitudes = data;
@@ -82,13 +102,12 @@ export class SolicitudesDocenteComponent implements OnInit {
         this.cargando = false;
         this.cdr.detectChanges();
       },
-      error: err => {
+      error: () => {
         this.cargando = false;
         this.toast.error('Error', 'No se pudieron cargar las solicitudes.');
         this.cdr.detectChanges();
       }
     });
-    this.cdr.detectChanges();
   }
 
   // ── filtro ────────────────────────────────────────────────────
@@ -113,8 +132,8 @@ export class SolicitudesDocenteComponent implements OnInit {
   get totalPaginas(): number { return Math.ceil(this.solicitudesFiltradas.length / this.itemsPorPagina); }
   get inicio(): number       { return (this.paginaActual - 1) * this.itemsPorPagina; }
   get fin(): number          { return Math.min(this.inicio + this.itemsPorPagina, this.solicitudesFiltradas.length); }
-  get paginadas():  SolicitudDocenteResponseDTO[] { return this.solicitudesFiltradas.slice(this.inicio, this.fin); }
-  get paginas():    number[] { return Array.from({ length: this.totalPaginas }, (_, i) => i + 1); }
+  get paginadas(): SolicitudDocenteResponseDTO[] { return this.solicitudesFiltradas.slice(this.inicio, this.fin); }
+  get paginas():   number[]  { return Array.from({ length: this.totalPaginas }, (_, i) => i + 1); }
   cambiarPagina(p: number): void { if (p >= 1 && p <= this.totalPaginas) this.paginaActual = p; }
 
   // ── helpers CSS ───────────────────────────────────────────────
@@ -130,12 +149,12 @@ export class SolicitudesDocenteComponent implements OnInit {
   verDetalle(s: SolicitudDocenteResponseDTO): void { this.solicitudDetalle = s; }
   cerrarDetalle(): void                            { this.solicitudDetalle = null; }
 
-  // ── acción rápida (abre modal de confirmación) ─────────────────
+  // ── acción rápida ─────────────────────────────────────────────
   accionRapida(s: SolicitudDocenteResponseDTO, accion: string): void {
-    this.solicitudParaAccion  = s;
-    this.accionPendiente      = accion;
-    this.observacionesAccion  = '';
-    this.modalConfirm         = true;
+    this.solicitudParaAccion = s;
+    this.accionPendiente     = accion;
+    this.observacionesAccion = '';
+    this.modalConfirm        = true;
     this.cdr.detectChanges();
   }
 
@@ -144,14 +163,13 @@ export class SolicitudesDocenteComponent implements OnInit {
     this.solicitudParaAccion = null;
     this.accionPendiente     = '';
     this.cdr.detectChanges();
-
   }
 
   confirmarAccion(): void {
     if (!this.solicitudParaAccion?.idSolicitud || !this.accionPendiente) return;
     this.procesando = true;
-
     this.cdr.detectChanges();
+
     const body = {
       nuevoEstado:   this.accionPendiente,
       observaciones: this.observacionesAccion
@@ -161,25 +179,19 @@ export class SolicitudesDocenteComponent implements OnInit {
       `${this.API}/${this.solicitudParaAccion.idSolicitud}/estado`, body
     ).subscribe({
       next: updated => {
-        // Actualizar en memoria
         const idx = this.solicitudes.findIndex(s => s.idSolicitud === updated.idSolicitud);
         if (idx !== -1) this.solicitudes[idx] = updated;
         this.filtrar();
         this.procesando = false;
         this.cdr.detectChanges();
-        // Toast de confirmación
         const accionLabel = this.accionPendiente === 'aprobada' ? 'aprobada' : 'rechazada';
-        const materia = updated.nombreMateria ?? 'la solicitud';
-        this.toast.success(
-          `Solicitud ${accionLabel}`,
-          `${materia} ha sido ${accionLabel} correctamente.`
-        );
+        const materia     = updated.nombreMateria ?? 'la solicitud';
+        this.toast.success(`Solicitud ${accionLabel}`, `${materia} ha sido ${accionLabel} correctamente.`);
         this.cancelarConfirm();
       },
       error: err => {
         this.procesando = false;
-        const msg = err?.error?.mensaje || 'No se pudo cambiar el estado.';
-        this.toast.error('Error', msg);
+        this.toast.error('Error', err?.error?.mensaje || 'No se pudo cambiar el estado.');
         this.cdr.detectChanges();
       }
     });
@@ -188,5 +200,127 @@ export class SolicitudesDocenteComponent implements OnInit {
   // ── PDF ───────────────────────────────────────────────────────
   abrirPDF(id: number): void {
     window.open(`${this.API}/${id}/reporte-pdf`, '_blank');
+  }
+
+  // ── REQUISITOS DE PREPOSTULACIÓN ──────────────────────────────
+
+  abrirRequisitos(s: SolicitudDocenteResponseDTO): void {
+    this.solicitudParaRequisitos = s;
+    this.modalRequisitos         = true;
+    this.nuevoReqNombre          = '';
+    this.nuevoReqDesc            = '';
+    this.nuevoReqOrden           = 0;
+    this.editandoRequisito       = null;
+    this.cargarRequisitos(s.idSolicitud!);
+  }
+
+  cerrarRequisitos(): void {
+    this.modalRequisitos         = false;
+    this.solicitudParaRequisitos = null;
+    this.requisitosDetalleList   = [];
+    this.editandoRequisito       = null;
+    this.cdr.detectChanges();
+  }
+
+  cargarRequisitos(idSolicitud: number): void {
+    this.cargandoRequisitos = true;
+    this.http.get<RequisitoPrepostulacionDTO[]>(
+      `http://localhost:8080/api/admin/solicitudes/${idSolicitud}/requisitos`
+    ).subscribe({
+      next: data => {
+        this.requisitosDetalleList = data;
+        this.cargandoRequisitos    = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cargandoRequisitos = false;
+        this.toast.error('Error', 'No se pudieron cargar los requisitos.');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  agregarRequisito(): void {
+    if (!this.nuevoReqNombre.trim() || !this.solicitudParaRequisitos?.idSolicitud) return;
+    this.guardandoRequisito = true;
+    const body = {
+      nombre:      this.nuevoReqNombre.trim(),
+      descripcion: this.nuevoReqDesc.trim() || null,
+      orden:       this.nuevoReqOrden
+    };
+    this.http.post<RequisitoPrepostulacionDTO>(
+      `http://localhost:8080/api/admin/solicitudes/${this.solicitudParaRequisitos.idSolicitud}/requisitos`,
+      body
+    ).subscribe({
+      next: nuevo => {
+        this.requisitosDetalleList = [...this.requisitosDetalleList, nuevo];
+        this.nuevoReqNombre        = '';
+        this.nuevoReqDesc          = '';
+        this.nuevoReqOrden         = 0;
+        this.guardandoRequisito    = false;
+        this.toast.success('Requisito agregado', nuevo.nombre);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.guardandoRequisito = false;
+        this.toast.error('Error', 'No se pudo agregar el requisito.');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  iniciarEdicionReq(r: RequisitoPrepostulacionDTO): void {
+    this.editandoRequisito = { ...r };
+    this.cdr.detectChanges();
+  }
+
+  cancelarEdicionReq(): void {
+    this.editandoRequisito = null;
+    this.cdr.detectChanges();
+  }
+
+  guardarEdicionReq(): void {
+    if (!this.editandoRequisito || !this.editandoRequisito.nombre.trim()) return;
+    this.guardandoRequisito = true;
+    const body = {
+      nombre:      this.editandoRequisito.nombre.trim(),
+      descripcion: this.editandoRequisito.descripcion,
+      orden:       this.editandoRequisito.orden
+    };
+    this.http.put(
+      `http://localhost:8080/api/admin/solicitudes/requisitos/${this.editandoRequisito.idRequisito}`,
+      body
+    ).subscribe({
+      next: () => {
+        const idx = this.requisitosDetalleList.findIndex(r => r.idRequisito === this.editandoRequisito!.idRequisito);
+        if (idx !== -1) this.requisitosDetalleList[idx] = { ...this.editandoRequisito! };
+        this.editandoRequisito  = null;
+        this.guardandoRequisito = false;
+        this.toast.success('Requisito actualizado', '');
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.guardandoRequisito = false;
+        this.toast.error('Error', 'No se pudo actualizar el requisito.');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  eliminarRequisito(r: RequisitoPrepostulacionDTO): void {
+    if (!confirm(`¿Eliminar el requisito "${r.nombre}"?`)) return;
+    this.http.delete(
+      `http://localhost:8080/api/admin/solicitudes/requisitos/${r.idRequisito}`
+    ).subscribe({
+      next: () => {
+        this.requisitosDetalleList = this.requisitosDetalleList.filter(x => x.idRequisito !== r.idRequisito);
+        this.toast.success('Eliminado', r.nombre);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.toast.error('Error', 'No se pudo eliminar el requisito.');
+        this.cdr.detectChanges();
+      }
+    });
   }
 }

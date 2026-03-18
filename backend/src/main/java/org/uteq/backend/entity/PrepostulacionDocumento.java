@@ -26,6 +26,10 @@ public class PrepostulacionDocumento {
     @Column(name = "fecha_subida")
     private LocalDateTime fechaSubida;
 
+    /** NULL = documento libre, NOT NULL = requisito obligatorio de la solicitud */
+    @Column(name = "id_requisito")
+    private Long idRequisito;
+
     public PrepostulacionDocumento() {
         this.fechaSubida = LocalDateTime.now();
     }
