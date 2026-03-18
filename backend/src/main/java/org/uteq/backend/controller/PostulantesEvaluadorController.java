@@ -18,10 +18,6 @@ public class PostulantesEvaluadorController {
 
     private final JdbcTemplate jdbcTemplate;
 
-    /**
-     * GET /api/postulaciones/evaluador/convocatorias
-     * Lista todas las convocatorias con postulaciones activas
-     */
     @GetMapping("/convocatorias")
     public ResponseEntity<List<Map<String, Object>>> listarConvocatorias() {
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(
