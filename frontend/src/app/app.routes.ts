@@ -335,6 +335,13 @@ export const routes: Routes = [
           import('./modulos/revisor/gestionpostulante/gestionpostulante')
             .then(m => m.GestionPostulanteComponent)
       },
+      {
+        path: 'config-matriz',
+        title: 'SSDC - Configurar Matriz',
+        loadComponent: () =>
+          import('./modulos/revisor/config-matriz/config-matriz.component')
+            .then(m => m.ConfigMatrizComponent)
+      },
     ]
   },
 

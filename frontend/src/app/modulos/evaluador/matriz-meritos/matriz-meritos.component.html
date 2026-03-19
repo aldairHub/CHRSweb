@@ -1,9 +1,7 @@
-
-
 <div class="main-container">
   <div class="content-wrapper">
 
-    <!-- ==================== LOADING ==================== -->
+    <!-- LOADING -->
     <div class="loading-state" *ngIf="cargando">
       <svg class="spinner-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="32" height="32">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -12,7 +10,7 @@
       <p>Cargando matriz de méritos...</p>
     </div>
 
-    <!-- ==================== ERROR ==================== -->
+    <!-- ERROR -->
     <div class="alert danger" *ngIf="error && !cargando">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -21,23 +19,23 @@
       <div>
         <strong>Error</strong>
         <p>{{ error }}</p>
-        <button class="btn btn--outline-back" (click)="cargarDatos()">Reintentar</button>
+        <button class="btn btn--outline-back" (click)="cargarTodo()">Reintentar</button>
       </div>
     </div>
 
-    <!-- ==================== BLOQUEADA ==================== -->
+    <!-- BLOQUEADA -->
     <div class="alert-bloqueo" *ngIf="!cargando && matrizBloqueada">
       <div class="bloqueo-icon">🔒</div>
       <div class="bloqueo-content">
         <h3>Matriz de Méritos Bloqueada</h3>
         <p>{{ convocatoriaInfo?.mensajeBloqueo }}</p>
-        <small>Fecha límite de documentos: <strong>{{ convocatoriaInfo?.fechaLimiteDocumentos }}</strong></small>
+        <small>Fecha límite: <strong>{{ convocatoriaInfo?.fechaLimiteDocumentos }}</strong></small>
       </div>
     </div>
 
     <ng-container *ngIf="!cargando && !error">
 
-      <!-- ==================== HEADER ==================== -->
+      <!-- HEADER -->
       <header class="page-header">
         <div class="page-header__info">
           <h2 class="page-header__title">Matriz de Méritos</h2>
@@ -54,44 +52,39 @@
             Volver
           </button>
           <button class="btn btn--primary" (click)="guardarEvaluacion()" [disabled]="guardando">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
-            </svg>
             {{ guardando ? 'Guardando...' : (guardado ? 'Actualizar' : 'Guardar Evaluación') }}
           </button>
         </div>
       </header>
 
-      <!-- ==================== TOTALES ==================== -->
+      <!-- TOTALES -->
       <div class="totals-bar" *ngIf="candidatos.length > 0">
         <div class="total-card" *ngFor="let c of candidatos; trackBy: trackById">
           <div class="total-card__name">{{ c.apellidos }}</div>
           <div class="total-card__sub">{{ c.nombres }}</div>
           <div class="total-card__score">{{ c.puntajeTotal | number:'1.1-2' }}</div>
-          <div class="total-card__label">/ 104 pts</div>
+          <div class="total-card__label">/ 100 pts</div>
 
-          <!-- Badge de aptitud — solo visible después de guardar -->
           <ng-container *ngIf="guardado">
-      <span class="aptitud-badge apto" *ngIf="c.puntajeTotal >= PUNTAJE_MINIMO">
-           Apto para entrevistas
-      </span>
+            <span class="aptitud-badge apto" *ngIf="c.puntajeTotal >= PUNTAJE_MINIMO">
+              ✅ Apto para entrevistas
+            </span>
             <span class="aptitud-badge habilitado" *ngIf="c.puntajeTotal < PUNTAJE_MINIMO && c.habilitadoEntrevista">
-           Habilitado manualmente
-      </span>
+              🔓 Habilitado manualmente
+            </span>
             <span class="aptitud-badge no-apto" *ngIf="c.puntajeTotal < PUNTAJE_MINIMO && !c.habilitadoEntrevista">
-           No apto (mín. {{ PUNTAJE_MINIMO }} pts)
-      </span>
+              ❌ No apto (mín. {{ PUNTAJE_MINIMO }} pts)
+            </span>
             <button class="btn-habilitar"
                     *ngIf="c.puntajeTotal < PUNTAJE_MINIMO && !c.habilitadoEntrevista"
                     (click)="abrirModalOverride(c)">
-                Habilitar para entrevistas
+              🔓 Habilitar para entrevistas
             </button>
           </ng-container>
         </div>
       </div>
 
-      <!-- ==================== SIN CANDIDATOS ==================== -->
+      <!-- SIN CANDIDATOS -->
       <div class="empty-state" *ngIf="!cargando && candidatos.length === 0 && !matrizBloqueada">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="48" height="48">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -101,10 +94,9 @@
         <p>No se encontraron postulantes con proceso de evaluación activo para esta convocatoria.</p>
       </div>
 
-      <!-- ==================== TABLA PRINCIPAL ==================== -->
+      <!-- TABLA PRINCIPAL -->
       <div class="card-evaluacion" *ngIf="candidatos.length > 0">
 
-        <!-- HEADER INSTITUCIÓN -->
         <div class="card-header-uteq">
           <div>
             <h3>UNIVERSIDAD TÉCNICA ESTATAL DE QUEVEDO</h3>
@@ -117,7 +109,6 @@
 
         <div class="table-responsive">
           <table>
-            <!-- CABECERA CON CANDIDATOS -->
             <thead>
             <tr>
               <th class="col-parametro">PARÁMETROS</th>
@@ -140,7 +131,7 @@
               </td>
             </tr>
 
-            <ng-container *ngFor="let seccion of rubrica">
+            <ng-container *ngFor="let seccion of seccionesMeritos">
               <tr class="section-row">
                 <td class="section-title">
                   <strong>{{ seccion.titulo }}</strong>
@@ -148,9 +139,9 @@
                   <small class="max-points">MÁXIMO {{ seccion.maximo }} PUNTOS</small>
                 </td>
                 <td *ngFor="let c of candidatos" class="section-subtotal">
-                    <span class="subtotal-badge" [class.at-max]="subtotalSeccion(c, seccion) >= seccion.maximo">
-                      {{ subtotalSeccion(c, seccion) | number:'1.1-1' }} / {{ seccion.maximo }}
-                    </span>
+                  <span class="subtotal-badge" [class.at-max]="subtotalSeccion(c, seccion) >= seccion.maximo">
+                    {{ subtotalSeccion(c, seccion) | number:'1.1-1' }} / {{ seccion.maximo }}
+                  </span>
                 </td>
               </tr>
 
@@ -160,18 +151,16 @@
                   <small *ngIf="item.puntosPor" class="pts-por">{{ item.puntosPor }}</small>
                 </td>
                 <td *ngFor="let c of candidatos" class="cell-input">
-                  <input
-                    type="number" min="0" [max]="item.max" step="0.25"
-                    [(ngModel)]="c.puntajes[item.id]"
-                    (ngModelChange)="recalcular(c)"
-                    class="score-input"
-                    [disabled]="matrizBloqueada"
-                    [class.max-reached]="c.puntajes[item.id] >= item.max">
+                  <input type="number" min="0" [max]="item.max" step="0.25"
+                         [(ngModel)]="c.puntajes[item.id]"
+                         (ngModelChange)="recalcular(c)"
+                         class="score-input"
+                         [disabled]="matrizBloqueada || !!item.bloqueado"
+                         [class.max-reached]="c.puntajes[item.id] >= item.max">
                 </td>
               </tr>
             </ng-container>
 
-            <!-- Total Méritos -->
             <tr class="subtotal-row">
               <td class="subtotal-label">TOTAL ETAPA DE MERECIMIENTOS (máx. 50)</td>
               <td *ngFor="let c of candidatos" class="subtotal-score">
@@ -179,41 +168,71 @@
               </td>
             </tr>
 
-            <!-- BLOQUE 2: EXPERIENCIA + ENTREVISTA -->
+            <!-- BLOQUE 2: EXPERIENCIA -->
             <tr class="bloque-header-row">
               <td [attr.colspan]="candidatos.length + 1" class="bloque-title">
-                2) EXPERIENCIA EN DOCENCIA + ENTREVISTA — MÁXIMO 50 PUNTOS
+                2) EXPERIENCIA PROFESIONAL — MÁXIMO 25 PUNTOS
               </td>
             </tr>
 
-            <tr *ngFor="let blq of bloqueExperiencia" class="item-row">
-              <td class="item-label">
-                <span>— {{ blq.label }}</span>
-                <small class="pts-por">máximo {{ blq.max }} puntos</small>
-              </td>
-              <td *ngFor="let c of candidatos" class="cell-input">
-                <input
-                  type="number" min="0" [max]="blq.max" step="0.5"
-                  [(ngModel)]="c.puntajes[blq.id]"
-                  (ngModelChange)="recalcular(c)"
-                  class="score-input"
-                  [disabled]="matrizBloqueada"
-                  [class.max-reached]="c.puntajes[blq.id] >= blq.max">
-              </td>
-            </tr>
+            <ng-container *ngFor="let seccion of seccionesExperiencia">
+              <tr *ngFor="let item of seccion.items" class="item-row">
+                <td class="item-label">
+                  <span>— {{ item.label }}</span>
+                  <small class="pts-por">máximo {{ item.max }} puntos</small>
+                </td>
+                <td *ngFor="let c of candidatos" class="cell-input">
+                  <input type="number" min="0" [max]="item.max" step="0.5"
+                         [(ngModel)]="c.puntajes[item.id]"
+                         (ngModelChange)="recalcular(c)"
+                         class="score-input"
+                         [disabled]="matrizBloqueada || !!item.bloqueado"
+                         [class.max-reached]="c.puntajes[item.id] >= item.max">
+                </td>
+              </tr>
+            </ng-container>
 
             <tr class="subtotal-row">
-              <td class="subtotal-label">TOTAL EXPERIENCIA + ENTREVISTA (máx. 50)</td>
+              <td class="subtotal-label">TOTAL EXPERIENCIA (máx. 25)</td>
               <td *ngFor="let c of candidatos" class="subtotal-score">
-                {{ c.totalExperienciaEntrevista | number:'1.1-2' }}
+                {{ c.totalExperiencia | number:'1.1-2' }}
               </td>
             </tr>
 
-            <!-- BLOQUE 3: ACCIÓN AFIRMATIVA -->
+            <!-- BLOQUE 3: ENTREVISTA DOCENTE (bloqueado) -->
+            <ng-container *ngIf="seccionEntrevista">
+              <tr class="bloque-header-row">
+                <td [attr.colspan]="candidatos.length + 1" class="bloque-title">
+                  3) ENTREVISTA DOCENTE — MÁXIMO 25 PUNTOS
+                  <small style="margin-left: 1rem; opacity: 0.8;">🔒 Se calcula automáticamente desde Entrevistas Docentes</small>
+                </td>
+              </tr>
+
+              <tr *ngFor="let item of seccionEntrevista.items" class="item-row">
+                <td class="item-label">
+                  <span>— {{ item.label }}</span>
+                </td>
+                <td *ngFor="let c of candidatos" class="cell-input">
+                  <input type="number" min="0" max="25"
+                         [(ngModel)]="c.puntajes[item.id]"
+                         class="score-input"
+                         disabled>
+                </td>
+              </tr>
+
+              <tr class="subtotal-row">
+                <td class="subtotal-label">TOTAL ENTREVISTA (máx. 25)</td>
+                <td *ngFor="let c of candidatos" class="subtotal-score">
+                  {{ c.totalEntrevista | number:'1.1-2' }}
+                </td>
+              </tr>
+            </ng-container>
+
+            <!-- BLOQUE 4: ACCIÓN AFIRMATIVA -->
             <ng-container *ngIf="mostrarAccionAfirmativa">
               <tr class="bloque-header-row">
                 <td [attr.colspan]="candidatos.length + 1" class="bloque-title">
-                  3) ACCIÓN AFIRMATIVA — MÁXIMO 4 PUNTOS <small>(Art. 17 — 2 puntos por cada una)</small>
+                  4) ACCIÓN AFIRMATIVA — BONIFICACIÓN MÁXIMO 4 PUNTOS <small>(Art. 17)</small>
                 </td>
               </tr>
 
@@ -234,7 +253,7 @@
               </tr>
 
               <tr class="subtotal-row">
-                <td class="subtotal-label">TOTAL ACCIÓN AFIRMATIVA (máx. 4)</td>
+                <td class="subtotal-label">TOTAL ACCIÓN AFIRMATIVA (bonificación máx. 4)</td>
                 <td *ngFor="let c of candidatos" class="subtotal-score">
                   {{ c.totalAccionAfirmativa }}
                 </td>
@@ -243,7 +262,7 @@
 
             <!-- TOTAL GENERAL -->
             <tr class="total-row">
-              <td class="total-label">PUNTAJE TOTAL (1 + 2 + 3)</td>
+              <td class="total-label">PUNTAJE TOTAL (1 + 2 + 3 + bonificación)</td>
               <td *ngFor="let c of candidatos" class="total-score">
                 {{ c.puntajeTotal | number:'1.1-2' }}
               </td>
@@ -254,14 +273,10 @@
         </div>
       </div>
 
-      <!-- FOOTER ACCIONES -->
+      <!-- FOOTER -->
       <div class="footer-actions" *ngIf="candidatos.length > 0 && !matrizBloqueada">
         <button class="btn btn--outline-back" (click)="volver()">Cancelar</button>
         <button class="btn btn--primary btn--lg" (click)="guardarEvaluacion()" [disabled]="guardando">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
-          </svg>
           {{ guardando ? 'Guardando...' : 'Guardar Evaluación' }}
         </button>
       </div>
@@ -270,7 +285,6 @@
   </div>
 </div>
 
-<!-- ==================== MODAL GUARDADO ==================== -->
 <!-- Modal guardado -->
 <div class="modal-overlay" *ngIf="mostrarModalGuardado" (click)="cerrarModalGuardado()">
   <div class="modal-card modal-card--success" (click)="$event.stopPropagation()">
@@ -288,42 +302,37 @@
         <div class="step-text">
           <strong>{{ c.apellidos }} {{ c.nombres }}</strong>
           <span>{{ c.titulos }}</span>
-          <span class="score-highlight">{{ c.puntajeTotal | number:'1.1-2' }} pts</span>
+          <span class="score-highlight">{{ c.puntajeTotal | number:'1.1-2' }} pts / 100</span>
         </div>
       </div>
     </div>
     <div class="modal-info-box">
       Los resultados han sido registrados. Puede generar el informe final desde el módulo de Reportes.
     </div>
-    <button class="btn btn--primary btn--block" (click)="cerrarModalGuardado()">
-      ENTENDIDO
-    </button>
+    <button class="btn btn--primary btn--block" (click)="cerrarModalGuardado()">ENTENDIDO</button>
   </div>
 </div>
 
-<!-- Modal override evaluador -->
+<!-- Modal override -->
 <div class="modal-overlay" *ngIf="mostrarModalOverride" (click)="cerrarModalOverride()">
   <div class="modal-card modal-card--override" (click)="$event.stopPropagation()">
-
-    <h2 class="modal-title">Habilitar para Entrevistas</h2>
+    <h2 class="modal-title">⚠️ Habilitar para Entrevistas</h2>
 
     <div class="override-candidato" *ngIf="candidatoOverride">
       <strong>{{ candidatoOverride.apellidos }} {{ candidatoOverride.nombres }}</strong>
-      <span>Puntaje: {{ candidatoOverride.puntajeTotal | number:'1.1-2' }} / 104 pts
+      <span>Puntaje: {{ candidatoOverride.puntajeTotal | number:'1.1-2' }} / 100 pts
         (mínimo requerido: {{ PUNTAJE_MINIMO }})</span>
     </div>
 
     <div class="override-warning">
-      Esta acción permite al candidato pasar a la fase de entrevistas
+      ⚠️ Esta acción permite al candidato pasar a la fase de entrevistas
       aunque no alcanzó el puntaje mínimo requerido. Debe ingresar una justificación.
     </div>
 
     <label>Justificación obligatoria <span style="color:#ef4444">*</span></label>
-    <textarea
-      [(ngModel)]="justificacionOverride"
-      placeholder="Ingrese la razón por la que habilita a este candidato..."
-      maxlength="500">
-    </textarea>
+    <textarea [(ngModel)]="justificacionOverride"
+              placeholder="Ingrese la razón por la que habilita a este candidato..."
+              maxlength="500"></textarea>
     <div class="char-count">{{ justificacionOverride.length }} / 500</div>
 
     <div class="modal-actions">
@@ -338,5 +347,3 @@
     </div>
   </div>
 </div>
-
-

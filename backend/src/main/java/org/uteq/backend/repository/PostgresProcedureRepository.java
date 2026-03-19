@@ -17,13 +17,22 @@ import java.util.stream.Collectors;
  * Repository para ejecutar stored procedures de PostgreSQL
  */
 @Repository
+
 public class PostgresProcedureRepository {
+
 
     private final JdbcTemplate jdbcTemplate;
 
     public PostgresProcedureRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+        try {
+            String usuario = jdbcTemplate.queryForObject("SELECT current_user", String.class);
+            System.out.println("=== Usuario conexión Hibernate: " + usuario);
+        } catch (Exception e) {
+            System.err.println("=== Error obteniendo usuario: " + e.getMessage());
+        }
     }
+
 
     /**
      * Valida login y obtiene credenciales BD del usuario
@@ -629,6 +638,28 @@ public class PostgresProcedureRepository {
         jdbcTemplate.execute((java.sql.Connection conn) -> {
             var ps = conn.prepareStatement("CALL public.sp_guardar_entrevista_docente(?)");
             ps.setLong(1, idProceso);
+            ps.execute();
+            return null;
+        });
+    }
+
+    // Método genérico para ejecutar cualquier procedure
+    public void ejecutarProcedure(String sql, Object... params) {
+        jdbcTemplate.execute((java.sql.Connection conn) -> {
+            var ps = conn.prepareStatement(sql);
+            for (int i = 0; i < params.length; i++) {
+                if (params[i] == null) {
+                    ps.setNull(i + 1, java.sql.Types.NULL);
+                } else if (params[i] instanceof Long) {
+                    ps.setLong(i + 1, (Long) params[i]);
+                } else if (params[i] instanceof Integer) {
+                    ps.setInt(i + 1, (Integer) params[i]);
+                } else if (params[i] instanceof Double) {
+                    ps.setDouble(i + 1, (Double) params[i]);
+                } else {
+                    ps.setString(i + 1, params[i].toString());
+                }
+            }
             ps.execute();
             return null;
         });

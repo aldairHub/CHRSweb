@@ -3,19 +3,24 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 
 export interface ItemRubrica {
   id: string;
   label: string;
   max: number;
   puntosPor?: string;
+  bloqueado?: boolean;
 }
 
 export interface SeccionRubrica {
+  idSeccion: number;
   codigo: string;
   titulo: string;
   descripcion: string;
   maximo: number;
+  tipo: string;
+  bloqueado: boolean;
   items: ItemRubrica[];
 }
 
@@ -35,7 +40,8 @@ export interface Candidato {
   puntajes: { [key: string]: number };
   accionesAfirmativas: { [key: string]: boolean };
   totalMerecimientos: number;
-  totalExperienciaEntrevista: number;
+  totalExperiencia: number;
+  totalEntrevista: number;
   totalAccionAfirmativa: number;
   puntajeTotal: number;
   habilitadoEntrevista: boolean;
@@ -59,9 +65,10 @@ export interface ConvocatoriaInfo {
 })
 export class MatrizMeritosComponent implements OnInit {
 
-  private readonly API = 'http://localhost:8080/api/matriz-meritos';
+  private readonly API     = 'http://localhost:8080/api/matriz-meritos';
+  private readonly API_CFG = 'http://localhost:8080/api/matriz-config';
 
-  readonly PUNTAJE_MINIMO = 75;
+  readonly PUNTAJE_MINIMO = 50; // mínimo sobre 100 para pasar a entrevistas
 
   cargando = false;
   guardando = false;
@@ -79,81 +86,11 @@ export class MatrizMeritosComponent implements OnInit {
   candidatos: Candidato[] = [];
   idConvocatoria = 0;
 
-  rubrica: SeccionRubrica[] = [
-    {
-      codigo: 'A',
-      titulo: 'A) Título de cuarto nivel (maestría)',
-      descripcion: 'Vinculada al campo amplio de la asignatura motivo del concurso',
-      maximo: 20,
-      items: [
-        { id: 'a1', label: 'Título de maestría o superior verificado en SENESCYT', max: 20 }
-      ]
-    },
-    {
-      codigo: 'B',
-      titulo: 'B) Experiencia en docencia, investigación, vinculación o gestión',
-      descripcion: 'Experiencia universitaria o politécnica',
-      maximo: 10,
-      items: [
-        { id: 'b1', label: 'Docencia universitaria en el área del concurso', max: 10, puntosPor: '1 punto por año' },
-        { id: 'b2', label: 'Participación en proyectos de investigación ejecutados', max: 10, puntosPor: '1 punto por proyecto' },
-        { id: 'b3', label: 'Participación en proyectos de vinculación ejecutados', max: 10, puntosPor: '1 punto por proyecto' },
-        { id: 'b4', label: 'Actividades de gestión académica (Coordinadores/áreas)', max: 10, puntosPor: '1 punto por año' }
-      ]
-    },
-    {
-      codigo: 'C',
-      titulo: 'C) Publicaciones en el área afín del concurso',
-      descripcion: 'Producción científica verificable',
-      maximo: 6,
-      items: [
-        { id: 'c1', label: 'Libros publicados', max: 6, puntosPor: '2 puntos por libro' },
-        { id: 'c2', label: 'Artículos en revistas indexadas regionales', max: 6, puntosPor: '2 puntos por artículo' },
-        { id: 'c3', label: 'Artículos en revistas indexadas con factor de impacto', max: 6, puntosPor: '4 puntos por artículo' }
-      ]
-    },
-    {
-      codigo: 'D',
-      titulo: 'D) Cursos de actualización o perfeccionamiento profesional',
-      descripcion: 'En los últimos cinco años — mínimo 30 horas',
-      maximo: 10,
-      items: [
-        { id: 'd1', label: 'Asistencia a cursos (mín. 30 horas)', max: 10, puntosPor: '0.25 puntos por curso' },
-        { id: 'd2', label: 'Cursos aprobados (mín. 30 horas)', max: 10, puntosPor: '0.5 puntos por curso' },
-        { id: 'd3', label: 'Cursos impartidos (mín. 30 horas)', max: 10, puntosPor: '1 punto por curso' }
-      ]
-    },
-    {
-      codigo: 'E',
-      titulo: 'E) Reconocimientos académicos de grado o posgrado',
-      descripcion: 'Distinciones académicas obtenidas',
-      maximo: 4,
-      items: [
-        { id: 'e1', label: 'Mejor graduado (grado o posgrado)', max: 2, puntosPor: '2 puntos' },
-        { id: 'e2', label: 'Primer lugar en eventos académicos internacionales', max: 2, puntosPor: '2 puntos' },
-        { id: 'e3', label: 'Primer lugar en eventos académicos nacionales', max: 1, puntosPor: '1 punto' },
-        { id: 'e4', label: 'Evaluación ≥80% en último período como docente UTEQ o institución previa', max: 2, puntosPor: '2 puntos' }
-      ]
-    }
-  ];
-
-  bloqueExperiencia = [
-    { id: 'exp_docencia', label: 'Experiencia profesional en la docencia', max: 15 },
-    { id: 'exp_area',    label: 'Experiencia profesional en el área de formación', max: 10 },
-    { id: 'entrevista',  label: 'Entrevista con la autoridad académica', max: 25 }
-  ];
-
-  accionesAfirmativas: AccionAfirmativa[] = [
-    { id: 'af_a', label: 'Ecuatoriana/o en el exterior ≥3 años (certificado consulado)', puntos: 2 },
-    { id: 'af_b', label: 'Persona con discapacidad (certificado CONADIS/MSP)', puntos: 2 },
-    { id: 'af_c', label: 'Domicilio en zona rural últimos 5 años (cert. junta parroquial)', puntos: 2 },
-    { id: 'af_d', label: 'Quintiles 1 y 2 de pobreza (cert. Ministerio)', puntos: 2 },
-    { id: 'af_e', label: 'Menor de 30 años o mayor de 65 años al postular', puntos: 2 },
-    { id: 'af_f', label: 'Comunidad, pueblo o nacionalidad indígena / afroecuatoriana / montubia', puntos: 2 },
-    { id: 'af_g', label: 'Pertenecer al sexo femenino', puntos: 2 },
-    { id: 'af_h', label: 'Autoidentificación con géneros tradicionalmente excluidos', puntos: 2 },
-    { id: 'af_i', label: 'Madre soltera y jefe de hogar (declaración juramentada)', puntos: 2 }
-  ];
+  // Estructura cargada desde BD
+  seccionesMeritos: SeccionRubrica[] = [];
+  seccionesExperiencia: SeccionRubrica[] = [];
+  seccionEntrevista: SeccionRubrica | null = null;
+  accionesAfirmativas: AccionAfirmativa[] = [];
 
   constructor(
     private router: Router,
@@ -165,56 +102,97 @@ export class MatrizMeritosComponent implements OnInit {
     this.route.params.subscribe(params => {
       if (params['idSolicitud']) {
         this.idConvocatoria = +params['idSolicitud'];
-        this.cargarDatos();
+        this.cargarTodo();
       }
     });
   }
 
-  cargarDatos(): void {
-    if (!this.idConvocatoria) return;
+  cargarTodo(): void {
     this.cargando = true;
     this.error = '';
 
-    this.http.get<any>(`${this.API}/solicitud/${this.idConvocatoria}`).subscribe({
-      next: (data) => {
-        this.convocatoriaInfo = data.convocatoria;
-        this.candidatos = data.candidatos.map((c: any) => ({
-          id:                  c.idPostulante,
-          idProceso:           c.idProceso,
-          idSolicitud:         c.idSolicitud,
-          nombres:             c.nombres,
-          apellidos:           c.apellidos,
-          titulos:             c.titulos || '',
-          puntajes:            c.puntajes || {},
-          accionesAfirmativas: c.accionesAfirmativas || {},
-          totalMerecimientos:        0,
-          totalExperienciaEntrevista: 0,
-          totalAccionAfirmativa:      0,
-          puntajeTotal:              0,
-          habilitadoEntrevista:      c.habilitadoEntrevista || false
-        }));
-        this.inicializarPuntajes();
-        if (this.candidatos.some(c => c.puntajeTotal > 0)) {
-          this.guardado = true;
-        }
+    forkJoin({
+      estructura: this.http.get<any>(`${this.API_CFG}/estructura`),
+      matriz:     this.http.get<any>(`${this.API}/solicitud/${this.idConvocatoria}`)
+    }).subscribe({
+      next: ({ estructura, matriz }) => {
+        this.procesarEstructura(estructura);
+        this.procesarCandidatos(matriz);
         this.cargando = false;
       },
       error: (err) => {
-        this.error = err?.error?.mensaje || 'Error al cargar los datos de la convocatoria.';
+        this.error = err?.error?.mensaje || 'Error al cargar los datos.';
         this.cargando = false;
       }
     });
   }
 
+  private procesarEstructura(estructura: any): void {
+    const secciones: SeccionRubrica[] = (estructura.secciones || []).map((s: any) => ({
+      idSeccion:   s.idSeccion,
+      codigo:      s.codigo,
+      titulo:      s.titulo,
+      descripcion: s.descripcion,
+      maximo:      s.puntajeMaximo,
+      tipo:        s.tipo,
+      bloqueado:   s.bloqueado,
+      items:       (s.items || []).map((i: any) => ({
+        id:        i.codigo,
+        label:     i.label,
+        max:       i.puntajeMaximo,
+        puntosPor: i.puntosPor,
+        bloqueado: i.bloqueado
+      }))
+    }));
+
+    this.seccionesMeritos    = secciones.filter(s => s.tipo === 'meritos');
+    this.seccionesExperiencia = secciones.filter(s => s.tipo === 'experiencia');
+    this.seccionEntrevista   = secciones.find(s => s.tipo === 'entrevista') || null;
+
+    this.accionesAfirmativas = (estructura.accionesAfirmativas || []).map((a: any) => ({
+      id:     a.codigo,
+      label:  a.label,
+      puntos: a.puntos
+    }));
+  }
+
+  private procesarCandidatos(matriz: any): void {
+    this.convocatoriaInfo = matriz.convocatoria;
+    this.candidatos = (matriz.candidatos || []).map((c: any) => ({
+      id:                  c.idPostulante,
+      idProceso:           c.idProceso,
+      idSolicitud:         c.idSolicitud,
+      nombres:             c.nombres,
+      apellidos:           c.apellidos,
+      titulos:             c.titulos || '',
+      puntajes:            c.puntajes || {},
+      accionesAfirmativas: c.accionesAfirmativas || {},
+      totalMerecimientos:  0,
+      totalExperiencia:    0,
+      totalEntrevista:     0,
+      totalAccionAfirmativa: 0,
+      puntajeTotal:        0,
+      habilitadoEntrevista: c.habilitadoEntrevista || false
+    }));
+
+    this.inicializarPuntajes();
+    if (this.candidatos.some(c => c.puntajeTotal > 0)) {
+      this.guardado = true;
+    }
+  }
+
   inicializarPuntajes(): void {
+    const todasLasSecciones = [
+      ...this.seccionesMeritos,
+      ...this.seccionesExperiencia,
+      ...(this.seccionEntrevista ? [this.seccionEntrevista] : [])
+    ];
+
     this.candidatos.forEach(c => {
-      this.rubrica.forEach(seccion => {
-        seccion.items.forEach(item => {
+      todasLasSecciones.forEach(sec => {
+        sec.items.forEach(item => {
           if (c.puntajes[item.id] === undefined) c.puntajes[item.id] = 0;
         });
-      });
-      this.bloqueExperiencia.forEach(b => {
-        if (c.puntajes[b.id] === undefined) c.puntajes[b.id] = 0;
       });
       this.accionesAfirmativas.forEach(af => {
         if (c.accionesAfirmativas[af.id] === undefined) c.accionesAfirmativas[af.id] = false;
@@ -224,50 +202,34 @@ export class MatrizMeritosComponent implements OnInit {
   }
 
   recalcular(c: Candidato): void {
-    const totales: { [codigo: string]: number } = {};
-    this.rubrica.forEach(sec => {
-      let sumaSeccion = 0;
-      sec.items.forEach(item => { sumaSeccion += Number(c.puntajes[item.id] || 0); });
-      totales[sec.codigo] = Math.min(sumaSeccion, sec.maximo);
+    // 1. Méritos (máx 50)
+    let totalMeritos = 0;
+    this.seccionesMeritos.forEach(sec => {
+      const sumaSeccion = sec.items.reduce((s, item) => s + Number(c.puntajes[item.id] || 0), 0);
+      totalMeritos += Math.min(sumaSeccion, sec.maximo);
     });
-    c.totalMerecimientos = Math.min(Object.values(totales).reduce((a, b) => a + b, 0), 50);
+    c.totalMerecimientos = Math.min(totalMeritos, 50);
 
-    c.totalExperienciaEntrevista = Math.min(
-      this.bloqueExperiencia.reduce((sum, b) => sum + Math.min(Number(c.puntajes[b.id] || 0), b.max), 0), 50
-    );
+    // 2. Experiencia (máx 25)
+    let totalExp = 0;
+    this.seccionesExperiencia.forEach(sec => {
+      const sumaSeccion = sec.items.reduce((s, item) => s + Math.min(Number(c.puntajes[item.id] || 0), item.max), 0);
+      totalExp += Math.min(sumaSeccion, sec.maximo);
+    });
+    c.totalExperiencia = Math.min(totalExp, 25);
 
+    // 3. Entrevista (máx 25 — bloqueado, viene de entrevistas docentes)
+    c.totalEntrevista = this.seccionEntrevista
+      ? Math.min(Number(c.puntajes['entrevista'] || 0), 25)
+      : 0;
+
+    // 4. Acción afirmativa (bonificación, máx 4)
     let totalAf = 0;
     this.accionesAfirmativas.forEach(af => { if (c.accionesAfirmativas[af.id]) totalAf += af.puntos; });
     c.totalAccionAfirmativa = Math.min(totalAf, 4);
 
-    c.puntajeTotal = c.totalMerecimientos + c.totalExperienciaEntrevista + c.totalAccionAfirmativa;
-  }
-
-  // ── Recalcular con límite de sección ────────────────────────
-  recalcularConLimite(c: Candidato, itemId: string, seccion: SeccionRubrica): void {
-    // Subtotal de la sección sin contar el item actual
-    const subtotalSinItem = seccion.items
-      .filter(i => i.id !== itemId)
-      .reduce((s, i) => s + Number(c.puntajes[i.id] || 0), 0);
-
-    // Cuánto queda disponible para este item
-    const disponible = Math.max(0, seccion.maximo - subtotalSinItem);
-
-    // Límite = mínimo entre el disponible y el máximo propio del item
-    const itemMax = seccion.items.find(i => i.id === itemId)?.max ?? 0;
-    const limite = Math.min(disponible, itemMax);
-
-    // Recortar si supera el límite
-    if (Number(c.puntajes[itemId]) > limite) {
-      c.puntajes[itemId] = limite;
-    }
-
-    // También asegurar que no sea negativo
-    if (Number(c.puntajes[itemId]) < 0) {
-      c.puntajes[itemId] = 0;
-    }
-
-    this.recalcular(c);
+    // 5. Total sobre 100 (+ bonificación)
+    c.puntajeTotal = c.totalMerecimientos + c.totalExperiencia + c.totalEntrevista + c.totalAccionAfirmativa;
   }
 
   subtotalSeccion(c: Candidato, sec: SeccionRubrica): number {
@@ -277,23 +239,23 @@ export class MatrizMeritosComponent implements OnInit {
 
   guardarEvaluacion(): void {
     if (this.convocatoriaInfo?.bloqueada) {
-      alert('La matriz de méritos está bloqueada. El período de documentos aún no ha cerrado.');
+      alert('La matriz de méritos está bloqueada.');
       return;
     }
-
     this.guardando = true;
 
     const payload = {
       idConvocatoria: this.idConvocatoria,
       candidatos: this.candidatos.map(c => ({
-        idProceso:                  c.idProceso,
-        idSolicitud:                c.idSolicitud,
-        puntajes:                   c.puntajes,
-        accionesAfirmativas:        c.accionesAfirmativas,
-        totalMerecimientos:         c.totalMerecimientos,
-        totalExperienciaEntrevista: c.totalExperienciaEntrevista,
-        totalAccionAfirmativa:      c.totalAccionAfirmativa,
-        puntajeTotal:               c.puntajeTotal
+        idProceso:            c.idProceso,
+        idSolicitud:          c.idSolicitud,
+        puntajes:             c.puntajes,
+        accionesAfirmativas:  c.accionesAfirmativas,
+        totalMerecimientos:   c.totalMerecimientos,
+        totalExperiencia:     c.totalExperiencia,
+        totalEntrevista:      c.totalEntrevista,
+        totalAccionAfirmativa: c.totalAccionAfirmativa,
+        puntajeTotal:         c.puntajeTotal
       }))
     };
 
@@ -311,7 +273,7 @@ export class MatrizMeritosComponent implements OnInit {
   }
 
   abrirModalOverride(c: Candidato): void {
-    this.candidatoOverride    = c;
+    this.candidatoOverride     = c;
     this.justificacionOverride = '';
     this.mostrarModalOverride  = true;
   }
@@ -344,16 +306,18 @@ export class MatrizMeritosComponent implements OnInit {
   }
 
   cerrarModalGuardado(): void { this.mostrarModalGuardado = false; }
-
   volver(): void { this.router.navigate(['/evaluador/matriz-meritos']); }
-
   trackById(_: number, item: any): number { return item.id; }
 
   get matrizBloqueada(): boolean {
     return this.convocatoriaInfo?.bloqueada ?? false;
   }
 
-  get hoy(): string {
-    return new Date().toISOString().split('T')[0];
+  get todasLasSecciones(): SeccionRubrica[] {
+    return [
+      ...this.seccionesMeritos,
+      ...this.seccionesExperiencia,
+      ...(this.seccionEntrevista ? [this.seccionEntrevista] : [])
+    ];
   }
 }
