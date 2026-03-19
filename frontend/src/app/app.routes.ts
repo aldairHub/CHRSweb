@@ -96,7 +96,7 @@ export const routes: Routes = [
           .then(m => m.ResultadosComponent)
       },
       {
-        path: 'entrevistas',
+        path: 'entrevista',
         title: 'SSDC - Entrevistas',
         loadComponent: () => import('./modulos/././postulante/entrevista/entrevista')
           .then(m => m.EntrevistaPostulanteComponent)
@@ -160,7 +160,7 @@ export const routes: Routes = [
             .then(m => m.MatrizMeritosListaComponent)
       },
       {
-       path: 'matriz-meritos/:idSolicitud',
+        path: 'matriz-meritos/:idSolicitud',
         title: 'SSDC - Matriz de Méritos',
         loadComponent: () =>
           import('./modulos/evaluador/matriz-meritos/matriz-meritos.component')

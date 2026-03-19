@@ -125,7 +125,18 @@ export class ResultadosComponent implements OnInit, OnDestroy {
     this.cargandoProgreso = true;
     this.progreso         = null;
     this.errorProgreso    = null;
+    this.cargando         = true;
+    this.sinDatos         = false;
     const idUsuario = Number(localStorage.getItem('idUsuario'));
+    // Recargar puntajes detallados (méritos, entrevista, etc.)
+    this.documentoSvc.obtenerResultadosPostulante(idUsuario).subscribe({
+      next: data => {
+        if (!data || !data.puntajes) { this.sinDatos = true; this.cargando = false; return; }
+        this.mapearDatos(data);
+        this.cargando = false;
+      },
+      error: () => { this.sinDatos = true; this.cargando = false; }
+    });
     this.iniciarPolling(idUsuario);
   }
 
