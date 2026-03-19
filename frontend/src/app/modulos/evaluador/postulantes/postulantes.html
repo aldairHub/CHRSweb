@@ -1,7 +1,7 @@
 <div class="main-container">
   <div class="content-wrapper">
 
-    <!-- ── Breadcrumb / Steps indicator ────────────────────── -->
+    <!-- ── Wizard Steps Indicator ── -->
     <div class="wizard-steps mb-4">
       <div class="step" [class.active]="paso >= 1" [class.done]="paso > 1">
         <div class="step-circle">
@@ -224,12 +224,18 @@
                 <td>{{ p.correoPostulante }}</td>
                 <td>{{ p.nombreMateria }}</td>
                 <td>
-                    <span class="status-badge" [ngClass]="estadoClass(p.estadoPostulacion)">
-                      {{ p.estadoPostulacion | titlecase }}
+                  <!-- ← tuyo: lógica tieneDocumentos en el badge -->
+                  <span class="status-badge"
+                        [ngClass]="p.tieneDocumentos ? estadoClass(p.estadoPostulacion) : 'status-sin-docs'">
+                      {{ p.tieneDocumentos ? (p.estadoPostulacion | titlecase) : 'Sin documentos' }}
                     </span>
                 </td>
                 <td class="text-center">
-                  <button class="btn-icon" title="Ver Documentos" (click)="verDocumentos(p)">
+                  <!-- ← tuyo: btn bloqueado si no tiene documentos -->
+                  <button class="btn-icon"
+                          [title]="p.tieneDocumentos ? 'Ver Documentos' : 'Postulante sin documentos subidos'"
+                          [class.btn-icon--blocked]="!p.tieneDocumentos"
+                          (click)="verDocumentos(p)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                       <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 12.5z"/>
                     </svg>
@@ -260,7 +266,28 @@
   </div>
 </div>
 
-<!-- Modal notificación -->
+<!-- ── Modal: Sin Documentos (tuyo) ── -->
+<div class="modal-overlay" *ngIf="mostrarModalSinDocs">
+  <div class="modal-card">
+    <div class="modal-header-icon">
+      <div class="warning-circle">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        </svg>
+      </div>
+    </div>
+    <h2 class="modal-title modal-title--warning">Sin documentos</h2>
+    <p class="modal-body-text">
+      El postulante <strong>{{ postulanteSinDocs }}</strong> aún no ha subido ningún documento al sistema.<br><br>
+      No es posible revisar su expediente hasta que el candidato adjunte los archivos requeridos.
+    </p>
+    <button class="btn btn--primary btn--block" (click)="cerrarModalSinDocs()">
+      ENTENDIDO
+    </button>
+  </div>
+</div>
+
+<!-- ── Modal: Notificación Enviada ── -->
 <div class="modal-overlay" *ngIf="mostrarModal">
   <div class="modal-card">
     <div class="modal-header-icon">

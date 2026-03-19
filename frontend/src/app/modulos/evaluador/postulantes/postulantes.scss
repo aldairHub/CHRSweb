@@ -97,12 +97,19 @@ $bg-color: #f3f4f6;
   &.status-aprobado { background: $uteq-green-light; color: $uteq-green-dark; }
   &.status-revision { background: #dbeafe; color: #1d4ed8; }
   &.status-rechazado { background: #fee2e2; color: #dc2626; }
+  &.status-sin-docs { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; font-weight: 700; white-space: nowrap; }
 }
 .btn-icon {
   display: flex; align-items: center; justify-content: center;
   width: 32px; height: 32px; border-radius: 6px; border: none; background: transparent;
   color: $text-gray; cursor: pointer; transition: all 0.2s;
   &:hover { background: $uteq-green-light; color: $uteq-green; }
+  &--blocked {
+    opacity: 0.45;
+    cursor: not-allowed;
+    color: #dc2626 !important;
+    &:hover { background: #fee2e2 !important; color: #dc2626 !important; }
+  }
 }
 .empty-state { text-align: center; padding: 40px; color: $text-gray; i { font-size: 2rem; margin-bottom: 10px; opacity: 0.5; } }
 
@@ -131,6 +138,20 @@ $bg-color: #f3f4f6;
 }
 
 .modal-title { font-size: 1.5rem; font-weight: 800; color: $uteq-green-dark; margin: 0 0 20px 0; }
+.modal-title--warning { color: #b91c1c; }
+
+.warning-circle {
+  width: 64px; height: 64px; border-radius: 50%;
+  border: 3px solid #dc2626; color: #dc2626;
+  display: flex; align-items: center; justify-content: center;
+  animation: scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-body-text {
+  font-size: 0.95rem; color: $text-gray; line-height: 1.6;
+  margin-bottom: 24px; text-align: left;
+  strong { color: $text-dark; }
+}
 
 .modal-steps {
   text-align: left; margin-bottom: 20px;
@@ -421,6 +442,7 @@ $bg-color: #f3f4f6;
     &.status-aprobado  { background: rgba(0,166,62,0.18) !important;   color: #4ade80 !important; }
     &.status-revision  { background: rgba(29,78,216,0.18) !important;  color: #93c5fd !important; }
     &.status-rechazado { background: rgba(220,38,38,0.18) !important;  color: #f87171 !important; }
+    &.status-sin-docs  { background: rgba(185,28,28,0.22) !important;  color: #fca5a5 !important; border-color: rgba(220,38,38,0.3) !important; white-space: nowrap !important; }
   }
 
   .user-name { color: #e5e5e5 !important; }

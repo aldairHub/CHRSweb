@@ -13,6 +13,7 @@ export interface PostulanteLista {
   correoPostulante:    string;
   estadoPostulacion:   string;
   nombreMateria:       string;
+  tieneDocumentos:     boolean; // ← tuyo
 }
 
 export interface ConvocatoriaResumen {
@@ -62,9 +63,11 @@ export class PostulantesComponent implements OnInit {
   filtro = { cedula: '', apellido: '' };
   errorCarga: string | null = null;
 
-  // ── Modal ──
-  mostrarModal = false;
-  correoSeleccionado = '';
+  // ── Modales ──
+  mostrarModal         = false;
+  correoSeleccionado   = '';
+  mostrarModalSinDocs  = false; // ← tuyo
+  postulanteSinDocs    = '';    // ← tuyo
 
   constructor(
     private router: Router,
@@ -75,6 +78,8 @@ export class PostulantesComponent implements OnInit {
   ngOnInit(): void {
     this.cargarConvocatorias();
   }
+
+  // ── Paso 1: Convocatorias ──
 
   cargarConvocatorias(): void {
     this.cargandoConvocatorias = true;
@@ -102,6 +107,8 @@ export class PostulantesComponent implements OnInit {
     this.cargarSolicitudes(conv.id_convocatoria);
     this.cdr.detectChanges();
   }
+
+  // ── Paso 2: Solicitudes ──
 
   cargarSolicitudes(idConvocatoria: number): void {
     this.cargandoSolicitudes = true;
@@ -131,6 +138,8 @@ export class PostulantesComponent implements OnInit {
     this.cargarPostulantes(sol.id_solicitud);
     this.cdr.detectChanges();
   }
+
+  // ── Paso 3: Postulantes ──
 
   cargarPostulantes(idSolicitud: number): void {
     this.cargando = true;
@@ -171,8 +180,16 @@ export class PostulantesComponent implements OnInit {
   }
 
   verDocumentos(p: PostulanteLista): void {
+    if (!p.tieneDocumentos) {
+      this.postulanteSinDocs = `${p.apellidosPostulante} ${p.nombresPostulante}`;
+      this.mostrarModalSinDocs = true;
+      this.cdr.detectChanges();
+      return;
+    }
     this.router.navigate(['/evaluador/documentos/' + p.idPostulacion]);
   }
+
+  // ── Navegación wizard ──
 
   volverAPaso1(): void {
     this.paso = 1;
@@ -194,10 +211,7 @@ export class PostulantesComponent implements OnInit {
     this.router.navigate(['/evaluador']);
   }
 
-  private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    return token ? new HttpHeaders({ Authorization: 'Bearer ' + token }) : new HttpHeaders();
-  }
+  // ── Modales ──
 
   abrirModalExito(correo: string = ''): void {
     this.correoSeleccionado = correo;
@@ -210,11 +224,23 @@ export class PostulantesComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  cerrarModalSinDocs(): void {
+    this.mostrarModalSinDocs = false;
+    this.cdr.detectChanges();
+  }
+
+  // ── Helpers ──
+
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return token ? new HttpHeaders({ Authorization: 'Bearer ' + token }) : new HttpHeaders();
+  }
+
   estadoConvClass(estado: string): string {
     switch ((estado || '').toLowerCase()) {
       case 'abierta':   return 'badge-abierta';
       case 'cerrada':   return 'badge-cerrada';
-      case 'cancelada': return 'badge-cancelada';
+      case 'cancelada': return 'badge-cerrada';
       default:          return 'badge-cerrada';
     }
   }

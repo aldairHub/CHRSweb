@@ -96,6 +96,8 @@ public class PostulantesEvaluadorController {
             dto.setCorreoPostulante((String) row.get("correo_postulante"));
             dto.setEstadoPostulacion((String) row.get("estado_postulacion"));
             dto.setNombreMateria((String) row.get("nombre_materia"));
+            Object tieneDoc = row.get("tiene_documentos");
+            dto.setTieneDocumentos(tieneDoc != null && (Boolean) tieneDoc);
             return dto;
         }).collect(Collectors.toList());
 

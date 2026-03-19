@@ -22,7 +22,7 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
-    private final PostgresProcedureRepository procedureRepository; // ✅ nuevo
+    private final PostgresProcedureRepository procedureRepository;
 
 
     public UsuarioService(UsuarioRepository usuarioRepository,
@@ -128,15 +128,24 @@ public class UsuarioService {
         dto.setIdUsuario(usuario.getIdUsuario());
         dto.setUsuarioBd(usuario.getUsuarioBd());
         dto.setUsuarioApp(usuario.getUsuarioApp());
-        dto.setCorreo(usuario.getCorreo());           // agregar
+        dto.setCorreo(usuario.getCorreo());
         dto.setActivo(usuario.getActivo());
-        dto.setPrimerLogin(usuario.getPrimerLogin()); //  agregar
+        dto.setPrimerLogin(usuario.getPrimerLogin());
         return dto;
     }
     // ─── Caso 1: Primer login ───────────────────────────────────
 
     @Transactional
     public void cambiarClavePrimerLogin(String usuarioApp, CambiarClaveDTO dto) {
+        Usuario usuario = usuarioRepository.findByUsuarioApp(usuarioApp)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (dto.getClaveActual() == null || dto.getClaveActual().isBlank())
+            throw new RuntimeException("Ingresa tu contraseña temporal.");
+
+        if (!passwordEncoder.matches(dto.getClaveActual(), usuario.getClaveApp()))
+            throw new RuntimeException("La contraseña temporal es incorrecta.");
+
         validarClaveNuevaPrimerLogin(dto);
         String hash = passwordEncoder.encode(dto.getClaveNueva());
         procedureRepository.primerLoginCambiarClaveApp(usuarioApp, hash);

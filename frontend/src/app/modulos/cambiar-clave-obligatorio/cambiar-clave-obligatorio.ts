@@ -14,8 +14,10 @@ import { UsuarioService } from '../../services/usuario.service';
 })
 export class CambiarClaveObligatorioComponent {
 
+  claveActual           = '';
   claveNueva            = '';
   claveNuevaConfirmacion = '';
+  showClaveActual       = false;
   showClave             = false;
   showClaveConfirm      = false;
   isLoading             = false;
@@ -28,6 +30,7 @@ export class CambiarClaveObligatorioComponent {
     private router:     Router
   ) {}
 
+  toggleClaveActual():  void { this.showClaveActual  = !this.showClaveActual; }
   toggleClave():        void { this.showClave        = !this.showClave; }
   toggleClaveConfirm(): void { this.showClaveConfirm = !this.showClaveConfirm; }
 
@@ -35,7 +38,11 @@ export class CambiarClaveObligatorioComponent {
     this.error = '';
     this.exito = '';
 
-    // Validaciones locales
+    if (!this.claveActual) {
+      this.error = 'Ingresa tu contraseña temporal (recibida por correo).';
+      return;
+    }
+
     if (!this.claveNueva || !this.claveNuevaConfirmacion) {
       this.error = 'Completa todos los campos.';
       return;
@@ -43,6 +50,11 @@ export class CambiarClaveObligatorioComponent {
 
     if (this.claveNueva.length < 8) {
       this.error = 'La contraseña debe tener al menos 8 caracteres.';
+      return;
+    }
+
+    if (this.claveNueva === this.claveActual) {
+      this.error = 'La nueva contraseña no puede ser igual a la temporal.';
       return;
     }
 
@@ -54,6 +66,7 @@ export class CambiarClaveObligatorioComponent {
     this.isLoading = true;
 
     this.usuarioSvc.cambiarClavePrimerLogin(
+      this.claveActual,
       this.claveNueva,
       this.claveNuevaConfirmacion
     ).subscribe({

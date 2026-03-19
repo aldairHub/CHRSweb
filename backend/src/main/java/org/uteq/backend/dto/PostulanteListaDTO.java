@@ -19,4 +19,5 @@ public class PostulanteListaDTO {
     private String    estadoPostulacion;
     private String    nombreMateria;
     private LocalDateTime fechaPostulacion;
+    private Boolean   tieneDocumentos;
 }

@@ -43,10 +43,10 @@ export class UsuarioService {
     return this.http.get<any[]>(this.apiUrl);
   }
 
-  cambiarClavePrimerLogin(claveNueva: string, claveNuevaConfirmacion: string): Observable<any> {
+  cambiarClavePrimerLogin(claveActual: string, claveNueva: string, claveNuevaConfirmacion: string): Observable<any> {
     return this.http.put(
       `${this.apiUrl}/primer-login/cambiar-clave`,
-      { claveNueva, claveNuevaConfirmacion },
+      { claveActual, claveNueva, claveNuevaConfirmacion },
       { headers: this.getAuthHeaders(), responseType: 'text' }
     );
   }
