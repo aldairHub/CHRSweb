@@ -90,10 +90,10 @@ export class RegistroComponent implements OnDestroy, OnInit {
   // INIT
   // ==========================================
   ngOnInit(): void {
-    this.agregarDocumento();
     this.route.queryParams.subscribe(params => {
       if (params['idSolicitud']) {
         this.idSolicitud = +params['idSolicitud'];
+        // Cargamos requisitos primero; si no hay, agregamos 1 doc académico por defecto
         this.cargarRequisitos(this.idSolicitud);
       } else {
         this.router.navigate(['/convocatorias']);
@@ -114,10 +114,16 @@ export class RegistroComponent implements OnDestroy, OnInit {
     ).subscribe({
       next: (data) => {
         this.requisitos = data.map(r => ({ ...r, archivo: null, nombreArchivo: '' }));
+        // Si no hay requisitos obligatorios, iniciar con 1 doc académico por defecto
+        if (this.requisitos.length === 0) {
+          this.agregarDocumento();
+        }
         this.cdr.detectChanges();
       },
       error: () => {
         this.requisitos = [];
+        // Si falla la carga, asumir que no hay requisitos e iniciar con 1 doc
+        this.agregarDocumento();
         this.cdr.detectChanges();
       }
     });
@@ -377,20 +383,27 @@ export class RegistroComponent implements OnDestroy, OnInit {
       alert('Suba todos los archivos requeridos');
       return false;
     }
-    if (this.documentosAcademicos.length === 0) {
-      alert('Debe agregar al menos un documento académico');
+
+    // Si NO hay requisitos obligatorios del Revisor, el postulante
+    // debe subir al menos un documento académico propio
+    if (this.requisitos.length === 0 && this.documentosAcademicos.length === 0) {
+      alert('Debe agregar al menos un documento académico (título profesional)');
       return false;
     }
+
+    // Validar que cada documento académico agregado tenga archivo y descripción
     for (const doc of this.documentosAcademicos) {
       if (!doc.archivo) {
-        alert('Todos los documentos deben tener archivo PDF');
+        alert('Todos los documentos académicos deben tener archivo PDF');
         return false;
       }
       if (!doc.descripcion.trim()) {
-        alert('Todos los documentos deben tener descripción');
+        alert('Todos los documentos académicos deben tener descripción');
         return false;
       }
     }
+
+    // Validar requisitos obligatorios del Revisor
     for (const req of this.requisitos) {
       if (!req.archivo) {
         alert(`Debe subir el documento requerido: "${req.nombre}"`);

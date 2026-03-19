@@ -60,10 +60,10 @@ export class RepostulacionComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.agregarDocumento();
     this.route.queryParams.subscribe(params => {
       if (params['idSolicitud']) {
         this.idSolicitud = +params['idSolicitud'];
+        // Cargamos requisitos primero; si no hay, agregamos 1 doc académico por defecto
         this.cargarRequisitos(this.idSolicitud);
       } else {
         this.router.navigate(['/convocatorias']);
@@ -147,7 +147,8 @@ export class RepostulacionComponent implements OnInit {
   }
 
   eliminarDocumento(index: number): void {
-    if (this.documentosAcademicos.length <= 1) {
+    // Si hay requisitos obligatorios, puede llegar a 0 documentos académicos
+    if (this.requisitos.length === 0 && this.documentosAcademicos.length <= 1) {
       alert('Debe existir al menos un documento académico');
       return;
     }
@@ -163,9 +164,18 @@ export class RepostulacionComponent implements OnInit {
     ).subscribe({
       next: (data) => {
         this.requisitos = data.map(r => ({ ...r, archivo: null, nombreArchivo: '' }));
+        // Si no hay requisitos obligatorios, iniciar con 1 doc académico por defecto
+        if (this.requisitos.length === 0) {
+          this.agregarDocumento();
+        }
         this.cdr.detectChanges();
       },
-      error: () => { this.requisitos = []; this.cdr.detectChanges(); }
+      error: () => {
+        this.requisitos = [];
+        // Si falla la carga, asumir que no hay requisitos e iniciar con 1 doc
+        this.agregarDocumento();
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -189,17 +199,20 @@ export class RepostulacionComponent implements OnInit {
       this.error = 'Debes subir la cédula y la foto.';
       return;
     }
-    if (this.documentosAcademicos.length === 0) {
-      this.error = 'Debe agregar al menos un documento académico.';
+
+    // Si NO hay requisitos obligatorios del Revisor, exige al menos un doc académico
+    if (this.requisitos.length === 0 && this.documentosAcademicos.length === 0) {
+      this.error = 'Debe agregar al menos un documento académico (título profesional).';
       return;
     }
+
     for (const doc of this.documentosAcademicos) {
       if (!doc.archivo) {
-        this.error = 'Todos los documentos deben tener un archivo PDF.';
+        this.error = 'Todos los documentos académicos deben tener un archivo PDF.';
         return;
       }
       if (!doc.descripcion.trim()) {
-        this.error = 'Todos los documentos deben tener una descripción.';
+        this.error = 'Todos los documentos académicos deben tener una descripción.';
         return;
       }
     }

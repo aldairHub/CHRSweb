@@ -438,3 +438,37 @@ $accent:    #dcfce7;
   .empty-state h3 { color: #e0e0e0 !important; }
   .empty-state p  { color: #666 !important; }
 }
+
+/* ── Postulante con cuenta ───────────────────────────────── */
+.option-icon.logged {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.option-card--highlight {
+  border-color: #2563eb;
+  background: #eff6ff;
+  &:hover { background: #dbeafe; }
+}
+
+.modal-verificando {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 1rem;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.modal-ya-postulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 1rem 1.25rem;
+  background: #f0fdf4;
+  border: 1.5px solid #bbf7d0;
+  border-radius: 12px;
+  color: #16a34a;
+  font-size: 0.875rem;
+  font-weight: 500;
+  svg { flex-shrink: 0; }
+}

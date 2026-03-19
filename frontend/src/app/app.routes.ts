@@ -100,6 +100,12 @@ export const routes: Routes = [
         title: 'SSDC - Entrevistas',
         loadComponent: () => import('./modulos/././postulante/entrevista/entrevista')
           .then(m => m.EntrevistaPostulanteComponent)
+      },
+      {
+        path: 'nueva-postulacion',
+        title: 'SSDC - Nueva postulación',
+        loadComponent: () => import('./modulos/postulante/nueva-postulacion/nueva-postulacion')
+          .then(m => m.NuevaPostulacionComponent)
       }
     ]
   },

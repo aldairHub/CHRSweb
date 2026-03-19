@@ -341,73 +341,117 @@ public class PrepostulacionService {
 
         log.info("Estado de prepostulacion {} actualizado a: {}", id, nuevoEstado);
 
-        // ── APROBADO: Crear usuario + iniciar proceso de evaluación ──────────
+        // ── APROBADO: Crear usuario (si no existe) + iniciar proceso ──────────
         if ("APROBADO".equalsIgnoreCase(nuevoEstado)) {
-            log.info("Creando usuario para postulante aprobado — prepostulacion {}", id);
+            log.info("Procesando aprobacion para prepostulacion {}", id);
             try {
-                String correo     = prepostulacion.getCorreo();
-                String base       = correo.split("@")[0].toLowerCase().replaceAll("[^a-z0-9]", "");
-                String usuarioApp = base;
-                int n = 1;
-                while (usuarioRepository.existsByUsuarioApp(usuarioApp)) {
-                    usuarioApp = base + n++;
-                }
+                String correo = prepostulacion.getCorreo();
+                Long idUsuarioFinal;
 
-                String usuarioBd      = generarUsuarioBdUnico(
-                        normalizar(prepostulacion.getNombres()) + normalizar(prepostulacion.getApellidos()));
-                String claveTemporal  = generarClaveTemporal(12);
-                String claveBdReal    = generarClaveTemporal(16);
-                String claveBdCifrada = aesCipherService.cifrar(claveBdReal);
+                // ── Verificar si el correo ya tiene usuario (postulante con cuenta) ──
+                boolean yaExisteUsuario = usuarioRepository.existsByCorreo(correo);
 
-                RegistroSpResultDTO resultado = postgresProcedureRepository.registrarPostulante(
-                        usuarioApp,
-                        passwordEncoder.encode(claveTemporal),
-                        correo,
-                        usuarioBd,
-                        claveBdCifrada,
-                        claveBdReal,
-                        prepostulacion.getIdPrepostulacion()
-                );
+                if (yaExisteUsuario) {
+                    log.info("Usuario ya existe para correo {} — omitiendo creación", correo);
+                    idUsuarioFinal = usuarioRepository.findByCorreo(correo)
+                            .map(u -> u.getIdUsuario())
+                            .orElseThrow(() -> new RuntimeException("Usuario no encontrado para correo: " + correo));
 
-                log.info("Postulante registrado con ID usuario: {}", resultado.getIdUsuario());
-                emailService.enviarCredenciales(correo, usuarioApp, claveTemporal);
-                log.info("Correo de credenciales enviado a {}", correo);
-
-                notifService.notifPostulanteAprobado(
-                        resultado.getIdUsuario(),
-                        prepostulacion.getIdPrepostulacion()
-                );
-
-                // ── Iniciar proceso de evaluación automáticamente ──────────────
-                try {
-                    Postulante postulante = postulanteRepository
+                    // Vincular esta prepostulacion al postulante existente si no está vinculada
+                    boolean yaVinculado = postulanteRepository
                             .findByPrepostulacion_IdPrepostulacion(prepostulacion.getIdPrepostulacion())
-                            .orElseThrow(() -> new RuntimeException("Postulante no encontrado"));
+                            .isPresent();
 
-                    Long idPostulante = postulante.getIdPostulante();
+                    if (!yaVinculado) {
+                        // Actualizar la prepostulacion con el postulante existente via SP
+                        postulanteRepository.findByUsuario_Correo(correo).ifPresent(postulante -> {
+                            // Vincular la nueva solicitud al postulante existente
+                            List<Long> idsSolicitud = prepostulacionSolicitudRepository
+                                    .findByIdIdPrepostulacion(prepostulacion.getIdPrepostulacion())
+                                    .stream()
+                                    .map(ps -> ps.getId().getIdSolicitud())
+                                    .collect(Collectors.toList());
 
-                    List<Long> idsSolicitud = prepostulacionSolicitudRepository
-                            .findByIdIdPrepostulacion(prepostulacion.getIdPrepostulacion())
-                            .stream()
-                            .map(ps -> ps.getId().getIdSolicitud())
-                            .collect(Collectors.toList());
-
-                    for (Long idSolicitud : idsSolicitud) {
-                        try {
-                            postgresProcedureRepository.iniciarProcesoEvaluacion(idPostulante, idSolicitud);
-                            log.info("Proceso de evaluacion iniciado para postulante {} solicitud {}",
-                                    idPostulante, idSolicitud);
-                        } catch (Exception ex) {
-                            log.warn("No se pudo iniciar proceso para solicitud {}: {}", idSolicitud, ex.getMessage());
-                        }
+                            for (Long idSolicitud : idsSolicitud) {
+                                try {
+                                    postgresProcedureRepository.iniciarProcesoEvaluacion(
+                                            postulante.getIdPostulante(), idSolicitud);
+                                    log.info("Proceso iniciado para postulante existente {} solicitud {}",
+                                            postulante.getIdPostulante(), idSolicitud);
+                                } catch (Exception ex) {
+                                    log.warn("No se pudo iniciar proceso para solicitud {}: {}",
+                                            idSolicitud, ex.getMessage());
+                                }
+                            }
+                        });
                     }
-                } catch (Exception e) {
-                    log.error("Error al iniciar proceso de evaluacion: {}", e.getMessage(), e);
+
+                    notifService.notifPostulanteAprobado(idUsuarioFinal, prepostulacion.getIdPrepostulacion());
+
+                } else {
+                    // ── Crear nuevo usuario ──────────────────────────────────────
+                    log.info("Creando nuevo usuario para correo {}", correo);
+                    String base       = correo.split("@")[0].toLowerCase().replaceAll("[^a-z0-9]", "");
+                    String usuarioApp = base;
+                    int n = 1;
+                    while (usuarioRepository.existsByUsuarioApp(usuarioApp)) {
+                        usuarioApp = base + n++;
+                    }
+
+                    String usuarioBd      = generarUsuarioBdUnico(
+                            normalizar(prepostulacion.getNombres()) + normalizar(prepostulacion.getApellidos()));
+                    String claveTemporal  = generarClaveTemporal(12);
+                    String claveBdReal    = generarClaveTemporal(16);
+                    String claveBdCifrada = aesCipherService.cifrar(claveBdReal);
+
+                    RegistroSpResultDTO resultado = postgresProcedureRepository.registrarPostulante(
+                            usuarioApp,
+                            passwordEncoder.encode(claveTemporal),
+                            correo,
+                            usuarioBd,
+                            claveBdCifrada,
+                            claveBdReal,
+                            prepostulacion.getIdPrepostulacion()
+                    );
+
+                    idUsuarioFinal = resultado.getIdUsuario();
+                    log.info("Nuevo postulante registrado con ID usuario: {}", idUsuarioFinal);
+                    emailService.enviarCredenciales(correo, usuarioApp, claveTemporal);
+                    log.info("Correo de credenciales enviado a {}", correo);
+
+                    notifService.notifPostulanteAprobado(idUsuarioFinal, prepostulacion.getIdPrepostulacion());
+
+                    // ── Iniciar proceso de evaluación ────────────────────────────
+                    try {
+                        Postulante postulante = postulanteRepository
+                                .findByPrepostulacion_IdPrepostulacion(prepostulacion.getIdPrepostulacion())
+                                .orElseThrow(() -> new RuntimeException("Postulante no encontrado"));
+
+                        Long idPostulante = postulante.getIdPostulante();
+
+                        List<Long> idsSolicitud = prepostulacionSolicitudRepository
+                                .findByIdIdPrepostulacion(prepostulacion.getIdPrepostulacion())
+                                .stream()
+                                .map(ps -> ps.getId().getIdSolicitud())
+                                .collect(Collectors.toList());
+
+                        for (Long idSolicitud : idsSolicitud) {
+                            try {
+                                postgresProcedureRepository.iniciarProcesoEvaluacion(idPostulante, idSolicitud);
+                                log.info("Proceso de evaluacion iniciado para postulante {} solicitud {}",
+                                        idPostulante, idSolicitud);
+                            } catch (Exception ex) {
+                                log.warn("No se pudo iniciar proceso para solicitud {}: {}",
+                                        idSolicitud, ex.getMessage());
+                            }
+                        }
+                    } catch (Exception e) {
+                        log.error("Error al iniciar proceso de evaluacion: {}", e.getMessage(), e);
+                    }
                 }
-                // ──────────────────────────────────────────────────────────────
 
             } catch (Exception e) {
-                log.error("Error al crear usuario para prepostulacion {}: {}", id, e.getMessage(), e);
+                log.error("Error procesando aprobacion para prepostulacion {}: {}", id, e.getMessage(), e);
                 e.printStackTrace();
             }
         }

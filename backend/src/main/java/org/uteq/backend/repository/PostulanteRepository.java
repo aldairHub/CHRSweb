@@ -13,4 +13,6 @@ public interface PostulanteRepository extends JpaRepository<Postulante, Long> {
     Optional<Postulante> findByPrepostulacion_IdPrepostulacion(Long idPrepostulacion);
     @Query("SELECT p FROM Postulante p LEFT JOIN FETCH p.usuario")
     List<Postulante> findAllConUsuario();
+    Optional<Postulante> findByUsuario_Correo(String correo);
+    Optional<Postulante> findByUsuario_UsuarioApp(String usuarioApp);
 }

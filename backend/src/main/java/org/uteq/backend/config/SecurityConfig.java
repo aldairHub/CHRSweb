@@ -78,7 +78,8 @@ public class SecurityConfig {
                                 "/api/tipos-documento/**",
                                 "/api/admin/opciones/**",
                                 "/api/auth/menu/**",
-                                "/api/evaluacion/**"
+                                "/api/evaluacion/**",
+                                "/api/postulante/**"
                         ).permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/demo/**").permitAll()

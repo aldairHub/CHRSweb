@@ -185,6 +185,15 @@
             </button>
           </div>
 
+          <!-- Hint contextual según si hay requisitos obligatorios -->
+          <p class="docs-hint" *ngIf="requisitos.length > 0">
+            Los documentos obligatorios ya están cubiertos arriba. Aquí puede adjuntar
+            <strong>títulos adicionales</strong> si lo desea (opcional).
+          </p>
+          <p class="docs-hint docs-hint--required" *ngIf="requisitos.length === 0">
+            Suba al menos uno de sus títulos profesionales. Puede agregar más si tiene varios.
+          </p>
+
           <div *ngFor="let doc of documentosAcademicos; let i = index"
                class="documento-card">
 
@@ -192,7 +201,7 @@
               <span class="doc-number">Documento {{ i + 1 }}</span>
               <button type="button" class="btn-remove-doc"
                       (click)="eliminarDocumento(i)"
-                      [disabled]="documentosAcademicos.length === 1">
+                      [disabled]="requisitos.length === 0 && documentosAcademicos.length === 1">
                 ✕
               </button>
             </div>

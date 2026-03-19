@@ -320,3 +320,50 @@ $text-dark: #1e293b;
 
 .req-ok   { color: #16a34a; font-weight: 700; font-size: 0.9rem; }
 .req-desc { font-size: 0.76rem; color: #64748b; margin: 0 0 8px 0; }
+
+/* ── Secciones de documentos reutilizables ───────────────── */
+.doc-seccion {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #f0f0f0;
+  &:last-of-type { border-bottom: none; }
+}
+
+.doc-seccion-titulo {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 0.78rem; font-weight: 700; color: #016630;
+  text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 0.75rem;
+  svg { flex-shrink: 0; stroke: #016630; }
+}
+
+.doc-reutilizable {
+  border: 1.5px solid #e5e7eb; border-radius: 10px;
+  padding: 0.75rem 1rem; margin-bottom: 0.5rem;
+  background: #fafafa; transition: all 0.2s;
+  &.doc-seleccionado { border-color: #00A63E; background: #f0fdf4; }
+}
+
+.doc-check-row {
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+  input[type="checkbox"] { width: 17px; height: 17px; accent-color: #00A63E; flex-shrink: 0; cursor: pointer; }
+}
+
+.doc-check-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.doc-check-nombre { font-size: 0.875rem; font-weight: 600; color: #1a1a1a; }
+.doc-check-fecha  { font-size: 0.75rem; color: #94a3b8; }
+.doc-ver-link     { font-size: 0.75rem; color: #2563eb; text-decoration: underline; width: fit-content; }
+.doc-check-badge  { font-size: 0.75rem; font-weight: 600; color: #16a34a; background: #dcfce7; padding: 2px 8px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+
+.doc-nuevo-alt { margin-top: 0.5rem; display: flex; align-items: center; gap: 8px; }
+
+.btn-cancelar-nuevo {
+  background: #fef2f2; border: 1.5px solid #fecaca; color: #dc2626;
+  border-radius: 7px; padding: 4px 10px; font-size: 0.78rem;
+  cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  &:hover { background: #fee2e2; }
+}
+
+.cargando-docs {
+  display: flex; align-items: center; gap: 10px;
+  padding: 1.5rem 0; color: #64748b; font-size: 0.875rem;
+}

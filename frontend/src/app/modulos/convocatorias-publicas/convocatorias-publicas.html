@@ -171,26 +171,59 @@
         <p>Plaza: <strong>{{ solicitudParaPostular?.nombreMateria || solicitudParaPostular?.justificacion }}</strong></p>
       </div>
       <div class="modal-options">
-        <div class="option-card" (click)="irARegistro()">
-          <div class="option-icon new">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+
+        <!-- Postulante con cuenta logueado -->
+        <ng-container *ngIf="esPostulante">
+          <div *ngIf="verificandoPostulacion" class="modal-verificando">
+            <div class="spinner-sm"></div>
+            <span>Verificando tu postulación...</span>
           </div>
-          <div class="option-content">
-            <h4>Es mi primera vez</h4>
-            <p>No tengo cuenta. Quiero registrarme para postular.</p>
+          <ng-container *ngIf="!verificandoPostulacion">
+            <div *ngIf="yaPostuloASolicitud" class="modal-ya-postulo">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span>Ya tienes una postulación activa para esta plaza.</span>
+            </div>
+            <div *ngIf="!yaPostuloASolicitud" class="option-card option-card--highlight" (click)="irANuevaPostulacion()">
+              <div class="option-icon logged">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                </svg>
+              </div>
+              <div class="option-content">
+                <h4>Postular con mi cuenta</h4>
+                <p>Estás logueado. Postula directamente a esta plaza.</p>
+              </div>
+              <svg class="option-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </ng-container>
+        </ng-container>
+
+        <!-- Sin cuenta -->
+        <ng-container *ngIf="!esPostulante">
+          <div class="option-card" (click)="irARegistro()">
+            <div class="option-icon new">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+            </div>
+            <div class="option-content">
+              <h4>Es mi primera vez</h4>
+              <p>No tengo cuenta. Quiero registrarme para postular.</p>
+            </div>
+            <svg class="option-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </div>
-          <svg class="option-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </div>
-        <div class="option-card" (click)="irARepostulacion()">
-          <div class="option-icon returning">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <div class="option-card" (click)="irARepostulacion()">
+            <div class="option-icon returning">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            </div>
+            <div class="option-content">
+              <h4>Ya postulé antes</h4>
+              <p>Fui rechazado y quiero postular con nuevos documentos.</p>
+            </div>
+            <svg class="option-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </div>
-          <div class="option-content">
-            <h4>Ya postulé antes</h4>
-            <p>Fui rechazado y quiero postular con nuevos documentos.</p>
-          </div>
-          <svg class="option-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </div>
+        </ng-container>
+
       </div>
     </div>
   </div>

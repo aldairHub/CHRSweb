@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener, ElementR
 import { AsyncPipe, CommonModule, DatePipe } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ConvocatoriaService, Convocatoria, SolicitudDocente } from '../../services/convocatoria.service';
+import { AuthService } from '../../services/auth.service';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { LogoService } from '../../services/logo.service';
 import { ThemeService } from '../../services/theme.service';
 
@@ -28,6 +30,11 @@ export class ConvocatoriasPublicasComponent implements OnInit, OnDestroy {
   mostrarModal           = false;
   solicitudParaPostular: SolicitudDocente | null = null;
 
+  // ── Postulante con cuenta ──────────────────────────────────
+  esPostulante           = false;
+  yaPostuloASolicitud    = false;
+  verificandoPostulacion = false;
+
   private wheelTimeout: any;
   private lastWheelTime = 0;
 
@@ -38,12 +45,18 @@ export class ConvocatoriasPublicasComponent implements OnInit, OnDestroy {
     private cdr:    ChangeDetectorRef,
     private el:     ElementRef,
     public logoService: LogoService,
-    public themeService: ThemeService
+    public themeService: ThemeService,
+    private authService: AuthService,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
     // Fuerza recarga de logo/nombre en cada visita
     this.logoService.cargar();
+
+    // Detectar si está logueado como postulante
+    this.esPostulante = this.authService.isLoggedIn() &&
+      this.authService.getRol() === 'postulante';
 
     this.convocatoriaService.listarAbiertas().subscribe({
       next: (data) => {
@@ -151,7 +164,28 @@ export class ConvocatoriasPublicasComponent implements OnInit, OnDestroy {
   abrirModal(conv: ConvocatoriaVM): void {
     if (!conv.solicitudSeleccionada) return;
     this.solicitudParaPostular = conv.solicitudSeleccionada;
+    this.yaPostuloASolicitud   = false;
     this.mostrarModal          = true;
+
+    if (this.esPostulante && conv.solicitudSeleccionada.idSolicitud) {
+      this.verificandoPostulacion = true;
+      const token = localStorage.getItem('token');
+      const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+      this.http.get<any>(
+        `http://localhost:8080/api/postulante/nueva-postulacion/verificar/${conv.solicitudSeleccionada.idSolicitud}`,
+        headers ? { headers } : {}
+      ).subscribe({
+        next: (res) => {
+          this.yaPostuloASolicitud    = res.yaPostulo;
+          this.verificandoPostulacion = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.verificandoPostulacion = false;
+          this.cdr.detectChanges();
+        }
+      });
+    }
   }
 
   cerrarModal(): void {
@@ -169,6 +203,13 @@ export class ConvocatoriasPublicasComponent implements OnInit, OnDestroy {
   irARepostulacion(): void {
     if (!this.solicitudParaPostular) return;
     this.router.navigate(['/repostulacion'], {
+      queryParams: { idSolicitud: this.solicitudParaPostular.idSolicitud }
+    });
+  }
+
+  irANuevaPostulacion(): void {
+    if (!this.solicitudParaPostular) return;
+    this.router.navigate(['/postulante/nueva-postulacion'], {
       queryParams: { idSolicitud: this.solicitudParaPostular.idSolicitud }
     });
   }

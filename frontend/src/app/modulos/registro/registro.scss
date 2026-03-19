@@ -1347,6 +1347,23 @@ $shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
   margin: 0 0 0.9rem 0;
 }
 
+// Hint contextual de documentos académicos
+.docs-hint {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: -0.25rem 0 0.9rem 0;
+  padding: 6px 10px;
+  background: #f8fafc;
+  border-left: 3px solid #cbd5e1;
+  border-radius: 0 4px 4px 0;
+
+  &--required {
+    background: #f0fdf4;
+    border-left-color: #00A63E;
+    color: #166534;
+  }
+}
+
 .req-card {
   border: 1.5px solid #e0e7ff;
   border-radius: 8px;
