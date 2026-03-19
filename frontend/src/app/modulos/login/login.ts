@@ -7,6 +7,7 @@ import { AuthStateService } from '../../services/auth-state.service';
 import { LogoService } from '../../services/logo.service';
 import { AsyncPipe } from '@angular/common';
 import { ThemeService } from '../../services/theme.service';
+import { UsuarioService } from '../../services/usuario.service';
 
 
 @Component({
@@ -31,7 +32,8 @@ export class LoginComponent implements OnInit {
     private authState: AuthStateService,
     public logoService: LogoService,
     public themeService: ThemeService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private usuarioService: UsuarioService
   ) {}
 
   ngOnInit() {
@@ -76,7 +78,10 @@ export class LoginComponent implements OnInit {
             nombreRolApp: res.nombreRolApp          ?? null,
           });
 
-          // 3) Redirigir según rol
+          // 3) Cargar foto de perfil en segundo plano — actualiza navbar sin recargar
+          this.usuarioService.obtenerMiPerfil().subscribe({ error: () => {} });
+
+          // 4) Redirigir según rol
           this.authService.redirigirPorRol();
 
         } else {

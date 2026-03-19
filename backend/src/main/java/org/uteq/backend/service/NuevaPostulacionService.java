@@ -31,6 +31,7 @@ public class NuevaPostulacionService {
     private final PrepostulacionRepository             prepostulacionRepository;
     private final SupabaseStorageService           supabase;
     private final NotificacionService              notifService;
+    private final ProcesoEvaluacionRepository      procesoEvaluacionRepository;
 
     // ── Documentos anteriores del postulante (cédula, foto y académicos) ─────
     public List<DocumentoReutilizableDTO> getMisDocumentos(String usuarioApp) {
@@ -234,11 +235,24 @@ public class NuevaPostulacionService {
     public boolean yaPostuloASolicitud(String usuarioApp, Long idSolicitud) {
         return postulanteRepository.findByUsuario_UsuarioApp(usuarioApp)
                 .map(postulante -> {
-                    // Buscar si hay alguna prepostulacion de este postulante vinculada a la solicitud
-                    return prepostulacionSolicitudRepository
-                            .findByIdIdPrepostulacion(postulante.getPrepostulacion().getIdPrepostulacion())
+                    // Bloquear si ya tiene un proceso de evaluación activo para esta solicitud
+                    // (en_proceso, pendiente, completado — todo menos rechazado)
+                    boolean tieneProcesoActivo = procesoEvaluacionRepository
+                            .existsByPostulante_IdPostulanteAndSolicitudDocente_IdSolicitud(
+                                    postulante.getIdPostulante(), idSolicitud);
+                    if (tieneProcesoActivo) return true;
+
+                    // También verificar prepostulaciones pendientes de revisión vinculadas a esta solicitud
+                    // (aún no han sido aprobadas, por lo que no tienen proceso_evaluacion todavía)
+                    return prepostulacionRepository
+                            .findAll()
                             .stream()
-                            .anyMatch(ps -> ps.getId().getIdSolicitud().equals(idSolicitud));
+                            .filter(pp -> pp.getCorreo().equals(postulante.getCorreoPostulante()))
+                            .filter(pp -> !"RECHAZADO".equalsIgnoreCase(pp.getEstadoRevision()))
+                            .anyMatch(pp -> prepostulacionSolicitudRepository
+                                    .findByIdIdPrepostulacion(pp.getIdPrepostulacion())
+                                    .stream()
+                                    .anyMatch(ps -> ps.getId().getIdSolicitud().equals(idSolicitud)));
                 })
                 .orElse(false);
     }

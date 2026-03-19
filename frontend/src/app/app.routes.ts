@@ -220,6 +220,11 @@ export const routes: Routes = [
         loadComponent: () => import('./modulos/admin/materia/materia').then(m => m.MateriaComponent)
       },
       {
+        path: 'area-conocimiento',
+        title: 'SSDC - Áreas de Conocimiento',
+        loadComponent: () => import('./modulos/admin/area-conocimiento/area-conocimiento').then(m => m.AreaConocimientoComponent)
+      },
+      {
         path: 'gestion-postulante',
         title: 'SSDC - Postulantes',
         loadComponent: () => import('./modulos/admin/postulante/postulante').then(m => m.PostulanteComponent)

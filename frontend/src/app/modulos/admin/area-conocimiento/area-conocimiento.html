@@ -1,0 +1,208 @@
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h2>Áreas de Conocimiento</h2>
+        <p class="page-subtitle">Catálogo de áreas académicas</p>
+      </div>
+      <button class="btn btn-primary" (click)="openCreate()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Nueva Área
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>Total áreas</h3>
+          <div class="stat-value">{{ areas.length }}</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon success">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>Resultados filtrados</h3>
+          <div class="stat-value">{{ areasFiltradas.length }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtro -->
+    <div class="filters-section">
+      <div class="search-box">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input
+          type="text"
+          class="form-input with-icon"
+          placeholder="Buscar por nombre de área..."
+          [(ngModel)]="search"
+          (input)="applyFilters()"
+        >
+      </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="table-container">
+      <table class="table">
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre del Área</th>
+          <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Skeleton -->
+        <ng-container *ngIf="cargando">
+          <tr class="skeleton-row-tr" *ngFor="let s of [1,2,3,4,5]">
+            <td><div class="skeleton-cell skeleton-cell--avatar"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--lg"></div></td>
+            <td><div class="skeleton-cell skeleton-cell--md"></div></td>
+          </tr>
+        </ng-container>
+
+        <ng-container *ngIf="!cargando">
+          <tr *ngFor="let area of areasPaginadas">
+            <td><strong>#{{ area.idArea }}</strong></td>
+            <td>{{ area.nombreArea }}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-icon" (click)="edit(area)" title="Editar">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                </button>
+                <button class="btn-icon btn-icon--danger" (click)="confirmarEliminar(area)" title="Eliminar">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+
+        <tr *ngIf="areasFiltradas.length === 0 && !cargando">
+          <td colspan="3" class="empty-state">
+            <div class="empty-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+              </svg>
+            </div>
+            <p>No se encontraron áreas de conocimiento</p>
+            <small>Intenta ajustar el filtro o crear una nueva área</small>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="pagination" *ngIf="areasFiltradas.length > 0">
+      <div class="pagination-info">
+        Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, areasFiltradas.length) }} de {{ areasFiltradas.length }} áreas
+      </div>
+      <div class="pagination-controls">
+        <button class="page-btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <button
+          *ngFor="let page of getPageNumbers()"
+          class="page-btn"
+          [class.active]="page === currentPage"
+          [disabled]="page === -1"
+          (click)="page !== -1 && changePage(page)"
+        >{{ page === -1 ? '...' : page }}</button>
+        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL CREAR/EDITAR -->
+<div class="modal-overlay" *ngIf="modalAbierto" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editando ? 'Editar área' : 'Nueva área de conocimiento' }}</h3>
+      <button class="close-btn" (click)="closeModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nombre del área <span class="required">*</span></label>
+        <input
+          type="text"
+          class="form-input"
+          [(ngModel)]="form.nombreArea"
+          placeholder="Ej: Ciencias de la Computación"
+          (keyup.enter)="guardar()"
+        >
+        <div class="error-message" *ngIf="submitted && !form.nombreArea.trim()">
+          El nombre del área es obligatorio
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" (click)="guardar()" [disabled]="isSaving">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        {{ isSaving ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR ELIMINAR -->
+<div class="modal-overlay" *ngIf="mostrarConfirmEliminar" (click)="cancelarEliminar()">
+  <div class="modal-content modal-content--sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Confirmar eliminación</h3>
+      <button class="close-btn" (click)="cancelarEliminar()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p>¿Estás seguro de que deseas eliminar el área <strong>{{ areaAEliminar?.nombreArea }}</strong>?</p>
+      <p class="warn-text">Esta acción no se puede deshacer. Si el área está en uso, no podrá eliminarse.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="cancelarEliminar()">Cancelar</button>
+      <button class="btn btn-danger" (click)="eliminar()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<app-toast></app-toast>
