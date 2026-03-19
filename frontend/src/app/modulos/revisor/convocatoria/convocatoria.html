@@ -1,5 +1,3 @@
-
-
 <div class="main-container">
   <div class="content-wrapper">
 
@@ -9,12 +7,20 @@
         <h2>Gestión de Convocatorias</h2>
         <p class="page-subtitle">Administración de Convocatorias Docentes</p>
       </div>
-      <button class="btn btn-primary" (click)="openCreate()">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        Nueva Convocatoria
-      </button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline-primary" (click)="exportarReporte()" style="display:flex;align-items:center;gap:6px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6M9 13h6M9 17h4"/>
+          </svg>
+          Exportar Reporte
+        </button>
+        <button class="btn btn-primary" (click)="openCreate()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Nueva Convocatoria
+        </button>
+      </div>
     </div>
 
     <!-- Stats -->
@@ -519,3 +525,282 @@
 </div>
 
 <app-toast></app-toast>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MODAL DE REPORTE
+═══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay reporte-overlay" *ngIf="showReporteModal" (click)="cerrarReporteModal()">
+  <div class="modal-reporte" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div class="reporte-header-left">
+        <div class="reporte-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 12h6M9 16h6M17 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/>
+          </svg>
+        </div>
+        <div>
+          <h3>Configurar Reporte</h3>
+          <p class="modal-subtitle">Convocatorias · {{ reporteSeccionesActivas }} secciones activas</p>
+        </div>
+      </div>
+      <button class="close-btn" (click)="cerrarReporteModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="reporte-tabs">
+      <button class="reporte-tab" [class.active]="reporteTabActiva === 'filtros'" (click)="cambiarReporteTab('filtros')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
+        Filtros
+      </button>
+      <button class="reporte-tab" [class.active]="reporteTabActiva === 'secciones'" (click)="cambiarReporteTab('secciones')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Secciones
+      </button>
+      <button class="reporte-tab" [class.active]="reporteTabActiva === 'visual'" (click)="cambiarReporteTab('visual')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+        Visual
+      </button>
+      <button class="reporte-tab" [class.active]="reporteTabActiva === 'exportar'" (click)="cambiarReporteTab('exportar')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Exportar
+      </button>
+    </div>
+
+    <div class="reporte-body">
+
+      <!-- TAB FILTROS -->
+      <div *ngIf="reporteTabActiva === 'filtros'">
+        <div class="r-section">
+          <h4 class="r-label">Metadatos del Reporte</h4>
+          <div class="form-group" style="margin-bottom:10px">
+            <label>Título</label>
+            <input type="text" class="form-input" [(ngModel)]="reporteConfig.titulo" placeholder="Ej: Reporte Convocatorias 2025">
+          </div>
+          <div class="form-group">
+            <label>Subtítulo <span style="color:#aaa;font-weight:400;font-size:.78rem">opcional</span></label>
+            <input type="text" class="form-input" [(ngModel)]="reporteConfig.subtitulo" placeholder="Descripción adicional...">
+          </div>
+        </div>
+
+        <div class="r-section">
+          <h4 class="r-label">Intervalo de Tiempo</h4>
+          <div class="r-two-col">
+            <div class="form-group">
+              <label>Desde</label>
+              <input type="date" class="form-input" [(ngModel)]="reporteConfig.desde">
+            </div>
+            <div class="form-group">
+              <label>Hasta</label>
+              <input type="date" class="form-input" [(ngModel)]="reporteConfig.hasta">
+            </div>
+          </div>
+        </div>
+
+        <div class="r-section">
+          <h4 class="r-label">Estado de Convocatoria</h4>
+          <div class="r-chips">
+            <button class="r-chip"          [class.active]="reporteConfig.estado === ''"         (click)="reporteConfig.estado = ''">Todas</button>
+            <button class="r-chip r-chip-ok" [class.active]="reporteConfig.estado === 'abierta'" (click)="reporteConfig.estado = 'abierta'">Abiertas</button>
+            <button class="r-chip"           [class.active]="reporteConfig.estado === 'cerrada'" (click)="reporteConfig.estado = 'cerrada'">Cerradas</button>
+            <button class="r-chip r-chip-err"[class.active]="reporteConfig.estado === 'cancelada'" (click)="reporteConfig.estado = 'cancelada'">Canceladas</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB SECCIONES -->
+      <div *ngIf="reporteTabActiva === 'secciones'">
+        <div class="r-section">
+          <h4 class="r-label">Estructura</h4>
+          <div class="r-toggle-list">
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Portada</span><br><span class="r-toggle-desc">Título, período y KPIs al inicio</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.incluirPortada"><span class="slider"></span></label>
+            </div>
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">KPIs / Resumen</span><br><span class="r-toggle-desc">Total, abiertas, cerradas, canceladas</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.incluirKpis"><span class="slider"></span></label>
+            </div>
+          </div>
+        </div>
+        <div class="r-section">
+          <h4 class="r-label">Gráficos</h4>
+          <div class="r-toggle-list">
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Distribución por Estado</span><br><span class="r-toggle-desc">Pastel: Abiertas / Cerradas / Canceladas</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.incluirGraficoEstados"><span class="slider"></span></label>
+            </div>
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Prepostulaciones por Convocatoria</span><br><span class="r-toggle-desc">Barras con cantidad e indicador %</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.incluirGraficoPrepostulaciones"><span class="slider"></span></label>
+            </div>
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Evolución Temporal</span><br><span class="r-toggle-desc">Convocatorias publicadas por mes</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.incluirGraficoTemporal"><span class="slider"></span></label>
+            </div>
+          </div>
+        </div>
+        <div class="r-section">
+          <h4 class="r-label">Tabla de Detalle</h4>
+          <div class="r-toggle-list">
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Incluir Detalle Registro a Registro</span><br><span class="r-toggle-desc">Lista con título, estado, fechas, solicitudes y prepostulaciones</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.incluirDetalle"><span class="slider"></span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB VISUAL -->
+      <div *ngIf="reporteTabActiva === 'visual'">
+        <div class="r-section">
+          <h4 class="r-label">Apariencia (PDF)</h4>
+          <div class="r-two-col">
+            <div class="form-group">
+              <label>Color Primario</label>
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" [(ngModel)]="reporteConfig.colorPrimario"
+                       style="width:44px;height:40px;border:1.5px solid #e5e7eb;border-radius:8px;padding:3px;cursor:pointer">
+                <input type="text" class="form-input" [(ngModel)]="reporteConfig.colorPrimario" style="font-family:monospace;flex:1">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Orientación</label>
+              <div style="display:flex;gap:8px">
+                <button class="r-orient-btn" [class.active]="reporteConfig.orientacion === 'VERTICAL'"   (click)="reporteConfig.orientacion = 'VERTICAL'">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/></svg> Vertical
+                </button>
+                <button class="r-orient-btn" [class.active]="reporteConfig.orientacion === 'HORIZONTAL'" (click)="reporteConfig.orientacion = 'HORIZONTAL'">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/></svg> Horizontal
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="r-toggle-list" style="margin-top:14px">
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Número de Página</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.mostrarNumeroPagina"><span class="slider"></span></label>
+            </div>
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Fecha de Generación</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.mostrarFechaGeneracion"><span class="slider"></span></label>
+            </div>
+          </div>
+        </div>
+        <div class="r-section">
+          <h4 class="r-label">Vista Previa</h4>
+          <div class="r-preview" [style.border-color]="reporteConfig.colorPrimario + '40'">
+            <div class="r-preview-header" [style.background]="reporteConfig.colorPrimario">
+              {{ reporteConfig.titulo || 'Reporte de Convocatorias' }}
+            </div>
+            <div class="r-preview-kpis">
+              <div class="r-preview-card" [style.border-left-color]="reporteConfig.colorPrimario">
+                <span [style.color]="reporteConfig.colorPrimario" style="font-size:1.5rem;font-weight:800">{{ convocatorias.length }}</span>
+                <span style="font-size:.7rem;color:#999">Total</span>
+              </div>
+              <div class="r-preview-card" style="border-left-color:#16a34a">
+                <span style="color:#16a34a;font-size:1.5rem;font-weight:800">{{ totalAbiertas }}</span>
+                <span style="font-size:.7rem;color:#999">Abiertas</span>
+              </div>
+              <div class="r-preview-card" style="border-left-color:#475569">
+                <span style="color:#475569;font-size:1.5rem;font-weight:800">{{ totalCerradas }}</span>
+                <span style="font-size:.7rem;color:#999">Cerradas</span>
+              </div>
+              <div class="r-preview-card" style="border-left-color:#dc2626">
+                <span style="color:#dc2626;font-size:1.5rem;font-weight:800">{{ totalCanceladas }}</span>
+                <span style="font-size:.7rem;color:#999">Canceladas</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB EXPORTAR -->
+      <div *ngIf="reporteTabActiva === 'exportar'">
+        <div class="r-section">
+          <h4 class="r-label">Formato de Exportación</h4>
+          <div class="r-formato-cards">
+            <div class="r-formato-card" [class.active]="reporteConfig.formato === 'PDF'" (click)="reporteConfig.formato = 'PDF'">
+              <div class="r-formato-icon r-pdf-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6M9 13h6M9 17h4"/>
+                </svg>
+              </div>
+              <div>
+                <div style="font-weight:700;font-size:.95rem">PDF</div>
+                <div style="font-size:.78rem;color:#888">Portada, gráficos, listo para imprimir</div>
+              </div>
+              <span *ngIf="reporteConfig.formato === 'PDF'" class="r-check">✓</span>
+            </div>
+            <div class="r-formato-card" [class.active]="reporteConfig.formato === 'EXCEL'" (click)="reporteConfig.formato = 'EXCEL'">
+              <div class="r-formato-icon r-excel-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6M8 13l2 2 4-4M8 17h8"/>
+                </svg>
+              </div>
+              <div>
+                <div style="font-weight:700;font-size:.95rem">Excel (.xlsx)</div>
+                <div style="font-size:.78rem;color:#888">Hojas separadas, filtros, análisis de datos</div>
+              </div>
+              <span *ngIf="reporteConfig.formato === 'EXCEL'" class="r-check">✓</span>
+            </div>
+          </div>
+        </div>
+        <div class="r-section" *ngIf="reporteConfig.formato === 'EXCEL'">
+          <h4 class="r-label">Opciones Excel</h4>
+          <div class="r-toggle-list">
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Congelar Encabezados</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.excelCongelarEncabezado"><span class="slider"></span></label>
+            </div>
+            <div class="r-toggle-item">
+              <div><span class="r-toggle-title">Filtros Automáticos</span></div>
+              <label class="switch"><input type="checkbox" [(ngModel)]="reporteConfig.excelFiltrosAutomaticos"><span class="slider"></span></label>
+            </div>
+          </div>
+        </div>
+        <div class="r-section">
+          <h4 class="r-label">Resumen de Configuración</h4>
+          <div class="r-summary">
+            <div class="r-summary-row">
+              <span style="color:#888">Formato</span>
+              <span class="r-format-badge" [class.r-badge-pdf]="reporteConfig.formato==='PDF'" [class.r-badge-excel]="reporteConfig.formato==='EXCEL'">{{ reporteConfig.formato }}</span>
+            </div>
+            <div class="r-summary-row" *ngIf="reporteConfig.desde || reporteConfig.hasta">
+              <span style="color:#888">Período</span>
+              <span style="font-weight:600">{{ reporteConfig.desde || '—' }} → {{ reporteConfig.hasta || 'hoy' }}</span>
+            </div>
+            <div class="r-summary-row" *ngIf="reporteConfig.estado">
+              <span style="color:#888">Estado</span>
+              <span style="font-weight:600">{{ reporteConfig.estado }}</span>
+            </div>
+            <div class="r-summary-row">
+              <span style="color:#888">Secciones activas</span>
+              <span style="font-weight:600">{{ reporteSeccionesActivas }} de 6</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="cerrarReporteModal()" [disabled]="reporteGenerando">Cancelar</button>
+      <button class="btn btn-primary btn-reporte-generar" (click)="generarReporte()" [disabled]="reporteGenerando">
+        <ng-container *ngIf="!reporteGenerando">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+          Generar {{ reporteConfig.formato }}
+        </ng-container>
+        <ng-container *ngIf="reporteGenerando">
+          <span class="btn-spinner"></span> Generando...
+        </ng-container>
+      </button>
+    </div>
+
+  </div>
+</div>

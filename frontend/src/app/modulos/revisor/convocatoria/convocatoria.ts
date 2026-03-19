@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -13,13 +14,36 @@ import { ToastService } from '../../../services/toast.service';
 import { ToastComponent } from '../../../component/toast.component';
 import { AiConvocatoriaService } from '../../../services/ai-convocatoria.service';
 
+
+// ── Reporte ──────────────────────────────────────────────────────────────────
+interface ReporteConvocatoriaConfig {
+  titulo: string;
+  subtitulo: string;
+  formato: 'PDF' | 'EXCEL';
+  orientacion: 'VERTICAL' | 'HORIZONTAL';
+  desde: string;
+  hasta: string;
+  estado: string;
+  incluirPortada: boolean;
+  incluirKpis: boolean;
+  incluirDetalle: boolean;
+  incluirGraficoEstados: boolean;
+  incluirGraficoPrepostulaciones: boolean;
+  incluirGraficoTemporal: boolean;
+  colorPrimario: string;
+  mostrarNumeroPagina: boolean;
+  mostrarFechaGeneracion: boolean;
+  excelCongelarEncabezado: boolean;
+  excelFiltrosAutomaticos: boolean;
+}
+
 @Component({
   selector: 'app-convocatoria',
   standalone: true,
   imports: [
     CommonModule,
     FormsModule,
-    
+
     ToastComponent
   ],
   templateUrl: './convocatoria.html',
@@ -40,6 +64,33 @@ export class ConvocatoriaComponent implements OnInit {
   // ===== Filtros =====
   search = '';
   filtroEstado = '';
+
+  // ── Modal Reporte ─────────────────────────────────────────────────────────
+  showReporteModal    = false;
+  reporteGenerando    = false;
+  reporteTabActiva: 'filtros' | 'secciones' | 'visual' | 'exportar' = 'filtros';
+  reporteConfig: ReporteConvocatoriaConfig = {
+    titulo: 'Reporte de Convocatorias',
+    subtitulo: '',
+    formato: 'PDF',
+    orientacion: 'VERTICAL',
+    desde: '',
+    hasta: '',
+    estado: '',
+    incluirPortada: true,
+    incluirKpis: true,
+    incluirDetalle: true,
+    incluirGraficoEstados: true,
+    incluirGraficoPrepostulaciones: true,
+    incluirGraficoTemporal: true,
+    colorPrimario: '#00A63E',
+    mostrarNumeroPagina: true,
+    mostrarFechaGeneracion: true,
+    excelCongelarEncabezado: true,
+    excelFiltrosAutomaticos: true,
+  };
+  private readonly reporteApiUrl = 'http://localhost:8080/api/admin/convocatorias/reporte/generar';
+
 
   // ===== Paginación =====
   currentPage = 1;
@@ -97,6 +148,7 @@ export class ConvocatoriaComponent implements OnInit {
   isGenerandoDescripcion = false;
 
   constructor(
+    private http: HttpClient,
     private convocatoriaService: ConvocatoriaAdminService,
     private solicitudService: SolicitudDocenteService,
     private tipoDocumentoService: TipoDocumentoService,
@@ -532,4 +584,52 @@ export class ConvocatoriaComponent implements OnInit {
       }
     });
   }
+  // ── Métodos Reporte ───────────────────────────────────────────────────────
+  exportarReporte(): void {
+    this.reporteConfig.estado = this.filtroEstado || '';
+    this.showReporteModal  = true;
+    this.reporteTabActiva  = 'filtros';
+  }
+
+  cerrarReporteModal(): void { this.showReporteModal = false; }
+
+  cambiarReporteTab(tab: 'filtros' | 'secciones' | 'visual' | 'exportar'): void {
+    this.reporteTabActiva = tab;
+  }
+
+  get reporteSeccionesActivas(): number {
+    const s = this.reporteConfig;
+    return [s.incluirPortada, s.incluirKpis, s.incluirDetalle,
+      s.incluirGraficoEstados, s.incluirGraficoPrepostulaciones, s.incluirGraficoTemporal]
+      .filter(Boolean).length;
+  }
+
+  generarReporte(): void {
+    this.reporteGenerando = true;
+    this.http.post(this.reporteApiUrl, this.reporteConfig, {
+      responseType: 'blob', observe: 'response'
+    }).subscribe({
+      next: (response) => {
+        const blob = response.body!;
+        const cd   = response.headers.get('content-disposition') || '';
+        const match = cd.match(/filename="?([^";\n]+)"?/);
+        const nombre = match ? match[1]
+          : `reporte_convocatorias.${this.reporteConfig.formato === 'EXCEL' ? 'xlsx' : 'pdf'}`;
+        const url = window.URL.createObjectURL(blob);
+        const a   = document.createElement('a');
+        a.href = url; a.download = nombre; a.click();
+        window.URL.revokeObjectURL(url);
+        this.reporteGenerando = false;
+        this.cerrarReporteModal();
+        this.toast.success('Reporte generado correctamente');
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.reporteGenerando = false;
+        this.toast.error('Error al generar el reporte');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
 }

@@ -24,8 +24,8 @@ import {
     CommonModule,
     FormsModule,
     HttpClientModule,
-    
-    
+
+
   ],
   templateUrl: './solicitar-docente.html',
   styleUrls: ['./solicitar-docente.scss'],

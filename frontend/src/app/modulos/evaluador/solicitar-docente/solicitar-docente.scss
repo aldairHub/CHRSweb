@@ -344,9 +344,9 @@ $border-color: #e5e7eb;
   // Fondos generales
   .page-container, .main-container, .content-wrapper,
   .form-container, .card-container, .section-container,
-  .table-container, .panel, .box, .wrapper { 
-    background: #000 !important; 
-    color: #e5e5e5 !important; 
+  .table-container, .panel, .box, .wrapper {
+    background: #000 !important;
+    color: #e5e5e5 !important;
   }
 
   // Cards / items
@@ -500,10 +500,10 @@ $border-color: #e5e7eb;
     background: rgba(255,255,255,0.07) !important;
     color: #9ca3af !important;
     border-color: rgba(255,255,255,0.1) !important;
-    &.selected, &.active { 
-      background: rgba(0,166,62,0.2) !important; 
-      color: #4ade80 !important; 
-      border-color: rgba(0,166,62,0.4) !important; 
+    &.selected, &.active {
+      background: rgba(0,166,62,0.2) !important;
+      color: #4ade80 !important;
+      border-color: rgba(0,166,62,0.4) !important;
     }
   }
 
@@ -523,9 +523,9 @@ $border-color: #e5e7eb;
   }
 
   // Prepostulación específica
-  .doc-prepost { 
-    background: rgba(79,70,229,0.05) !important; 
-    border-color: rgba(79,70,229,0.2) !important; 
+  .doc-prepost {
+    background: rgba(79,70,229,0.05) !important;
+    border-color: rgba(79,70,229,0.2) !important;
   }
   .estado-badge.estado-subido   { background: rgba(29,78,216,0.25) !important; color: #93c5fd !important; }
   .estado-badge.estado-validado { background: rgba(22,101,52,0.25) !important; color: #86efac !important; }
