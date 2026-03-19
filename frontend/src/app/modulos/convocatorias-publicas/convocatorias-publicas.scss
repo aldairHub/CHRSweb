@@ -431,6 +431,7 @@ $accent:    #dcfce7;
     p  { color: #666 !important; }
     .option-icon.new       { background: #0d1f12 !important; }
     .option-icon.returning { background: #0d1530 !important; }
+    .option-icon.account   { background: #1c1200 !important; svg { stroke: #fbbf24; } }
     .option-arrow { stroke: #00A63E !important; }
   }
   .page-footer { color: #333 !important; border-top-color: #1e1e1e !important; }
@@ -471,4 +472,11 @@ $accent:    #dcfce7;
   font-size: 0.875rem;
   font-weight: 500;
   svg { flex-shrink: 0; }
+}
+
+
+// ── Tercera opción: ya tengo cuenta ────────────────────────────
+.option-icon.account {
+  background: #fef3c7;
+  svg { stroke: #d97706; }
 }

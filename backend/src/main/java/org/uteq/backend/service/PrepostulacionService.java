@@ -5,8 +5,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.uteq.backend.dto.RegistroSpResultDTO;
+import org.uteq.backend.entity.Postulacion;
 import org.uteq.backend.entity.Postulante;
 import org.uteq.backend.entity.Prepostulacion;
+import org.uteq.backend.entity.SolicitudDocente;
 import org.uteq.backend.repository.*;
 import org.uteq.backend.dto.PrepostulacionResponseDTO;
 import org.slf4j.Logger;
@@ -32,6 +34,7 @@ public class PrepostulacionService {
     private final PrepostulacionDocumentoRepository documentoRepository;
     private final PostulanteRepository postulanteRepository;
     private final PrepostulacionSolicitudRepository prepostulacionSolicitudRepository;
+    private final PostulacionRepository postulacionRepository;
 
     public PrepostulacionService(
             NotificacionService notifService,
@@ -45,7 +48,8 @@ public class PrepostulacionService {
             AesCipherService aesCipherService,
             PrepostulacionDocumentoRepository documentoRepository,
             PostulanteRepository postulanteRepository,
-            PrepostulacionSolicitudRepository prepostulacionSolicitudRepository
+            PrepostulacionSolicitudRepository prepostulacionSolicitudRepository,
+            PostulacionRepository postulacionRepository
     ) {
         this.notifService = notifService;
         this.prepostulacionRepository = prepostulacionRepository;
@@ -59,6 +63,7 @@ public class PrepostulacionService {
         this.documentoRepository = documentoRepository;
         this.postulanteRepository = postulanteRepository;
         this.prepostulacionSolicitudRepository = prepostulacionSolicitudRepository;
+        this.postulacionRepository = postulacionRepository;
     }
 
     // =========================================================================
@@ -380,6 +385,28 @@ public class PrepostulacionService {
                                             postulante.getIdPostulante(), idSolicitud);
                                 } catch (Exception ex) {
                                     log.warn("No se pudo iniciar proceso para solicitud {}: {}",
+                                            idSolicitud, ex.getMessage());
+                                }
+
+                                // Insertar en postulacion si no existe ya
+                                try {
+                                    boolean yaEnPostulacion = postulacionRepository
+                                            .existsByPostulante_IdPostulanteAndSolicitudDocente_IdSolicitud(
+                                                    postulante.getIdPostulante(), idSolicitud);
+                                    if (!yaEnPostulacion) {
+                                        SolicitudDocente sol = new SolicitudDocente();
+                                        sol.setIdSolicitud(idSolicitud);
+                                        Postulacion p = new Postulacion();
+                                        p.setPostulante(postulante);
+                                        p.setSolicitudDocente(sol);
+                                        p.setFecha(LocalDateTime.now());
+                                        p.setEstadoPostulacion("pendiente");
+                                        postulacionRepository.save(p);
+                                        log.info("Postulacion insertada para postulante {} solicitud {}",
+                                                postulante.getIdPostulante(), idSolicitud);
+                                    }
+                                } catch (Exception ex) {
+                                    log.warn("No se pudo insertar en postulacion para solicitud {}: {}",
                                             idSolicitud, ex.getMessage());
                                 }
                             }

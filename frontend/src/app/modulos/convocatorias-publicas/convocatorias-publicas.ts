@@ -31,6 +31,7 @@ export class ConvocatoriasPublicasComponent implements OnInit, OnDestroy {
   solicitudParaPostular: SolicitudDocente | null = null;
 
   // ── Postulante con cuenta ──────────────────────────────────
+  // ── Postulante con cuenta ──────────────────────────────────
   esPostulante           = false;
   yaPostuloASolicitud    = false;
   verificandoPostulacion = false;

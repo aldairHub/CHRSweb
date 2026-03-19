@@ -11,6 +11,7 @@ const SVG_MAP: Record<string, Array<{ d: string }>> = {
   'subir-documentos': [{ d: 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12' }],
   'entrevista':       [{ d: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' }],
   'resultados':       [{ d: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' }],
+  'convocatorias':    [{ d: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z' }],
 };
 const SVG_FALLBACK: Array<{ d: string }> = [{ d: 'M16 2.6667C8.6364 2.6667 2.6667 8.6364 2.6667 16C2.6667 23.3636 8.6364 29.3333 16 29.3333C23.3636 29.3333 29.3333 23.3636 29.3333 16C29.3333 8.6364 23.3636 2.6667 16 2.6667Z' }, { d: 'M16 10.6667V16' }, { d: 'M16 21.3333H16.0133' }];
 const QUICK_KEY = 'dashboard_postulante_quick';
@@ -36,9 +37,22 @@ export class PostulanteComponent implements OnInit {
     const m = this.authService.getModulo();
     if (!m?.opciones?.length) {
       this.cards = [
+        { titulo: 'Convocatorias', descripcion: 'Ver plazas abiertas y postular', ruta: 'convocatorias', svgPaths: SVG_MAP['convocatorias'] },
         { titulo: 'Subir documentos', descripcion: 'Sube tus documentos requeridos', ruta: 'subir-documentos', svgPaths: SVG_MAP['subir-documentos'] },
         { titulo: 'Entrevista', descripcion: 'Ver tus entrevistas', ruta: 'entrevista', svgPaths: SVG_MAP['entrevista'] },
         { titulo: 'Resultados', descripcion: 'Ver resultados del proceso', ruta: 'resultados', svgPaths: SVG_MAP['resultados'] },
+      ];
+      return;
+    }
+    // Asegura que convocatorias siempre esté presente aunque no venga en opciones del backend
+    const tieneConvocatorias = m.opciones.some((op: any) => op.ruta?.includes('convocatoria'));
+    if (!tieneConvocatorias) {
+      this.cards = [
+        { titulo: 'Convocatorias', descripcion: 'Ver plazas abiertas y postular', ruta: 'convocatorias', svgPaths: SVG_MAP['convocatorias'] },
+        ...m.opciones.map((op: any) => {
+          const k = (op.ruta || '').replace(/^\//, '').split('/').pop() ?? '';
+          return { titulo: op.nombre, descripcion: op.descripcion || '', ruta: k, svgPaths: SVG_MAP[k] ?? SVG_FALLBACK };
+        })
       ];
       return;
     }
@@ -83,5 +97,11 @@ export class PostulanteComponent implements OnInit {
   toggleQuickItem(r: string) { this.quickAccesos = this.isQuickSelected(r) ? this.quickAccesos.filter(x => x !== r) : this.quickAccesos.length < 4 ? [...this.quickAccesos, r] : this.quickAccesos; localStorage.setItem(QUICK_KEY, JSON.stringify(this.quickAccesos)); }
   getQuickCards(): DashCard[] { return this.quickAccesos.map(r => this.cards.find(c => c.ruta === r)).filter((c): c is DashCard => !!c); }
   toggleConfigQuick() { this.editandoQuick = !this.editandoQuick; }
-  navegarA(ruta: string) { this.router.navigate([`/postulante/${ruta}`]); }
+  navegarA(ruta: string) {
+    if (ruta === 'convocatorias') {
+      this.router.navigate(['/convocatorias']);
+    } else {
+      this.router.navigate([`/postulante/${ruta}`]);
+    }
+  }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -30,7 +30,8 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private authState: AuthStateService,
     public logoService: LogoService,
-    public themeService: ThemeService
+    public themeService: ThemeService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -80,6 +81,7 @@ export class LoginComponent implements OnInit {
 
         } else {
           this.serverError = 'Error: No se recibió el token de seguridad.';
+          this.cdr.detectChanges();
         }
       },
       error: (err) => {
@@ -92,6 +94,7 @@ export class LoginComponent implements OnInit {
         } else {
           this.serverError = 'Ocurrió un error inesperado. Intente más tarde.';
         }
+        this.cdr.detectChanges();
       }
     });
   }
