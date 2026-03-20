@@ -1,259 +1,361 @@
-<div class="ec-page">
-  <div class="ec-wrapper">
+<div class="dash-page">
+  <div class="dash-wrap">
 
     <!-- HEADER -->
-    <div class="ec-header">
-      <div class="ec-header-left">
-        <button class="back-btn" (click)="volver()">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-          </svg>
-          Solicitudes de Docente
-        </button>
+    <div class="dash-header">
+      <div class="dash-header-left">
         <div>
-          <h2 class="ec-title">Estadísticas de Solicitudes</h2>
-          <p class="ec-subtitle">Análisis de solicitudes de docente · por facultad · área · nivel</p>
+          <h2 class="dash-title">Datos · Solicitudes de Docente</h2>
+          <p class="dash-sub">Cobertura de docentes · facultades · áreas · nivel académico · autoridades</p>
         </div>
       </div>
-      <div class="ec-header-actions">
-        <span class="ec-upd" *ngIf="ultimaActualizacion">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="13" height="13">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          {{ ultimaActualizacion }}
+      <div class="dash-header-right">
+        <span class="upd-chip" *ngIf="ultimaAct">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="12" height="12"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          {{ ultimaAct }}
         </span>
-        <button class="btn btn-outline" (click)="cargar()" [disabled]="cargando">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-          </svg>
-          Actualizar
+        <button class="btn-icon-act" (click)="cargar()" [disabled]="cargando" title="Actualizar">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
         </button>
-        <button class="btn btn-ghost" (click)="irReportes()">Ver resumen global</button>
+        <button class="btn-export" (click)="abrirExport()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Exportar reporte
+        </button>
       </div>
     </div>
 
-    <!-- SPINNER -->
-    <div *ngIf="cargando" class="ec-loading">
-      <div class="spinner-ring"></div>
-      <span>Cargando solicitudes…</span>
-    </div>
+    <div *ngIf="cargando" class="full-spinner"><div class="spin-ring"></div><span>Cargando datos…</span></div>
 
     <ng-container *ngIf="!cargando && stats">
 
-      <!-- KPIs -->
-      <div class="coll-card">
-        <div class="coll-header" (click)="toggle('kpis')">
-          <h3>Resumen general</h3>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"
-               [style.transform]="sec.kpis ? 'rotate(180deg)' : 'rotate(0)'">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </div>
-        <div class="coll-body" *ngIf="sec.kpis">
-          <div class="kpi-grid">
-            <div class="kpi kpi-blue">
-              <span class="kpi-val">{{ stats.total }}</span>
-              <span class="kpi-lbl">Total solicitudes</span>
-            </div>
-            <div class="kpi kpi-amber">
-              <span class="kpi-val">{{ stats.pendientes }}</span>
-              <span class="kpi-lbl">Pendientes</span>
-            </div>
-            <div class="kpi kpi-green">
-              <span class="kpi-val">{{ stats.aprobadas }}</span>
-              <span class="kpi-lbl">Aprobadas</span>
-            </div>
-            <div class="kpi kpi-red">
-              <span class="kpi-val">{{ stats.rechazadas }}</span>
-              <span class="kpi-lbl">Rechazadas</span>
-            </div>
-            <div class="kpi kpi-purple">
-              <span class="kpi-val">{{ stats.docentesRequeridos }}</span>
-              <span class="kpi-lbl">Docentes requeridos</span>
-            </div>
-            <div class="kpi kpi-emerald">
-              <span class="kpi-val">{{ stats.tasaAprobacion }}%</span>
-              <span class="kpi-lbl">Tasa de aprobación</span>
-            </div>
+      <!-- FILA 1: KPIs + GAUGES -->
+      <div class="row-tiles">
+        <div class="tiles-grid">
+          <div class="tile tile-blue">
+            <div class="tile-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/></svg></div>
+            <div class="tile-body"><span class="tile-val">{{ stats!.total }}</span><span class="tile-lbl">Total solicitudes</span></div>
           </div>
+          <div class="tile tile-amber">
+            <div class="tile-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+            <div class="tile-body"><span class="tile-val">{{ stats!.pendientes }}</span><span class="tile-lbl">Pendientes</span></div>
+            <span class="tile-delta tile-delta-warn">{{ stats!.total ? (stats!.pendientes/stats!.total*100|number:'1.0-0') : 0 }}%</span>
+          </div>
+          <div class="tile tile-green">
+            <div class="tile-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+            <div class="tile-body"><span class="tile-val">{{ stats!.aprobadas }}</span><span class="tile-lbl">Aprobadas</span></div>
+            <span class="tile-delta tile-delta-ok">{{ stats!.tasaAprobacion }}%</span>
+          </div>
+          <div class="tile tile-red" *ngIf="stats!.rechazadas > 0">
+            <div class="tile-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></div>
+            <div class="tile-body"><span class="tile-val">{{ stats!.rechazadas }}</span><span class="tile-lbl">Rechazadas</span></div>
+          </div>
+          <div class="tile tile-purple">
+            <div class="tile-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg></div>
+            <div class="tile-body"><span class="tile-val">{{ stats!.docentesRequeridos }}</span><span class="tile-lbl">Docentes requeridos</span></div>
+          </div>
+          <div class="tile tile-teal">
+            <div class="tile-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857"/></svg></div>
+            <div class="tile-body"><span class="tile-val">{{ stats!.docentesAprobados }}</span><span class="tile-lbl">Docentes cubiertos</span></div>
+          </div>
+        </div>
 
-          <!-- Donut de aprobación -->
-          <div class="kpi-donut-row">
+        <div class="gauges-col">
+          <div class="gauge-card">
+            <p class="gauge-lbl">Cobertura Docentes</p>
+            <div class="gauge-wrap">
+              <svg viewBox="0 0 80 50" class="gauge-svg">
+                <path d="M8 44 A32 32 0 0 1 72 44" fill="none" stroke="#e5e7eb" stroke-width="9" stroke-linecap="round"/>
+                <path d="M8 44 A32 32 0 0 1 72 44" fill="none"
+                      [attr.stroke]="gaugeColor(stats!.cobertura)"
+                      stroke-width="9" stroke-linecap="round"
+                      stroke-dasharray="100.5"
+                      [attr.stroke-dashoffset]="100.5 - (100.5 * stats!.cobertura / 100)"/>
+              </svg>
+              <div class="gauge-val"><span class="gauge-num" [style.color]="gaugeColor(stats!.cobertura)">{{ stats!.cobertura }}%</span></div>
+            </div>
+            <p class="gauge-desc">{{ stats!.docentesAprobados }}/{{ stats!.docentesRequeridos }} docentes</p>
+          </div>
+          <div class="gauge-card">
+            <p class="gauge-lbl">Tasa Aprobación</p>
+            <div class="gauge-wrap">
+              <svg viewBox="0 0 80 50" class="gauge-svg">
+                <path d="M8 44 A32 32 0 0 1 72 44" fill="none" stroke="#e5e7eb" stroke-width="9" stroke-linecap="round"/>
+                <path d="M8 44 A32 32 0 0 1 72 44" fill="none"
+                      [attr.stroke]="gaugeColor(stats!.tasaAprobacion)"
+                      stroke-width="9" stroke-linecap="round"
+                      stroke-dasharray="100.5"
+                      [attr.stroke-dashoffset]="100.5 - (100.5 * stats!.tasaAprobacion / 100)"/>
+              </svg>
+              <div class="gauge-val"><span class="gauge-num" [style.color]="gaugeColor(stats!.tasaAprobacion)">{{ stats!.tasaAprobacion }}%</span></div>
+            </div>
+            <p class="gauge-desc">Sobre revisadas</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILA 2: MÉTRICAS EXTRA -->
+      <div class="metrics-row">
+        <div class="metric-card">
+          <div class="mc-icon mc-blue"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
+          <div class="mc-body"><span class="mc-val">{{ stats!.expProfPromedio }}a</span><span class="mc-lbl">Exp. profesional mín. prom.</span></div>
+        </div>
+        <div class="metric-card">
+          <div class="mc-icon mc-green"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></div>
+          <div class="mc-body"><span class="mc-val">{{ stats!.expDocPromedio }}a</span><span class="mc-lbl">Exp. docente mín. prom.</span></div>
+        </div>
+        <div class="metric-card" [class.mc-warn]="stats!.docentesPendientes > 0">
+          <div class="mc-icon" [class.mc-amber]="stats!.docentesPendientes > 0" [class.mc-gray]="stats!.docentesPendientes === 0">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          </div>
+          <div class="mc-body"><span class="mc-val" [class.mc-val-warn]="stats!.docentesPendientes > 0">{{ stats!.docentesPendientes }}</span><span class="mc-lbl">Docentes sin cubrir</span></div>
+        </div>
+        <div class="metric-card">
+          <div class="mc-icon mc-purple"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7"/></svg></div>
+          <div class="mc-body"><span class="mc-val">{{ stats!.porFacultad.length }}</span><span class="mc-lbl">Facultades con solicitudes</span></div>
+        </div>
+        <div class="metric-card">
+          <div class="mc-icon mc-teal"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3"/></svg></div>
+          <div class="mc-body"><span class="mc-val">{{ stats!.porArea.length }}</span><span class="mc-lbl">Áreas de conocimiento</span></div>
+        </div>
+        <div class="metric-card">
+          <div class="mc-icon mc-amber"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+          <div class="mc-body"><span class="mc-val">{{ stats!.masAntiguas.length }}</span><span class="mc-lbl">Pendientes más antiguas</span></div>
+        </div>
+      </div>
+
+      <!-- FILA 3: DISTRIBUCIÓN + COBERTURA + NIVEL -->
+      <div class="row-charts">
+
+        <!-- Donut distribución -->
+        <div class="chart-card">
+          <div class="chart-header"><h3>Distribución por estado</h3></div>
+          <div class="donut-block">
             <div class="donut-wrap">
               <svg viewBox="0 0 80 80" class="donut-svg">
                 <circle cx="40" cy="40" r="28" fill="none" stroke="#e5e7eb" stroke-width="11"/>
-                <circle cx="40" cy="40" r="28" fill="none" stroke="#00A63E" stroke-width="11"
+                <circle cx="40" cy="40" r="28" fill="none" stroke="#16a34a" stroke-width="11"
                         stroke-dasharray="175.9"
-                        [attr.stroke-dashoffset]="donutOffset(stats.tasaAprobacion)"
+                        [attr.stroke-dashoffset]="gaugeOffset(stats!.total ? stats!.aprobadas / stats!.total * 100 : 0)"
                         stroke-linecap="round" transform="rotate(-90 40 40)"/>
               </svg>
-              <div class="donut-center">
-                <span class="donut-big">{{ stats.tasaAprobacion }}%</span>
-                <span class="donut-sm">aprobación</span>
-              </div>
+              <div class="donut-center"><span class="dn-big">{{ stats!.total }}</span><span class="dn-sm">total</span></div>
             </div>
-            <div class="kpi-docentes">
-              <div class="doc-row">
-                <span class="doc-lbl">Docentes cubiertos (aprobadas)</span>
-                <span class="doc-val doc-ok">{{ stats.docentesAprobados }}</span>
-              </div>
-              <div class="doc-row">
-                <span class="doc-lbl">Docentes pendientes de cubrir</span>
-                <span class="doc-val doc-warn">{{ stats.docentesRequeridos - stats.docentesAprobados }}</span>
-              </div>
-              <div class="doc-bar-bg">
-                <div class="doc-bar-fill" [style.width]="barWidth(stats.docentesAprobados, stats.docentesRequeridos)"></div>
-              </div>
-              <p class="doc-nota">{{ stats.docentesAprobados }} de {{ stats.docentesRequeridos }} docentes cubiertos</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Por facultad -->
-      <div class="coll-card">
-        <div class="coll-header" (click)="toggle('facultad')">
-          <h3>Solicitudes por facultad</h3>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"
-               [style.transform]="sec.facultad ? 'rotate(180deg)' : 'rotate(0)'">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </div>
-        <div class="coll-body" *ngIf="sec.facultad">
-          <div class="hbar-list">
-            <div *ngFor="let f of stats.porFacultad; let i = index" class="hbar-item">
-              <span class="hbar-lbl" [title]="f.nombre">{{ f.nombre }}</span>
-              <div class="hbar-track">
-                <div class="hbar-fill" [style.width]="barWidth(f.count, maxFac())"
-                     [style.background]="colorFacultad(i)"></div>
-              </div>
-              <div class="hbar-meta">
-                <span class="hbar-val">{{ f.count }}</span>
-                <span class="hbar-aprov">✓ {{ f.aprobadas }}</span>
+            <div class="donut-items">
+              <div *ngFor="let d of stats!.distribucion" class="dn-item">
+                <div class="dn-dot" [style.background]="d.color"></div>
+                <span class="dn-lbl">{{ d.label }}</span>
+                <div class="dn-bar-bg"><div class="dn-bar-fill" [style.width]="d.pct+'%'" [style.background]="d.color"></div></div>
+                <span class="dn-val">{{ d.val }}</span>
+                <span class="dn-pct">{{ d.pct }}%</span>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Por área de conocimiento -->
-      <div class="coll-card">
-        <div class="coll-header" (click)="toggle('area')">
-          <h3>Solicitudes por área de conocimiento</h3>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"
-               [style.transform]="sec.area ? 'rotate(180deg)' : 'rotate(0)'">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </div>
-        <div class="coll-body" *ngIf="sec.area">
-          <div class="area-chips">
-            <div *ngFor="let a of stats.porArea; let i = index" class="area-chip">
-              <div class="area-chip-bar-bg">
-                <div class="area-chip-bar" [style.width]="barWidth(a.count, maxArea())"
-                     [style.background]="colorFacultad(i)"></div>
+        <!-- Cobertura docentes barra -->
+        <div class="chart-card">
+          <div class="chart-header"><h3>Cobertura de docentes</h3></div>
+          <div class="cobertura-block">
+            <div class="cob-nums">
+              <div class="cob-item cob-ok"><span class="cob-val">{{ stats!.docentesAprobados }}</span><span class="cob-lbl">cubiertos</span></div>
+              <div class="cob-item cob-pend"><span class="cob-val">{{ stats!.docentesPendientes }}</span><span class="cob-lbl">por cubrir</span></div>
+              <div class="cob-item cob-total"><span class="cob-val">{{ stats!.docentesRequeridos }}</span><span class="cob-lbl">requeridos</span></div>
+            </div>
+            <div class="cob-bar-bg">
+              <div class="cob-bar-fill" [style.width]="barWidth(stats!.docentesAprobados, stats!.docentesRequeridos)"></div>
+            </div>
+            <p class="cob-pct">{{ stats!.cobertura }}% cubierto</p>
+            <!-- Porcentaje por facultad top 3 -->
+            <div class="cob-fac-list" *ngIf="stats!.porFacultad.length > 0">
+              <div *ngFor="let f of stats!.porFacultad.slice(0, 4)" class="cob-fac-item">
+                <span class="cob-fac-lbl" [title]="f.nombre">{{ f.nombre | slice:0:20 }}{{ f.nombre.length > 20 ? '…' : '' }}</span>
+                <div class="cob-fac-bar-bg">
+                  <div class="cob-fac-bar" [style.width]="barWidth(f.docentes, stats!.docentesAprobados || 1)"></div>
+                </div>
+                <span class="cob-fac-val">{{ f.docentes }}doc</span>
               </div>
-              <span class="area-nombre" [title]="a.nombre">{{ a.nombre }}</span>
-              <span class="area-count">{{ a.count }}</span>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Por nivel académico -->
-      <div class="coll-card">
-        <div class="coll-header" (click)="toggle('nivel')">
-          <h3>Requerimiento por nivel académico</h3>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"
-               [style.transform]="sec.nivel ? 'rotate(180deg)' : 'rotate(0)'">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </div>
-        <div class="coll-body" *ngIf="sec.nivel">
+        <!-- Por nivel académico -->
+        <div class="chart-card">
+          <div class="chart-header"><h3>Por nivel académico requerido</h3></div>
           <div class="nivel-list">
-            <div *ngFor="let n of stats.porNivel; let i = index" class="nivel-item">
-              <div class="nivel-left">
-                <div class="nivel-dot" [style.background]="colorFacultad(i + 2)"></div>
-                <span class="nivel-nombre">{{ n.nivel }}</span>
+            <div *ngFor="let n of stats!.porNivel; let i = index" class="nv-item">
+              <div class="nv-dot" [style.background]="colorIdx(i)"></div>
+              <span class="nv-lbl" [title]="n.nivel">{{ n.nivel | slice:0:22 }}{{ n.nivel.length > 22 ? '…' : '' }}</span>
+              <div class="nv-bar-bg">
+                <div class="nv-bar" [style.width]="n.pct+'%'" [style.background]="colorIdx(i)"></div>
               </div>
-              <div class="nivel-bar-bg">
-                <div class="nivel-bar" [style.width]="barWidth(n.count, maxNivel())"
-                     [style.background]="colorFacultad(i + 2)"></div>
-              </div>
-              <span class="nivel-count">{{ n.count }}</span>
-              <span class="nivel-pct">{{ stats.total ? (n.count / stats.total * 100 | number:'1.0-0') : 0 }}%</span>
+              <span class="nv-val">{{ n.count }}</span>
+              <span class="nv-pct">{{ n.pct }}%</span>
             </div>
           </div>
         </div>
+
       </div>
 
-      <!-- Solicitudes pendientes más antiguas -->
-      <div class="coll-card coll-card-warn" *ngIf="stats.masAntiguas.length > 0">
-        <div class="coll-header" (click)="toggle('pendientes')">
-          <div class="alert-title-row">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="17" height="17">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-            </svg>
-            <h3>Pendientes más antiguas <span class="alert-badge">{{ stats.masAntiguas.length }}</span></h3>
+      <!-- FILA 4: POR FACULTAD + TOP AUTORIDADES -->
+      <div class="row-charts">
+
+        <!-- Por facultad -->
+        <div class="chart-card chart-card-wide">
+          <div class="chart-header"><h3>Solicitudes por facultad</h3></div>
+          <div class="hbar-list">
+            <div *ngFor="let f of stats!.porFacultad; let i = index" class="hb-item">
+              <div class="hb-track">
+                <div class="hb-fill" [style.width]="barWidth(f.count, maxFac())" [style.background]="colorIdx(i)"></div>
+                <div class="hb-aprov-mark" [style.left]="barWidth(f.aprobadas, maxFac())" [title]="'Aprobadas: ' + f.aprobadas"></div>
+              </div>
+              <span class="hb-val">{{ f.count }}</span>
+              <div class="hb-meta-right">
+                <span class="hb-aprov-lbl">✓ {{ f.aprobadas }}</span>
+                <span class="hb-lbl" [title]="f.nombre">{{ f.nombre | slice:0:26 }}{{ f.nombre.length > 26 ? '…' : '' }}</span>
+              </div>
+            </div>
           </div>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"
-               [style.transform]="sec.pendientes ? 'rotate(180deg)' : 'rotate(0)'">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-          </svg>
         </div>
-        <div class="coll-body" *ngIf="sec.pendientes">
-          <p class="alert-note">Solicitudes en estado pendiente ordenadas por antigüedad</p>
+
+        <!-- Top autoridades -->
+        <div class="chart-card">
+          <div class="chart-header"><h3>Autoridades más activas</h3></div>
+          <div class="ranking-list">
+            <div *ngFor="let a of stats!.topAutoridades; let i = index" class="rk-item">
+              <span class="rk-pos" [class.rk-gold]="i===0" [class.rk-silver]="i===1" [class.rk-bronze]="i===2">{{ i+1 }}</span>
+              <div class="rk-info">
+                <div class="rk-top">
+                  <span class="rk-titulo" [title]="a.nombre">{{ a.nombre | slice:0:28 }}{{ a.nombre.length > 28 ? '…' : '' }}</span>
+                  <span class="rk-aprov-chip">✓ {{ a.aprobadas }}</span>
+                </div>
+                <div class="rk-bar-bg"><div class="rk-bar-fill" [style.width]="barWidth(a.count, maxAuth())"></div></div>
+              </div>
+              <span class="rk-num">{{ a.count }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FILA 5: ALERTAS PENDIENTES + IA -->
+      <div class="row-charts">
+
+        <div class="chart-card alert-card" *ngIf="stats!.masAntiguas.length > 0">
+          <div class="chart-header">
+            <div class="alert-title-row">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#d97706" width="17" height="17"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              <h3>Pendientes más antiguas</h3>
+              <span class="alert-ct">{{ stats!.masAntiguas.length }}</span>
+            </div>
+          </div>
           <table class="mini-table">
-            <thead><tr><th>Materia</th><th>Facultad</th><th>Fecha</th><th>Días esperando</th></tr></thead>
+            <thead><tr><th>Materia</th><th>Facultad</th><th>Fecha</th><th>Espera</th></tr></thead>
             <tbody>
-            <tr *ngFor="let s of stats.masAntiguas" [class.tr-urgente]="diasPendiente(s.fechaSolicitud) > 30">
+            <tr *ngFor="let s of stats!.masAntiguas" [class.tr-urgent]="diasPend(s.fechaSolicitud) > 30">
               <td><strong>{{ s.nombreMateria }}</strong></td>
-              <td>{{ s.nombreFacultad }}</td>
+              <td>{{ (s.nombreFacultad || '') | slice:0:18 }}{{ (s.nombreFacultad || '').length > 18 ? '…' : '' }}</td>
               <td>{{ formatFecha(s.fechaSolicitud) }}</td>
-              <td>
-                  <span class="dias-chip" [class.dias-urgente]="diasPendiente(s.fechaSolicitud) > 30">
-                    {{ diasPendiente(s.fechaSolicitud) }}d
-                  </span>
-              </td>
+              <td><span class="dias-chip" [class.dias-urgent]="diasPend(s.fechaSolicitud) > 30">{{ diasPend(s.fechaSolicitud) }}d</span></td>
             </tr>
             </tbody>
           </table>
         </div>
-      </div>
 
-      <!-- Análisis IA -->
-      <div class="ia-card">
-        <div class="ia-header">
-          <div class="ia-left">
-            <div class="ia-badge">IA</div>
-            <div>
-              <h3 class="ia-title">Análisis ejecutivo</h3>
-              <p class="ia-sub">Observaciones y recomendaciones automáticas</p>
-            </div>
+        <div class="ia-card chart-card" [class.chart-card-wide]="stats!.masAntiguas.length === 0">
+          <div class="chart-header">
+            <div class="ia-title-row"><div class="ia-badge">IA</div><h3>Análisis ejecutivo</h3></div>
+            <button class="btn-ia-gen" (click)="generarIA()" [disabled]="cargandoIA">
+              <svg *ngIf="!cargandoIA" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <svg *ngIf="cargandoIA" class="spin-sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+              {{ analisisIA ? 'Regenerar' : 'Generar' }}
+            </button>
           </div>
-          <button class="btn-ia" (click)="generarIA()" [disabled]="cargandoIA">
-            <svg *ngIf="!cargandoIA" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-            </svg>
-            <svg *ngIf="cargandoIA" class="spinner-sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 1 1-6.219-8.56"/>
-            </svg>
-            {{ analisisIA ? 'Regenerar' : 'Generar análisis' }}
-          </button>
-        </div>
-        <div class="ia-body">
-          <div *ngIf="cargandoIA" class="ia-loading"><div class="spinner-ring"></div><span>Procesando…</span></div>
+          <div *ngIf="cargandoIA" class="ia-loading"><div class="spin-ring"></div><span>Procesando…</span></div>
           <div *ngIf="!cargandoIA && !analisisIA" class="ia-empty">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="32" height="32">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-            </svg>
-            <p>Presiona <strong>Generar análisis</strong> para obtener observaciones automáticas.</p>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="28" height="28"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+            <p>Presiona <strong>Generar</strong> para análisis automático.</p>
           </div>
           <div *ngIf="!cargandoIA && analisisIA" class="ia-text">{{ analisisIA }}</div>
         </div>
+
       </div>
 
     </ng-container>
+  </div>
+</div>
+
+<!-- MODAL EXPORTAR -->
+<div class="modal-overlay" *ngIf="showExport" (click)="cerrarExport()">
+  <div class="modal-export" (click)="$event.stopPropagation()">
+    <div class="me-header">
+      <div class="me-title-row">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <h3>Exportar reporte · Solicitudes de Docente</h3>
+      </div>
+      <button class="me-close" (click)="cerrarExport()" [disabled]="exportando">✕</button>
+    </div>
+    <div class="me-body">
+      <div class="me-section">
+        <label class="me-lbl">Formato</label>
+        <div class="toggle-grp">
+          <button class="tgl" [class.tgl-on]="exportCfg.formato==='PDF'"   (click)="exportCfg.formato='PDF'">📄 PDF</button>
+          <button class="tgl" [class.tgl-on]="exportCfg.formato==='EXCEL'" (click)="exportCfg.formato='EXCEL'">📊 Excel</button>
+        </div>
+      </div>
+      <div class="me-section" *ngIf="exportCfg.formato==='PDF'">
+        <label class="me-lbl">Orientación</label>
+        <div class="toggle-grp">
+          <button class="tgl" [class.tgl-on]="exportCfg.orientacion==='VERTICAL'"   (click)="exportCfg.orientacion='VERTICAL'">↕ Vertical</button>
+          <button class="tgl" [class.tgl-on]="exportCfg.orientacion==='HORIZONTAL'" (click)="exportCfg.orientacion='HORIZONTAL'">↔ Horizontal</button>
+        </div>
+      </div>
+      <div class="me-section">
+        <label class="me-lbl">Filtros</label>
+        <div class="me-grid3">
+          <div class="me-campo"><label>Desde</label><input type="date" class="me-input" [(ngModel)]="exportCfg.desde"/></div>
+          <div class="me-campo"><label>Hasta</label><input type="date" class="me-input" [(ngModel)]="exportCfg.hasta"/></div>
+          <div class="me-campo">
+            <label>Estado</label>
+            <select class="me-input" [(ngModel)]="exportCfg.estado">
+              <option value="">Todos</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="aprobada">Aprobada</option>
+              <option value="rechazada">Rechazada</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="me-section">
+        <div class="me-grid2">
+          <div class="me-campo"><label>Título</label><input type="text" class="me-input" [(ngModel)]="exportCfg.titulo"/></div>
+          <div class="me-campo"><label>Subtítulo</label><input type="text" class="me-input" [(ngModel)]="exportCfg.subtitulo" placeholder="Opcional"/></div>
+        </div>
+      </div>
+      <div class="me-section">
+        <label class="me-lbl">Secciones</label>
+        <div class="checks-grid">
+          <label class="chk"><input type="checkbox" [(ngModel)]="exportCfg.incluirPortada"/><span>Portada resumen</span></label>
+          <label class="chk"><input type="checkbox" [(ngModel)]="exportCfg.incluirKpis"/><span>KPIs numéricos</span></label>
+          <label class="chk"><input type="checkbox" [(ngModel)]="exportCfg.incluirDetalle"/><span>Tabla de detalle</span></label>
+          <label class="chk"><input type="checkbox" [(ngModel)]="exportCfg.incluirGraficoEstados"/><span>Gráfico de estados</span></label>
+          <label class="chk"><input type="checkbox" [(ngModel)]="exportCfg.incluirGraficoCarreras"/><span>Gráfico por carrera</span></label>
+          <label class="chk"><input type="checkbox" [(ngModel)]="exportCfg.incluirGraficoAreas"/><span>Gráfico por área</span></label>
+          <label class="chk" *ngIf="exportCfg.formato==='EXCEL'"><input type="checkbox" [(ngModel)]="exportCfg.excelCongelarEncabezado"/><span>Congelar encabezados</span></label>
+          <label class="chk" *ngIf="exportCfg.formato==='EXCEL'"><input type="checkbox" [(ngModel)]="exportCfg.excelFiltrosAutomaticos"/><span>Filtros automáticos</span></label>
+        </div>
+      </div>
+    </div>
+    <div class="me-footer">
+      <span class="me-info">El archivo se descargará automáticamente</span>
+      <div class="me-actions">
+        <button class="btn-cancel" (click)="cerrarExport()" [disabled]="exportando">Cancelar</button>
+        <button class="btn-gen" (click)="exportar()" [disabled]="exportando">
+          <svg *ngIf="!exportando" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <svg *ngIf="exportando" class="spin-sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          {{ exportando ? 'Generando…' : 'Generar ' + exportCfg.formato }}
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 <app-toast></app-toast>
