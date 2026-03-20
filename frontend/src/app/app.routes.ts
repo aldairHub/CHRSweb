@@ -347,6 +347,13 @@ export const routes: Routes = [
           import('./modulos/revisor/config-matriz/config-matriz.component')
             .then(m => m.ConfigMatrizComponent)
       },
+      {
+        path: 'config-entrevistas',
+        title: 'SSDC - Configurar Entrevistas',
+        loadComponent: () =>
+          import('./modulos/revisor/config-entrevistas/config-entrevistas.component')
+            .then(m => m.ConfigEntrevistasComponent)
+      },
     ]
   },
 

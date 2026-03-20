@@ -1,0 +1,405 @@
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h2>Configuración de Entrevistas Docentes</h2>
+        <p class="page-subtitle">Gestione las fases, plantillas y criterios del proceso de evaluación</p>
+      </div>
+    </div>
+
+    <!-- Tabs de navegación interna -->
+    <div class="inner-tabs">
+      <button class="inner-tab" [class.active]="vistaActual === 'fases'" (click)="irA('fases')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 6h16M4 10h16M4 14h8"/>
+        </svg>
+        Fases
+      </button>
+      <button class="inner-tab" [class.active]="vistaActual === 'plantillas'" (click)="irA('plantillas')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 4H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0121 10.414V18a2 2 0 01-2 2z"/>
+        </svg>
+        Plantillas
+      </button>
+      <button class="inner-tab" [class.active]="vistaActual === 'criterios'"
+              (click)="vistaActual === 'criterios' ? null : irA('plantillas')"
+              [disabled]="vistaActual !== 'criterios'">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+        </svg>
+        Criterios
+        <span class="tab-context" *ngIf="plantillaSeleccionada && vistaActual === 'criterios'">
+          — {{ plantillaSeleccionada.nombre }}
+        </span>
+      </button>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="cargando">
+      <svg class="spinner-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="32" height="32">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      <p>Cargando...</p>
+    </div>
+
+    <div class="alert danger" *ngIf="error">
+      <div><strong>Error</strong><p>{{ error }}</p></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ FASES ══ -->
+    <ng-container *ngIf="vistaActual === 'fases' && !cargando && !error">
+
+      <div class="section-actions">
+        <div class="peso-indicator" [class.valid]="pesoValido" [class.invalid]="!pesoValido">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10"/>
+          </svg>
+          Peso total: <strong>{{ pesoTotal }}%</strong>
+          <span class="peso-badge" [class.valid]="pesoValido">{{ pesoValido ? 'Válido' : 'Debe sumar 100%' }}</span>
+        </div>
+        <button class="btn btn-primary" (click)="abrirCrearFase()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Nueva Fase
+        </button>
+      </div>
+
+      <div class="fase-card" *ngFor="let f of fases">
+        <div class="fase-header">
+          <div class="fase-left">
+            <div class="fase-icon" [ngClass]="'tipo-' + f.tipo">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+              </svg>
+            </div>
+            <div class="fase-info">
+              <div class="fase-nombre">
+                <span class="orden-badge">{{ f.orden }}</span>
+                {{ f.nombre }}
+              </div>
+              <div class="fase-meta">
+                <span class="badge" [ngClass]="getTipoBadge(f.tipo)">{{ getTipoLabel(f.tipo) }}</span>
+                <span class="peso-chip">{{ f.peso }}%</span>
+                <span class="plantilla-chip" *ngIf="f.nombrePlantilla">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="12" height="12">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12h6m-6 4h6m2 4H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586l5.414 5.414V18a2 2 0 01-2 2z"/>
+                  </svg>
+                  {{ f.nombrePlantilla }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="fase-actions">
+            <span class="estado-toggle" [class.activo]="f.estado" (click)="cambiarEstadoFase(f)">
+              {{ f.estado ? 'Activa' : 'Inactiva' }}
+            </span>
+            <button class="btn btn-outline btn-sm" (click)="abrirEditarFase(f)">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+              Editar
+            </button>
+            <button class="btn btn-danger btn-sm" (click)="eliminarFase(f)">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="fases.length === 0">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="40" height="40">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M4 6h16M4 10h16M4 14h8"/>
+        </svg>
+        <p>No hay fases configuradas. Haga clic en "Nueva Fase" para comenzar.</p>
+      </div>
+    </ng-container>
+
+    <!-- ═══════════════════════════════════════ PLANTILLAS ══ -->
+    <ng-container *ngIf="vistaActual === 'plantillas' && !cargando && !error">
+
+      <div class="section-actions">
+        <span class="section-count">{{ plantillas.length }} plantillas configuradas</span>
+        <button class="btn btn-primary" (click)="abrirCrearPlantilla()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Nueva Plantilla
+        </button>
+      </div>
+
+      <div class="data-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Plantilla</th>
+              <th>Fase</th>
+              <th>Criterios</th>
+              <th>Modificación</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of plantillas">
+              <td><code>{{ p.codigo }}</code></td>
+              <td><strong>{{ p.nombre }}</strong></td>
+              <td><span class="badge info">{{ p.nombreFase }}</span></td>
+              <td>{{ p.numeroCriterios }} criterios</td>
+              <td><small>{{ p.ultimaModificacion }}</small></td>
+              <td>
+                <span class="badge" [ngClass]="p.estado ? 'success' : 'danger'">
+                  {{ p.estado ? 'Activa' : 'Inactiva' }}
+                </span>
+              </td>
+              <td>
+                <div class="action-btns">
+                  <button class="btn btn-outline btn-sm" (click)="verCriteriosDe(p)">Ver Criterios</button>
+                  <button class="btn btn-outline btn-sm" (click)="abrirEditarPlantilla(p)">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  </button>
+                  <button class="btn btn-danger btn-sm" (click)="eliminarPlantilla(p)">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="plantillas.length === 0">
+              <td colspan="7" class="empty-row">No hay plantillas configuradas.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+
+    <!-- ════════════════════════════════════════ CRITERIOS ══ -->
+    <ng-container *ngIf="vistaActual === 'criterios' && !cargando && !error">
+
+      <div class="breadcrumb">
+        <button class="btn-link" (click)="irA('plantillas')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Plantillas
+        </button>
+        <span>/</span>
+        <span>{{ plantillaSeleccionada?.nombre }}</span>
+      </div>
+
+      <div class="section-actions">
+        <div class="peso-indicator" [class.valid]="pesoCriteriosValido" [class.invalid]="!pesoCriteriosValido">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10"/>
+          </svg>
+          Peso total: <strong>{{ pesoCriteriosTotal }}%</strong>
+          <span class="peso-badge" [class.valid]="pesoCriteriosValido">
+            {{ pesoCriteriosValido ? 'Válido' : 'Debe sumar 100%' }}
+          </span>
+        </div>
+        <button class="btn btn-primary" (click)="abrirCrearCriterio()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Nuevo Criterio
+        </button>
+      </div>
+
+      <div class="criterio-card" *ngFor="let c of criterios">
+        <div class="criterio-header">
+          <div class="criterio-info">
+            <strong>{{ c.nombre }}</strong>
+            <p>{{ c.descripcion }}</p>
+          </div>
+          <div class="criterio-meta">
+            <span class="peso-chip">{{ c.peso }}%</span>
+            <span class="badge info">{{ getEscalaLabel(c.escala) }}</span>
+            <button class="btn btn-outline btn-sm" (click)="abrirEditarCriterio(c)">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+            </button>
+            <button class="btn btn-danger btn-sm" (click)="eliminarCriterio(c)">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="rubrica-preview" *ngIf="c.rubrica">
+          <small>{{ c.rubrica }}</small>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="criterios.length === 0">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="40" height="40">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+        </svg>
+        <p>No hay criterios para esta plantilla.</p>
+      </div>
+    </ng-container>
+
+  </div>
+</div>
+
+<!-- Modal Fase -->
+<div class="modal-overlay" *ngIf="showModalFase" (click)="cerrarModalFase()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-icon icon-green">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h8"/>
+        </svg>
+      </div>
+      <div>
+        <h3>{{ editandoFase ? 'Editar Fase' : 'Nueva Fase' }}</h3>
+        <small>{{ editandoFase ? 'Modifica los datos de la fase' : 'Configura una nueva fase del proceso' }}</small>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Nombre <span class="required">*</span></label>
+      <input class="form-input" [(ngModel)]="formFase.nombre" placeholder="Ej: Evaluación Técnica">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Tipo <span class="required">*</span></label>
+        <select class="form-select" [(ngModel)]="formFase.tipo">
+          <option *ngFor="let t of tiposFase" [value]="t.value">{{ t.label }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Orden</label>
+        <input class="form-input" type="number" min="1" [(ngModel)]="formFase.orden">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Peso (%) <span class="required">*</span></label>
+      <input class="form-input" type="number" min="1" max="100" [(ngModel)]="formFase.peso">
+      <small class="field-hint">El peso total de todas las fases debe sumar 100%</small>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" (click)="cerrarModalFase()">Cancelar</button>
+      <button class="btn btn-primary" (click)="guardarFase()" [disabled]="guardando">
+        {{ guardando ? 'Guardando...' : 'Guardar Fase' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Plantilla -->
+<div class="modal-overlay" *ngIf="showModalPlantilla" (click)="cerrarModalPlantilla()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-icon icon-blue">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 4H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586l5.414 5.414V18a2 2 0 01-2 2z"/>
+        </svg>
+      </div>
+      <div>
+        <h3>{{ editandoPlantilla ? 'Editar Plantilla' : 'Nueva Plantilla' }}</h3>
+        <small>Asocia una plantilla de evaluación a una fase</small>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Código <span class="required">*</span></label>
+      <input class="form-input" [(ngModel)]="formPlantilla.codigo" placeholder="PLNT-001">
+    </div>
+    <div class="form-group">
+      <label>Nombre <span class="required">*</span></label>
+      <input class="form-input" [(ngModel)]="formPlantilla.nombre" placeholder="Nombre de la plantilla">
+    </div>
+    <div class="form-group">
+      <label>Fase Asociada <span class="required">*</span></label>
+      <select class="form-select" [(ngModel)]="formPlantilla.idFase">
+        <option [value]="0">Seleccionar fase...</option>
+        <option *ngFor="let f of fases" [value]="f.idFase">{{ f.nombre }}</option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" (click)="cerrarModalPlantilla()">Cancelar</button>
+      <button class="btn btn-primary" (click)="guardarPlantilla()" [disabled]="guardando">
+        {{ guardando ? 'Guardando...' : 'Guardar Plantilla' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Criterio -->
+<div class="modal-overlay" *ngIf="showModalCriterio" (click)="cerrarModalCriterio()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-icon icon-purple">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+        </svg>
+      </div>
+      <div>
+        <h3>{{ editandoCriterio ? 'Editar Criterio' : 'Nuevo Criterio' }}</h3>
+        <small>{{ plantillaSeleccionada?.nombre }}</small>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Nombre <span class="required">*</span></label>
+      <input class="form-input" [(ngModel)]="formCriterio.nombre" placeholder="Ej: Claridad en la exposición">
+    </div>
+    <div class="form-group">
+      <label>Descripción <span class="required">*</span></label>
+      <textarea class="form-textarea" [(ngModel)]="formCriterio.descripcion" placeholder="Qué se evalúa..."></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Peso (%) <span class="required">*</span></label>
+        <input class="form-input" type="number" min="1" max="100" [(ngModel)]="formCriterio.peso">
+      </div>
+      <div class="form-group">
+        <label>Escala</label>
+        <select class="form-select" [(ngModel)]="formCriterio.escala">
+          <option *ngFor="let e of escalas" [value]="e.value">{{ e.label }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Rúbrica <span style="color:#9ca3af;font-weight:400">(Opcional)</span></label>
+      <textarea class="form-textarea rubrica" [(ngModel)]="formCriterio.rubrica"
+                placeholder="1 - Deficiente&#10;2 - Regular&#10;3 - Bueno&#10;4 - Muy bueno&#10;5 - Excelente"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" (click)="cerrarModalCriterio()">Cancelar</button>
+      <button class="btn btn-primary" (click)="guardarCriterio()" [disabled]="guardando">
+        {{ guardando ? 'Guardando...' : 'Guardar Criterio' }}
+      </button>
+    </div>
+  </div>
+</div>

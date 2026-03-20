@@ -1,166 +1,124 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { RouterModule, Router } from '@angular/router';
+// ══════════════════════════════════════════════════════════════
+// config-fases.component.ts — EVALUADOR (solo lectura + asignar evaluadores)
+// REEMPLAZA el archivo actual
+// ══════════════════════════════════════════════════════════════
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { FasesService } from '../../../../services/entrevistas/config-fases.service';
 import { EntrevistasEstadoService } from '../../../../services/entrevistas/entrevistas-estado.service';
-import { FaseRequest, FaseResponse } from '../../../../models/entrevistas-models';
+import { ModalEvaluadoresComponent } from '../../../../component/modal-evaluadores.component';
 
-interface EvaluadorUsuario {
-  id_usuario: number;
-  usuario_app: string;
-  correo: string;
-  nombre_completo: string;
+interface FaseDTO {
+  idFase: number;
+  nombre: string;
+  tipo: string;
+  peso: number;
+  orden: number;
+  estado: boolean;
+  nombrePlantilla?: string;
+  evaluadoresPermitidos: string[];
+}
+
+interface PostulanteConProceso {
+  idProceso: number;
+  nombres: string;
+  apellidos: string;
 }
 
 @Component({
   selector: 'app-config-fases',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, ModalEvaluadoresComponent],
   templateUrl: './config-fases.component.html',
   styleUrls: ['./config-fases.component.scss']
 })
 export class ConfigFasesComponent implements OnInit {
 
-  fases: FaseResponse[] = [];
-  isLoading = true;
+  private readonly API = 'http://localhost:8080/api';
+
+  fases: FaseDTO[] = [];
+  postulantes: PostulanteConProceso[] = [];
+  isLoading = false;
   error = '';
+  idSolicitud = 0;
 
-  get pesoTotal(): number { return this.fases.reduce((s, f) => s + f.peso, 0); }
-  get pesoValido(): boolean { return this.pesoTotal === 100; }
-
-  showModal = false;
-  editMode  = false;
-  isSaving  = false;
-
-  form: FaseRequest & { idFase?: number } = this.initForm();
-
-  tiposDisponibles = [
-    { value: 'automatica', label: 'Automática (Revisión Documental)' },
-    { value: 'reunion',    label: 'Reunión de Evaluación' },
-    { value: 'practica',  label: 'Actividad Práctica' },
-    { value: 'decision',  label: 'Decisión de Comité' }
-  ];
-
-  evaluadoresOpciones: EvaluadorUsuario[] = [];
+  // Modal evaluadores
+  modalVisible = false;
+  procesoSeleccionado: PostulanteConProceso | null = null;
+  faseSeleccionada: FaseDTO | null = null;
 
   constructor(
-    private router: Router,
-    private cdr: ChangeDetectorRef,
-    private fasesService: FasesService,
     private http: HttpClient,
-    private estado: EntrevistasEstadoService
+    private router: Router,
+    private route: ActivatedRoute,
+    private estadoService: EntrevistasEstadoService
   ) {}
 
   ngOnInit(): void {
+    this.idSolicitud = this.estadoService.getIdSolicitud() || 0;
     this.cargarFases();
-    this.cargarEvaluadores();
+    if (this.idSolicitud) this.cargarPostulantes();
+  }
+
+  cargarFases(): void {
+    this.isLoading = true;
+    this.http.get<FaseDTO[]>('http://localhost:8080/api/evaluacion/fases').subscribe({
+      next: (data) => { this.fases = data; this.isLoading = false; },
+      error: () => { this.error = 'Error al cargar fases.'; this.isLoading = false; }
+    });
+  }
+
+  cargarPostulantes(): void {
+    this.http.get<any>(`${this.API}/matriz-meritos/solicitud/${this.idSolicitud}`).subscribe({
+      next: (data) => {
+        this.postulantes = (data.candidatos || []).map((c: any) => ({
+          idProceso: c.idProceso,
+          nombres:   c.nombres,
+          apellidos: c.apellidos
+        }));
+      },
+      error: () => {}
+    });
+  }
+
+  abrirModalEvaluadores(f: FaseDTO, p: PostulanteConProceso): void {
+    this.faseSeleccionada    = f;
+    this.procesoSeleccionado = p;
+    this.modalVisible        = true;
+  }
+
+  cerrarModal(): void {
+    this.modalVisible        = false;
+    this.procesoSeleccionado = null;
+    this.faseSeleccionada    = null;
+  }
+
+  get contextLabel(): string {
+    if (!this.procesoSeleccionado || !this.faseSeleccionada) return '';
+    return `${this.procesoSeleccionado.apellidos} ${this.procesoSeleccionado.nombres} — ${this.faseSeleccionada.nombre}`;
+  }
+
+  get pesoTotal(): number { return this.fases.reduce((s, f) => s + (f.peso || 0), 0); }
+  get pesoValido(): boolean { return this.pesoTotal === 100; }
+
+  getTipoLabel(tipo: string): string {
+    const m: Record<string, string> = { automatica: 'Automática', reunion: 'Reunión', practica: 'Práctica', decision: 'Decisión' };
+    return m[tipo] ?? tipo;
+  }
+
+  getTipoBadge(tipo: string): string {
+    const m: Record<string, string> = { automatica: 'info', reunion: 'success', practica: 'warning', decision: 'purple' };
+    return m[tipo] ?? 'default';
   }
 
   navegarPostulantes(): void {
-    const id = this.estado.getIdSolicitud();
-    if (id) {
-      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', id]);
-    } else {
-      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']);
+    if (this.idSolicitud) {
+      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', this.idSolicitud]);
     }
   }
 
   esRutaActiva(segmento: string): boolean {
     return this.router.url.includes(segmento);
-  }
-
-  cargarEvaluadores(): void {
-    this.http.get<EvaluadorUsuario[]>('http://localhost:8080/api/evaluacion/evaluadores')
-      .subscribe({
-        next: (data) => { this.evaluadoresOpciones = data; this.cdr.detectChanges(); },
-        error: () => {}
-      });
-  }
-
-  cargarFases(): void {
-    this.isLoading = true;
-    this.error = '';
-    this.fasesService.listar().subscribe({
-      next: (data) => { this.fases = data; this.isLoading = false; this.cdr.detectChanges(); },
-      error: () => { this.error = 'No se pudieron cargar las fases.'; this.isLoading = false; this.cdr.detectChanges(); }
-    });
-  }
-
-  initForm(): FaseRequest & { idFase?: number } {
-    return { nombre: '', tipo: 'reunion', peso: 10, orden: 1, evaluadoresPermitidos: [], estado: true };
-  }
-
-  openCreate(): void {
-    this.editMode   = false;
-    this.form       = this.initForm();
-    this.form.orden = this.fases.length + 1;
-    this.showModal  = true;
-  }
-
-  openEdit(f: FaseResponse): void {
-    this.editMode = true;
-    this.form = {
-      idFase: f.idFase, nombre: f.nombre, tipo: f.tipo,
-      peso: f.peso, orden: f.orden,
-      evaluadoresPermitidos: [...f.evaluadoresPermitidos], estado: f.estado
-    };
-    this.showModal = true;
-  }
-
-  closeModal(): void { this.showModal = false; }
-
-  toggleEvaluador(nombreCompleto: string): void {
-    const arr = this.form.evaluadoresPermitidos;
-    const idx = arr.indexOf(nombreCompleto);
-    if (idx >= 0) arr.splice(idx, 1); else arr.push(nombreCompleto);
-    this.form.evaluadoresPermitidos = [...arr];
-  }
-
-  isEvaluadorSelected(nombreCompleto: string): boolean {
-    return this.form.evaluadoresPermitidos.includes(nombreCompleto);
-  }
-
-  save(): void {
-    if (!this.form.nombre?.trim()) { alert('El nombre es obligatorio.'); return; }
-    if (!this.form.peso || this.form.peso < 1) { alert('El peso debe ser mayor a 0.'); return; }
-
-    this.isSaving = true;
-    const payload: FaseRequest = {
-      nombre: this.form.nombre, tipo: this.form.tipo,
-      peso: this.form.peso, orden: this.form.orden,
-      evaluadoresPermitidos: this.form.evaluadoresPermitidos, estado: this.form.estado
-    };
-
-    const op$ = this.editMode && this.form.idFase
-      ? this.fasesService.actualizar(this.form.idFase, payload)
-      : this.fasesService.crear(payload);
-
-    op$.subscribe({
-      next: () => { this.isSaving = false; this.closeModal(); this.cargarFases(); },
-      error: () => { alert('Error al guardar la fase.'); this.isSaving = false; this.cdr.detectChanges(); }
-    });
-  }
-
-  cambiarEstado(f: FaseResponse): void {
-    this.fasesService.cambiarEstado(f.idFase, !f.estado).subscribe({
-      next: () => this.cargarFases(),
-      error: () => alert('Error al cambiar el estado.')
-    });
-  }
-
-  getTipoBadge(tipo: string): string {
-    const map: Record<string, string> = {
-      automatica: 'info', reunion: 'warning', practica: 'pending', decision: 'danger'
-    };
-    return map[tipo] ?? 'default';
-  }
-
-  getTipoLabel(tipo: string): string {
-    const map: Record<string, string> = {
-      automatica: 'Automática', reunion: 'Reunión', practica: 'Práctica', decision: 'Decisión'
-    };
-    return map[tipo] ?? tipo;
   }
 }

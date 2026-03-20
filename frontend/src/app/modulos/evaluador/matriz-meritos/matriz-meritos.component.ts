@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
+import { ModalEvaluadoresComponent } from '../../../component/modal-evaluadores.component';
+
 
 export interface ItemRubrica {
   id: string;
@@ -59,7 +61,7 @@ export interface ConvocatoriaInfo {
 @Component({
   selector: 'app-matriz-meritos',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ModalEvaluadoresComponent],
   templateUrl: './matriz-meritos.component.html',
   styleUrls: ['./matriz-meritos.component.scss']
 })
@@ -69,6 +71,9 @@ export class MatrizMeritosComponent implements OnInit {
   private readonly API_CFG = 'http://localhost:8080/api/matriz-config';
 
   readonly PUNTAJE_MINIMO = 50; // mínimo sobre 100 para pasar a entrevistas
+
+  modalEvaluadoresVisible = false;
+  candidatoEvaluadores: Candidato | null = null;
 
   cargando = false;
   guardando = false;
@@ -106,6 +111,16 @@ export class MatrizMeritosComponent implements OnInit {
       }
     });
   }
+  abrirModalEvaluadores(c: Candidato): void {
+    this.candidatoEvaluadores = c;
+    this.modalEvaluadoresVisible = true;
+  }
+
+  cerrarModalEvaluadores(): void {
+    this.modalEvaluadoresVisible = false;
+    this.candidatoEvaluadores = null;
+  }
+
 
   cargarTodo(): void {
     this.cargando = true;
@@ -319,5 +334,10 @@ export class MatrizMeritosComponent implements OnInit {
       ...this.seccionesExperiencia,
       ...(this.seccionEntrevista ? [this.seccionEntrevista] : [])
     ];
+  }
+
+  get contextLabelEvaluadores(): string {
+    if (!this.candidatoEvaluadores) return '';
+    return `${this.candidatoEvaluadores.apellidos} ${this.candidatoEvaluadores.nombres} — Matriz de Méritos`;
   }
 }

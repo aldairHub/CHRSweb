@@ -1,4 +1,4 @@
-<!-- entrevistas-docentes/config-fases/config-fases.component.html -->
+<!-- config-fases.component.html — EVALUADOR — Solo lectura + asignar evaluadores -->
 
 <nav class="module-tabs">
   <a class="tab" routerLink="/evaluador/entrevistas-docentes/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
@@ -7,7 +7,7 @@
   </a>
   <a class="tab" routerLink="/evaluador/entrevistas-docentes/fases" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
-    Configurar Fases
+    Fases
   </a>
   <a class="tab" routerLink="/evaluador/entrevistas-docentes/plantillas" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 4H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0121 10.414V18a2 2 0 01-2 2z"/></svg>
@@ -17,9 +17,8 @@
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
     Criterios
   </a>
-  <a class="tab" (click)="navegarPostulantes()"
-     [class.active]="esRutaActiva('postulantes')"
-     style="cursor:pointer">    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+  <a class="tab" (click)="navegarPostulantes()" [class.active]="esRutaActiva('postulantes')" style="cursor:pointer">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
     Postulantes
   </a>
   <a class="tab" routerLink="/evaluador/entrevistas-docentes/programar-reunion" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
@@ -41,15 +40,22 @@
 
     <div class="page-header">
       <div>
-        <h2>Configuración de Fases</h2>
-        <p class="page-subtitle">Define y ordena las fases del proceso de evaluación</p>
+        <h2>Fases del Proceso de Evaluación</h2>
+        <p class="page-subtitle">Vista de las fases configuradas — solo puede asignar evaluadores</p>
       </div>
-      <button class="btn btn-primary" (click)="openCreate()">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        Nueva Fase
-      </button>
+      <!-- Sin botón de Nueva Fase — solo lectura -->
+    </div>
+
+    <!-- Banner informativo solo lectura -->
+    <div class="alert info">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <div>
+        <strong>Modo de consulta</strong>
+        <p>Las fases son configuradas por el Vicerrectorado. Aquí puede consultar su estructura y asignar evaluadores por postulante.</p>
+      </div>
     </div>
 
     <div class="loading-state" *ngIf="isLoading">
@@ -67,38 +73,36 @@
     </div>
 
     <ng-container *ngIf="!isLoading && !error">
-      <div class="alert info">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <div>
-          <strong>Información</strong>
-          <p>Las fases definen el flujo del proceso. Cada fase puede tener evaluadores específicos, pesos y plantillas de evaluación.</p>
-        </div>
-      </div>
 
+      <!-- Indicador de peso -->
       <div class="peso-indicator" [class.valid]="pesoValido" [class.invalid]="!pesoValido">
-        <span>Peso total de todas las fases:</span>
-        <strong>{{ pesoTotal }}%</strong>
-        <span class="peso-badge" [class.valid]="pesoValido">
-          {{ pesoValido ? '✓ Válido' : '✗ Debe sumar 100%' }}
-        </span>
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10"/>
+        </svg>
+        Peso total: <strong>{{ pesoTotal }}%</strong>
+        <span class="peso-badge" [class.valid]="pesoValido">{{ pesoValido ? 'Válido' : 'Pendiente de ajuste' }}</span>
       </div>
 
+      <!-- Fases -->
       <div class="card">
         <div class="card-header">
           <h3 class="card-title">Fases Configuradas</h3>
-          <span class="badge" [ngClass]="pesoValido ? 'success' : 'warning'">
-            {{ pesoValido ? 'Configuración válida' : 'Pendiente ajuste' }}
-          </span>
+          <span class="badge success" *ngIf="pesoValido">Configuración válida</span>
+          <span class="badge warning" *ngIf="!pesoValido">Pendiente ajuste</span>
         </div>
+
         <div class="table-container">
           <table class="table">
             <thead>
             <tr>
-              <th>Orden</th><th>Nombre de Fase</th><th>Tipo</th><th>Peso (%)</th>
-              <th>Evaluadores</th><th>Estado</th><th>Acciones</th>
+              <th>Orden</th>
+              <th>Nombre</th>
+              <th>Tipo</th>
+              <th>Peso</th>
+              <th>Plantilla</th>
+              <th>Estado</th>
+              <th>Asignar Evaluadores</th>
             </tr>
             </thead>
             <tbody>
@@ -108,31 +112,33 @@
               <td><span class="badge" [ngClass]="getTipoBadge(f.tipo)">{{ getTipoLabel(f.tipo) }}</span></td>
               <td><strong>{{ f.peso }}%</strong></td>
               <td>
-                <div class="roles-container">
-                  <span class="badge-rol-app" *ngFor="let ev of f.evaluadoresPermitidos">{{ ev }}</span>
-                  <span class="text-muted" *ngIf="f.evaluadoresPermitidos.length === 0">—</span>
-                </div>
+                <span class="badge info" *ngIf="f.nombrePlantilla">{{ f.nombrePlantilla }}</span>
+                <span class="text-muted" *ngIf="!f.nombrePlantilla">—</span>
               </td>
               <td>
-                <span class="badge" [ngClass]="f.estado ? 'success' : 'danger'"
-                      style="cursor:pointer;" (click)="cambiarEstado(f)">
-                  {{ f.estado ? 'Activa' : 'Inactiva' }}
-                </span>
+                  <span class="badge" [ngClass]="f.estado ? 'success' : 'danger'">
+                    {{ f.estado ? 'Activa' : 'Inactiva' }}
+                  </span>
               </td>
               <td>
-                <div class="action-buttons">
-                  <button class="btn-icon btn-outline" title="Editar" (click)="openEdit(f)">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <!-- Mostrar botón por cada postulante -->
+                <div class="postulante-btns" *ngIf="postulantes.length > 0">
+                  <button class="btn btn-outline btn-sm"
+                          *ngFor="let p of postulantes"
+                          (click)="abrirModalEvaluadores(f, p)">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                     </svg>
+                    {{ p.apellidos }}
                   </button>
                 </div>
+                <span class="text-muted" *ngIf="postulantes.length === 0">Sin postulantes activos</span>
               </td>
             </tr>
             <tr *ngIf="fases.length === 0">
               <td colspan="7">
-                <div class="empty-state-sm">No hay fases configuradas. Haga clic en "Nueva Fase" para comenzar.</div>
+                <div class="empty-state-sm">No hay fases configuradas.</div>
               </td>
             </tr>
             </tbody>
@@ -143,63 +149,11 @@
   </div>
 </div>
 
-<!-- MODAL -->
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
-  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>{{ editMode ? 'Editar Fase' : 'Nueva Fase del Proceso' }}</h3>
-      <button class="close-btn" (click)="closeModal()">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label>Nombre de la Fase <span class="required">*</span></label>
-        <input class="form-input" type="text" [(ngModel)]="form.nombre" placeholder="Ej: Evaluación Técnica">
-      </div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Tipo de Fase <span class="required">*</span></label>
-          <select class="form-select" [(ngModel)]="form.tipo">
-            <option *ngFor="let t of tiposDisponibles" [value]="t.value">{{ t.label }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Orden <span class="required">*</span></label>
-          <input class="form-input" type="number" [(ngModel)]="form.orden" min="1">
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Peso (%) <span class="required">*</span></label>
-        <input class="form-input" type="number" [(ngModel)]="form.peso" min="1" max="100">
-        <p class="field-hint">El peso total de todas las fases debe sumar 100%</p>
-      </div>
-      <div class="form-group">
-        <label>Evaluadores Permitidos</label>
-        <div class="roles-app-list">
-          <label class="rol-app-item" *ngFor="let ev of evaluadoresOpciones"
-                 (click)="toggleEvaluador(ev.nombre_completo)">
-            <input type="checkbox"
-                   [checked]="isEvaluadorSelected(ev.nombre_completo)"
-                   (click)="$event.stopPropagation()">
-            <div class="rol-app-info">
-              <div class="rol-app-nombre">{{ ev.nombre_completo }}</div>
-              <small class="text-muted">{{ ev.usuario_app }}</small>
-            </div>
-          </label>
-          <div *ngIf="evaluadoresOpciones.length === 0" class="text-muted" style="padding: 1rem; text-align: center;">
-            Cargando evaluadores...
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" (click)="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" (click)="save()" [disabled]="isSaving">
-        {{ isSaving ? 'Guardando...' : (editMode ? 'Actualizar Fase' : 'Guardar Fase') }}
-      </button>
-    </div>
-  </div>
-</div>
+<!-- Modal asignar evaluadores -->
+<app-modal-evaluadores
+  [visible]="modalVisible"
+  [idProceso]="procesoSeleccionado?.idProceso ?? null"
+  tipo="entrevista"
+  [contextLabel]="contextLabel"
+  (cerrado)="cerrarModal()">
+</app-modal-evaluadores>

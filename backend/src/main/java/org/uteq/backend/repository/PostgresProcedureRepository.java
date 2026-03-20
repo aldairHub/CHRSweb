@@ -655,7 +655,7 @@ public class PostgresProcedureRepository {
                 } else if (params[i] instanceof Integer) {
                     ps.setInt(i + 1, (Integer) params[i]);
                 } else if (params[i] instanceof Double) {
-                    ps.setDouble(i + 1, (Double) params[i]);
+                    ps.setBigDecimal(i + 1, java.math.BigDecimal.valueOf((Double) params[i]));
                 } else {
                     ps.setString(i + 1, params[i].toString());
                 }

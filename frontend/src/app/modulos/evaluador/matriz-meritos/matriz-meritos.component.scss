@@ -783,4 +783,24 @@ thead tr th {
   .modal-actions {
     display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.25rem;
   }
+
+  .btn-asignar-ev {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: transparent;
+    border: 1px solid #B9F8CF;
+    color: #016630;
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 0.25rem;
+    width: 100%;
+    justify-content: center;
+    svg { stroke: currentColor; }
+    &:hover { background: #EEF9EC; border-color: #00A63E; }
+  }
 }
