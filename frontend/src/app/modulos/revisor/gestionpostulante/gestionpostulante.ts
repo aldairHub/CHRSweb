@@ -1,4 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Router } from '@angular/router';
+//import { Router } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -135,7 +137,8 @@ export class GestionPostulanteComponent implements OnInit {
     private prepostulacionService: PrepostulacionService,
     private cdr: ChangeDetectorRef,
     private toast: ToastService,
-    private http: HttpClient
+    private http: HttpClient,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -488,17 +491,7 @@ export class GestionPostulanteComponent implements OnInit {
   }
 
   exportarReporte(): void {
-    // Pre-cargar filtros activos de la tabla para que el PDF refleje lo que se ve
-    const estadoMap: Record<string, string> = {
-      validado:  'APROBADO',
-      rechazado: 'RECHAZADO',
-      pendiente: 'PENDIENTE',
-    };
-    this.reporteConfig.estadoRevision    = estadoMap[this.filterEstado] ?? '';
-    this.reporteConfig.idsConvocatoria   = this.filterConvocatoria ? [Number(this.filterConvocatoria)] : [];
-    this.reporteConfig.idsSolicitud      = this.filterSolicitud    ? [Number(this.filterSolicitud)]    : [];
-    this.showReporteModal = true;
-    this.reporteTabActiva = 'filtros';
+    this.router.navigate(['/revisor/estadisticas-postulantes']);
   }
 
   cerrarReporteModal(): void {

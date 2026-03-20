@@ -389,6 +389,17 @@ $success: #16a34a;
     }
   }
 
+
+  &.btn-datos {
+    background: $primary;
+    color: white;
+    svg { stroke: white; flex-shrink: 0; }
+    &:hover:not(:disabled) {
+      background: $dark;
+      box-shadow: 0 4px 12px rgba($primary, 0.3);
+    }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;

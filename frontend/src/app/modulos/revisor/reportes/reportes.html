@@ -1,0 +1,831 @@
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <!-- ── HEADER ───────────────────────────────────────────────────────── -->
+    <div class="page-header">
+      <div>
+        <h2 class="page-title">Panel de Reportes</h2>
+        <p class="page-subtitle">Estadísticas integradas · Convocatorias · Postulantes · Solicitudes de Docente</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-outline" (click)="cargarTodo()" [disabled]="cargandoTodo">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="17" height="17">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Actualizar
+        </button>
+        <button class="btn btn-primary" (click)="abrirModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="17" height="17">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Exportar reporte
+        </button>
+      </div>
+    </div>
+
+    <!-- ── NAV ──────────────────────────────────────────────────────────── -->
+    <div class="nav-back">
+      <a routerLink="/revisor" class="back-link">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Volver al panel Revisor
+      </a>
+      <div class="module-chips">
+        <a routerLink="/revisor/convocatorias"    class="chip chip-green">Convocatorias</a>
+        <a routerLink="/revisor/prepostulaciones" class="chip chip-blue">Postulantes</a>
+        <a routerLink="/revisor/solicitudes-docente" class="chip chip-amber">Solicitudes</a>
+      </div>
+    </div>
+
+    <!-- ── FILTROS ───────────────────────────────────────────────────────── -->
+    <div class="filters-card">
+      <div class="filters-title">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="17" height="17">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+        </svg>
+        <span>Filtros globales</span>
+        <span class="filters-note">Aplican al exportar el reporte. Las estadísticas muestran todos los datos.</span>
+      </div>
+      <div class="filters-row">
+        <div class="filter-group">
+          <label>Desde</label>
+          <input type="date" class="form-input" [(ngModel)]="filtros.desde"/>
+        </div>
+        <div class="filter-group">
+          <label>Hasta</label>
+          <input type="date" class="form-input" [(ngModel)]="filtros.hasta"/>
+        </div>
+        <div class="filter-actions">
+          <button class="btn btn-primary btn-sm" (click)="cargarTodo()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            Aplicar
+          </button>
+          <button class="btn btn-outline btn-sm" (click)="limpiarFiltros()">Limpiar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         BLOQUE 0 — KPIs GLOBALES
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div class="kpis-banner" *ngIf="conv || prepost || solic">
+      <!-- Convocatorias abiertas -->
+      <div class="kpi-tile kpi-green">
+        <div class="kpi-top">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="22" height="22">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <span class="kpi-label">Convocatorias abiertas</span>
+        </div>
+        <div class="kpi-value">{{ conv?.abiertas ?? '—' }}</div>
+        <div class="kpi-sub">de {{ conv?.total ?? 0 }} totales</div>
+      </div>
+
+      <!-- Total prepostulaciones -->
+      <div class="kpi-tile kpi-blue">
+        <div class="kpi-top">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="22" height="22">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+          <span class="kpi-label">Total prepostulaciones</span>
+        </div>
+        <div class="kpi-value">{{ prepost?.total ?? '—' }}</div>
+        <div class="kpi-sub">{{ prepost?.pendientes ?? 0 }} pendiente(s)</div>
+      </div>
+
+      <!-- Tasa de aprobación -->
+      <div class="kpi-tile kpi-amber">
+        <div class="kpi-top">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="22" height="22">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          <span class="kpi-label">Tasa de aprobación</span>
+        </div>
+        <div class="kpi-value">{{ prepost?.tasaAprobacion ?? '—' }}%</div>
+        <div class="kpi-sub">{{ prepost?.aprobadas ?? 0 }} aprobadas</div>
+      </div>
+
+      <!-- Solicitudes docente -->
+      <div class="kpi-tile kpi-purple">
+        <div class="kpi-top">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="22" height="22">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+          <span class="kpi-label">Solicitudes de docente</span>
+        </div>
+        <div class="kpi-value">{{ solic?.total ?? '—' }}</div>
+        <div class="kpi-sub">{{ solic?.docentesRequeridos ?? 0 }} docentes requeridos</div>
+      </div>
+
+      <!-- Solicitudes pendientes -->
+      <div class="kpi-tile kpi-rose">
+        <div class="kpi-top">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="22" height="22">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span class="kpi-label">Solicitudes pendientes</span>
+        </div>
+        <div class="kpi-value">{{ solic?.pendientes ?? '—' }}</div>
+        <div class="kpi-sub">{{ solic?.aprobadas ?? 0 }} aprobadas</div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         BLOQUE 1 — CONVOCATORIAS
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div class="section-divider">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+      </svg>
+      <span>Convocatorias</span>
+    </div>
+
+    <div *ngIf="cargandoConv" class="loading-state">
+      <div class="spinner-ring"></div>
+      <span>Cargando convocatorias...</span>
+    </div>
+
+    <ng-container *ngIf="!cargandoConv && conv">
+
+      <!-- Distribución por estado -->
+      <div class="coll-card">
+        <div class="coll-header" (click)="toggle('convResumen')">
+          <h3>Distribución por estado</h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"
+               [style.transform]="sec.convResumen ? 'rotate(180deg)' : 'rotate(0)'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+        <div class="coll-body" *ngIf="sec.convResumen">
+          <div class="donut-row">
+            <!-- Donut SVG -->
+            <div class="donut-wrap">
+              <svg viewBox="0 0 80 80" class="donut-svg">
+                <circle cx="40" cy="40" r="28" fill="none" stroke="#e5e7eb" stroke-width="12"/>
+                <circle cx="40" cy="40" r="28" fill="none" stroke="#16a34a" stroke-width="12"
+                        stroke-dasharray="175.9"
+                        [attr.stroke-dashoffset]="donutOffset(conv!.abiertas / (conv!.total || 1) * 100)"
+                        stroke-linecap="round" transform="rotate(-90 40 40)"/>
+              </svg>
+              <div class="donut-center">
+                <span class="donut-num">{{ conv!.total }}</span>
+                <span class="donut-lbl">total</span>
+              </div>
+            </div>
+
+            <!-- Leyenda + barras -->
+            <div class="donut-legend">
+              <div *ngFor="let e of conv!.porEstado" class="legend-item">
+                <div class="legend-dot" [style.background]="colorEstadoConv(e.estado)"></div>
+                <div class="legend-info">
+                  <div class="legend-label-row">
+                    <span class="legend-name">{{ e.estado }}</span>
+                    <span class="legend-count">{{ e.count }}</span>
+                    <span class="legend-pct">{{ e.pct }}%</span>
+                  </div>
+                  <div class="legend-bar-bg">
+                    <div class="legend-bar-fill" [style.width]="barWidth(e.count, conv!.total)"
+                         [style.background]="colorEstadoConv(e.estado)"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detalle por estado (barras verticales) -->
+      <div class="coll-card">
+        <div class="coll-header" (click)="toggle('convDetalle')">
+          <h3>Comparativa por estado</h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"
+               [style.transform]="sec.convDetalle ? 'rotate(180deg)' : 'rotate(0)'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+        <div class="coll-body" *ngIf="sec.convDetalle">
+          <div class="vbar-chart">
+            <div *ngFor="let e of conv!.porEstado" class="vbar-group">
+              <div class="vbar-track">
+                <div class="vbar-fill"
+                     [style.height]="barWidth(e.count, maxConv())"
+                     [style.background]="colorEstadoConv(e.estado)"
+                     [title]="e.estado + ': ' + e.count"></div>
+              </div>
+              <div class="vbar-val">{{ e.count }}</div>
+              <div class="vbar-label">{{ e.estado }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         BLOQUE 2 — PREPOSTULACIONES
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div class="section-divider">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+      <span>Gestión de Postulantes</span>
+    </div>
+
+    <div *ngIf="cargandoPrepost" class="loading-state">
+      <div class="spinner-ring"></div>
+      <span>Cargando prepostulaciones...</span>
+    </div>
+
+    <ng-container *ngIf="!cargandoPrepost && prepost">
+
+      <!-- KPIs + Donut de estados -->
+      <div class="coll-card">
+        <div class="coll-header" (click)="toggle('prepostResumen')">
+          <h3>Resumen de prepostulaciones</h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"
+               [style.transform]="sec.prepostResumen ? 'rotate(180deg)' : 'rotate(0)'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+        <div class="coll-body" *ngIf="sec.prepostResumen">
+          <div class="prepost-layout">
+
+            <!-- Mini KPIs -->
+            <div class="mini-kpis">
+              <div class="mini-kpi mini-kpi-total">
+                <span class="mkpi-num">{{ prepost!.total }}</span>
+                <span class="mkpi-lbl">Total</span>
+              </div>
+              <div class="mini-kpi mini-kpi-ok">
+                <span class="mkpi-num">{{ prepost!.aprobadas }}</span>
+                <span class="mkpi-lbl">Aprobadas</span>
+              </div>
+              <div class="mini-kpi mini-kpi-no">
+                <span class="mkpi-num">{{ prepost!.rechazadas }}</span>
+                <span class="mkpi-lbl">Rechazadas</span>
+              </div>
+              <div class="mini-kpi mini-kpi-pend">
+                <span class="mkpi-num">{{ prepost!.pendientes }}</span>
+                <span class="mkpi-lbl">Pendientes</span>
+              </div>
+            </div>
+
+            <!-- Donut tasa -->
+            <div class="tasa-donut">
+              <svg viewBox="0 0 80 80" class="donut-svg donut-lg">
+                <circle cx="40" cy="40" r="28" fill="none" stroke="#e5e7eb" stroke-width="11"/>
+                <circle cx="40" cy="40" r="28" fill="none" stroke="#16a34a" stroke-width="11"
+                        stroke-dasharray="175.9"
+                        [attr.stroke-dashoffset]="donutOffset(prepost!.tasaAprobacion)"
+                        stroke-linecap="round" transform="rotate(-90 40 40)"/>
+              </svg>
+              <div class="donut-center">
+                <span class="donut-num donut-pct">{{ prepost!.tasaAprobacion }}%</span>
+                <span class="donut-lbl">aprobación</span>
+              </div>
+              <p class="donut-nota">Sobre revisadas</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Funnel visual -->
+      <div class="coll-card">
+        <div class="coll-header" (click)="toggle('prepostFunnel')">
+          <h3>Embudo de selección</h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"
+               [style.transform]="sec.prepostFunnel ? 'rotate(180deg)' : 'rotate(0)'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+        <div class="coll-body" *ngIf="sec.prepostFunnel">
+          <div class="funnel">
+            <div class="funnel-step funnel-total">
+              <div class="funnel-bar" style="width: 100%">
+                <span class="funnel-label">Total recibidas</span>
+                <span class="funnel-count">{{ prepost!.total }}</span>
+              </div>
+            </div>
+            <div class="funnel-arrow">▼</div>
+            <div class="funnel-step funnel-ok">
+              <div class="funnel-bar"
+                   [style.width]="barWidth(prepost!.aprobadas + prepost!.pendientes, prepost!.total)">
+                <span class="funnel-label">En revisión / Aprobadas</span>
+                <span class="funnel-count">{{ prepost!.aprobadas + prepost!.pendientes }}</span>
+              </div>
+            </div>
+            <div class="funnel-arrow">▼</div>
+            <div class="funnel-step funnel-final">
+              <div class="funnel-bar" [style.width]="barWidth(prepost!.aprobadas, prepost!.total)">
+                <span class="funnel-label">Aprobadas definitivas</span>
+                <span class="funnel-count">{{ prepost!.aprobadas }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Por convocatoria -->
+      <div class="coll-card" *ngIf="prepost!.porConvocatoria.length > 0">
+        <div class="coll-header" (click)="toggle('prepostPorConv')">
+          <h3>Postulantes por convocatoria</h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"
+               [style.transform]="sec.prepostPorConv ? 'rotate(180deg)' : 'rotate(0)'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+        <div class="coll-body" *ngIf="sec.prepostPorConv">
+          <div class="conv-ranking">
+            <div *ngFor="let c of prepost!.porConvocatoria; let i = index" class="conv-rank-item">
+              <span class="rank-pos" [class.rank-gold]="i===0" [class.rank-silver]="i===1" [class.rank-bronze]="i===2">
+                {{ i+1 }}
+              </span>
+              <div class="rank-info">
+                <div class="rank-header-row">
+                  <span class="rank-titulo" [title]="c.titulo">{{ c.titulo }}</span>
+                  <span class="rank-total">{{ c.total }}</span>
+                </div>
+                <div class="stacked-bar-bg">
+                  <div class="stacked-bar-ok"    [style.width]="barWidth(c.aprobadas,  c.total)"></div>
+                  <div class="stacked-bar-no"    [style.width]="barWidth(c.rechazadas, c.total)"></div>
+                </div>
+                <div class="rank-legend-mini">
+                  <span class="rlm-ok">✓ {{ c.aprobadas }} aprob.</span>
+                  <span class="rlm-no">✗ {{ c.rechazadas }} rech.</span>
+                  <span class="rlm-pend">⏱ {{ c.total - c.aprobadas - c.rechazadas }} pend.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         BLOQUE 3 — SOLICITUDES DE DOCENTE
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div class="section-divider">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+      </svg>
+      <span>Solicitudes de Docente</span>
+    </div>
+
+    <div *ngIf="cargandoSolic" class="loading-state">
+      <div class="spinner-ring"></div>
+      <span>Cargando solicitudes...</span>
+    </div>
+
+    <ng-container *ngIf="!cargandoSolic && solic">
+
+      <!-- KPIs de solicitudes -->
+      <div class="coll-card">
+        <div class="coll-header" (click)="toggle('solicResumen')">
+          <h3>Resumen de solicitudes</h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"
+               [style.transform]="sec.solicResumen ? 'rotate(180deg)' : 'rotate(0)'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+        <div class="coll-body" *ngIf="sec.solicResumen">
+          <div class="solic-kpis">
+            <div class="solic-kpi">
+              <div class="sk-icon sk-blue">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                </svg>
+              </div>
+              <div class="sk-info">
+                <span class="sk-num">{{ solic!.total }}</span>
+                <span class="sk-lbl">Total</span>
+              </div>
+            </div>
+            <div class="solic-kpi">
+              <div class="sk-icon sk-amber">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div class="sk-info">
+                <span class="sk-num">{{ solic!.pendientes }}</span>
+                <span class="sk-lbl">Pendientes</span>
+              </div>
+            </div>
+            <div class="solic-kpi">
+              <div class="sk-icon sk-green">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div class="sk-info">
+                <span class="sk-num">{{ solic!.aprobadas }}</span>
+                <span class="sk-lbl">Aprobadas</span>
+              </div>
+            </div>
+            <div class="solic-kpi">
+              <div class="sk-icon sk-red">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div class="sk-info">
+                <span class="sk-num">{{ solic!.rechazadas }}</span>
+                <span class="sk-lbl">Rechazadas</span>
+              </div>
+            </div>
+            <div class="solic-kpi solic-kpi-wide">
+              <div class="sk-icon sk-purple">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+              </div>
+              <div class="sk-info">
+                <span class="sk-num">{{ solic!.docentesRequeridos }}</span>
+                <span class="sk-lbl">Docentes requeridos</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Por facultad -->
+      <div class="coll-card" *ngIf="solic!.porFacultad.length > 0">
+        <div class="coll-header" (click)="toggle('solicFacultad')">
+          <h3>Solicitudes por facultad</h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"
+               [style.transform]="sec.solicFacultad ? 'rotate(180deg)' : 'rotate(0)'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+        <div class="coll-body" *ngIf="sec.solicFacultad">
+          <div class="hbar-list">
+            <div *ngFor="let f of solic!.porFacultad; let i = index" class="hbar-item">
+              <div class="hbar-label-col">
+                <span class="hbar-name" [title]="f.facultad">{{ f.facultad }}</span>
+              </div>
+              <div class="hbar-track">
+                <div class="hbar-fill" [style.width]="barWidth(f.count, maxFacultad())"
+                     [style.background]="colorFacultad(i)"></div>
+              </div>
+              <span class="hbar-count">{{ f.count }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Por área -->
+      <div class="coll-card" *ngIf="solic!.porArea.length > 0">
+        <div class="coll-header" (click)="toggle('solicArea')">
+          <h3>Solicitudes por área de conocimiento</h3>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"
+               [style.transform]="sec.solicArea ? 'rotate(180deg)' : 'rotate(0)'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+        <div class="coll-body" *ngIf="sec.solicArea">
+          <div class="area-grid">
+            <div *ngFor="let a of solic!.porArea; let i = index" class="area-chip">
+              <div class="area-chip-bar">
+                <div class="area-chip-fill"
+                     [style.width]="barWidth(a.count, maxArea())"
+                     [style.background]="colorFacultad(i)"></div>
+              </div>
+              <span class="area-nombre">{{ a.area }}</span>
+              <span class="area-count">{{ a.count }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         BLOQUE 4 — ANÁLISIS IA
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div class="section-divider">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+      </svg>
+      <span>Análisis con IA</span>
+    </div>
+
+    <div class="ia-card">
+      <div class="ia-header">
+        <div class="ia-header-left">
+          <div class="ia-badge">IA</div>
+          <div>
+            <h3 class="ia-title">Análisis ejecutivo generado por inteligencia artificial</h3>
+            <p class="ia-subtitle">Basado en los datos actuales de convocatorias, postulantes y solicitudes</p>
+          </div>
+        </div>
+        <button class="btn btn-ia" (click)="generarAnalisisIA()" [disabled]="cargandoIA">
+          <svg *ngIf="!cargandoIA" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          <svg *ngIf="cargandoIA" class="spinner-sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 1 1-6.219-8.56"/>
+          </svg>
+          {{ analisisIA ? 'Regenerar análisis' : 'Generar análisis' }}
+        </button>
+      </div>
+
+      <div class="ia-body">
+        <div *ngIf="cargandoIA" class="ia-loading">
+          <div class="spinner-ring"></div>
+          <span>El modelo está procesando los datos…</span>
+        </div>
+        <div *ngIf="!cargandoIA && !analisisIA" class="ia-empty">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="36" height="36">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+          <p>Presiona <strong>Generar análisis</strong> para obtener un informe ejecutivo automático con observaciones y recomendaciones.</p>
+        </div>
+        <div *ngIf="!cargandoIA && analisisIA" class="ia-text">
+          {{ analisisIA }}
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content-wrapper -->
+</div><!-- /main-container -->
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     MODAL DE REPORTE
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="modalAbierto" (click)="cerrarModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <!-- Header del modal -->
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <div>
+          <h3>Configurar reporte</h3>
+          <p class="modal-subtitle">{{ moduloLabel }}</p>
+        </div>
+      </div>
+      <button class="modal-close" (click)="cerrarModal()" [disabled]="generando">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Selector de módulo -->
+    <div class="modal-modulo-tabs">
+      <button class="mod-tab" [class.mod-tab-active]="cfg.moduloActivo === 'convocatoria'"
+              (click)="cfg.moduloActivo = 'convocatoria'">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        Convocatorias
+      </button>
+      <button class="mod-tab" [class.mod-tab-active]="cfg.moduloActivo === 'prepostulacion'"
+              (click)="cfg.moduloActivo = 'prepostulacion'">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
+        Postulantes
+      </button>
+      <button class="mod-tab" [class.mod-tab-active]="cfg.moduloActivo === 'solicitud'"
+              (click)="cfg.moduloActivo = 'solicitud'">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        Solicitudes
+      </button>
+    </div>
+
+    <!-- Pestañas de configuración -->
+    <div class="modal-tabs">
+      <button class="modal-tab" [class.active]="tabReporte==='formato'"   (click)="tabReporte='formato'">Formato</button>
+      <button class="modal-tab" [class.active]="tabReporte==='secciones'" (click)="tabReporte='secciones'">Secciones</button>
+      <button class="modal-tab" [class.active]="tabReporte==='visual'"    (click)="tabReporte='visual'">Visual</button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- ── PESTAÑA: FORMATO ── -->
+      <ng-container *ngIf="tabReporte === 'formato'">
+
+        <div class="rpt-seccion">
+          <h4 class="rpt-titulo">Formato de exportación</h4>
+          <div class="rpt-grid2">
+            <div class="rpt-campo">
+              <label>Tipo de archivo</label>
+              <div class="toggle-group">
+                <button class="toggle-btn" [class.active]="cfg.formato==='PDF'"   (click)="cfg.formato='PDF'">📄 PDF</button>
+                <button class="toggle-btn" [class.active]="cfg.formato==='EXCEL'" (click)="cfg.formato='EXCEL'">📊 Excel</button>
+              </div>
+            </div>
+            <div class="rpt-campo" *ngIf="cfg.formato === 'PDF'">
+              <label>Orientación</label>
+              <div class="toggle-group">
+                <button class="toggle-btn" [class.active]="cfg.orientacion==='VERTICAL'"   (click)="cfg.orientacion='VERTICAL'">↕ Vertical</button>
+                <button class="toggle-btn" [class.active]="cfg.orientacion==='HORIZONTAL'" (click)="cfg.orientacion='HORIZONTAL'">↔ Horizontal</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rpt-seccion">
+          <h4 class="rpt-titulo">Filtros de datos</h4>
+          <div class="rpt-grid3">
+            <div class="rpt-campo">
+              <label>Desde</label>
+              <input type="date" class="form-input" [(ngModel)]="cfg.desde"/>
+            </div>
+            <div class="rpt-campo">
+              <label>Hasta</label>
+              <input type="date" class="form-input" [(ngModel)]="cfg.hasta"/>
+            </div>
+            <div class="rpt-campo" *ngIf="cfg.moduloActivo === 'convocatoria' || cfg.moduloActivo === 'solicitud'">
+              <label>Estado</label>
+              <select class="form-select" [(ngModel)]="cfg.estado">
+                <option value="">Todos</option>
+                <option *ngIf="cfg.moduloActivo === 'convocatoria'" value="abierta">Abierta</option>
+                <option *ngIf="cfg.moduloActivo === 'convocatoria'" value="cerrada">Cerrada</option>
+                <option *ngIf="cfg.moduloActivo === 'convocatoria'" value="cancelada">Cancelada</option>
+                <option *ngIf="cfg.moduloActivo === 'solicitud'" value="pendiente">Pendiente</option>
+                <option *ngIf="cfg.moduloActivo === 'solicitud'" value="aprobada">Aprobada</option>
+                <option *ngIf="cfg.moduloActivo === 'solicitud'" value="rechazada">Rechazada</option>
+              </select>
+            </div>
+            <div class="rpt-campo" *ngIf="cfg.moduloActivo === 'prepostulacion'">
+              <label>Estado revisión</label>
+              <select class="form-select" [(ngModel)]="cfg.estadoRevision">
+                <option value="">Todos</option>
+                <option value="PENDIENTE">Pendiente</option>
+                <option value="APROBADO">Aprobado</option>
+                <option value="RECHAZADO">Rechazado</option>
+              </select>
+            </div>
+            <div class="rpt-campo">
+              <label>Límite de filas</label>
+              <select class="form-select" [(ngModel)]="cfg.limite">
+                <option [ngValue]="100">100</option>
+                <option [ngValue]="250">250</option>
+                <option [ngValue]="500">500</option>
+                <option [ngValue]="1000">1 000</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Excel options -->
+        <div class="rpt-seccion" *ngIf="cfg.formato === 'EXCEL'">
+          <h4 class="rpt-titulo">Opciones Excel</h4>
+          <div class="checks-grid">
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfg.excelCongelarEncabezado"/>
+              <span>Congelar fila de encabezados</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfg.excelFiltrosAutomaticos"/>
+              <span>Activar filtros automáticos</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfg.excelHojasPorSeccion"/>
+              <span>Una hoja por sección</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- PDF options -->
+        <div class="rpt-seccion" *ngIf="cfg.formato === 'PDF'">
+          <h4 class="rpt-titulo">Opciones PDF</h4>
+          <div class="checks-grid">
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfg.mostrarNumeroPagina"/>
+              <span>Número de página</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfg.mostrarFechaGeneracion"/>
+              <span>Fecha de generación</span>
+            </label>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ── PESTAÑA: SECCIONES ── -->
+      <ng-container *ngIf="tabReporte === 'secciones'">
+        <div class="rpt-seccion">
+          <h4 class="rpt-titulo">Secciones a incluir — {{ moduloLabel }}</h4>
+          <div class="checks-grid">
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfg.incluirPortada"/>
+              <span>Portada con resumen ejecutivo</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfg.incluirKpis"/>
+              <span>KPIs / resumen numérico</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfg.incluirDetalle"/>
+              <span>Tabla de detalle</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" [(ngModel)]="cfg.incluirGraficoEstados"/>
+              <span>Gráfico de distribución por estado</span>
+            </label>
+            <label class="check-item" *ngIf="cfg.moduloActivo === 'convocatoria'">
+              <input type="checkbox" [(ngModel)]="cfg.incluirGraficoPrepostulaciones"/>
+              <span>Gráfico de prepostulaciones por convocatoria</span>
+            </label>
+            <label class="check-item" *ngIf="cfg.moduloActivo !== 'solicitud'">
+              <input type="checkbox" [(ngModel)]="cfg.incluirGraficoTemporal"/>
+              <span>Gráfico de tendencia temporal</span>
+            </label>
+            <label class="check-item" *ngIf="cfg.moduloActivo === 'prepostulacion'">
+              <input type="checkbox" [(ngModel)]="cfg.incluirGraficoConvocatoria"/>
+              <span>Gráfico por convocatoria</span>
+            </label>
+            <label class="check-item" *ngIf="cfg.moduloActivo === 'solicitud'">
+              <input type="checkbox" [(ngModel)]="cfg.incluirGraficoCarreras"/>
+              <span>Gráfico por carrera</span>
+            </label>
+            <label class="check-item" *ngIf="cfg.moduloActivo === 'solicitud'">
+              <input type="checkbox" [(ngModel)]="cfg.incluirGraficoAreas"/>
+              <span>Gráfico por área de conocimiento</span>
+            </label>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ── PESTAÑA: VISUAL ── -->
+      <ng-container *ngIf="tabReporte === 'visual'">
+        <div class="rpt-seccion">
+          <h4 class="rpt-titulo">Personalización del documento</h4>
+          <div class="rpt-grid2">
+            <div class="rpt-campo">
+              <label>Título del reporte</label>
+              <input type="text" class="form-input" placeholder="Ej: Informe Académico Marzo 2026" [(ngModel)]="cfg.titulo"/>
+            </div>
+            <div class="rpt-campo">
+              <label>Subtítulo</label>
+              <input type="text" class="form-input" placeholder="Período / Descripción" [(ngModel)]="cfg.subtitulo"/>
+            </div>
+            <div class="rpt-campo" *ngIf="cfg.formato === 'PDF'">
+              <label>Color primario</label>
+              <div class="color-row">
+                <input type="color"  [(ngModel)]="cfg.colorPrimario" class="color-input"/>
+                <input type="text"   [(ngModel)]="cfg.colorPrimario" class="form-input color-hex" placeholder="#00A63E"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+    </div><!-- /modal-body -->
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <div class="footer-info">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        El archivo se descargará automáticamente
+      </div>
+      <div class="footer-actions">
+        <button class="btn btn-outline" (click)="cerrarModal()" [disabled]="generando">Cancelar</button>
+        <button class="btn btn-primary" (click)="generarReporte()" [disabled]="generando">
+          <svg *ngIf="!generando" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <svg *ngIf="generando" class="spinner-sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 1 1-6.219-8.56"/>
+          </svg>
+          {{ generando ? 'Generando...' : 'Generar ' + cfg.formato }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<app-toast></app-toast>

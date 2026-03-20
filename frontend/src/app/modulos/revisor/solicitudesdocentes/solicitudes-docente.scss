@@ -226,6 +226,17 @@ textarea.form-input { resize: vertical; min-height: 80px; }
   &.btn-danger { background: $error; color: white;
     &:hover:not(:disabled) { background: #b91c1c; } &:disabled { opacity: .6; cursor: not-allowed; } }
 
+
+  &.btn-datos {
+    background: $primary;
+    color: white;
+    svg { stroke: white; flex-shrink: 0; }
+    &:hover:not(:disabled) {
+      background: $dark;
+      box-shadow: 0 4px 12px rgba($primary, 0.3);
+    }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
   &.btn-pdf { background: #fef2f2; color: $error; border: 1.5px solid #fecaca;
     &:hover { background: #fee2e2; } }
 }

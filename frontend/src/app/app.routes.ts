@@ -361,6 +361,35 @@ export const routes: Routes = [
           import('./modulos/revisor/decisiones/decisiones.component')
             .then(m => m.DecisionesRevisorComponent)
       },
+      // ── Estadísticas individuales ────────────────────────────────────────
+      {
+        path: 'estadisticas-convocatorias',
+        title: 'SSDC - Estadísticas Convocatorias',
+        loadComponent: () =>
+          import('./modulos/revisor/estadisticas-convocatorias/estadisticas-convocatorias')
+            .then(m => m.EstadisticasConvocatoriasComponent)
+      },
+      {
+        path: 'estadisticas-postulantes',
+        title: 'SSDC - Estadísticas Postulantes',
+        loadComponent: () =>
+          import('./modulos/revisor/estadisticas-postulantes/estadisticas-postulantes')
+            .then(m => m.EstadisticasPostulantesComponent)
+      },
+      {
+        path: 'estadisticas-solicitudes',
+        title: 'SSDC - Estadísticas Solicitudes',
+        loadComponent: () =>
+          import('./modulos/revisor/estadisticas-solicitudes/estadisticas-solicitudes')
+            .then(m => m.EstadisticasSolicitudesComponent)
+      },
+      {
+        path: 'reportes',
+        title: 'SSDC - Reportes',
+        loadComponent: () =>
+          import('./modulos/revisor/reportes/reportes')
+            .then(m => m.ReportesRevisorComponent)
+      },
     ]
   },
 

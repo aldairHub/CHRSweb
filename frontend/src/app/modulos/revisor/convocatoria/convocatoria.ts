@@ -1,3 +1,4 @@
+import { Router } from '@angular/router';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
@@ -155,7 +156,8 @@ export class ConvocatoriaComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private toast: ToastService,
     private aiService: AiConvocatoriaService
-  ) {}
+    ,
+    private router: Router) {}
 
   ngOnInit(): void {
     this.cargarConvocatorias();
@@ -586,9 +588,7 @@ export class ConvocatoriaComponent implements OnInit {
   }
   // ── Métodos Reporte ───────────────────────────────────────────────────────
   exportarReporte(): void {
-    this.reporteConfig.estado = this.filtroEstado || '';
-    this.showReporteModal  = true;
-    this.reporteTabActiva  = 'filtros';
+    this.router.navigate(['/revisor/estadisticas-convocatorias']);
   }
 
   cerrarReporteModal(): void { this.showReporteModal = false; }

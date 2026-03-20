@@ -1,4 +1,5 @@
 // solicitudes-docente.ts
+import { Router } from '@angular/router';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DecimalPipe, TitleCasePipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -139,7 +140,8 @@ export class SolicitudesDocenteComponent implements OnInit {
     private http:  HttpClient,
     private cdr:   ChangeDetectorRef,
     private toast: ToastService
-  ) {}
+    ,
+    private router: Router) {}
 
   ngOnInit(): void { this.cargar(); }
 
@@ -379,9 +381,7 @@ export class SolicitudesDocenteComponent implements OnInit {
   // ── REPORTE ───────────────────────────────────────────────────
 
   exportarReporte(): void {
-    this.reporteConfig.estado = this.filtroEstado || '';
-    this.showReporteModal     = true;
-    this.reporteTabActiva     = 'filtros';
+    this.router.navigate(['/revisor/estadisticas-solicitudes']);
   }
 
   cerrarReporteModal(): void { this.showReporteModal = false; }
