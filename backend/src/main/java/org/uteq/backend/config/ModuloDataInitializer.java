@@ -55,7 +55,7 @@ public class ModuloDataInitializer implements ApplicationRunner {
         Modulo ev = mod("evaluador","Panel de evaluador","/evaluador",2);
         op(ev,"Postulantes",       "Registro y seguimiento",  "/evaluador/postulantes",1);
         op(ev,"Documentos",        "Gestión de archivos",     "/evaluador/documentos", 2);
-        op(ev,"Evaluación",        "Matriz de méritos",       "/evaluador/evaluacion", 3);
+        op(ev,"Matriz de méritos",        "Matriz de méritos docente",       "/evaluador/matriz-meritos", 3);
         op(ev,"Reportes",          "Informes en PDF",         "/evaluador/reportes",   4);
         op(ev,"Solicitar Docente", "Nueva requisición",       "/evaluador/solicitar",  5);
         op(ev,"Entrevistas",       "Gestión de entrevistas",  "/evaluador/entrevistas",6);
@@ -66,6 +66,7 @@ public class ModuloDataInitializer implements ApplicationRunner {
         op(rev,"Convocatorias",    "Gestionar convocatorias", "/revisor/convocatorias",   2);
         op(rev,"Solicitudes Docente","Gestionar solicitudes de contratación docente", "/revisor/solicitudes-docente", 3);
         op(rev,"Configurar Matriz","Configurar matriz de méritos", "/revisor/config-matriz", 4);
+        op(rev,"Configurar Entrevistas","Configuración de fases, plantillas y criterios", "/revisor/config-entrevistas'", 5);
         // ── POSTULANTE ──────────────────────────────────────────────
         Modulo pos = mod("postulante","Panel de postulante","/postulante",4);
         op(pos,"Mis Documentos","Subir y gestionar docs",  "/postulante/subir-documentos",1);
