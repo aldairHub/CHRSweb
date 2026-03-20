@@ -43,4 +43,33 @@ public class MatrizConfigController {
         service.eliminarItem(idItem);
         return ResponseEntity.ok(Map.of("mensaje", "Ítem eliminado correctamente"));
     }
+    /**
+     * GET /api/matriz-config/tiene-procesos-activos
+     * Retorna true si hay procesos activos que impidan editar la matriz
+     */
+    @GetMapping("/tiene-procesos-activos")
+    public ResponseEntity<?> tieneProcesosActivos() {
+        boolean tiene = service.tieneProcesosActivos();
+        return ResponseEntity.ok(Map.of("tieneProcesosActivos", tiene));
+    }
+
+    /**
+     * POST /api/matriz-config/confirmar-distribucion
+     * Body: { "meritos": 50, "experiencia": 25, "entrevista": 25 }
+     */
+    @PostMapping("/confirmar-distribucion")
+    public ResponseEntity<?> confirmarDistribucion(@RequestBody Map<String, Object> body) {
+        Double meritos     = ((Number) body.get("meritos")).doubleValue();
+        Double experiencia = ((Number) body.get("experiencia")).doubleValue();
+        Double entrevista  = ((Number) body.get("entrevista")).doubleValue();
+
+        if (meritos + experiencia + entrevista != 100) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("mensaje", "La distribución debe sumar exactamente 100 puntos."));
+        }
+
+        service.confirmarDistribucion(meritos, experiencia, entrevista);
+        return ResponseEntity.ok(Map.of("mensaje", "Distribución confirmada correctamente."));
+    }
+
 }

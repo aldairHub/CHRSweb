@@ -1,4 +1,4 @@
-<!-- entrevistas-docentes/resultados/resultados.component.html -->
+<!-- resultados.component.html — Sin panel de decisión final -->
 
 <nav class="module-tabs">
   <a class="tab" routerLink="/evaluador/entrevistas-docentes/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
@@ -7,7 +7,7 @@
   </a>
   <a class="tab" routerLink="/evaluador/entrevistas-docentes/fases" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
-    Configurar Fases
+    Fases
   </a>
   <a class="tab" routerLink="/evaluador/entrevistas-docentes/plantillas" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 4H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0121 10.414V18a2 2 0 01-2 2z"/></svg>
@@ -17,9 +17,8 @@
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
     Criterios
   </a>
-  <a class="tab" (click)="navegarPostulantes()"
-     [class.active]="esRutaActiva('postulantes')"
-     style="cursor:pointer">    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+  <a class="tab" (click)="navegarPostulantes()" [class.active]="esRutaActiva('postulantes')" style="cursor:pointer">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
     Postulantes
   </a>
   <a class="tab" routerLink="/evaluador/entrevistas-docentes/programar-reunion" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
@@ -36,7 +35,6 @@
   </a>
 </nav>
 
-
 <div class="main-container">
   <div class="content-wrapper">
 
@@ -46,7 +44,11 @@
         <p class="page-subtitle">Consolidado de evaluaciones por postulante</p>
       </div>
       <button class="btn btn-outline" (click)="generarPDF()" [disabled]="!resultado">
-        📄 Generar Reporte PDF
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+        </svg>
+        Generar Reporte PDF
       </button>
     </div>
 
@@ -89,12 +91,24 @@
 
       <ng-container *ngIf="!isLoadingResultado && resultado">
 
+        <!-- ALERTA GUARDADO EXITOSO -->
+        <div class="alert success" *ngIf="guardadoExitoso">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div>
+            <strong>Puntaje registrado</strong>
+            <p>El puntaje de entrevista fue calculado y enviado automáticamente a la Matriz de Méritos.</p>
+          </div>
+        </div>
+
         <!-- RESULTADOS POR FASE -->
         <div class="card">
           <div class="card-header">
             <h3 class="card-title">Resultados por Fase</h3>
             <span class="badge" [ngClass]="procesoCompleto ? 'success' : 'warning'">
-              {{ procesoCompleto ? 'Proceso Completo' : 'Proceso Incompleto – ' + progreso + '%' }}
+              {{ procesoCompleto ? 'Proceso Completo' : 'En Progreso — ' + progreso + '%' }}
             </span>
           </div>
 
@@ -102,8 +116,13 @@
             <table class="table">
               <thead>
               <tr>
-                <th>Fase</th><th>Peso</th><th>Calificación</th><th>Ponderado</th>
-                <th>Evaluadores</th><th>Estado</th><th>Acciones</th>
+                <th>Fase</th>
+                <th>Peso</th>
+                <th>Calificación</th>
+                <th>Ponderado</th>
+                <th>Evaluadores</th>
+                <th>Estado</th>
+                <th>Acciones</th>
               </tr>
               </thead>
               <tbody>
@@ -112,9 +131,7 @@
                   <td><strong>{{ f.nombreFase }}</strong></td>
                   <td>{{ f.peso }}%</td>
                   <td>
-                      <span *ngIf="f.calificacion">
-                        {{ f.calificacion | number:'1.1-1' }} / 100
-                      </span>
+                    <span *ngIf="f.calificacion">{{ f.calificacion | number:'1.1-1' }} / 100</span>
                     <span *ngIf="!f.calificacion" class="text-muted">Pendiente</span>
                   </td>
                   <td>
@@ -138,27 +155,30 @@
                     <div class="action-buttons">
                       <button class="btn btn-outline btn-sm" *ngIf="f.estado === 'completada'"
                               (click)="toggleFaseExpandida(f.idFase)">
-                        {{ faseExpandida === f.idFase ? '▲ Ocultar' : '👁️ Ver Evaluaciones' }}
+                        {{ faseExpandida === f.idFase ? 'Ocultar' : 'Ver Evaluaciones' }}
                       </button>
                       <button class="btn btn-outline btn-sm"
-                              *ngIf="f.estado === 'programada' && f.evaluaciones && f.evaluaciones.length > 0"
+                              *ngIf="f.estado === 'programada' && f.evaluaciones?.length"
                               (click)="irEvaluar(f.evaluaciones![0].idReunion)">
-                        ✏️ Evaluar
+                        Evaluar
                       </button>
                     </div>
                   </td>
                 </tr>
 
                 <!-- SUB-TABLA DE EVALUACIONES -->
-                <tr *ngIf="faseExpandida === f.idFase && f.evaluaciones && f.evaluaciones.length > 0">
+                <tr *ngIf="faseExpandida === f.idFase && f.evaluaciones?.length">
                   <td colspan="7" class="subrow-cell">
                     <div class="sub-table-wrapper">
                       <div class="sub-table-title">Evaluaciones de: {{ f.nombreFase }}</div>
                       <table class="table sub-table">
                         <thead>
                         <tr>
-                          <th>Evaluador</th><th>Fecha</th><th>Calificación</th>
-                          <th>Observaciones</th><th>Firma</th>
+                          <th>Evaluador</th>
+                          <th>Fecha</th>
+                          <th>Calificación</th>
+                          <th>Observaciones</th>
+                          <th>Firma</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -168,7 +188,7 @@
                           <td><strong>{{ ev.calificacionFinal | number:'1.1-1' }} / 100</strong></td>
                           <td>{{ ev.observaciones }}</td>
                           <td>
-                            <span class="badge success" *ngIf="ev.confirmada">✓ Confirmada</span>
+                            <span class="badge success" *ngIf="ev.confirmada">Confirmada</span>
                           </td>
                         </tr>
                         </tbody>
@@ -187,7 +207,6 @@
                 </tr>
               </ng-container>
               </tbody>
-
               <tfoot>
               <tr class="total-row">
                 <td colspan="2"><strong>CALIFICACIÓN TOTAL</strong></td>
@@ -200,89 +219,58 @@
           </div>
         </div>
 
-        <!-- PUNTAJE FINAL PONDERADO -->
-        <div class="card" *ngIf="resultado.puntajeFinal">
+        <!-- PUNTAJE ENTREVISTA -->
+        <div class="card puntaje-card" *ngIf="resultado.puntajeEntrevista">
           <div class="card-header">
-            <h3 class="card-title">Puntaje Final Ponderado</h3>
-            <span class="badge success">Calculado automáticamente</span>
+            <h3 class="card-title">Puntaje Enviado a Matriz de Méritos</h3>
+            <span class="badge success">Registrado</span>
           </div>
-          <div class="info-grid" style="grid-template-columns: 1fr 1fr 1fr;">
-            <div>
-              <p><strong>Puntaje Matriz de Méritos</strong></p>
-              <p style="font-size: 1.5rem; font-weight: 800; color: #00A63E;">
-                {{ resultado.puntajeMatriz | number:'1.1-2' }} / 104
-              </p>
-              <small style="color: #536b50;">Contribuye 50% al total</small>
+          <div class="puntaje-resumen">
+            <div class="puntaje-item">
+              <span class="puntaje-label">Calificación Entrevistas</span>
+              <span class="puntaje-valor">{{ calificacionTotal | number:'1.1-2' }} / 100</span>
             </div>
-            <div>
-              <p><strong>Puntaje Entrevistas</strong></p>
-              <p style="font-size: 1.5rem; font-weight: 800; color: #00A63E;">
-                {{ resultado.puntajeEntrevista | number:'1.1-2' }} / 100
-              </p>
-              <small style="color: #536b50;">Contribuye 50% al total</small>
+            <div class="puntaje-arrow">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+              </svg>
             </div>
-            <div style="background: #EEF9EC; border-radius: 10px; padding: 1rem;">
-              <p><strong>Puntaje Final</strong></p>
-              <p style="font-size: 2rem; font-weight: 800; color: #016630;">
-                {{ resultado.puntajeFinal | number:'1.1-2' }} / 100
-              </p>
-              <small style="color: #536b50;">Fórmula: (Matriz/104×50) + (Entrevista/100×50)</small>
+            <div class="puntaje-item puntaje-item--resultado">
+              <span class="puntaje-label">Puntaje en Matriz (25%)</span>
+              <span class="puntaje-valor puntaje-valor--green">{{ resultado.puntajeEntrevista | number:'1.1-2' }} / 25</span>
             </div>
           </div>
+          <p class="puntaje-nota">
+            Este valor fue enviado automáticamente a la sección de Entrevista Docente en la Matriz de Méritos del candidato.
+          </p>
         </div>
 
-        <!-- DECISIÓN FINAL -->
-        <div class="card" [class.disabled-card]="!procesoCompleto">
-          <div class="card-header">
-            <h3 class="card-title">Decisión Final del Comité</h3>
-            <span class="badge" [ngClass]="procesoCompleto ? 'warning' : 'default'">
-              {{ procesoCompleto ? 'Disponible' : 'Pendiente' }}
-            </span>
-          </div>
-
-          <div class="alert info" *ngIf="!procesoCompleto">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- BOTÓN GUARDAR PUNTAJE -->
+        <div class="footer-actions">
+          <div class="footer-info" *ngIf="!procesoCompleto">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <div>
-              <strong>Información</strong>
-              <p>La decisión final estará disponible una vez que se completen todas las fases del proceso.</p>
-            </div>
+            Complete todas las fases para guardar el puntaje de entrevista.
           </div>
-
-          <div [class.blurred]="!procesoCompleto">
-            <div class="form-group">
-              <label>Decisión <span class="required">*</span></label>
-              <select class="form-select" [(ngModel)]="decision"
-                      [disabled]="!procesoCompleto" style="max-width: 400px;">
-                <option value="">Seleccionar...</option>
-                <option *ngFor="let d of decisiones" [value]="d.value">{{ d.label }}</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Justificación de la Decisión <span class="required">*</span></label>
-              <textarea class="form-textarea" [(ngModel)]="justificacion"
-                        [disabled]="!procesoCompleto"
-                        placeholder="Fundamente la decisión del comité..."></textarea>
-            </div>
-          </div>
-
-          <div class="footer-actions">
-            <button class="btn btn-primary" (click)="guardarDecision()"
-                    [disabled]="!procesoCompleto || isSaving">
-              <svg *ngIf="isSaving" class="spinner-icon" fill="none" stroke="currentColor"
-                   viewBox="0 0 24 24" width="18" height="18">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-              </svg>
-              {{ isSaving ? 'Guardando...' : '💾 Guardar Decisión Final' }}
-            </button>
-          </div>
+          <button class="btn btn-primary"
+                  (click)="guardarPuntajeEntrevista()"
+                  [disabled]="!procesoCompleto || isSaving || guardadoExitoso">
+            <svg *ngIf="isSaving" class="spinner-icon" fill="none" stroke="currentColor"
+                 viewBox="0 0 24 24" width="16" height="16">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            <svg *ngIf="!isSaving" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+            </svg>
+            {{ isSaving ? 'Guardando...' : guardadoExitoso ? 'Puntaje Registrado' : 'Guardar Puntaje de Entrevista' }}
+          </button>
         </div>
 
       </ng-container>
     </ng-container>
-
   </div>
 </div>

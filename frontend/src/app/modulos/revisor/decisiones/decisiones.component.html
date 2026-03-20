@@ -1,0 +1,116 @@
+<!-- decisiones.component.html — Módulo Revisor -->
+
+<div class="main-container">
+  <div class="content-wrapper">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h2>Decisiones del Comité</h2>
+        <p class="page-subtitle">Decisiones finales enviadas por los evaluadores para su revisión</p>
+      </div>
+    </div>
+
+    <!-- Filtro tabs -->
+    <div class="filtro-tabs">
+      <button class="filtro-tab" [class.active]="estadoFiltro === 'pendiente'"
+              (click)="cambiarFiltro('pendiente')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        Pendientes
+      </button>
+      <button class="filtro-tab" [class.active]="estadoFiltro === 'revisado'"
+              (click)="cambiarFiltro('revisado')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        Revisadas
+      </button>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="cargando">
+      <svg class="spinner-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="32" height="32">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      <p>Cargando decisiones...</p>
+    </div>
+
+    <div class="alert danger" *ngIf="error">
+      <div><strong>Error</strong><p>{{ error }}</p></div>
+    </div>
+
+    <!-- Lista de decisiones -->
+    <ng-container *ngIf="!cargando && !error">
+
+      <div class="empty-state" *ngIf="decisiones.length === 0">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="48" height="48">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+        <h3>Sin decisiones {{ estadoFiltro === 'pendiente' ? 'pendientes' : 'revisadas' }}</h3>
+        <p *ngIf="estadoFiltro === 'pendiente'">
+          No hay decisiones del comité pendientes de revisión.
+        </p>
+        <p *ngIf="estadoFiltro === 'revisado'">
+          No hay decisiones marcadas como revisadas aún.
+        </p>
+      </div>
+
+      <div class="decision-card" *ngFor="let d of decisiones">
+        <div class="decision-header" (click)="toggleExpandir(d)">
+
+          <div class="decision-estado-dot" [class.pendiente]="d.estado === 'pendiente'"></div>
+
+          <div class="decision-info">
+            <div class="decision-materia">{{ d.nombre_materia }}</div>
+            <div class="decision-meta">
+              <span class="decision-fecha">{{ getFechaFormateada(d.fecha_envio) }}</span>
+            </div>
+          </div>
+
+          <div class="decision-ganador">
+            <div class="ganador-label">Candidato seleccionado</div>
+            <div class="ganador-nombre">{{ d.nombre_ganador }}</div>
+            <div class="ganador-puntaje">
+              <span class="puntaje-chip">{{ d.puntaje_final | number:'1.1-2' }} pts</span>
+            </div>
+          </div>
+
+          <div class="decision-actions">
+            <button class="btn btn-primary btn-sm"
+                    *ngIf="d.estado === 'pendiente'"
+                    (click)="marcarRevisada(d); $event.stopPropagation()"
+                    [disabled]="marcando === d.id_decision">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              {{ marcando === d.id_decision ? 'Marcando...' : 'Marcar como Revisada' }}
+            </button>
+            <span class="revisado-badge" *ngIf="d.estado === 'revisado'">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              Revisada
+            </span>
+            <svg class="chevron" [class.rotado]="d.expandida"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Acta expandida -->
+        <div class="decision-acta" *ngIf="d.expandida">
+          <div class="acta-label">Acta del Comité de Selección</div>
+          <div class="acta-texto">{{ d.acta_comite }}</div>
+        </div>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

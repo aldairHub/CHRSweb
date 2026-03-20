@@ -354,6 +354,13 @@ export const routes: Routes = [
           import('./modulos/revisor/config-entrevistas/config-entrevistas.component')
             .then(m => m.ConfigEntrevistasComponent)
       },
+      {
+        path: 'decisiones',
+        title: 'SSDC - Decisiones del Comité',
+        loadComponent: () =>
+          import('./modulos/revisor/decisiones/decisiones.component')
+            .then(m => m.DecisionesRevisorComponent)
+      },
     ]
   },
 

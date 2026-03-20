@@ -6,7 +6,6 @@ import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { ModalEvaluadoresComponent } from '../../../component/modal-evaluadores.component';
 
-
 export interface ItemRubrica {
   id: string;
   label: string;
@@ -49,8 +48,20 @@ export interface Candidato {
   habilitadoEntrevista: boolean;
 }
 
+export interface CandidatoComite {
+  id_proceso: number;
+  nombres: string;
+  apellidos: string;
+  puntaje_matriz: number;
+  puntaje_entrevista: number;
+  puntaje_total: number;
+  decision_comite: string;
+  bloqueado: boolean;
+}
+
 export interface ConvocatoriaInfo {
   idConvocatoria: number;
+  idSolicitud: number;
   titulo: string;
   fechaLimiteDocumentos: string;
   materia: string;
@@ -69,11 +80,9 @@ export class MatrizMeritosComponent implements OnInit {
 
   private readonly API     = 'http://localhost:8080/api/matriz-meritos';
   private readonly API_CFG = 'http://localhost:8080/api/matriz-config';
+  private readonly API_COMITE = 'http://localhost:8080/api/comite-final';
 
-  readonly PUNTAJE_MINIMO = 50; // mínimo sobre 100 para pasar a entrevistas
-
-  modalEvaluadoresVisible = false;
-  candidatoEvaluadores: Candidato | null = null;
+  readonly PUNTAJE_MINIMO = 50;
 
   cargando = false;
   guardando = false;
@@ -87,11 +96,22 @@ export class MatrizMeritosComponent implements OnInit {
   justificacionOverride = '';
   guardandoOverride = false;
 
+  // Modal evaluadores
+  modalEvaluadoresVisible = false;
+  candidatoEvaluadores: Candidato | null = null;
+
+  // Comité final
+  candidatosComite: CandidatoComite[] = [];
+  cargandoComite = false;
+  comiteConfirmado = false;
+  idProcesoGanador: number | null = null;
+  actaComite = '';
+  confirmandoComite = false;
+
   convocatoriaInfo: ConvocatoriaInfo | null = null;
   candidatos: Candidato[] = [];
   idConvocatoria = 0;
 
-  // Estructura cargada desde BD
   seccionesMeritos: SeccionRubrica[] = [];
   seccionesExperiencia: SeccionRubrica[] = [];
   seccionEntrevista: SeccionRubrica | null = null;
@@ -111,16 +131,6 @@ export class MatrizMeritosComponent implements OnInit {
       }
     });
   }
-  abrirModalEvaluadores(c: Candidato): void {
-    this.candidatoEvaluadores = c;
-    this.modalEvaluadoresVisible = true;
-  }
-
-  cerrarModalEvaluadores(): void {
-    this.modalEvaluadoresVisible = false;
-    this.candidatoEvaluadores = null;
-  }
-
 
   cargarTodo(): void {
     this.cargando = true;
@@ -134,6 +144,7 @@ export class MatrizMeritosComponent implements OnInit {
         this.procesarEstructura(estructura);
         this.procesarCandidatos(matriz);
         this.cargando = false;
+        if (this.guardado) this.cargarComite();
       },
       error: (err) => {
         this.error = err?.error?.mensaje || 'Error al cargar los datos.';
@@ -160,9 +171,9 @@ export class MatrizMeritosComponent implements OnInit {
       }))
     }));
 
-    this.seccionesMeritos    = secciones.filter(s => s.tipo === 'meritos');
+    this.seccionesMeritos     = secciones.filter(s => s.tipo === 'meritos');
     this.seccionesExperiencia = secciones.filter(s => s.tipo === 'experiencia');
-    this.seccionEntrevista   = secciones.find(s => s.tipo === 'entrevista') || null;
+    this.seccionEntrevista    = secciones.find(s => s.tipo === 'entrevista') || null;
 
     this.accionesAfirmativas = (estructura.accionesAfirmativas || []).map((a: any) => ({
       id:     a.codigo,
@@ -174,20 +185,20 @@ export class MatrizMeritosComponent implements OnInit {
   private procesarCandidatos(matriz: any): void {
     this.convocatoriaInfo = matriz.convocatoria;
     this.candidatos = (matriz.candidatos || []).map((c: any) => ({
-      id:                  c.idPostulante,
-      idProceso:           c.idProceso,
-      idSolicitud:         c.idSolicitud,
-      nombres:             c.nombres,
-      apellidos:           c.apellidos,
-      titulos:             c.titulos || '',
-      puntajes:            c.puntajes || {},
-      accionesAfirmativas: c.accionesAfirmativas || {},
-      totalMerecimientos:  0,
-      totalExperiencia:    0,
-      totalEntrevista:     0,
+      id:                    c.idPostulante,
+      idProceso:             c.idProceso,
+      idSolicitud:           c.idSolicitud,
+      nombres:               c.nombres,
+      apellidos:             c.apellidos,
+      titulos:               c.titulos || '',
+      puntajes:              c.puntajes || {},
+      accionesAfirmativas:   c.accionesAfirmativas || {},
+      totalMerecimientos:    0,
+      totalExperiencia:      0,
+      totalEntrevista:       0,
       totalAccionAfirmativa: 0,
-      puntajeTotal:        0,
-      habilitadoEntrevista: c.habilitadoEntrevista || false
+      puntajeTotal:          0,
+      habilitadoEntrevista:  c.habilitadoEntrevista || false
     }));
 
     this.inicializarPuntajes();
@@ -217,33 +228,28 @@ export class MatrizMeritosComponent implements OnInit {
   }
 
   recalcular(c: Candidato): void {
-    // 1. Méritos (máx 50)
     let totalMeritos = 0;
     this.seccionesMeritos.forEach(sec => {
-      const sumaSeccion = sec.items.reduce((s, item) => s + Number(c.puntajes[item.id] || 0), 0);
-      totalMeritos += Math.min(sumaSeccion, sec.maximo);
+      const suma = sec.items.reduce((s, item) => s + Number(c.puntajes[item.id] || 0), 0);
+      totalMeritos += Math.min(suma, sec.maximo);
     });
     c.totalMerecimientos = Math.min(totalMeritos, 50);
 
-    // 2. Experiencia (máx 25)
     let totalExp = 0;
     this.seccionesExperiencia.forEach(sec => {
-      const sumaSeccion = sec.items.reduce((s, item) => s + Math.min(Number(c.puntajes[item.id] || 0), item.max), 0);
-      totalExp += Math.min(sumaSeccion, sec.maximo);
+      const suma = sec.items.reduce((s, item) => s + Math.min(Number(c.puntajes[item.id] || 0), item.max), 0);
+      totalExp += Math.min(suma, sec.maximo);
     });
     c.totalExperiencia = Math.min(totalExp, 25);
 
-    // 3. Entrevista (máx 25 — bloqueado, viene de entrevistas docentes)
     c.totalEntrevista = this.seccionEntrevista
       ? Math.min(Number(c.puntajes['entrevista'] || 0), 25)
       : 0;
 
-    // 4. Acción afirmativa (bonificación, máx 4)
     let totalAf = 0;
     this.accionesAfirmativas.forEach(af => { if (c.accionesAfirmativas[af.id]) totalAf += af.puntos; });
     c.totalAccionAfirmativa = Math.min(totalAf, 4);
 
-    // 5. Total sobre 100 (+ bonificación)
     c.puntajeTotal = c.totalMerecimientos + c.totalExperiencia + c.totalEntrevista + c.totalAccionAfirmativa;
   }
 
@@ -262,15 +268,15 @@ export class MatrizMeritosComponent implements OnInit {
     const payload = {
       idConvocatoria: this.idConvocatoria,
       candidatos: this.candidatos.map(c => ({
-        idProceso:            c.idProceso,
-        idSolicitud:          c.idSolicitud,
-        puntajes:             c.puntajes,
-        accionesAfirmativas:  c.accionesAfirmativas,
-        totalMerecimientos:   c.totalMerecimientos,
-        totalExperiencia:     c.totalExperiencia,
-        totalEntrevista:      c.totalEntrevista,
+        idProceso:             c.idProceso,
+        idSolicitud:           c.idSolicitud,
+        puntajes:              c.puntajes,
+        accionesAfirmativas:   c.accionesAfirmativas,
+        totalMerecimientos:    c.totalMerecimientos,
+        totalExperiencia:      c.totalExperiencia,
+        totalEntrevista:       c.totalEntrevista,
         totalAccionAfirmativa: c.totalAccionAfirmativa,
-        puntajeTotal:         c.puntajeTotal
+        puntajeTotal:          c.puntajeTotal
       }))
     };
 
@@ -279,6 +285,7 @@ export class MatrizMeritosComponent implements OnInit {
         this.guardando = false;
         this.guardado  = true;
         this.mostrarModalGuardado = true;
+        this.cargarComite();
       },
       error: (err) => {
         alert(err?.error?.mensaje || 'Error al guardar la evaluación.');
@@ -287,6 +294,57 @@ export class MatrizMeritosComponent implements OnInit {
     });
   }
 
+  // ── Comité Final ─────────────────────────────────────────────
+  cargarComite(): void {
+    if (!this.idConvocatoria) return;
+    this.cargandoComite = true;
+
+    this.http.get<any>(`${this.API_COMITE}/solicitud/${this.idConvocatoria}/confirmado`).subscribe({
+      next: (res) => {
+        this.comiteConfirmado = res.confirmado;
+      }
+    });
+
+    this.http.get<CandidatoComite[]>(`${this.API_COMITE}/solicitud/${this.idConvocatoria}/candidatos`).subscribe({
+      next: (data) => {
+        this.candidatosComite = data;
+        this.cargandoComite = false;
+
+        // Si ya está confirmado, buscar el acta
+        if (this.comiteConfirmado) {
+          const ganador = data.find(c => c.decision_comite === 'ganador');
+          if (ganador) this.idProcesoGanador = ganador.id_proceso;
+        }
+      },
+      error: () => { this.cargandoComite = false; }
+    });
+  }
+
+  confirmarDecisionComite(): void {
+    if (!this.idProcesoGanador)    { alert('Seleccione un candidato ganador.'); return; }
+    if (!this.actaComite.trim())   { alert('El acta del comité es obligatoria.'); return; }
+    if (!confirm('¿Confirmar la decisión final del comité? Esta acción es irreversible.')) return;
+
+    this.confirmandoComite = true;
+
+    this.http.post(`${this.API_COMITE}/solicitud/${this.idConvocatoria}/confirmar`, {
+      idProcesoGanador: this.idProcesoGanador,
+      actaComite:       this.actaComite
+    }).subscribe({
+      next: () => {
+        this.confirmandoComite = false;
+        this.comiteConfirmado  = true;
+        this.cargarComite();
+        this.cargarTodo(); // recargar para reflejar bloqueo
+      },
+      error: (err) => {
+        alert(err?.error?.mensaje || 'Error al confirmar la decisión.');
+        this.confirmandoComite = false;
+      }
+    });
+  }
+
+  // ── Override ─────────────────────────────────────────────────
   abrirModalOverride(c: Candidato): void {
     this.candidatoOverride     = c;
     this.justificacionOverride = '';
@@ -320,6 +378,23 @@ export class MatrizMeritosComponent implements OnInit {
     });
   }
 
+  // ── Modal evaluadores ─────────────────────────────────────────
+  abrirModalEvaluadores(c: Candidato): void {
+    this.candidatoEvaluadores    = c;
+    this.modalEvaluadoresVisible = true;
+  }
+
+  cerrarModalEvaluadores(): void {
+    this.modalEvaluadoresVisible = false;
+    this.candidatoEvaluadores    = null;
+  }
+
+  get contextLabelEvaluadores(): string {
+    if (!this.candidatoEvaluadores) return '';
+    return `${this.candidatoEvaluadores.apellidos} ${this.candidatoEvaluadores.nombres} — Matriz de Méritos`;
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────
   cerrarModalGuardado(): void { this.mostrarModalGuardado = false; }
   volver(): void { this.router.navigate(['/evaluador/matriz-meritos']); }
   trackById(_: number, item: any): number { return item.id; }
@@ -334,10 +409,5 @@ export class MatrizMeritosComponent implements OnInit {
       ...this.seccionesExperiencia,
       ...(this.seccionEntrevista ? [this.seccionEntrevista] : [])
     ];
-  }
-
-  get contextLabelEvaluadores(): string {
-    if (!this.candidatoEvaluadores) return '';
-    return `${this.candidatoEvaluadores.apellidos} ${this.candidatoEvaluadores.nombres} — Matriz de Méritos`;
   }
 }

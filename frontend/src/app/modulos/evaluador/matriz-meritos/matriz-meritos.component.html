@@ -289,6 +289,160 @@
           {{ guardando ? 'Guardando...' : 'Guardar Evaluación' }}
         </button>
       </div>
+      <!-- PANEL COMITÉ FINAL -->
+      <div class="comite-panel" *ngIf="guardado && candidatos.length > 0">
+
+        <div class="comite-panel__header">
+          <div class="comite-panel__title-wrap">
+            <div class="comite-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="comite-panel__title">Comité de Selección Final</h3>
+              <p class="comite-panel__subtitle">
+                Confirme la decisión del comité evaluador. Esta acción es irreversible y notificará al Vicerrectorado.
+              </p>
+            </div>
+          </div>
+          <span class="comite-estado-badge" [class.confirmado]="comiteConfirmado">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+        <path *ngIf="comiteConfirmado" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        <path *ngIf="!comiteConfirmado" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+            {{ comiteConfirmado ? 'Decisión Confirmada' : 'Pendiente de Decisión' }}
+    </span>
+        </div>
+
+        <!-- Tabla de candidatos con puntajes finales -->
+        <div class="comite-tabla-wrap">
+          <div class="comite-tabla-loading" *ngIf="cargandoComite">
+            <svg class="spinner-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Cargando puntajes finales...
+          </div>
+
+          <table class="comite-tabla" *ngIf="!cargandoComite && candidatosComite.length > 0">
+            <thead>
+            <tr>
+              <th>Pos.</th>
+              <th>Candidato</th>
+              <th>Méritos + Exp.</th>
+              <th>Entrevista (25%)</th>
+              <th>Puntaje Final</th>
+              <th>Selección</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let c of candidatosComite; let i = index"
+                [class.fila-ganador]="idProcesoGanador === c.id_proceso"
+                [class.fila-confirmada]="comiteConfirmado && c.decision_comite === 'ganador'">
+              <td class="pos-cell">
+                <div class="pos-badge" [class.pos-badge--1]="i === 0">{{ i + 1 }}</div>
+              </td>
+              <td>
+                <div class="candidato-nombre">{{ c.apellidos }} {{ c.nombres }}</div>
+              </td>
+              <td>
+                <span class="puntaje-chip">{{ c.puntaje_matriz | number:'1.1-2' }}</span>
+              </td>
+              <td>
+            <span class="puntaje-chip puntaje-chip--entrevista">
+              {{ c.puntaje_entrevista | number:'1.1-2' }}
+            </span>
+              </td>
+              <td>
+            <span class="puntaje-total-chip" [class.puntaje-total-chip--top]="i === 0">
+              {{ c.puntaje_total | number:'1.1-2' }}
+            </span>
+              </td>
+              <td>
+                <!-- Si ya está confirmado, mostrar resultado -->
+                <ng-container *ngIf="comiteConfirmado">
+              <span class="ganador-badge" *ngIf="c.decision_comite === 'ganador'">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Seleccionado
+              </span>
+                  <span class="no-ganador-badge" *ngIf="c.decision_comite !== 'ganador'">No seleccionado</span>
+                </ng-container>
+
+                <!-- Si no está confirmado, mostrar radio button -->
+                <ng-container *ngIf="!comiteConfirmado">
+                  <label class="radio-ganador" [class.selected]="idProcesoGanador === c.id_proceso">
+                    <input type="radio" name="ganador"
+                           [value]="c.id_proceso"
+                           [(ngModel)]="idProcesoGanador">
+                    <span class="radio-label">Seleccionar</span>
+                  </label>
+                </ng-container>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Formulario de acta -->
+        <div class="comite-form" *ngIf="!comiteConfirmado">
+          <div class="form-group">
+            <label class="form-label">
+              Acta del Comité
+              <span class="required">*</span>
+            </label>
+            <textarea class="form-textarea"
+                      [(ngModel)]="actaComite"
+                      placeholder="Registre el acta de la reunión del comité de selección, fundamentos de la decisión y cualquier observación relevante..."
+                      maxlength="2000"
+                      rows="4"></textarea>
+            <div class="char-count">{{ actaComite.length }} / 2000</div>
+          </div>
+
+          <div class="comite-warning">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            Al confirmar, la matriz de méritos y el proceso de entrevistas quedarán bloqueados y la decisión será enviada al Vicerrectorado para su revisión.
+          </div>
+
+          <div class="comite-actions">
+            <button class="btn btn-comite-confirmar"
+                    (click)="confirmarDecisionComite()"
+                    [disabled]="!idProcesoGanador || !actaComite.trim() || confirmandoComite">
+              <svg *ngIf="confirmandoComite" class="spinner-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              <svg *ngIf="!confirmandoComite" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+              {{ confirmandoComite ? 'Confirmando...' : 'Confirmar Decisión del Comité' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Acta confirmada (solo lectura) -->
+        <div class="comite-acta-confirmada" *ngIf="comiteConfirmado && actaComite">
+          <div class="acta-label">Acta del Comité</div>
+          <div class="acta-texto">{{ actaComite }}</div>
+          <div class="acta-notificado">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Decisión enviada al Vicerrectorado
+          </div>
+        </div>
+
+      </div>
+
 
     </ng-container>
   </div>
@@ -355,11 +509,11 @@
       </button>
     </div>
   </div>
-  <app-modal-evaluadores
-    [visible]="modalEvaluadoresVisible"
-    [idProceso]="candidatoEvaluadores?.idProceso ?? null"
-    tipo="matriz"
-    [contextLabel]="contextLabelEvaluadores"
-    (cerrado)="cerrarModalEvaluadores()">
-  </app-modal-evaluadores>
 </div>
+<app-modal-evaluadores
+  [visible]="modalEvaluadoresVisible"
+  [idProceso]="candidatoEvaluadores?.idProceso ?? null"
+  tipo="matriz"
+  [contextLabel]="contextLabelEvaluadores"
+  (cerrado)="cerrarModalEvaluadores()">
+</app-modal-evaluadores>

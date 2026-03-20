@@ -1,12 +1,17 @@
+// ══════════════════════════════════════════════════════════════
+// resultados.component.ts — SIN panel de decisión final
+// Solo muestra resultados por fase y guarda puntaje de entrevista
+// ══════════════════════════════════════════════════════════════
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { ResultadosService } from '../../../../services/entrevistas/resultados.service';
 import { PostulantesService } from '../../../../services/entrevistas/postulantes.service';
 import { EntrevistasEstadoService } from '../../../../services/entrevistas/entrevistas-estado.service';
-import { PostulanteResumen, ResultadoProceso, ResultadoFase, DecisionFinalRequest } from '../../../../models/entrevistas-models';
+import { PostulanteResumen, ResultadoProceso, ResultadoFase } from '../../../../models/entrevistas-models';
 
 @Component({
   selector: 'app-resultados',
@@ -17,6 +22,8 @@ import { PostulanteResumen, ResultadoProceso, ResultadoFase, DecisionFinalReques
 })
 export class ResultadosComponent implements OnInit {
 
+  private readonly API = 'http://localhost:8080/api/evaluacion/procesos';
+
   postulantes: PostulanteResumen[] = [];
   idProcesoSeleccionado = 0;
   resultado: ResultadoProceso | null = null;
@@ -25,30 +32,23 @@ export class ResultadosComponent implements OnInit {
   isLoadingResultado = false;
   isSaving           = false;
   error              = '';
+  guardadoExitoso    = false;
 
   faseExpandida: number | null = null;
-
-  decision      = '';
-  justificacion = '';
-
-  decisiones = [
-    { value: 'aprobado_contratar', label: 'Aprobado – Contratar' },
-    { value: 'aprobado_espera',    label: 'Aprobado – Lista de Espera' },
-    { value: 'no_aprobado',        label: 'No Aprobado' },
-    { value: 'segunda_ronda',      label: 'Requiere Segunda Ronda' }
-  ];
 
   get fasesResultados(): ResultadoFase[] { return this.resultado?.fasesResultados ?? []; }
   get calificacionTotal(): number         { return this.resultado?.calificacionTotal ?? 0; }
   get progreso(): number                  { return this.resultado?.progreso ?? 0; }
   get procesoCompleto(): boolean {
-    return this.fasesResultados.length > 0 && this.fasesResultados.every(f => f.estado === 'completada');
+    return this.fasesResultados.length > 0 &&
+      this.fasesResultados.every(f => f.estado === 'completada');
   }
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef,
+    private http: HttpClient,
     private resultadosService: ResultadosService,
     private postulantesService: PostulantesService,
     private estado: EntrevistasEstadoService
@@ -76,31 +76,26 @@ export class ResultadosComponent implements OnInit {
 
   navegarPostulantes(): void {
     const id = this.estado.getIdSolicitud();
-    if (id) {
-      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', id]);
-    } else {
-      this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']);
-    }
+    if (id) this.router.navigate(['/evaluador/entrevistas-docentes/postulantes', id]);
+    else    this.router.navigate(['/evaluador/entrevistas-docentes/postulantes']);
   }
 
-  esRutaActiva(segmento: string): boolean {
-    return this.router.url.includes(segmento);
-  }
+  esRutaActiva(segmento: string): boolean { return this.router.url.includes(segmento); }
 
   cargarResultados(): void {
     if (!this.idProcesoSeleccionado) return;
     this.isLoadingResultado = true;
-    this.resultado = null; this.faseExpandida = null;
-    this.decision = ''; this.justificacion = '';
+    this.resultado = null;
+    this.faseExpandida = null;
+    this.guardadoExitoso = false;
 
     this.resultadosService.obtenerResultados(this.idProcesoSeleccionado).subscribe({
       next: (data: ResultadoProceso) => {
         this.resultado = data;
-        if (data.decision) this.decision = data.decision;
-        if (data.justificacionDecision) this.justificacion = data.justificacionDecision;
-        this.isLoadingResultado = false; this.cdr.detectChanges();
+        this.isLoadingResultado = false;
+        this.cdr.detectChanges();
       },
-      error: () => {}
+      error: () => { this.isLoadingResultado = false; }
     });
   }
 
@@ -114,19 +109,26 @@ export class ResultadosComponent implements OnInit {
     this.router.navigate(['/evaluador/entrevistas-docentes/evaluacion', idReunion]);
   }
 
-  guardarDecision(): void {
-    if (!this.decision)             { alert('Selecciona una decisión.'); return; }
-    if (!this.justificacion.trim()) { alert('La justificación es obligatoria.'); return; }
+  // Guardar puntaje de entrevista y disparar el 25% a la matriz
+  guardarPuntajeEntrevista(): void {
+    if (!this.procesoCompleto) {
+      alert('Debe completar todas las fases antes de guardar el puntaje.');
+      return;
+    }
 
     this.isSaving = true;
-    const payload: DecisionFinalRequest = { decision: this.decision, justificacion: this.justificacion };
-
-    this.resultadosService.guardarDecision(this.idProcesoSeleccionado, payload).subscribe({
-      next: (data: ResultadoProceso) => {
-        this.resultado = data; this.isSaving = false;
-        alert('✅ Decisión final guardada correctamente.'); this.cdr.detectChanges();
+    this.http.post(`${this.API}/${this.idProcesoSeleccionado}/finalizar-entrevista`, {}).subscribe({
+      next: () => {
+        this.isSaving = false;
+        this.guardadoExitoso = true;
+        this.cargarResultados();
+        this.cdr.detectChanges();
       },
-      error: () => { this.isSaving = false; this.cdr.detectChanges(); }
+      error: (err) => {
+        alert(err?.error?.mensaje || 'Error al guardar el puntaje de entrevista.');
+        this.isSaving = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -139,6 +141,7 @@ export class ResultadosComponent implements OnInit {
   getBadgeClass(e: string): string {
     return { completada: 'success', programada: 'warning', bloqueada: 'default', pendiente: 'info' }[e] ?? 'default';
   }
+
   getBadgeLabel(e: string): string {
     return { completada: 'Completada', programada: 'Programada', bloqueada: 'Bloqueada', pendiente: 'Pendiente' }[e] ?? e;
   }

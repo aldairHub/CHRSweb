@@ -9,9 +9,12 @@ import org.uteq.backend.entity.MatrizItem;
 import org.uteq.backend.entity.MatrizSeccion;
 import org.uteq.backend.repository.*;
 
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +25,27 @@ public class MatrizConfigService {
     private final MatrizItemRepository itemRepo;
     private final MatrizAccionAfirmativaRepository accionRepo;
     private final PostgresProcedureRepository procedureRepo;
+    private final JdbcTemplate jdbc;
+
+
+    /**
+     * Verifica si hay procesos activos que impidan editar la matriz
+     */
+    @Transactional(readOnly = true)
+    public boolean tieneProcesosActivos() {
+        Boolean resultado = jdbc.queryForObject(
+                "SELECT fn_tiene_procesos_activos()", Boolean.class);
+        return Boolean.TRUE.equals(resultado);
+    }
+
+    /**
+     * Confirma la distribución de puntajes entre tipos de sección
+     */
+    public void confirmarDistribucion(Double meritos, Double experiencia, Double entrevista) {
+        procedureRepo.ejecutarProcedure(
+                "CALL sp_confirmar_distribucion_matriz(?, ?, ?)",
+                meritos, experiencia, entrevista);
+    }
 
     // ── Obtener estructura completa ───────────────────────────
     @Transactional(readOnly = true)
