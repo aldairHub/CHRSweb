@@ -46,6 +46,10 @@ export interface Candidato {
   totalAccionAfirmativa: number;
   puntajeTotal: number;
   habilitadoEntrevista: boolean;
+  // NUEVOS:
+  bloqueado: boolean;
+  motivoBloqueo: string | null;
+  tieneDocumentos: boolean;
 }
 
 export interface CandidatoComite {
@@ -182,6 +186,7 @@ export class MatrizMeritosComponent implements OnInit {
     }));
   }
 
+  // REEMPLAZAR el método procesarCandidatos:
   private procesarCandidatos(matriz: any): void {
     this.convocatoriaInfo = matriz.convocatoria;
     this.candidatos = (matriz.candidatos || []).map((c: any) => ({
@@ -198,7 +203,11 @@ export class MatrizMeritosComponent implements OnInit {
       totalEntrevista:       0,
       totalAccionAfirmativa: 0,
       puntajeTotal:          0,
-      habilitadoEntrevista:  c.habilitadoEntrevista || false
+      habilitadoEntrevista:  c.habilitadoEntrevista || false,
+      // NUEVOS:
+      bloqueado:             c.bloqueado || false,
+      motivoBloqueo:         c.motivoBloqueo || null,
+      tieneDocumentos:       c.tieneDocumentos !== false
     }));
 
     this.inicializarPuntajes();

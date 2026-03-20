@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 
 type Vista = 'fases' | 'plantillas' | 'criterios';
 
@@ -51,11 +52,14 @@ export class ConfigEntrevistasComponent implements OnInit {
   private readonly API_FASES      = 'http://localhost:8080/api/evaluacion/fases';
   private readonly API_PLANTILLAS = 'http://localhost:8080/api/evaluacion/plantillas';
   private readonly API_CRITERIOS  = 'http://localhost:8080/api/evaluacion/criterios';
+  private readonly API_MATRIZ     = 'http://localhost:8080/api/matriz-config';
 
   vistaActual: Vista = 'fases';
   cargando = false;
   guardando = false;
   error = '';
+
+  tieneProcesosActivos = false;
 
   fases: FaseDTO[] = [];
   showModalFase = false;
@@ -89,7 +93,20 @@ export class ConfigEntrevistasComponent implements OnInit {
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.cargarFases();
+    this.verificarProcesosYCargar();
+  }
+
+  private verificarProcesosYCargar(): void {
+    this.http.get<any>(`${this.API_MATRIZ}/tiene-procesos-activos`).subscribe({
+      next: (res) => {
+        this.tieneProcesosActivos = res.tieneProcesosActivos;
+        this.cargarFases();
+      },
+      error: () => {
+        // Si falla la verificación, cargar igual pero sin bloqueo
+        this.cargarFases();
+      }
+    });
   }
 
   irA(vista: Vista): void {
@@ -116,12 +133,14 @@ export class ConfigEntrevistasComponent implements OnInit {
   }
 
   abrirCrearFase(): void {
+    if (this.tieneProcesosActivos) return;
     this.editandoFase = false;
     this.formFase = { nombre: '', tipo: 'reunion', peso: 33, orden: this.fases.length + 1, estado: true, evaluadoresPermitidos: [] };
     this.showModalFase = true;
   }
 
   abrirEditarFase(f: FaseDTO): void {
+    if (this.tieneProcesosActivos) return;
     this.editandoFase = true;
     this.formFase = { ...f };
     this.showModalFase = true;
@@ -145,6 +164,7 @@ export class ConfigEntrevistasComponent implements OnInit {
   }
 
   eliminarFase(f: FaseDTO): void {
+    if (this.tieneProcesosActivos) return;
     if (!confirm(`¿Eliminar la fase "${f.nombre}"?`)) return;
     this.http.delete(`${this.API_FASES}/${f.idFase}`).subscribe({
       next: () => this.cargarFases(),
@@ -153,6 +173,7 @@ export class ConfigEntrevistasComponent implements OnInit {
   }
 
   cambiarEstadoFase(f: FaseDTO): void {
+    if (this.tieneProcesosActivos) return;
     this.http.put(`${this.API_FASES}/${f.idFase}`, { ...f, estado: !f.estado }).subscribe({
       next: () => this.cargarFases(),
       error: () => {}
@@ -182,6 +203,7 @@ export class ConfigEntrevistasComponent implements OnInit {
   }
 
   abrirCrearPlantilla(): void {
+    if (this.tieneProcesosActivos) return;
     this.editandoPlantilla = false;
     this.formPlantilla = { codigo: '', nombre: '', idFase: 0, estado: true };
     this.showModalPlantilla = true;
@@ -189,6 +211,7 @@ export class ConfigEntrevistasComponent implements OnInit {
   }
 
   abrirEditarPlantilla(p: PlantillaDTO): void {
+    if (this.tieneProcesosActivos) return;
     this.editandoPlantilla = true;
     this.formPlantilla = { ...p };
     this.showModalPlantilla = true;
@@ -214,6 +237,7 @@ export class ConfigEntrevistasComponent implements OnInit {
   }
 
   eliminarPlantilla(p: PlantillaDTO): void {
+    if (this.tieneProcesosActivos) return;
     if (!confirm(`¿Eliminar la plantilla "${p.nombre}"?`)) return;
     this.http.delete(`${this.API_PLANTILLAS}/${p.idPlantilla}`).subscribe({
       next: () => this.cargarPlantillas(),
@@ -232,12 +256,14 @@ export class ConfigEntrevistasComponent implements OnInit {
   }
 
   abrirCrearCriterio(): void {
+    if (this.tieneProcesosActivos) return;
     this.editandoCriterio = false;
     this.formCriterio = { nombre: '', descripcion: '', peso: 33, escala: '1-5', idPlantilla: this.plantillaSeleccionada?.idPlantilla };
     this.showModalCriterio = true;
   }
 
   abrirEditarCriterio(c: CriterioDTO): void {
+    if (this.tieneProcesosActivos) return;
     this.editandoCriterio = true;
     this.formCriterio = { ...c };
     this.showModalCriterio = true;
@@ -266,6 +292,7 @@ export class ConfigEntrevistasComponent implements OnInit {
   }
 
   eliminarCriterio(c: CriterioDTO): void {
+    if (this.tieneProcesosActivos) return;
     if (!confirm(`¿Eliminar el criterio "${c.nombre}"?`)) return;
     this.http.delete(`${this.API_CRITERIOS}/${c.idCriterio}`).subscribe({
       next: () => this.cargarCriterios(this.plantillaSeleccionada!.idPlantilla!),

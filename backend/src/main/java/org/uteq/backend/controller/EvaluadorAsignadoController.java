@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.uteq.backend.service.EvaluadorAsignadoService;
 
 import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/evaluadores-asignados")
@@ -15,6 +16,13 @@ import java.util.Map;
 public class EvaluadorAsignadoController {
 
     private final EvaluadorAsignadoService service;
+
+    @GetMapping("/solicitud/{idSolicitud}/procesos")
+    public ResponseEntity<?> procesosDeSolicitud(@PathVariable Long idSolicitud) {
+        List<Map<String, Object>> procesos = service.obtenerProcesosPorSolicitud(idSolicitud);
+        return ResponseEntity.ok(procesos);
+    }
+
 
     // GET /api/evaluadores-asignados/{idProceso}?tipo=matriz
     @GetMapping("/{idProceso}")

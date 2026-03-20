@@ -237,9 +237,9 @@ public class MatrizMeritosService {
             LIMIT 1
             """, idSolicitud);
 
-        // 2. Verificar bloqueo por fecha
-        boolean bloqueada = false;
-        String mensajeBloqueo = null;
+        // 2. Verificar bloqueo global por fecha
+        boolean bloqueadaGlobal = false;
+        String mensajeBloqueoGlobal = null;
         String fechaLimiteStr = null;
         Object fechaLimiteObj = conv.get("fecha_limite_documentos");
 
@@ -247,22 +247,9 @@ public class MatrizMeritosService {
             LocalDate fechaLimite = ((java.sql.Date) fechaLimiteObj).toLocalDate();
             fechaLimiteStr = fechaLimite.format(DATE_FMT);
             if (LocalDate.now().isBefore(fechaLimite)) {
-                bloqueada = true;
-                mensajeBloqueo = "La matriz estará disponible a partir del " + fechaLimiteStr
+                bloqueadaGlobal = true;
+                mensajeBloqueoGlobal = "La matriz estará disponible a partir del " + fechaLimiteStr
                         + ". El período de subida de documentos aún está abierto.";
-            }
-        }
-
-        // 2b. Verificar bloqueo por documentos obligatorios no validados
-        if (!bloqueada) {
-            Integer obligatoriosSinValidar = jdbc.queryForObject(
-                    "select fn_documentos_pendientes_solicitud(?)",
-                    Integer.class, idSolicitud);
-
-            if (obligatoriosSinValidar != null && obligatoriosSinValidar > 0) {
-                bloqueada = true;
-                mensajeBloqueo = "La matriz está bloqueada. Existen " + obligatoriosSinValidar
-                        + " documento(s) obligatorio(s) pendientes de validación.";
             }
         }
 
@@ -272,8 +259,8 @@ public class MatrizMeritosService {
         convocatoriaInfo.put("titulo", conv.get("titulo"));
         convocatoriaInfo.put("materia", conv.get("nombre_materia"));
         convocatoriaInfo.put("fechaLimiteDocumentos", fechaLimiteStr);
-        convocatoriaInfo.put("bloqueada", bloqueada);
-        convocatoriaInfo.put("mensajeBloqueo", mensajeBloqueo);
+        convocatoriaInfo.put("bloqueada", bloqueadaGlobal);
+        convocatoriaInfo.put("mensajeBloqueo", mensajeBloqueoGlobal);
 
         // 3. Candidatos por id_solicitud
         List<Map<String, Object>> candidatosRaw = jdbc.queryForList("""
@@ -292,10 +279,34 @@ public class MatrizMeritosService {
             ORDER BY p.apellidos_postulante
             """, idSolicitud);
 
-        // 4. Cargar puntajes guardados
+        // 4. Cargar puntajes y verificar documentos por candidato
         List<Map<String, Object>> candidatos = new ArrayList<>();
         for (Map<String, Object> raw : candidatosRaw) {
-            Long idProceso = ((Number) raw.get("id_proceso")).longValue();
+            Long idProceso    = ((Number) raw.get("id_proceso")).longValue();
+            Long idPostulante = ((Number) raw.get("id_postulante")).longValue();
+
+            // Verificar documentos de este candidato individualmente
+            boolean candidatoBloqueado = bloqueadaGlobal;
+            String motivoBloqueo = mensajeBloqueoGlobal;
+            boolean tieneDocumentos = true;
+
+            if (!bloqueadaGlobal) {
+                try {
+                    Map<String, Object> docCheck = jdbc.queryForMap(
+                            "SELECT * FROM fn_documentos_pendientes_postulante(?, ?)",
+                            idPostulante, idSolicitud);
+
+                    int pendientes = ((Number) docCheck.get("pendientes")).intValue();
+                    tieneDocumentos = Boolean.TRUE.equals(docCheck.get("tiene_documentos"));
+
+                    if (pendientes > 0) {
+                        candidatoBloqueado = true;
+                        motivoBloqueo = (String) docCheck.get("mensaje");
+                    }
+                } catch (Exception e) {
+                    log.warn("No se pudo verificar documentos del postulante {}: {}", idPostulante, e.getMessage());
+                }
+            }
 
             Map<String, Object> puntajes = new HashMap<>();
             Map<String, Object> accionesAfirmativas = new HashMap<>();
@@ -305,7 +316,7 @@ public class MatrizMeritosService {
 
             for (Map<String, Object> p : puntajesGuardados) {
                 String itemId = (String) p.get("item_id");
-                Object valor = p.get("valor");
+                Object valor  = p.get("valor");
                 if (itemId != null && itemId.startsWith("af_")) {
                     accionesAfirmativas.put(itemId, "true".equals(String.valueOf(valor)));
                 } else {
@@ -314,15 +325,18 @@ public class MatrizMeritosService {
             }
 
             Map<String, Object> candidato = new HashMap<>();
-            candidato.put("idPostulante", raw.get("id_postulante"));
-            candidato.put("idProceso", idProceso);
-            candidato.put("idSolicitud", idSolicitud);
-            candidato.put("nombres", raw.get("nombres"));
-            candidato.put("apellidos", raw.get("apellidos"));
-            candidato.put("titulos", raw.get("titulos"));
-            candidato.put("puntajes", puntajes);
-            candidato.put("accionesAfirmativas", accionesAfirmativas);
-            candidato.put("habilitadoEntrevista", Boolean.TRUE.equals(raw.get("habilitado_entrevista")));
+            candidato.put("idPostulante",         idPostulante);
+            candidato.put("idProceso",             idProceso);
+            candidato.put("idSolicitud",           idSolicitud);
+            candidato.put("nombres",               raw.get("nombres"));
+            candidato.put("apellidos",             raw.get("apellidos"));
+            candidato.put("titulos",               raw.get("titulos"));
+            candidato.put("puntajes",              puntajes);
+            candidato.put("accionesAfirmativas",   accionesAfirmativas);
+            candidato.put("habilitadoEntrevista",  Boolean.TRUE.equals(raw.get("habilitado_entrevista")));
+            candidato.put("bloqueado",             candidatoBloqueado);
+            candidato.put("motivoBloqueo",         motivoBloqueo);
+            candidato.put("tieneDocumentos",       tieneDocumentos);
             candidatos.add(candidato);
         }
 
@@ -331,4 +345,5 @@ public class MatrizMeritosService {
         result.put("candidatos", candidatos);
         return result;
     }
+
 }

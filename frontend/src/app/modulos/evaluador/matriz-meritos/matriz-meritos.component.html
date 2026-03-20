@@ -65,6 +65,15 @@
           <div class="total-card__score">{{ c.puntajeTotal | number:'1.1-2' }}</div>
           <div class="total-card__label">/ 100 pts</div>
 
+          <!-- Mensaje de bloqueo por documentos -->
+          <div class="total-card__bloqueado" *ngIf="c.bloqueado && !matrizBloqueada">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="12" height="12">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+            {{ c.motivoBloqueo }}
+          </div>
+
           <ng-container *ngIf="guardado">
             <span class="aptitud-badge apto" *ngIf="c.puntajeTotal >= PUNTAJE_MINIMO">
               ✅ Apto para entrevistas
@@ -126,6 +135,14 @@
                   <span class="nombre">{{ c.apellidos }}</span>
                   <span class="cargo">{{ c.nombres }}</span>
                   <span class="titulo">{{ c.titulos }}</span>
+                  <!-- Badge de bloqueo por documentos -->
+                  <span class="candidato-bloqueado-badge" *ngIf="c.bloqueado && !matrizBloqueada">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="11" height="11">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                      </svg>
+                    {{ c.tieneDocumentos ? 'Docs pendientes' : 'Sin documentos' }}
+                    </span>
                 </div>
               </th>
             </tr>
@@ -164,8 +181,9 @@
                          [(ngModel)]="c.puntajes[item.id]"
                          (ngModelChange)="recalcular(c)"
                          class="score-input"
-                         [disabled]="matrizBloqueada || !!item.bloqueado"
-                         [class.max-reached]="c.puntajes[item.id] >= item.max">
+                         [disabled]="matrizBloqueada || !!item.bloqueado || c.bloqueado"
+                         [class.max-reached]="c.puntajes[item.id] >= item.max"
+                         [class.input-bloqueado]="c.bloqueado">
                 </td>
               </tr>
             </ng-container>
@@ -195,8 +213,9 @@
                          [(ngModel)]="c.puntajes[item.id]"
                          (ngModelChange)="recalcular(c)"
                          class="score-input"
-                         [disabled]="matrizBloqueada || !!item.bloqueado"
-                         [class.max-reached]="c.puntajes[item.id] >= item.max">
+                         [disabled]="matrizBloqueada || !!item.bloqueado || c.bloqueado"
+                         [class.max-reached]="c.puntajes[item.id] >= item.max"
+                         [class.input-bloqueado]="c.bloqueado">
                 </td>
               </tr>
             </ng-container>
@@ -255,7 +274,7 @@
                     <input type="checkbox"
                            [(ngModel)]="c.accionesAfirmativas[af.id]"
                            (ngModelChange)="recalcular(c)"
-                           [disabled]="matrizBloqueada">
+                           [disabled]="matrizBloqueada || c.bloqueado">
                     <span class="checkmark"></span>
                   </label>
                 </td>
@@ -289,6 +308,7 @@
           {{ guardando ? 'Guardando...' : 'Guardar Evaluación' }}
         </button>
       </div>
+
       <!-- PANEL COMITÉ FINAL -->
       <div class="comite-panel" *ngIf="guardado && candidatos.length > 0">
 
@@ -308,12 +328,12 @@
             </div>
           </div>
           <span class="comite-estado-badge" [class.confirmado]="comiteConfirmado">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-        <path *ngIf="comiteConfirmado" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-        <path *ngIf="!comiteConfirmado" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+              <path *ngIf="comiteConfirmado" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              <path *ngIf="!comiteConfirmado" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
             {{ comiteConfirmado ? 'Decisión Confirmada' : 'Pendiente de Decisión' }}
-    </span>
+          </span>
         </div>
 
         <!-- Tabla de candidatos con puntajes finales -->
@@ -351,29 +371,26 @@
                 <span class="puntaje-chip">{{ c.puntaje_matriz | number:'1.1-2' }}</span>
               </td>
               <td>
-            <span class="puntaje-chip puntaje-chip--entrevista">
-              {{ c.puntaje_entrevista | number:'1.1-2' }}
-            </span>
+                  <span class="puntaje-chip puntaje-chip--entrevista">
+                    {{ c.puntaje_entrevista | number:'1.1-2' }}
+                  </span>
               </td>
               <td>
-            <span class="puntaje-total-chip" [class.puntaje-total-chip--top]="i === 0">
-              {{ c.puntaje_total | number:'1.1-2' }}
-            </span>
+                  <span class="puntaje-total-chip" [class.puntaje-total-chip--top]="i === 0">
+                    {{ c.puntaje_total | number:'1.1-2' }}
+                  </span>
               </td>
               <td>
-                <!-- Si ya está confirmado, mostrar resultado -->
                 <ng-container *ngIf="comiteConfirmado">
-              <span class="ganador-badge" *ngIf="c.decision_comite === 'ganador'">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                Seleccionado
-              </span>
+                    <span class="ganador-badge" *ngIf="c.decision_comite === 'ganador'">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      Seleccionado
+                    </span>
                   <span class="no-ganador-badge" *ngIf="c.decision_comite !== 'ganador'">No seleccionado</span>
                 </ng-container>
-
-                <!-- Si no está confirmado, mostrar radio button -->
                 <ng-container *ngIf="!comiteConfirmado">
                   <label class="radio-ganador" [class.selected]="idProcesoGanador === c.id_proceso">
                     <input type="radio" name="ganador"
@@ -443,7 +460,6 @@
 
       </div>
 
-
     </ng-container>
   </div>
 </div>
@@ -479,7 +495,7 @@
 <!-- Modal override -->
 <div class="modal-overlay" *ngIf="mostrarModalOverride" (click)="cerrarModalOverride()">
   <div class="modal-card modal-card--override" (click)="$event.stopPropagation()">
-    <h2 class="modal-title">⚠️ Habilitar para Entrevistas</h2>
+    <h2 class="modal-title"> Habilitar para Entrevistas</h2>
 
     <div class="override-candidato" *ngIf="candidatoOverride">
       <strong>{{ candidatoOverride.apellidos }} {{ candidatoOverride.nombres }}</strong>
@@ -510,6 +526,7 @@
     </div>
   </div>
 </div>
+
 <app-modal-evaluadores
   [visible]="modalEvaluadoresVisible"
   [idProceso]="candidatoEvaluadores?.idProceso ?? null"

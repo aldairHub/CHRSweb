@@ -63,4 +63,17 @@ public class EvaluadorAsignadoService {
             return null;
         }
     }
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> obtenerProcesosPorSolicitud(Long idSolicitud) {
+        return jdbc.queryForList("""
+            SELECT
+                pe.id_proceso AS "idProceso",
+                p.nombres_postulante AS nombres,
+                p.apellidos_postulante AS apellidos
+            FROM proceso_evaluacion pe
+            JOIN postulante p ON pe.id_postulante = p.id_postulante
+            WHERE pe.id_solicitud = ?
+            ORDER BY p.apellidos_postulante
+            """, idSolicitud);
+    }
 }

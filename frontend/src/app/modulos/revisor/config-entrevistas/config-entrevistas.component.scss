@@ -28,6 +28,45 @@ $white:    #ffffff;
   .page-subtitle { font-size: 0.95rem; color: $gray; margin: 0.25rem 0 0; }
 }
 
+// ── Banner procesos activos ───────────────────────────────────
+.alert-procesos {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  background: #fef9c3;
+  border: 1.5px solid #fde047;
+  border-left: 4px solid #f59e0b;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+
+  .procesos-icon {
+    width: 36px; height: 36px;
+    background: #fef3c7;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    svg { stroke: #f59e0b; }
+  }
+
+  strong { display: block; color: #78350f; font-size: 0.9rem; margin-bottom: 0.25rem; }
+  p { color: #92400e; font-size: 0.82rem; margin: 0; line-height: 1.4; }
+}
+
+// ── Lock badge ───────────────────────────────────────────────
+.lock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #f3f4f6;
+  color: #6b7280;
+  border-radius: 20px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  svg { width: 12px; height: 12px; stroke: #6b7280; }
+}
+
 // ── Inner Tabs ───────────────────────────────────────────────
 .inner-tabs {
   display: flex;
@@ -442,4 +481,9 @@ $white:    #ffffff;
   }
   .rubrica-preview { background: #1a1a1a !important; border-color: rgba(255,255,255,0.06) !important; }
   .modal-actions { border-color: rgba(255,255,255,0.08) !important; }
+  .alert-procesos {
+    background: rgba(245,158,11,0.1) !important; border-color: rgba(245,158,11,0.2) !important;
+    strong { color: #fbbf24 !important; } p { color: #d97706 !important; }
+    .procesos-icon { background: rgba(245,158,11,0.15) !important; }
+  }
 }
