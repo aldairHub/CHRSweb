@@ -36,7 +36,7 @@ interface Stats {
 @Component({
   selector: 'app-estadisticas-convocatorias',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ToastComponent],
+  imports: [CommonModule, FormsModule, ToastComponent],
   templateUrl: './estadisticas-convocatorias.html',
   styleUrls: ['./estadisticas-convocatorias.scss']
 })

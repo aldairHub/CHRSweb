@@ -42,7 +42,7 @@ interface Stats {
 @Component({
   selector: 'app-estadisticas-solicitudes',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ToastComponent],
+  imports: [CommonModule, FormsModule, ToastComponent],
   templateUrl: './estadisticas-solicitudes.html',
   styleUrls: ['./estadisticas-solicitudes.scss']
 })

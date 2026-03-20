@@ -36,7 +36,7 @@ interface Stats {
 @Component({
   selector: 'app-estadisticas-postulantes',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ToastComponent],
+  imports: [CommonModule, FormsModule, ToastComponent],
   templateUrl: './estadisticas-postulantes.html',
   styleUrls: ['./estadisticas-postulantes.scss']
 })
