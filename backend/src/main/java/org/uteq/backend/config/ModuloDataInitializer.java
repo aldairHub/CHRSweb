@@ -58,7 +58,7 @@ public class ModuloDataInitializer implements ApplicationRunner {
         op(ev,"Matriz de méritos",        "Matriz de méritos docente",       "/evaluador/matriz-meritos", 3);
         op(ev,"Reportes",          "Informes en PDF",         "/evaluador/reportes",   4);
         op(ev,"Solicitar Docente", "Nueva requisición",       "/evaluador/solicitar",  5);
-        op(ev,"Entrevistas",       "Gestión de entrevistas",  "/evaluador/entrevistas",6);
+        op(ev,"Entrevistas",       "Gestión de entrevistas",  "/evaluador/entrevista",6);
         op(ev,"Entrevistas Docentes","Proceso de evaluación docente","/evaluador/entrevistas-docentes",7);
         // ── REVISOR ─────────────────────────────────────────────────
         Modulo rev = mod("revisor","Panel de Revisor","/revisor",3);
@@ -66,12 +66,13 @@ public class ModuloDataInitializer implements ApplicationRunner {
         op(rev,"Convocatorias",    "Gestionar convocatorias", "/revisor/convocatorias",   2);
         op(rev,"Solicitudes Docente","Gestionar solicitudes de contratación docente", "/revisor/solicitudes-docente", 3);
         op(rev,"Configurar Matriz","Configurar matriz de méritos", "/revisor/config-matriz", 4);
-        op(rev,"Configurar Entrevistas","Configuración de fases, plantillas y criterios", "/revisor/config-entrevistas'", 5);
+        op(rev,"Configurar Entrevistas","Configuración de fases, plantillas y criterios", "/revisor/config-entrevistas", 5);
+        op(rev,"Decisiones del Comité","Decisiones finales del comité evaluador", "/revisor/decisiones", 6);
         // ── POSTULANTE ──────────────────────────────────────────────
         Modulo pos = mod("postulante","Panel de postulante","/postulante",4);
         op(pos,"Mis Documentos","Subir y gestionar docs",  "/postulante/subir-documentos",1);
         op(pos,"Resultados",    "Ver resultados",          "/postulante/resultados",      2);
-        op(pos,"Entrevistas",   "Información entrevistas", "/postulante/entrevistas",     3);
+        op(pos,"Entrevistas",   "Información entrevistas", "/postulante/entrevista",     3);
     }
 
     private Modulo mod(String nombre, String desc, String ruta, int orden) {
