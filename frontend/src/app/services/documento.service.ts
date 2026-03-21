@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpRequest, HttpEventType, HttpResponse } from '@angular/common/http';
-import { Observable, Subject, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 // ============================================================
@@ -97,6 +96,10 @@ export class DocumentoService {
     return this.http.post(`${this.API}/validar/${idDocumento}`, { estado, observacion });
   }
 
+  actualizarEstadoPostulacion(idPostulacion: number, estado: string): Observable<any> {
+    return this.http.patch(`/api/postulaciones/${idPostulacion}/estado`, { estado });
+  }
+
   obtenerInfoPorPostulacion(idPostulacion: number): Observable<any> {
     return this.http.get(`${this.API}/info-postulacion/${idPostulacion}`);
   }
@@ -152,8 +155,7 @@ export class DocumentoService {
   }
 
   obtenerResultadosPostulante(idUsuario: number): Observable<any> {
-    return this.http.get(`${this.API}/resultados/${idUsuario}`)
-      .pipe(catchError(() => of(null)));
+    return this.http.get(`${this.API}/resultados/${idUsuario}`);
   }
 
   // ─── NUEVOS métodos ────────────────────────────────────────
@@ -165,29 +167,29 @@ export class DocumentoService {
   listarMisPostulaciones(idUsuario: number): Observable<PostulanteInfo[]> {
     return this.http.get<PostulanteInfo[]>(
       `${this.API}/postulante/${idUsuario}/postulaciones`
-    ).pipe(catchError(() => of([])));
+    );
   }
 
   /**
    * Info del postulante para una postulación específica (cuando el usuario filtra).
    */
-  obtenerInfoPorConvocatoria(idUsuario: number, idPostulacion: number): Observable<PostulanteInfo | null> {
+  obtenerInfoPorConvocatoria(idUsuario: number, idPostulacion: number): Observable<PostulanteInfo> {
     return this.http.get<PostulanteInfo>(
       `${this.API}/postulante/${idUsuario}/postulacion/${idPostulacion}`
-    ).pipe(catchError(() => of(null)));
+    );
   }
 
   /**
    * Progreso en tiempo real del proceso de evaluación.
    * El frontend hace polling con interval() para efecto "tiempo real".
    */
-  obtenerMiProgreso(idUsuario: number, idPostulacion?: number): Observable<ProgresoPostulante | null> {
+  obtenerMiProgreso(idUsuario: number, idPostulacion?: number): Observable<ProgresoPostulante> {
     const params: any = {};
     if (idPostulacion) params['idPostulacion'] = idPostulacion.toString();
     return this.http.get<ProgresoPostulante>(
       `${this.API}/postulante/${idUsuario}/progreso`,
       { params }
-    ).pipe(catchError(() => of(null)));
+    );
   }
 }
 

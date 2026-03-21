@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 export interface PostulanteLista {
@@ -71,12 +71,21 @@ export class PostulantesComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private route:  ActivatedRoute,
     private cdr: ChangeDetectorRef,
     private http: HttpClient
   ) {}
 
   ngOnInit(): void {
     this.cargarConvocatorias();
+    // Cuando se vuelve desde documentos.ts con ?idSolicitud=X
+    // saltamos directo al paso 3 de la solicitud correspondiente
+    this.route.queryParams.subscribe(qp => {
+      const idSolicitud = qp['idSolicitud'] ? Number(qp['idSolicitud']) : null;
+      if (idSolicitud && this.paso === 1) {
+        this.cargarYSaltarASolicitud(idSolicitud);
+      }
+    });
   }
 
   // ── Paso 1: Convocatorias ──
@@ -186,7 +195,12 @@ export class PostulantesComponent implements OnInit {
       this.cdr.detectChanges();
       return;
     }
-    this.router.navigate(['/evaluador/documentos/' + p.idPostulacion]);
+    // Pasar idSolicitud como queryParam para que documentos.ts pueda volver al paso 3
+    const idSolicitud = this.solicitudSeleccionada?.id_solicitud ?? null;
+    this.router.navigate(
+      ['/evaluador/documentos/' + p.idPostulacion],
+      idSolicitud ? { queryParams: { idSolicitud } } : {}
+    );
   }
 
   // ── Navegación wizard ──
@@ -230,6 +244,31 @@ export class PostulantesComponent implements OnInit {
   }
 
   // ── Helpers ──
+
+  /** Cuando se vuelve desde documentos con ?idSolicitud, carga y salta al paso 3 */
+  private cargarYSaltarASolicitud(idSolicitud: number): void {
+    const headers = this.getHeaders();
+    // Cargar la lista de postulantes de esa solicitud directamente
+    this.cargando = true;
+    this.errorCarga = null;
+    this.http.get<PostulanteLista[]>(
+      `/api/postulaciones/evaluador/lista?idSolicitud=${idSolicitud}`, { headers }
+    ).subscribe({
+      next: (data) => {
+        this.postulantesTotal = data;
+        this.postulantes      = data;
+        this.solicitudSeleccionada = { id_solicitud: idSolicitud } as any;
+        this.paso    = 3;
+        this.cargando = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        // Si falla, se queda en paso 1 normalmente
+        this.cargando = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');

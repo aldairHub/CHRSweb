@@ -195,7 +195,8 @@
         <button
           class="btn btn--primary"
           (click)="guardarTodos()"
-          [disabled]="guardandoTodo"
+          [disabled]="guardandoTodo || !todosRevisados"
+          [title]="!todosRevisados ? 'Debes revisar todos los documentos primero' : 'Guardar toda la revisión'"
         >
           <i class="pi pi-spin pi-spinner" *ngIf="guardandoTodo"></i>
           <i class="pi pi-check-square"    *ngIf="!guardandoTodo"></i>

@@ -11,14 +11,14 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/postulaciones/evaluador")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
+@RequestMapping   // sin base — cada método define su ruta completa
 public class PostulantesEvaluadorController {
 
     private final JdbcTemplate jdbcTemplate;
 
-    @GetMapping("/convocatorias")
+    @GetMapping("/api/postulaciones/evaluador/convocatorias")
     public ResponseEntity<List<Map<String, Object>>> listarConvocatorias() {
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(
                 "SELECT DISTINCT c.id_convocatoria, c.titulo, c.estado_convocatoria, " +
@@ -36,7 +36,7 @@ public class PostulantesEvaluadorController {
      * GET /api/postulaciones/evaluador/solicitudes?idConvocatoria={id}
      * Lista las solicitudes (materias) de una convocatoria que tienen postulantes
      */
-    @GetMapping("/solicitudes")
+    @GetMapping("/api/postulaciones/evaluador/solicitudes")
     public ResponseEntity<List<Map<String, Object>>> listarSolicitudes(
             @RequestParam Long idConvocatoria) {
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(
@@ -62,7 +62,7 @@ public class PostulantesEvaluadorController {
      * GET /api/postulaciones/evaluador/lista
      * Lista postulaciones, opcionalmente filtradas por solicitud
      */
-    @GetMapping("/lista")
+    @GetMapping("/api/postulaciones/evaluador/lista")
     public ResponseEntity<List<PostulanteListaDTO>> listar(
             @RequestParam(required = false) Long idSolicitud) {
         List<Map<String, Object>> rows;
@@ -120,5 +120,33 @@ public class PostulantesEvaluadorController {
         if (val instanceof Integer)  return (Integer) val != 0;
         String s = val.toString().toLowerCase().trim();
         return s.equals("true") || s.equals("t") || s.equals("1") || s.equals("yes");
+    }
+
+    /**
+     * PATCH /api/postulaciones/{idPostulacion}/estado
+     * Actualiza el estado de una postulación.
+     * El evaluador lo llama con "aprobada" cuando todos los docs están validados.
+     */
+    @PatchMapping("/api/postulaciones/{idPostulacion}/estado")
+    public ResponseEntity<Map<String, Object>> actualizarEstado(
+            @PathVariable Long idPostulacion,
+            @RequestBody Map<String, String> body) {
+        String nuevoEstado = body.get("estado");
+        if (nuevoEstado == null || nuevoEstado.isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "El campo 'estado' es obligatorio."));
+        }
+        int filas = jdbcTemplate.update(
+                "UPDATE postulacion SET estado_postulacion = ? WHERE id_postulacion = ?",
+                nuevoEstado, idPostulacion
+        );
+        if (filas == 0) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(Map.of(
+                "idPostulacion", idPostulacion,
+                "estado", nuevoEstado,
+                "mensaje", "Estado actualizado correctamente."
+        ));
     }
 }

@@ -180,5 +180,10 @@
     <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
     <orderEntry type="library" name="Maven: org.apache.poi:poi-ooxml:5.2.5" level="project" />
     <orderEntry type="library" name="Maven: org.apache.poi:poi:5.2.5" level="project" />
+    <orderEntry type="library" name="Maven: com.google.oauth-client:google-oauth-client:1.34.1" level="project" />
+    <orderEntry type="library" name="Maven: com.google.api-client:google-api-client:2.2.0" level="project" />
+    <orderEntry type="library" name="Maven: com.google.http-client:google-http-client:1.42.3" level="project" />
+    <orderEntry type="library" name="Maven: com.google.http-client:google-http-client-gson:1.42.3" level="project" />
+    <orderEntry type="library" name="Maven: com.google.apis:google-api-services-drive:v3-rev20231128-2.0.0" level="project" />
   </component>
 </module>

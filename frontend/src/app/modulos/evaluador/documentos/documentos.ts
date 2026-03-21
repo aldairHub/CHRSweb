@@ -38,6 +38,7 @@ export interface DocumentoRevision {
 export class DocumentosComponent implements OnInit {
 
   idPostulacion!: number;
+  idSolicitud:    number | null = null;   // para poder volver al paso 3
   postulante = { nombres: '', apellidos: '', cedula: '', estado: '' };
   documentos:    DocumentoRevision[] = [];
   cargando       = true;
@@ -60,6 +61,10 @@ export class DocumentosComponent implements OnInit {
         return;
       }
       this.idPostulacion = id;
+      // Leer idSolicitud del queryParam para poder volver al paso 3
+      this.route.queryParams.subscribe(qp => {
+        this.idSolicitud = qp['idSolicitud'] ? Number(qp['idSolicitud']) : null;
+      });
       this.cargarTodo();
       this.cdr.detectChanges();
     });
@@ -240,6 +245,8 @@ export class DocumentosComponent implements OnInit {
           if (completados === pendientes.length) {
             this.guardandoTodo = false;
             this.toast.success('Revision completada', 'Todos los documentos fueron guardados.');
+            // Actualizar estado de postulación si TODOS los docs están validados
+            this.actualizarEstadoPostulacionSiCorresponde();
           }
         },
         error: () => {
@@ -252,6 +259,39 @@ export class DocumentosComponent implements OnInit {
   }
 
   volver(): void {
-    this.router.navigate(['/evaluador/postulantes']);
+    // Si tenemos idSolicitud volvemos directo al paso 3 (lista de postulantes)
+    if (this.idSolicitud) {
+      this.router.navigate(['/evaluador/postulantes'],
+        { queryParams: { idSolicitud: this.idSolicitud } });
+    } else {
+      this.router.navigate(['/evaluador/postulantes']);
+    }
+  }
+
+  /** true cuando todos los docs tienen estado guardado (validado o rechazado) */
+  get todosGuardados(): boolean {
+    return this.documentos.length > 0 &&
+           this.documentos.every(d => d.guardado || d.bloqueado);
+  }
+
+  /** Cambia el estado de la postulación a "aprobada" si todos los docs están validados */
+  private actualizarEstadoPostulacionSiCorresponde(): void {
+    const todosValidados = this.documentos.every(d => d.estado === 'validado');
+    if (todosValidados) {
+      this.documentoSvc.actualizarEstadoPostulacion(this.idPostulacion, 'aprobada')
+        .subscribe({
+          next: () => {
+            this.postulante.estado = 'aprobada';
+            this.toast.success(
+              '¡Postulación aprobada!',
+              'Todos los documentos están validados. La postulación pasó a estado Aprobada.'
+            );
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            // No crítico — los documentos ya se guardaron
+          }
+        });
+    }
   }
 }
