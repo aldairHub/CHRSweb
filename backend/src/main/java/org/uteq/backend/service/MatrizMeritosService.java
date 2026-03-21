@@ -163,14 +163,19 @@ public class MatrizMeritosService {
                 c.fecha_limite_documentos,
                 cs.id_solicitud,
                 m.nombre_materia,
-                COUNT(DISTINCT pe.id_proceso) AS total_candidatos
+                COUNT(DISTINCT pe.id_proceso) AS total_candidatos,
+                aa.id_usuario                 AS id_usuario_solicitante,
+                car.id_facultad               AS id_facultad_solicitud
             FROM convocatoria c
             JOIN convocatoria_solicitud cs ON c.id_convocatoria = cs.id_convocatoria
-            JOIN solicitud_docente sd ON cs.id_solicitud = sd.id_solicitud
-            LEFT JOIN materia m ON sd.id_materia = m.id_materia
+            JOIN solicitud_docente sd      ON cs.id_solicitud = sd.id_solicitud
+            JOIN autoridad_academica aa    ON sd.id_autoridad = aa.id_autoridad
+            JOIN carrera car               ON sd.id_carrera   = car.id_carrera
+            LEFT JOIN materia m            ON sd.id_materia   = m.id_materia
             LEFT JOIN proceso_evaluacion pe ON pe.id_solicitud = cs.id_solicitud
             GROUP BY c.id_convocatoria, c.titulo, c.fecha_limite_documentos,
-                     cs.id_solicitud, m.nombre_materia
+                     cs.id_solicitud, m.nombre_materia,
+                     aa.id_usuario, car.id_facultad
             ORDER BY c.fecha_limite_documentos DESC NULLS LAST, c.id_convocatoria, cs.id_solicitud
             """);
 
@@ -203,14 +208,16 @@ public class MatrizMeritosService {
             }
 
             Map<String, Object> item = new HashMap<>();
-            item.put("idConvocatoria",        row.get("id_convocatoria"));
-            item.put("titulo",                row.get("titulo"));
-            item.put("fechaLimiteDocumentos", fechaLimiteStr);
-            item.put("idSolicitud",           row.get("id_solicitud"));
-            item.put("materia",               row.get("nombre_materia"));
-            item.put("totalCandidatos",       totalCandidatos);
-            item.put("disponible",            disponible);
-            item.put("mensajeBloqueo",        mensajeBloqueo);
+            item.put("idConvocatoria",          row.get("id_convocatoria"));
+            item.put("titulo",                  row.get("titulo"));
+            item.put("fechaLimiteDocumentos",   fechaLimiteStr);
+            item.put("idSolicitud",             row.get("id_solicitud"));
+            item.put("materia",                 row.get("nombre_materia"));
+            item.put("totalCandidatos",         totalCandidatos);
+            item.put("disponible",              disponible);
+            item.put("mensajeBloqueo",          mensajeBloqueo);
+            item.put("idUsuarioSolicitante",    row.get("id_usuario_solicitante"));
+            item.put("idFacultadSolicitud",     row.get("id_facultad_solicitud"));
             result.add(item);
         }
         return result;
@@ -345,5 +352,4 @@ public class MatrizMeritosService {
         result.put("candidatos", candidatos);
         return result;
     }
-
 }

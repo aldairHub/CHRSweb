@@ -55,6 +55,24 @@ public class ComiteFinalService {
                 idSolicitud, idProcesoGanador, actaComite);
     }
 
+    // ── Verificar si un usuario es quien realizó la solicitud ──
+    @Transactional(readOnly = true)
+    public boolean esSolicitante(Long idSolicitud, String usuarioApp) {
+        try {
+            Integer count = jdbc.queryForObject("""
+                SELECT COUNT(*)
+                FROM solicitud_docente sd
+                JOIN autoridad_academica aa ON sd.id_autoridad = aa.id_autoridad
+                JOIN usuario u              ON aa.id_usuario   = u.id_usuario
+                WHERE sd.id_solicitud = ?
+                  AND u.usuario_app   = ?
+                """, Integer.class, idSolicitud, usuarioApp);
+            return count != null && count > 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     // ── Listar decisiones para el revisor ─────────────────────
     @Transactional(readOnly = true)
     public List<Map<String, Object>> listarDecisionesRevisor(String estado) {

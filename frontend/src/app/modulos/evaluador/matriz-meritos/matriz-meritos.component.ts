@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { ModalEvaluadoresComponent } from '../../../component/modal-evaluadores.component';
+import { ToastService } from '../../../services/toast.service';
+import { AuthStateService } from '../../../services/auth-state.service';
 
 export interface ItemRubrica {
   id: string;
@@ -109,14 +111,17 @@ export class MatrizMeritosComponent implements OnInit {
   cargandoComite = false;
   comiteConfirmado = false;
   idProcesoGanador: number | null = null;
+  idProcesoGanadorOriginal: number | null = null;  // el de mayor puntaje al cargar
   actaComite = '';
+  justificacionCambioGanador = '';                 // obligatorio si se cambia el ganador
   confirmandoComite = false;
+  esSolicitanteComite = false;                     // solo el solicitante confirma
 
   convocatoriaInfo: ConvocatoriaInfo | null = null;
   candidatos: Candidato[] = [];
   idConvocatoria = 0;
 
-  seccionesMeritos: SeccionRubrica[] = [];
+  seccionesMeritos: SeccionRubrica[] = []
   seccionesExperiencia: SeccionRubrica[] = [];
   seccionEntrevista: SeccionRubrica | null = null;
   accionesAfirmativas: AccionAfirmativa[] = [];
@@ -124,7 +129,10 @@ export class MatrizMeritosComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private http: HttpClient
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef,
+    private toast: ToastService,
+    private authState: AuthStateService
   ) {}
 
   ngOnInit(): void {
@@ -149,10 +157,12 @@ export class MatrizMeritosComponent implements OnInit {
         this.procesarCandidatos(matriz);
         this.cargando = false;
         if (this.guardado) this.cargarComite();
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.error = err?.error?.mensaje || 'Error al cargar los datos.';
         this.cargando = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -269,7 +279,7 @@ export class MatrizMeritosComponent implements OnInit {
 
   guardarEvaluacion(): void {
     if (this.convocatoriaInfo?.bloqueada) {
-      alert('La matriz de méritos está bloqueada.');
+      this.toast.warning('Matriz bloqueada', 'No se puede modificar una evaluación bloqueada.');
       return;
     }
     this.guardando = true;
@@ -297,7 +307,7 @@ export class MatrizMeritosComponent implements OnInit {
         this.cargarComite();
       },
       error: (err) => {
-        alert(err?.error?.mensaje || 'Error al guardar la evaluación.');
+        this.toast.error('Error al guardar', err?.error?.mensaje || 'No se pudo guardar la evaluación.');
         this.guardando = false;
       }
     });
@@ -308,10 +318,13 @@ export class MatrizMeritosComponent implements OnInit {
     if (!this.idConvocatoria) return;
     this.cargandoComite = true;
 
+    // Verificar si el usuario logueado es el solicitante
+    this.http.get<any>(`${this.API_COMITE}/solicitud/${this.idConvocatoria}/es-solicitante`).subscribe({
+      next: (res) => { this.esSolicitanteComite = res.esSolicitante ?? false; }
+    });
+
     this.http.get<any>(`${this.API_COMITE}/solicitud/${this.idConvocatoria}/confirmado`).subscribe({
-      next: (res) => {
-        this.comiteConfirmado = res.confirmado;
-      }
+      next: (res) => { this.comiteConfirmado = res.confirmado; }
     });
 
     this.http.get<CandidatoComite[]>(`${this.API_COMITE}/solicitud/${this.idConvocatoria}/candidatos`).subscribe({
@@ -319,35 +332,65 @@ export class MatrizMeritosComponent implements OnInit {
         this.candidatosComite = data;
         this.cargandoComite = false;
 
-        // Si ya está confirmado, buscar el acta
         if (this.comiteConfirmado) {
+          // Ya confirmado: mostrar ganador guardado
           const ganador = data.find(c => c.decision_comite === 'ganador');
           if (ganador) this.idProcesoGanador = ganador.id_proceso;
+        } else if (data.length > 0) {
+          // Aún no confirmado: auto-seleccionar el de mayor puntaje (viene ordenado DESC)
+          this.idProcesoGanador         = data[0].id_proceso;
+          this.idProcesoGanadorOriginal = data[0].id_proceso;
+          this.justificacionCambioGanador = '';
         }
+        this.cdr.detectChanges();
       },
       error: () => { this.cargandoComite = false; }
     });
   }
 
+  // Getters para el panel comité
+  get ganadorCambiado(): boolean {
+    return this.idProcesoGanador !== null
+      && this.idProcesoGanadorOriginal !== null
+      && this.idProcesoGanador !== this.idProcesoGanadorOriginal;
+  }
+
+  get todosConEntrevista(): boolean {
+    return this.candidatosComite.length > 0
+      && this.candidatosComite.every(c => (c.puntaje_entrevista ?? 0) > 0);
+  }
+
+  get puedeConfirmarComite(): boolean {
+    if (!this.esSolicitanteComite)  return false;
+    if (!this.todosConEntrevista)   return false;
+    if (!this.idProcesoGanador)     return false;
+    if (!this.actaComite.trim())    return false;
+    if (this.ganadorCambiado && !this.justificacionCambioGanador.trim()) return false;
+    return true;
+  }
+
   confirmarDecisionComite(): void {
-    if (!this.idProcesoGanador)    { alert('Seleccione un candidato ganador.'); return; }
-    if (!this.actaComite.trim())   { alert('El acta del comité es obligatoria.'); return; }
-    if (!confirm('¿Confirmar la decisión final del comité? Esta acción es irreversible.')) return;
+    if (!this.puedeConfirmarComite) return;
 
     this.confirmandoComite = true;
 
+    // Si cambiaron el ganador, adjuntar la justificación al acta
+    const actaFinal = this.ganadorCambiado
+      ? `${this.actaComite.trim()}\n\n[JUSTIFICACIÓN CAMBIO DE GANADOR]: ${this.justificacionCambioGanador.trim()}`
+      : this.actaComite.trim();
+
     this.http.post(`${this.API_COMITE}/solicitud/${this.idConvocatoria}/confirmar`, {
       idProcesoGanador: this.idProcesoGanador,
-      actaComite:       this.actaComite
+      actaComite:       actaFinal
     }).subscribe({
       next: () => {
         this.confirmandoComite = false;
         this.comiteConfirmado  = true;
         this.cargarComite();
-        this.cargarTodo(); // recargar para reflejar bloqueo
+        this.cargarTodo();
       },
       error: (err) => {
-        alert(err?.error?.mensaje || 'Error al confirmar la decisión.');
+        this.toast.error('Error al confirmar', err?.error?.mensaje || 'No se pudo confirmar la decisión.');
         this.confirmandoComite = false;
       }
     });
@@ -381,7 +424,7 @@ export class MatrizMeritosComponent implements OnInit {
         this.cerrarModalOverride();
       },
       error: (err) => {
-        alert(err?.error?.mensaje || 'Error al habilitar el candidato.');
+        this.toast.error('Error al habilitar', err?.error?.mensaje || 'No se pudo habilitar al candidato.');
         this.guardandoOverride = false;
       }
     });

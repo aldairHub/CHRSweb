@@ -256,6 +256,50 @@
   flex-shrink: 0;
 }
 
+.no-solicitante {
+  cursor: default !important;
+  opacity: 0.72;
+  &:hover { background: transparent !important; }
+  .sol-arrow { display: none; }
+}
+
+.badge-observador {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.25rem 0.6rem; border-radius: 20px;
+  background: #f1f5f9; color: #64748b;
+  border: 1px solid #e2e8f0; font-size: 0.72rem; font-weight: 600;
+  flex-shrink: 0; white-space: nowrap;
+  svg { stroke: currentColor; flex-shrink: 0; }
+}
+
+// ── BOTÓN EVALUADORES ──────────────────────────────────
+.btn-evaluadores {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  background: #00A63E;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+  svg { stroke: currentColor; flex-shrink: 0; }
+  &:hover:not(:disabled) {
+    background: #016630;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,166,62,0.3);
+  }
+  &:active:not(:disabled) { transform: translateY(0); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
 // ── DARK MODE ──────────────────────────────────────────
 :host-context(html.dark) {
   .main-container { background: #000 !important; }
@@ -349,46 +393,25 @@
     text-align: left;
     svg { stroke: #92400e; flex-shrink: 0; margin-top: 1px; }
   }
+
+  // Dark mode override para btn-evaluadores
   .btn-evaluadores {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.75rem;
-    background: transparent;
-    border: 1.5px solid #B9F8CF;
-    color: #016630;
-    border-radius: 8px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-    flex-shrink: 0;
-    font-family: inherit;
-    svg { stroke: currentColor; }
-
+    background: rgba(0,166,62,0.25) !important;
+    color: #4ade80 !important;
     &:hover:not(:disabled) {
-      background: #EEF9EC;
-      border-color: #00A63E;
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+      background: rgba(0,166,62,0.45) !important;
+      box-shadow: none !important;
     }
   }
 
   // Dark mode
   :host-context(html.dark) {
     .btn-evaluadores {
-      border-color: rgba(0,166,62,0.25) !important;
+      background: rgba(0,166,62,0.25) !important;
       color: #4ade80 !important;
       &:hover:not(:disabled) {
-        background: rgba(0,166,62,0.1) !important;
-        border-color: rgba(0,166,62,0.5) !important;
+        background: rgba(0,166,62,0.4) !important;
       }
     }
   }
-
-
 }

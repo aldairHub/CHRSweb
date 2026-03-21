@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { ModalEvaluadoresComponent } from '../../../component/modal-evaluadores.component';
+import { AuthStateService } from '../../../services/auth-state.service';
 
 export interface SolicitudItem {
   idSolicitud: number;
@@ -10,6 +11,8 @@ export interface SolicitudItem {
   totalCandidatos: number;
   disponible: boolean;
   mensajeBloqueo: string | null;
+  idUsuarioSolicitante: number | null;
+  idFacultadSolicitud: number | null;
   procesos?: ProcesoItem[];
 }
 
@@ -42,6 +45,7 @@ export class MatrizMeritosListaComponent implements OnInit {
   cargando = false;
   error = '';
   convocatorias: ConvocatoriaAgrupada[] = [];
+  idUsuarioLogueado: number | null = null;
 
   // Modal evaluadores
   modalEvaluadoresVisible = false;
@@ -51,10 +55,13 @@ export class MatrizMeritosListaComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef,
+    private authState: AuthStateService
   ) {}
 
   ngOnInit(): void {
+    this.idUsuarioLogueado = this.authState.getEstado().idUsuario;
     this.cargarConvocatorias();
   }
 
@@ -66,10 +73,12 @@ export class MatrizMeritosListaComponent implements OnInit {
       next: (data) => {
         this.convocatorias = this.agrupar(data);
         this.cargando = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.error = err?.error?.mensaje || 'Error al cargar las convocatorias.';
         this.cargando = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -91,12 +100,14 @@ export class MatrizMeritosListaComponent implements OnInit {
 
       const conv = map.get(row.idConvocatoria)!;
       conv.solicitudes.push({
-        idSolicitud:     row.idSolicitud,
-        materia:         row.materia,
-        totalCandidatos: row.totalCandidatos,
-        disponible:      row.disponible,
-        mensajeBloqueo:  row.mensajeBloqueo,
-        procesos:        []
+        idSolicitud:          row.idSolicitud,
+        materia:              row.materia,
+        totalCandidatos:      row.totalCandidatos,
+        disponible:           row.disponible,
+        mensajeBloqueo:       row.mensajeBloqueo,
+        idUsuarioSolicitante: row.idUsuarioSolicitante ?? null,
+        idFacultadSolicitud:  row.idFacultadSolicitud  ?? null,
+        procesos:             []
       });
     }
 
@@ -108,12 +119,18 @@ export class MatrizMeritosListaComponent implements OnInit {
     return result;
   }
 
+  esSolicitante(sol: SolicitudItem): boolean {
+    if (!sol.idUsuarioSolicitante || !this.idUsuarioLogueado) return false;
+    return sol.idUsuarioSolicitante === this.idUsuarioLogueado;
+  }
+
   toggleExpandir(conv: ConvocatoriaAgrupada): void {
     if (conv.tieneMultiples) conv.expandida = !conv.expandida;
   }
 
   abrirMatriz(sol: SolicitudItem): void {
     if (!sol.disponible) return;
+    if (!this.esSolicitante(sol)) return;
     this.router.navigate(['/evaluador/matriz-meritos', sol.idSolicitud]);
   }
 
@@ -140,21 +157,20 @@ export class MatrizMeritosListaComponent implements OnInit {
           nombreCandidato: p.apellidos + ' ' + p.nombres
         }));
         this.cargandoProcesos = false;
-        // Si solo hay un proceso, abrir modal directo
         if (sol.procesos!.length === 1) {
           this.procesoSeleccionado = sol.procesos![0];
           this.modalEvaluadoresVisible = true;
         } else if (sol.procesos!.length > 1) {
-          // Abrir con el primero por defecto — el modal muestra el nombre
           this.procesoSeleccionado = sol.procesos![0];
           this.modalEvaluadoresVisible = true;
         }
+        this.cdr.detectChanges();
       },
       error: () => {
-        // Si falla el endpoint específico, usar el primer proceso disponible
         this.cargandoProcesos = false;
         this.procesoSeleccionado = { idProceso: sol.idSolicitud, nombreCandidato: sol.materia };
         this.modalEvaluadoresVisible = true;
+        this.cdr.detectChanges();
       }
     });
   }

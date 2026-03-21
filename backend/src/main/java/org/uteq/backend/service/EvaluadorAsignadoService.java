@@ -40,6 +40,31 @@ public class EvaluadorAsignadoService {
                 "SELECT * FROM fn_listar_evaluadores_disponibles(?, ?)", idProceso, tipo);
     }
 
+    // ── Listar evaluadores disponibles filtrados por facultad de la solicitud ──
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> listarDisponiblesPorFacultad(Long idProceso, String tipo, Long idSolicitud) {
+        return jdbc.queryForList("""
+            SELECT DISTINCT
+                u.id_usuario        AS v_id_usuario,
+                CONCAT(aa.nombres, ' ', aa.apellidos) AS v_nombre_completo,
+                u.usuario_app       AS v_usuario_app,
+                false               AS v_es_dueno
+            FROM autoridad_academica aa
+            JOIN usuario u            ON aa.id_usuario = u.id_usuario
+            JOIN solicitud_docente sd ON sd.id_solicitud = ?
+            JOIN carrera car          ON sd.id_carrera = car.id_carrera
+            WHERE aa.id_facultad = car.id_facultad
+              AND u.id_usuario NOT IN (
+                  SELECT ea.id_usuario
+                  FROM proceso_evaluador_asignado ea
+                  WHERE ea.id_proceso = ?
+                    AND ea.tipo = ?
+              )
+              AND aa.estado = true
+            ORDER BY v_nombre_completo
+            """, idSolicitud, idProceso, tipo);
+    }
+
     // ── Asignar evaluador ─────────────────────────────────────
     public void asignar(Long idProceso, Long idUsuario, String tipo) {
         procedureRepo.ejecutarProcedure(

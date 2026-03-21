@@ -32,11 +32,15 @@ public class EvaluadorAsignadoController {
         return ResponseEntity.ok(service.listarEvaluadoresProceso(idProceso, tipo));
     }
 
-    // GET /api/evaluadores-asignados/{idProceso}/disponibles?tipo=matriz
+    // GET /api/evaluadores-asignados/{idProceso}/disponibles?tipo=matriz[&idSolicitud=X]
     @GetMapping("/{idProceso}/disponibles")
     public ResponseEntity<?> listarDisponibles(
             @PathVariable Long idProceso,
-            @RequestParam(defaultValue = "matriz") String tipo) {
+            @RequestParam(defaultValue = "matriz") String tipo,
+            @RequestParam(required = false) Long idSolicitud) {
+        if (idSolicitud != null) {
+            return ResponseEntity.ok(service.listarDisponiblesPorFacultad(idProceso, tipo, idSolicitud));
+        }
         return ResponseEntity.ok(service.listarDisponibles(idProceso, tipo));
     }
 

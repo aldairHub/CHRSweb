@@ -2,6 +2,7 @@ package org.uteq.backend.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.uteq.backend.service.ComiteFinalService;
 
@@ -25,6 +26,17 @@ public class ComiteFinalController {
     @GetMapping("/solicitud/{idSolicitud}/confirmado")
     public ResponseEntity<?> estaConfirmado(@PathVariable Long idSolicitud) {
         return ResponseEntity.ok(Map.of("confirmado", service.estaConfirmado(idSolicitud)));
+    }
+
+    // GET /api/comite-final/solicitud/{idSolicitud}/es-solicitante
+    // Verifica si el usuario autenticado es quien realizó la solicitud
+    @GetMapping("/solicitud/{idSolicitud}/es-solicitante")
+    public ResponseEntity<?> esSolicitante(
+            @PathVariable Long idSolicitud,
+            Authentication auth) {
+        if (auth == null) return ResponseEntity.ok(Map.of("esSolicitante", false));
+        boolean es = service.esSolicitante(idSolicitud, auth.getName());
+        return ResponseEntity.ok(Map.of("esSolicitante", es));
     }
 
     // POST /api/comite-final/solicitud/{idSolicitud}/confirmar
