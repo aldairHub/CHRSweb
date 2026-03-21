@@ -34,7 +34,7 @@ interface Stats {
 export class EstadisticasPostulantesComponent implements OnInit {
 
   private readonly API = environment.apiUrl;
-  cargando = false; cargandoIA = false; analisisIA = '';
+  cargando = false; cargandoIA = false; analisisIA = ''; analisisSecciones: { titulo: string; contenido: string; esAlerta: boolean; esRec: boolean }[] = [];
   datos: PostulanteItem[] = []; stats: Stats | null = null; ultimaAct = '';
   metricaTend: 'total' | 'aprobados' | 'rechazados' = 'total';
 
@@ -132,34 +132,61 @@ export class EstadisticasPostulantesComponent implements OnInit {
 
   generarIA(): void {
     if (this.cargandoIA || !this.stats) return;
-    this.cargandoIA = true; this.analisisIA = '';
+    this.cargandoIA = true; this.analisisIA = ''; this.analisisSecciones = [];
     this.http.post<{ analisis: string }>(`${this.API}/revisor/reportes/analisis-ia`, { prepostulaciones: this.stats }).subscribe({
-      next: r => { this.analisisIA = r.analisis ?? this.fallbackIA(); this.cargandoIA = false; this.cdr.detectChanges(); },
-      error: () => { this.analisisIA = this.fallbackIA(); this.cargandoIA = false; this.cdr.detectChanges(); }
+      next: r => {
+        this.analisisIA = r.analisis ?? this.fallbackIA();
+        this.analisisSecciones = this.parsearSecciones(this.analisisIA);
+        this.cargandoIA = false; this.cdr.detectChanges();
+      },
+      error: () => { this.analisisIA = this.fallbackIA(); this.analisisSecciones = this.parsearSecciones(this.analisisIA); this.cargandoIA = false; this.cdr.detectChanges(); }
     });
   }
+
+  parsearSecciones(texto: string): { titulo: string; contenido: string; esAlerta: boolean; esRec: boolean }[] {
+    if (!texto || !texto.trim()) return [];
+    // Detecta encabezados como "TÍTULO:" o "**TÍTULO:**" al inicio de línea
+    const patron = /^\s*\*{0,2}(SITUACI[OÓ]N ACTUAL|AN[AÁ]LISIS(?: DE RENDIMIENTO)?|ALERTAS?(?: Y RIESGOS?)?|RECOMENDACIONES?)\*{0,2}\s*:/gim;
+    const titulos: string[] = [];
+    const posiciones: number[] = [];
+    let m: RegExpExecArray | null;
+    while ((m = patron.exec(texto)) !== null) {
+      titulos.push(m[1].trim());
+      posiciones.push(m.index + m[0].length);
+    }
+    if (titulos.length === 0) return [];
+    return titulos.map((titulo, i) => {
+      const inicio  = posiciones[i];
+      const fin     = i + 1 < posiciones.length ? (texto.lastIndexOf('\n', posiciones[i + 1] - titulos[i + 1].length - 5) || posiciones[i + 1]) : texto.length;
+      const contenido = texto.slice(inicio, fin).trim();
+      return {
+        titulo,
+        contenido,
+        esAlerta: titulo.toUpperCase().includes('ALERTA'),
+        esRec:    titulo.toUpperCase().includes('RECOMEND'),
+      };
+    });
+  }
+
   private fallbackIA(): string {
     const s = this.stats!;
-    let t = `Se registran ${s.total} prepostulación${s.total !== 1 ? 'es' : ''} en total. `;
-    t += `De estas, ${s.revisados} han sido revisadas: ${s.aprobados} aprobadas y ${s.rechazados} rechazadas, `;
-    t += `lo que representa una tasa de aprobación del ${s.tasaAprobacion}% sobre las revisadas. `;
-    if (s.pendientes > 0) {
-      t += `Actualmente ${s.pendientes} prepostulación${s.pendientes > 1 ? 'es están' : ' está'} pendiente${s.pendientes > 1 ? 's' : ''} de revisión `;
-      t += `con un tiempo de espera promedio de ${s.horasPromedioPendientes} horas desde su envío. `;
-    }
-    if (s.tiempoPromedioRevision > 0) t += `El tiempo promedio desde el envío hasta la revisión es de aproximadamente ${s.tiempoPromedioRevision} días. `;
     const pctRev = s.total > 0 ? Math.round(s.revisados / s.total * 100) : 0;
-    t += `El ${pctRev}% del total ha sido revisado. `;
-    if (s.tasaAprobacion < 50 && s.revisados > 5) {
-      t += `⚠ La tasa de aprobación es inferior al 50%; esto puede indicar que los postulantes no cumplen los requisitos mínimos o que los criterios de evaluación son muy exigentes. `;
-      t += `Se recomienda revisar los requisitos de la convocatoria y reforzar la orientación previa a los postulantes. `;
-    }
-    if (s.pendientes > s.revisados) {
-      t += `⚠ El volumen de prepostulaciones pendientes supera al de revisadas; `;
-      t += `se recomienda priorizar la revisión para no retrasar el proceso de selección. `;
-    }
-    if (s.tasaAprobacion >= 70 && s.revisados > 5) t += `La tasa de aprobación del ${s.tasaAprobacion}% refleja un proceso de selección eficiente y bien orientado.`;
-    return t.trim();
+    let r = '';
+    r += `SITUACIÓN ACTUAL: Se registran ${s.total} prepostulación${s.total !== 1 ? 'es' : ''} en total. De estas, ${s.revisados} han sido revisadas (${pctRev}%): ${s.aprobados} aprobadas y ${s.rechazados} rechazadas. Quedan ${s.pendientes} pendientes de revisión.\n\n`;
+    r += `ANÁLISIS DE RENDIMIENTO: La tasa de aprobación sobre revisadas es del ${s.tasaAprobacion}% y la tasa de rechazo del ${s.tasaRechazo}%.`;
+    if (s.tiempoPromedioRevision > 0) r += ` El tiempo promedio de revisión es de ${s.tiempoPromedioRevision} días.`;
+    if (s.horasPromedioPendientes > 0) r += ` Los pendientes llevan en espera un promedio de ${s.horasPromedioPendientes} horas.`;
+    r += '\n\n';
+    let alertas = '';
+    if (s.tasaAprobacion < 50 && s.revisados > 5) alertas += `Tasa de aprobación inferior al 50% — revisar criterios de admisión. `;
+    if (s.pendientes > s.revisados) alertas += `El volumen pendiente (${s.pendientes}) supera al revisado — riesgo de retraso en el proceso. `;
+    r += `ALERTAS Y RIESGOS: ${alertas || 'No se detectan alertas críticas en este momento.'}\n\n`;
+    let rec = '';
+    if (s.pendientes > 5) rec += `Priorizar la revisión de las ${s.pendientes} prepostulaciones pendientes. `;
+    if (s.tasaAprobacion < 50 && s.revisados > 5) rec += 'Revisar y ajustar los criterios de evaluación docente. ';
+    if (!rec) rec = 'Mantener el ritmo de revisión actual para no generar retrasos.';
+    r += `RECOMENDACIONES: ${rec}`;
+    return r.trim();
   }
 
   abrirExport(): void { this.showExport = true; }

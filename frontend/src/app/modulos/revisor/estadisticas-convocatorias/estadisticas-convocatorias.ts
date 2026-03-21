@@ -37,7 +37,7 @@ interface Stats {
 export class EstadisticasConvocatoriasComponent implements OnInit {
 
   private readonly API = environment.apiUrl;
-  cargando = false; cargandoIA = false; analisisIA = '';
+  cargando = false; cargandoIA = false; analisisIA = ''; analisisSecciones: { titulo: string; contenido: string; esAlerta: boolean; esRec: boolean }[] = [];
   datos: ConvocatoriaItem[] = []; stats: Stats | null = null; ultimaAct = '';
 
   showExport = false; exportando = false;
@@ -123,37 +123,61 @@ export class EstadisticasConvocatoriasComponent implements OnInit {
 
   generarIA(): void {
     if (this.cargandoIA || !this.stats) return;
-    this.cargandoIA = true; this.analisisIA = '';
+    this.cargandoIA = true; this.analisisIA = ''; this.analisisSecciones = [];
     this.http.post<{ analisis: string }>(`${this.API}/revisor/reportes/analisis-ia`, { convocatorias: this.stats }).subscribe({
-      next: r => { this.analisisIA = r.analisis ?? this.fallbackIA(); this.cargandoIA = false; this.cdr.detectChanges(); },
-      error: () => { this.analisisIA = this.fallbackIA(); this.cargandoIA = false; this.cdr.detectChanges(); }
+      next: r => {
+        this.analisisIA = r.analisis ?? this.fallbackIA();
+        this.analisisSecciones = this.parsearSecciones(this.analisisIA);
+        this.cargandoIA = false; this.cdr.detectChanges();
+      },
+      error: () => { this.analisisIA = this.fallbackIA(); this.analisisSecciones = this.parsearSecciones(this.analisisIA); this.cargandoIA = false; this.cdr.detectChanges(); }
     });
   }
+
+  parsearSecciones(texto: string): { titulo: string; contenido: string; esAlerta: boolean; esRec: boolean }[] {
+    if (!texto || !texto.trim()) return [];
+    // Detecta encabezados como "TÍTULO:" o "**TÍTULO:**" al inicio de línea
+    const patron = /^\s*\*{0,2}(SITUACI[OÓ]N ACTUAL|AN[AÁ]LISIS(?: DE RENDIMIENTO)?|ALERTAS?(?: Y RIESGOS?)?|RECOMENDACIONES?)\*{0,2}\s*:/gim;
+    const titulos: string[] = [];
+    const posiciones: number[] = [];
+    let m: RegExpExecArray | null;
+    while ((m = patron.exec(texto)) !== null) {
+      titulos.push(m[1].trim());
+      posiciones.push(m.index + m[0].length);
+    }
+    if (titulos.length === 0) return [];
+    return titulos.map((titulo, i) => {
+      const inicio  = posiciones[i];
+      const fin     = i + 1 < posiciones.length ? (texto.lastIndexOf('\n', posiciones[i + 1] - titulos[i + 1].length - 5) || posiciones[i + 1]) : texto.length;
+      const contenido = texto.slice(inicio, fin).trim();
+      return {
+        titulo,
+        contenido,
+        esAlerta: titulo.toUpperCase().includes('ALERTA'),
+        esRec:    titulo.toUpperCase().includes('RECOMEND'),
+      };
+    });
+  }
+
   private fallbackIA(): string {
     const s = this.stats!;
     const pctAb = s.total ? Math.round(s.abiertas / s.total * 100) : 0;
-    let t = `El sistema registra un total de ${s.total} convocatoria${s.total !== 1 ? 's' : ''}: `;
-    t += `${s.abiertas} abiertas (${pctAb}%), ${s.cerradas} cerradas y ${s.canceladas} canceladas. `;
-    t += `La eficiencia de cobertura —es decir, la proporción de convocatorias que tienen al menos una solicitud asignada— es del ${s.eficienciaCobertura}%, `;
-    t += `mientras que la tasa de éxito sobre las convocatorias cerradas alcanza el ${s.tasaExito}%. `;
-    t += `En total se han cubierto ${s.totalSolicitudesCubiertas} solicitud${s.totalSolicitudesCubiertas !== 1 ? 'es' : ''} de docente, `;
-    t += `con un promedio de ${s.promedioSolicitudesPorConv} solicitudes por convocatoria. `;
-    if (s.promedioDuracion > 0) t += `La duración promedio de una convocatoria es de ${s.promedioDuracion} días. `;
-    if (s.vencidasSinCerrar > 0) {
-      t += `⚠ Se detectan ${s.vencidasSinCerrar} convocatoria${s.vencidasSinCerrar > 1 ? 's' : ''} con fecha de cierre vencida que aún figuran como abiertas; `;
-      t += `se recomienda cerrarlas formalmente para mantener la integridad del sistema. `;
-    }
-    if (s.convSinSolicitudes > 0) {
-      t += `${s.convSinSolicitudes} convocatoria${s.convSinSolicitudes > 1 ? 's' : ''} no tiene${s.convSinSolicitudes > 1 ? 'n' : ''} ninguna solicitud asignada; `;
-      t += `conviene revisar si responden a vacantes reales o pueden cerrarse. `;
-    }
-    if (s.proximasACerrar.length > 0) {
-      t += `⚠ ${s.proximasACerrar.length} convocatoria${s.proximasACerrar.length > 1 ? 's' : ''} cierra${s.proximasACerrar.length > 1 ? 'n' : ''} en los próximos 14 días; `;
-      t += `es recomendable verificar que los documentos y solicitudes estén completos antes del vencimiento. `;
-    }
-    if (s.eficienciaCobertura < 60 && s.total > 3) t += 'La baja eficiencia de cobertura sugiere reforzar la vinculación entre convocatorias y solicitudes de docente. ';
-    if (s.tasaExito >= 80) t += `La alta tasa de éxito del ${s.tasaExito}% refleja un proceso de cierre de convocatorias saludable.`;
-    return t.trim();
+    let r = '';
+    r += `SITUACIÓN ACTUAL: El sistema registra ${s.total} convocatoria${s.total !== 1 ? 's' : ''}: ${s.abiertas} abiertas (${pctAb}%), ${s.cerradas} cerradas y ${s.canceladas} canceladas. La eficiencia de cobertura es del ${s.eficienciaCobertura}% y la tasa de éxito sobre cerradas alcanza el ${s.tasaExito}%.\n\n`;
+    r += `ANÁLISIS DE RENDIMIENTO: Se han cubierto ${s.totalSolicitudesCubiertas} solicitud${s.totalSolicitudesCubiertas !== 1 ? 'es' : ''} de docente con un promedio de ${s.promedioSolicitudesPorConv} por convocatoria.`;
+    if (s.promedioDuracion > 0) r += ` La duración promedio es de ${s.promedioDuracion} días.`;
+    r += '\n\n';
+    let alertas = '';
+    if (s.vencidasSinCerrar > 0) alertas += `${s.vencidasSinCerrar} convocatoria${s.vencidasSinCerrar > 1 ? 's' : ''} con fecha vencida aún figuran como abiertas. `;
+    if (s.convSinSolicitudes > 0) alertas += `${s.convSinSolicitudes} convocatoria${s.convSinSolicitudes > 1 ? 's' : ''} no tienen solicitudes asignadas. `;
+    if (s.proximasACerrar.length > 0) alertas += `${s.proximasACerrar.length} convocatoria${s.proximasACerrar.length > 1 ? 's' : ''} cierran en los próximos 14 días. `;
+    r += `ALERTAS Y RIESGOS: ${alertas || 'No se detectan alertas críticas en este momento.'}\n\n`;
+    let rec = '';
+    if (s.eficienciaCobertura < 60 && s.total > 3) rec += 'Reforzar la vinculación entre convocatorias y solicitudes docentes. ';
+    if (s.vencidasSinCerrar > 0) rec += 'Cerrar formalmente las convocatorias con fecha vencida. ';
+    if (!rec) rec = 'Mantener el ritmo actual y monitorear las convocatorias próximas a vencer.';
+    r += `RECOMENDACIONES: ${rec}`;
+    return r.trim();
   }
 
   abrirExport(): void { this.showExport = true; }

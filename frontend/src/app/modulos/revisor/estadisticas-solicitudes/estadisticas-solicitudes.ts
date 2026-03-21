@@ -39,7 +39,7 @@ interface Stats {
 export class EstadisticasSolicitudesComponent implements OnInit {
 
   private readonly API = environment.apiUrl;
-  cargando = false; cargandoIA = false; analisisIA = '';
+  cargando = false; cargandoIA = false; analisisIA = ''; analisisSecciones: { titulo: string; contenido: string; esAlerta: boolean; esRec: boolean }[] = [];
   datos: SolicitudItem[] = []; stats: Stats | null = null; ultimaAct = '';
 
   showExport = false; exportando = false;
@@ -142,36 +142,60 @@ export class EstadisticasSolicitudesComponent implements OnInit {
 
   generarIA(): void {
     if (this.cargandoIA || !this.stats) return;
-    this.cargandoIA = true; this.analisisIA = '';
+    this.cargandoIA = true; this.analisisIA = ''; this.analisisSecciones = [];
     this.http.post<{ analisis: string }>(`${this.API}/revisor/reportes/analisis-ia`, { solicitudes: this.stats }).subscribe({
-      next: r => { this.analisisIA = r.analisis ?? this.fallbackIA(); this.cargandoIA = false; this.cdr.detectChanges(); },
-      error: () => { this.analisisIA = this.fallbackIA(); this.cargandoIA = false; this.cdr.detectChanges(); }
+      next: r => {
+        this.analisisIA = r.analisis ?? this.fallbackIA();
+        this.analisisSecciones = this.parsearSecciones(this.analisisIA);
+        this.cargandoIA = false; this.cdr.detectChanges();
+      },
+      error: () => { this.analisisIA = this.fallbackIA(); this.analisisSecciones = this.parsearSecciones(this.analisisIA); this.cargandoIA = false; this.cdr.detectChanges(); }
     });
   }
+
+  parsearSecciones(texto: string): { titulo: string; contenido: string; esAlerta: boolean; esRec: boolean }[] {
+    if (!texto || !texto.trim()) return [];
+    // Detecta encabezados como "TÍTULO:" o "**TÍTULO:**" al inicio de línea
+    const patron = /^\s*\*{0,2}(SITUACI[OÓ]N ACTUAL|AN[AÁ]LISIS(?: DE RENDIMIENTO)?|ALERTAS?(?: Y RIESGOS?)?|RECOMENDACIONES?)\*{0,2}\s*:/gim;
+    const titulos: string[] = [];
+    const posiciones: number[] = [];
+    let m: RegExpExecArray | null;
+    while ((m = patron.exec(texto)) !== null) {
+      titulos.push(m[1].trim());
+      posiciones.push(m.index + m[0].length);
+    }
+    if (titulos.length === 0) return [];
+    return titulos.map((titulo, i) => {
+      const inicio  = posiciones[i];
+      const fin     = i + 1 < posiciones.length ? (texto.lastIndexOf('\n', posiciones[i + 1] - titulos[i + 1].length - 5) || posiciones[i + 1]) : texto.length;
+      const contenido = texto.slice(inicio, fin).trim();
+      return {
+        titulo,
+        contenido,
+        esAlerta: titulo.toUpperCase().includes('ALERTA'),
+        esRec:    titulo.toUpperCase().includes('RECOMEND'),
+      };
+    });
+  }
+
   private fallbackIA(): string {
     const s = this.stats!;
-    let t = `El sistema registra ${s.total} solicitud${s.total !== 1 ? 'es' : ''} de docente que representan una demanda total de `;
-    t += `${s.docentesRequeridos} docente${s.docentesRequeridos !== 1 ? 's' : ''}. `;
-    t += `De estas, ${s.aprobadas} han sido aprobadas (${s.docentesAprobados} docentes cubiertos), `;
-    t += `${s.pendientes} están pendientes de revisión y ${s.rechazadas} fueron rechazadas. `;
-    t += `La tasa de aprobación sobre revisadas es del ${s.tasaAprobacion}% y la cobertura de docentes alcanza el ${s.cobertura}%. `;
-    if (s.docentesPendientes > 0) t += `Aún quedan ${s.docentesPendientes} plaza${s.docentesPendientes > 1 ? 's' : ''} de docente sin cubrir. `;
-    if (s.porFacultad.length > 0) {
-      t += `La facultad con mayor demanda es "${s.porFacultad[0].nombre}" con ${s.porFacultad[0].count} solicitudes`;
-      if (s.porFacultad.length > 1) t += `; le sigue "${s.porFacultad[1].nombre}" con ${s.porFacultad[1].count}`;
-      t += '. ';
-    }
-    if (s.expProfPromedio > 0 || s.expDocPromedio > 0)
-      t += `Los perfiles requeridos exigen en promedio ${s.expProfPromedio} año${s.expProfPromedio !== 1 ? 's' : ''} de experiencia profesional y ${s.expDocPromedio} de docente. `;
-    if (s.masAntiguas.length > 0) {
-      t += `⚠ Hay ${s.masAntiguas.length} solicitud${s.masAntiguas.length > 1 ? 'es' : ''} pendiente${s.masAntiguas.length > 1 ? 's' : ''} con alta antigüedad; `;
-      t += `su resolución debería priorizarse para evitar vacíos en la carga horaria. `;
-    }
-    if (s.pendientes > s.aprobadas)
-      t += `El volumen pendiente supera al aprobado; se recomienda agilizar la revisión de las solicitudes más antiguas. `;
-    if (s.cobertura >= 80)
-      t += `La cobertura del ${s.cobertura}% indica que la mayoría de las necesidades académicas están siendo atendidas satisfactoriamente.`;
-    return t.trim();
+    let r = '';
+    r += `SITUACIÓN ACTUAL: El sistema registra ${s.total} solicitud${s.total !== 1 ? 'es' : ''} de docente con una demanda total de ${s.docentesRequeridos} plaza${s.docentesRequeridos !== 1 ? 's' : ''}. De estas, ${s.aprobadas} han sido aprobadas, ${s.pendientes} están pendientes y ${s.rechazadas} fueron rechazadas. La cobertura actual es del ${s.cobertura}%.\n\n`;
+    r += `ANÁLISIS DE RENDIMIENTO: La tasa de aprobación es del ${s.tasaAprobacion}% y quedan ${s.docentesPendientes} docente${s.docentesPendientes !== 1 ? 's' : ''} por cubrir.`;
+    if (s.expProfPromedio > 0) r += ` El perfil requerido exige en promedio ${s.expProfPromedio} años de experiencia profesional y ${s.expDocPromedio} de docencia.`;
+    if (s.porFacultad.length > 0) r += ` La facultad con mayor demanda es "${s.porFacultad[0].nombre}" con ${s.porFacultad[0].count} solicitudes.`;
+    r += '\n\n';
+    let alertas = '';
+    if (s.masAntiguas && s.masAntiguas.length > 0) alertas += `Hay ${s.masAntiguas.length} solicitud${s.masAntiguas.length > 1 ? 'es' : ''} pendiente${s.masAntiguas.length > 1 ? 's' : ''} con alta antigüedad sin resolver. `;
+    if (s.cobertura < 60) alertas += `La cobertura del ${s.cobertura}% está por debajo del umbral recomendado. `;
+    r += `ALERTAS Y RIESGOS: ${alertas || 'No se detectan alertas críticas en este momento.'}\n\n`;
+    let rec = '';
+    if (s.pendientes > s.aprobadas) rec += 'Agilizar la revisión de solicitudes pendientes para evitar vacíos en la carga horaria. ';
+    if (s.cobertura < 80) rec += `Abrir convocatorias para cubrir las ${s.docentesPendientes} plazas pendientes. `;
+    if (!rec) rec = 'Mantener el ritmo de aprobación y monitorear la evolución de la demanda docente.';
+    r += `RECOMENDACIONES: ${rec}`;
+    return r.trim();
   }
 
   abrirExport(): void { this.showExport = true; }
