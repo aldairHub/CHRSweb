@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../../services/toast.service';
+import { AuthService } from '../../../services/auth.service';
 
 // ── Interfaces ────────────────────────────────────────────────────
 interface ConfigBackup {
@@ -115,7 +116,8 @@ export class BackupComponent implements OnInit, AfterViewInit, OnDestroy {
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private toast: ToastService,
-    public  ps: BackupProgressService
+    public  ps: BackupProgressService,
+    private authService: AuthService
   ) {
     // Bind handler once so we can remove it properly on destroy
     this.authMessageHandler = (event: MessageEvent) => {
@@ -495,7 +497,17 @@ export class BackupComponent implements OnInit, AfterViewInit, OnDestroy {
     const form = new FormData();
     form.append('archivo', this.restaurarFile);
     this.http.post<any>('/api/backup/restaurar', form).subscribe({
-      next:  r   => { this.restaurarEstado = 'ok';    this.restaurarMensaje = r.mensaje;                        this.toast.success('BD restaurada correctamente.'); },
+      next:  r   => {
+        this.restaurarEstado  = 'ok';
+        this.restaurarMensaje = '✓ Base de datos restaurada. Cerrando sesión en 3 segundos...';
+        this.cdr.detectChanges();
+        this.toast.success('BD restaurada correctamente. Redirigiendo al login...');
+        // Cerrar sesión después de 3s para que el usuario vea el mensaje
+        // La BD cambió — el token actual puede no ser válido con los nuevos datos
+        setTimeout(() => {
+          this.authService.logoutYSalir();
+        }, 3000);
+      },
       error: err => { this.restaurarEstado = 'error'; this.restaurarMensaje = err?.error?.mensaje ?? 'Error.'; this.toast.error('Error al restaurar.'); }
     });this.cdr.detectChanges();
   }
