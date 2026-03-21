@@ -261,6 +261,66 @@
         {{ guardando ? 'Guardando...' : 'Guardar configuración' }}
       </button>
     </div>
+
+    <!-- ── BARRA EJECUTAR BACKUP — solo en tab Configuración ── -->
+    <div class="bk-global-bar" *ngIf="!cargando" [class.bk-global-bar--visible]="ps.activo">
+      <div class="bk-global-row">
+        <div class="bk-global-info">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+            <path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
+            <path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/>
+          </svg>
+          <div class="bk-global-texto">
+            <span class="bk-global-title">
+              {{ ps.estado === 'idle' ? 'Ejecutar backup' : ps.fase }}
+            </span>
+            <span class="bk-global-sub" *ngIf="ps.estado === 'idle'">
+              Tipo: <strong>{{ tipoLabel(config.tipoBackup) }}</strong>
+              <ng-container *ngIf="config.destinoLocal || config.destinoEmail || config.destinoDrive">
+                ·
+                <strong *ngIf="config.destinoLocal">Local</strong>
+                <strong *ngIf="config.destinoEmail"> Email</strong>
+                <strong *ngIf="config.destinoDrive"> Drive</strong>
+              </ng-container>
+            </span>
+            <span class="bk-global-sub" *ngIf="ps.estado !== 'idle'">
+              <span *ngIf="ps.estado === 'ejecutando'">Backup en progreso...</span>
+              <span *ngIf="ps.estado === 'ok'">Completado exitosamente</span>
+              <span *ngIf="ps.estado === 'error'">El backup encontró un error</span>
+              <span *ngIf="ps.origen === 'automatico'" class="bk-auto-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Automático
+              </span>
+            </span>
+          </div>
+        </div>
+        <div class="bk-global-actions">
+          <span class="bk-pct" *ngIf="ps.estado === 'ejecutando'">{{ ps.progreso | number:'1.0-0' }}%</span>
+          <button class="btn-ejecutar" *ngIf="ps.estado === 'idle'" [disabled]="ps.ejecutando" (click)="ejecutarTipo(config.tipoBackup)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+            </svg>
+            Ejecutar backup
+          </button>
+          <div class="bk-result-icon bk-result-ok" *ngIf="ps.estado === 'ok'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <div class="bk-result-icon bk-result-error" *ngIf="ps.estado === 'error'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="bk-progreso-track" *ngIf="ps.estado !== 'idle'">
+        <div class="bk-progreso-fill"
+             [style.width.%]="ps.progreso"
+             [class.bk-fill--pulse]="ps.estado === 'ejecutando'"
+             [class.bk-fill--ok]="ps.estado === 'ok'"
+             [class.bk-fill--error]="ps.estado === 'error'">
+        </div>
+      </div>
+    </div>
+
   </ng-container>
 
   <!-- ══════════════════ TAB HISTORIAL ══════════════════ -->
@@ -564,81 +624,5 @@
     </div>
   </ng-container>
 
-
-  <!-- ══ BARRA GLOBAL DE BACKUP — visible en cualquier tab ══ -->
-  <div class="bk-global-bar" *ngIf="!cargando" [class.bk-global-bar--visible]="ps.activo">
-
-    <div class="bk-global-row">
-      <div class="bk-global-info">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
-          <ellipse cx="12" cy="5" rx="9" ry="3"/>
-          <path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
-          <path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/>
-        </svg>
-        <div class="bk-global-texto">
-          <!-- Título -->
-          <span class="bk-global-title">
-            {{ ps.estado === 'idle' ? 'Ejecutar backup' : ps.fase }}
-          </span>
-          <!-- Subtítulo idle -->
-          <span class="bk-global-sub" *ngIf="ps.estado === 'idle'">
-            Tipo: <strong>{{ tipoLabel(config.tipoBackup) }}</strong>
-            <ng-container *ngIf="config.destinoLocal || config.destinoEmail || config.destinoDrive">
-              ·
-              <strong *ngIf="config.destinoLocal">Local</strong>
-              <strong *ngIf="config.destinoEmail"> Email</strong>
-              <strong *ngIf="config.destinoDrive"> Drive</strong>
-            </ng-container>
-          </span>
-          <!-- Subtítulo ejecutando/ok/error -->
-          <span class="bk-global-sub" *ngIf="ps.estado !== 'idle'">
-            <span *ngIf="ps.estado === 'ejecutando'">Backup {{ tipoLabel(config.tipoBackup) }} en progreso...</span>
-            <span *ngIf="ps.estado === 'ok'">Completado exitosamente</span>
-            <span *ngIf="ps.estado === 'error'">El backup encontró un error</span>
-            <span *ngIf="ps.origen === 'automatico'" class="bk-auto-badge">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              Automático
-            </span>
-          </span>
-        </div>
-      </div>
-
-      <div class="bk-global-actions">
-        <!-- % cuando ejecuta -->
-        <span class="bk-pct" *ngIf="ps.estado === 'ejecutando'">
-          {{ ps.progreso | number:'1.0-0' }}%
-        </span>
-        <!-- Botón cuando idle -->
-        <button class="btn-ejecutar"
-                *ngIf="ps.estado === 'idle'"
-                [disabled]="ps.ejecutando"
-                (click)="ejecutarTipo(config.tipoBackup)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-          </svg>
-          Ejecutar backup
-        </button>
-        <!-- Check ok -->
-        <div class="bk-result-icon bk-result-ok" *ngIf="ps.estado === 'ok'">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-        </div>
-        <!-- X error -->
-        <div class="bk-result-icon bk-result-error" *ngIf="ps.estado === 'error'">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-        </div>
-      </div>
-    </div>
-
-    <!-- Barra de progreso -->
-    <div class="bk-progreso-track" *ngIf="ps.estado !== 'idle'">
-      <div class="bk-progreso-fill"
-           [style.width.%]="ps.progreso"
-           [class.bk-fill--pulse]="ps.estado === 'ejecutando'"
-           [class.bk-fill--ok]="ps.estado === 'ok'"
-           [class.bk-fill--error]="ps.estado === 'error'">
-      </div>
-    </div>
-
-  </div>
 
 </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { BackupProgressService } from './backup-progress.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -54,7 +54,7 @@ interface DriveConfigForm {
   templateUrl: './backup.html',
   styleUrls: ['./backup.scss']
 })
-export class BackupComponent implements OnInit, OnDestroy {
+export class BackupComponent implements OnInit, AfterViewInit, OnDestroy {
   private pollingInterval: any;
   private authCheckInterval: any;
   private authMessageHandler: (e: MessageEvent) => void;
@@ -127,12 +127,19 @@ export class BackupComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.cdr.reattach();          // reconectar CD al volver al módulo
     this.cargarConfig();
     this.cargarHistorial();
     this.cargarDriveConfig();
     // Polling cada 6s — detecta backups automáticos del scheduler
     this.pollingInterval = setInterval(() => this.sondearHistorial(), 6_000);
     window.addEventListener('message', this.authMessageHandler);
+  }
+
+  ngAfterViewInit(): void {
+    // Forzar ciclo de detección después de que la vista se inicializa
+    setTimeout(() => this.cdr.detectChanges(), 0);
+    setTimeout(() => this.cdr.detectChanges(), 300);
   }
 
   ngOnDestroy(): void {

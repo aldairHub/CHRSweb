@@ -50,8 +50,9 @@ public class GoogleDriveService {
             .ofPattern("dd/MM/yyyy HH:mm:ss")
             .withZone(ZoneId.systemDefault());
 
-    private final DriveConfigRepository driveConfigRepo;
-    private final AesCipherService      aes;
+    private final DriveConfigRepository    driveConfigRepo;
+    private final AesCipherService         aes;
+    private final org.uteq.backend.repository.ConfigBackupRepository configBackupRepo;
 
     // ═══════════════════════════════════════════════════════════════
     // GUARDAR CREDENCIALES DESDE LA UI
@@ -152,7 +153,21 @@ public class GoogleDriveService {
         cfg.setExpiresAt(Instant.now().plusSeconds(
                 response.getExpiresInSeconds() != null ? response.getExpiresInSeconds() : 3600L));
         cfg.setAutorizado(true);
+
+        // ── CRÍTICO: resetear folder_id al cambiar de cuenta ──────────────────
+        // El folder_id anterior pertenece a la cuenta vieja.
+        // Al autorizar con una cuenta nueva, hay que crear la carpeta de nuevo
+        // en el Drive del nuevo usuario.
+        cfg.setFolderId(null);
         driveConfigRepo.save(cfg);
+
+        // También limpiar el folder_id en config_backup para que BackupService
+        // lo re-cree en el Drive correcto en el próximo backup
+        configBackupRepo.findFirstByOrderByIdConfigAsc().ifPresent(configBackup -> {
+            configBackup.setDriveFolderId(null);
+            configBackupRepo.save(configBackup);
+            log.info("folder_id de config_backup reseteado — se creará en la nueva cuenta de Drive.");
+        });
 
         log.info("Google Drive autorizado correctamente. Tokens guardados cifrados en BD.");
     }
