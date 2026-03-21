@@ -282,13 +282,30 @@ public class ReporteMatrizService {
                 }
             }
 
-            // Subtotal sección
+            // Subtotal sección — calcular sumando los ítems del candidato
             tabla.addCell(celda("TOTAL " + str(sec.get("titulo"), "").toUpperCase(),
                     fNormalB(), COLOR_GRIS, Element.ALIGN_LEFT));
             for (Map<String, Object> cand : candidatos) {
-                Object sub = cand.get("subtotal_" + str(sec.get("codigo"), "").toLowerCase());
-                tabla.addCell(celda(sub != null ? sub.toString() : "—",
-                        fNormalB(), COLOR_GRIS, Element.ALIGN_CENTER));
+                @SuppressWarnings("unchecked")
+                Map<String, Object> puntajes = (Map<String, Object>) cand.get("puntajes");
+                double subtotal = 0;
+                if (items != null && puntajes != null) {
+                    for (Map<String, Object> item : items) {
+                        String cod = str(item.get("codigo"), "");
+                        Object val = puntajes.get(cod);
+                        if (val != null) {
+                            try { subtotal += Double.parseDouble(val.toString()); } catch (Exception ignored) {}
+                        }
+                    }
+                }
+                double maximo = 0;
+                try { maximo = Double.parseDouble(sec.get("puntaje_maximo").toString()); } catch (Exception ignored) {}
+                double subtotalFinal = maximo > 0 ? Math.min(subtotal, maximo) : subtotal;
+                String subtotalStr = subtotalFinal == 0 ? "0" :
+                        subtotalFinal == Math.floor(subtotalFinal)
+                                ? String.valueOf((int) subtotalFinal)
+                                : String.format("%.2f", subtotalFinal);
+                tabla.addCell(celda(subtotalStr, fNormalB(), COLOR_GRIS, Element.ALIGN_CENTER));
             }
         }
 
@@ -464,7 +481,7 @@ public class ReporteMatrizService {
                 p.id_postulante,
                 p.nombres_postulante  AS nombres,
                 p.apellidos_postulante AS apellidos,
-                pre.nombres            AS titulos,
+                ''                    AS titulos,
                 COALESCE(pe.puntaje_matriz, 0)              AS puntaje_matriz,
                 COALESCE(pe.puntaje_entrevista, 0)          AS puntaje_entrevista,
                 COALESCE(pe.puntaje_matriz, 0) +
@@ -473,7 +490,6 @@ public class ReporteMatrizService {
                 pe.acta_comite
             FROM proceso_evaluacion pe
             JOIN postulante p        ON pe.id_postulante     = p.id_postulante
-            JOIN prepostulacion pre  ON p.id_prepostulacion  = pre.id_prepostulacion
             WHERE pe.id_solicitud = ?
             ORDER BY puntaje_total DESC
             """, idSolicitud);
