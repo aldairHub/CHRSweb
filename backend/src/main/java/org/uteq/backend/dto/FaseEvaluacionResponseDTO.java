@@ -18,6 +18,5 @@ public class FaseEvaluacionResponseDTO {
     private Integer orden;
     private Long idPlantilla;
     private String nombrePlantilla;
-    private List<String> evaluadoresPermitidos;
     private Boolean estado;
 }

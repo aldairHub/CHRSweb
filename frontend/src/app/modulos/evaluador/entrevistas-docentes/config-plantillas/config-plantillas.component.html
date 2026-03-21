@@ -43,14 +43,8 @@
     <div class="page-header">
       <div>
         <h2>Plantillas de Evaluación</h2>
-        <p class="page-subtitle">Gestiona las plantillas de evaluación por fase</p>
+        <p class="page-subtitle">Plantillas de evaluación por fase</p>
       </div>
-      <button class="btn btn-primary" (click)="openCreate()">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        Nueva Plantilla
-      </button>
     </div>
 
     <div class="loading-state" *ngIf="isLoading">
@@ -96,18 +90,12 @@
             <td>
               <div class="action-buttons">
                 <button class="btn btn-outline btn-sm" (click)="verCriterios(p)">Ver Criterios</button>
-                <button class="btn-icon btn-outline" title="Editar" (click)="openEdit(p)">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                  </svg>
-                </button>
               </div>
             </td>
           </tr>
           <tr *ngIf="plantillas.length === 0">
             <td colspan="7">
-              <div class="empty-state-sm">No hay plantillas. Haga clic en "Nueva Plantilla" para comenzar.</div>
+              <div class="empty-state-sm">No hay plantillas configuradas.</div>
             </td>
           </tr>
           </tbody>

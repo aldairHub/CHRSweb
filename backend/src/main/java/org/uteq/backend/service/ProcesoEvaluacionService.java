@@ -42,12 +42,12 @@ public class ProcesoEvaluacionService {
     @Transactional(readOnly = true)
     public List<PostulanteEvaluacionDTO> listarPostulantes(Long idSolicitud) {
         if (idSolicitud != null) {
-            return procesoRepository.findBySolicitudDocente_IdSolicitudOrderByFechaInicioDesc(idSolicitud)
+            return procesoRepository.findHabilitadosParaEntrevistaBySolicitud(idSolicitud)
                     .stream()
                     .map(this::toListDTO)
                     .collect(Collectors.toList());
         }
-        return procesoRepository.findAllByOrderByFechaInicioDesc()
+        return procesoRepository.findHabilitadosParaEntrevista()
                 .stream()
                 .map(this::toListDTO)
                 .collect(Collectors.toList());

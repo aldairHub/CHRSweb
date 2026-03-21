@@ -11,6 +11,7 @@ import { HttpClient } from '@angular/common/http';
 import { ResultadosService } from '../../../../services/entrevistas/resultados.service';
 import { PostulantesService } from '../../../../services/entrevistas/postulantes.service';
 import { EntrevistasEstadoService } from '../../../../services/entrevistas/entrevistas-estado.service';
+import { ToastService } from '../../../../services/toast.service';
 import { PostulanteResumen, ResultadoProceso, ResultadoFase } from '../../../../models/entrevistas-models';
 
 @Component({
@@ -51,11 +52,14 @@ export class ResultadosComponent implements OnInit {
     private http: HttpClient,
     private resultadosService: ResultadosService,
     private postulantesService: PostulantesService,
-    private estado: EntrevistasEstadoService
+    private estado: EntrevistasEstadoService,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
     const idSolicitud = this.estado.getIdSolicitud();
+    this.isLoading = true;
+    this.cdr.detectChanges();
     this.postulantesService.listar(undefined, undefined, idSolicitud || undefined).subscribe({
       next: (data: PostulanteResumen[]) => {
         this.postulantes = data;
@@ -88,6 +92,7 @@ export class ResultadosComponent implements OnInit {
     this.resultado = null;
     this.faseExpandida = null;
     this.guardadoExitoso = false;
+    this.cdr.detectChanges();
 
     this.resultadosService.obtenerResultados(this.idProcesoSeleccionado).subscribe({
       next: (data: ResultadoProceso) => {
@@ -112,7 +117,7 @@ export class ResultadosComponent implements OnInit {
   // Guardar puntaje de entrevista y disparar el 25% a la matriz
   guardarPuntajeEntrevista(): void {
     if (!this.procesoCompleto) {
-      alert('Debe completar todas las fases antes de guardar el puntaje.');
+      this.toast.warning('Proceso incompleto', 'Debe completar todas las fases antes de guardar el puntaje.');
       return;
     }
 
@@ -125,7 +130,7 @@ export class ResultadosComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        alert(err?.error?.mensaje || 'Error al guardar el puntaje de entrevista.');
+        this.toast.error('Error al guardar', err?.error?.mensaje || 'No se pudo guardar el puntaje de entrevista.');
         this.isSaving = false;
         this.cdr.detectChanges();
       }

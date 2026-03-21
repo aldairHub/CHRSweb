@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -41,7 +41,8 @@ export class EntrevistasListaComponent implements OnInit {
   constructor(
     private router: Router,
     private http: HttpClient,
-    private estado: EntrevistasEstadoService
+    private estado: EntrevistasEstadoService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -52,15 +53,18 @@ export class EntrevistasListaComponent implements OnInit {
   cargarConvocatorias(): void {
     this.cargando = true;
     this.error = '';
+    this.cdr.detectChanges();
 
     this.http.get<any[]>(`${this.API}/convocatorias`).subscribe({
       next: (data) => {
         this.convocatorias = this.agrupar(data);
         this.cargando = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.error = err?.error?.mensaje || 'Error al cargar las convocatorias.';
         this.cargando = false;
+        this.cdr.detectChanges();
       }
     });
   }

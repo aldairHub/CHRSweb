@@ -89,6 +89,7 @@ export class PostulantesComponent implements OnInit {
 
   cargarListado(estado?: string): Promise<void> {
     this.isLoading = true; this.error = '';
+    this.cdr.detectChanges();
     return new Promise(resolve => {
       this.postulantesService.listar(estado, undefined, this.idSolicitud || undefined).subscribe({
         next: (data: PostulanteResumen[]) => {

@@ -102,7 +102,6 @@
               <th>Peso</th>
               <th>Plantilla</th>
               <th>Estado</th>
-              <th>Asignar Evaluadores</th>
             </tr>
             </thead>
             <tbody>
@@ -120,24 +119,9 @@
                     {{ f.estado ? 'Activa' : 'Inactiva' }}
                   </span>
               </td>
-              <td>
-                <!-- Mostrar botón por cada postulante -->
-                <div class="postulante-btns" *ngIf="postulantes.length > 0">
-                  <button class="btn btn-outline btn-sm"
-                          *ngFor="let p of postulantes"
-                          (click)="abrirModalEvaluadores(f, p)">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                    {{ p.apellidos }}
-                  </button>
-                </div>
-                <span class="text-muted" *ngIf="postulantes.length === 0">Sin postulantes activos</span>
-              </td>
             </tr>
             <tr *ngIf="fases.length === 0">
-              <td colspan="7">
+              <td colspan="6">
                 <div class="empty-state-sm">No hay fases configuradas.</div>
               </td>
             </tr>
@@ -148,12 +132,3 @@
     </ng-container>
   </div>
 </div>
-
-<!-- Modal asignar evaluadores -->
-<app-modal-evaluadores
-  [visible]="modalVisible"
-  [idProceso]="procesoSeleccionado?.idProceso ?? null"
-  tipo="entrevista"
-  [contextLabel]="contextLabel"
-  (cerrado)="cerrarModal()">
-</app-modal-evaluadores>

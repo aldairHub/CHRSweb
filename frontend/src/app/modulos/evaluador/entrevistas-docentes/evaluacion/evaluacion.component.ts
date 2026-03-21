@@ -7,6 +7,7 @@ import { EvaluacionService } from '../../../../services/entrevistas/evaluacion.s
 import { ReunionesService } from '../../../../services/entrevistas/reuniones.service';
 import { ConfigCriteriosService } from '../../../../services/entrevistas/config-criterios.service';
 import { EntrevistasEstadoService } from '../../../../services/entrevistas/entrevistas-estado.service';
+import { ToastService } from '../../../../services/toast.service';
 import { EvaluacionRequest, CriterioResponse, ReunionResumen } from '../../../../models/entrevistas-models';
 
 interface CriterioForm extends CriterioResponse {
@@ -70,7 +71,8 @@ export class EvaluacionComponent implements OnInit, AfterViewInit {
     private evaluacionService: EvaluacionService,
     private reunionesService: ReunionesService,
     private criteriosService: ConfigCriteriosService,
-    private estado: EntrevistasEstadoService
+    private estado: EntrevistasEstadoService,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -97,6 +99,7 @@ export class EvaluacionComponent implements OnInit, AfterViewInit {
 
   cargarDatos(idReunion: number): void {
     this.isLoading = true;
+    this.cdr.detectChanges();
     this.reunionesService.obtener(idReunion).subscribe({
       next: (reunion: ReunionResumen) => {
         this.reunion = reunion;
@@ -155,14 +158,14 @@ export class EvaluacionComponent implements OnInit, AfterViewInit {
       criterios: this.criterios.map(c => ({ idCriterio: c.idCriterio, nota: c.nota, observacion: c.observacion })),
       observaciones: this.observaciones
     }));
-    alert('✅ Borrador guardado localmente.');
+    this.toast.success('Borrador guardado', 'Los datos fueron guardados localmente.');
   }
 
   confirmarEvaluacion(): void {
-    if (!this.declaroSinConflicto)  { alert('Debe declarar que no tiene conflicto de interés.'); return; }
-    if (!this.criteriosCompletos)   { alert('Debe calificar todos los criterios.'); return; }
-    if (!this.observaciones.trim()) { alert('Las observaciones son obligatorias.'); return; }
-    if (!this.confirmado)           { alert('Debe marcar la casilla de confirmación.'); return; }
+    if (!this.declaroSinConflicto)  { this.toast.warning('Campo requerido', 'Debe declarar que no tiene conflicto de interés.'); return; }
+    if (!this.criteriosCompletos)   { this.toast.warning('Campo requerido', 'Debe calificar todos los criterios.'); return; }
+    if (!this.observaciones.trim()) { this.toast.warning('Campo requerido', 'Las observaciones son obligatorias.'); return; }
+    if (!this.confirmado)           { this.toast.warning('Campo requerido', 'Debe marcar la casilla de confirmación.'); return; }
     if (!this.reunion)              { return; }
 
     this.isSaving = true;
@@ -190,7 +193,7 @@ export class EvaluacionComponent implements OnInit, AfterViewInit {
         }, 2000);
       },
       error: (err: { error?: { mensaje?: string } }) => {
-        alert(err?.error?.mensaje || 'Error al guardar la evaluación.');
+        this.toast.error('Error al guardar', err?.error?.mensaje || 'No se pudo guardar la evaluación.');
         this.isSaving = false; this.cdr.detectChanges();
       }
     });

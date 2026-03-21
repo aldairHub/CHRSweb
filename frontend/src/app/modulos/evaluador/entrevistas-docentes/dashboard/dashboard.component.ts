@@ -48,6 +48,7 @@ export class EvaluacionDashboardComponent implements OnInit {
   cargarDatos(): void {
     this.isLoading = true;
     this.error = '';
+    this.cdr.detectChanges();
 
     const idSolicitud = this.estado.getIdSolicitud() || undefined;
 

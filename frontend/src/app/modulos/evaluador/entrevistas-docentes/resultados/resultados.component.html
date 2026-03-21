@@ -220,28 +220,44 @@
         </div>
 
         <!-- PUNTAJE ENTREVISTA -->
-        <div class="card puntaje-card" *ngIf="resultado.puntajeEntrevista">
-          <div class="card-header">
-            <h3 class="card-title">Puntaje Enviado a Matriz de Méritos</h3>
-            <span class="badge success">Registrado</span>
-          </div>
-          <div class="puntaje-resumen">
-            <div class="puntaje-item">
-              <span class="puntaje-label">Calificación Entrevistas</span>
-              <span class="puntaje-valor">{{ calificacionTotal | number:'1.1-2' }} / 100</span>
-            </div>
-            <div class="puntaje-arrow">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        <div class="puntaje-entrevista-card" *ngIf="resultado.puntajeEntrevista">
+          <div class="puntaje-entrevista-card__header">
+            <div class="puntaje-entrevista-card__icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
             </div>
-            <div class="puntaje-item puntaje-item--resultado">
-              <span class="puntaje-label">Puntaje en Matriz (25%)</span>
-              <span class="puntaje-valor puntaje-valor--green">{{ resultado.puntajeEntrevista | number:'1.1-2' }} / 25</span>
+            <div>
+              <h3 class="puntaje-entrevista-card__title">Puntaje enviado a Matriz de Méritos</h3>
+              <p class="puntaje-entrevista-card__sub">Sección Entrevista Docente (máx. 25 pts)</p>
+            </div>
+            <span class="puntaje-entrevista-card__badge">Registrado</span>
+          </div>
+
+          <div class="puntaje-entrevista-card__body">
+            <div class="puntaje-flow">
+              <div class="puntaje-flow__item">
+                <span class="puntaje-flow__label">Calificación entrevistas</span>
+                <span class="puntaje-flow__value">{{ calificacionTotal | number:'1.1-2' }}</span>
+                <span class="puntaje-flow__scale">/ 100 pts</span>
+              </div>
+              <div class="puntaje-flow__arrow">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+                <span class="puntaje-flow__factor">× 0.25</span>
+              </div>
+              <div class="puntaje-flow__item puntaje-flow__item--resultado">
+                <span class="puntaje-flow__label">Puntaje en matriz (25%)</span>
+                <span class="puntaje-flow__value puntaje-flow__value--green">{{ resultado.puntajeEntrevista | number:'1.1-2' }}</span>
+                <span class="puntaje-flow__scale">/ 25 pts</span>
+              </div>
             </div>
           </div>
-          <p class="puntaje-nota">
-            Este valor fue enviado automáticamente a la sección de Entrevista Docente en la Matriz de Méritos del candidato.
+
+          <p class="puntaje-entrevista-card__nota">
+            Este valor se registró automáticamente en la Matriz de Méritos del candidato, en la sección Entrevista Docente.
           </p>
         </div>
 

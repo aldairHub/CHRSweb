@@ -94,18 +94,12 @@
             <p><strong>Duración:</strong> {{ reunion.duracionMinutos }} minutos</p>
             <p><strong>Modalidad:</strong> {{ reunion.modalidad }}</p>
           </div>
-          <div>
-            <p><strong>Evaluadores:</strong></p>
-            <ul class="evaluadores-ul">
-              <li *ngFor="let ev of reunion.evaluadores">{{ ev }}</li>
-            </ul>
-          </div>
         </div>
       </div>
 
       <!-- DECLARACIÓN DE CONFLICTO -->
       <div class="conflict-box">
-        <h4>⚠️ Declaración de Conflicto de Interés</h4>
+        <h4>Declaración de Conflicto de Interés</h4>
         <label class="checkbox-label">
           <input type="checkbox" [(ngModel)]="declaroSinConflicto">
           <span>Declaro que <strong>NO tengo conflictos de interés</strong> con el/la postulante

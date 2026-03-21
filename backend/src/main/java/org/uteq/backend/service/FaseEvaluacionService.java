@@ -46,7 +46,6 @@ public class FaseEvaluacionService {
         fase.setPeso(dto.getPeso());
         fase.setOrden(dto.getOrden() != null ? dto.getOrden()
                 : faseRepository.findAllByOrderByOrdenAsc().size() + 1);
-        fase.setEvaluadoresPermitidos(listaAString(dto.getEvaluadoresPermitidos()));
         fase.setEstado(dto.getEstado() != null ? dto.getEstado() : true);
         return toDTO(faseRepository.save(fase));
     }
@@ -60,8 +59,6 @@ public class FaseEvaluacionService {
         if (dto.getPeso()    != null) fase.setPeso(dto.getPeso());
         if (dto.getOrden()   != null) fase.setOrden(dto.getOrden());
         if (dto.getEstado()  != null) fase.setEstado(dto.getEstado());
-        if (dto.getEvaluadoresPermitidos() != null)
-            fase.setEvaluadoresPermitidos(listaAString(dto.getEvaluadoresPermitidos()));
         return toDTO(faseRepository.save(fase));
     }
 
@@ -81,7 +78,6 @@ public class FaseEvaluacionService {
         dto.setPeso(f.getPeso());
         dto.setOrden(f.getOrden());
         dto.setEstado(f.getEstado());
-        dto.setEvaluadoresPermitidos(stringALista(f.getEvaluadoresPermitidos()));
 
         // Si tiene plantilla asociada, exponer id y nombre
         PlantillaEvaluacion plantilla = f.getPlantilla();

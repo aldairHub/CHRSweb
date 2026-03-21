@@ -21,8 +21,5 @@ public class FaseEvaluacionRequestDTO {
 
     private Integer orden;
 
-    /** Lista de evaluadores permitidos */
-    private List<String> evaluadoresPermitidos;
-
     private Boolean estado;
 }

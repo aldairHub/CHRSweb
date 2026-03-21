@@ -641,6 +641,21 @@ public class PostgresProcedureRepository {
             ps.execute();
             return null;
         });
+
+        // Actualizar el ítem "entrevista" en matriz_meritos_puntaje con puntaje * 0.25
+        // Para que aparezca en la tabla de matriz de méritos (máx 25 pts)
+        jdbcTemplate.update("""
+            INSERT INTO matriz_meritos_puntaje (id_proceso, item_id, valor)
+            SELECT
+                pe.id_proceso,
+                'entrevista',
+                ROUND(CAST(pe.puntaje_entrevista AS NUMERIC), 2)::TEXT
+            FROM proceso_evaluacion pe
+            WHERE pe.id_proceso = ?
+              AND pe.puntaje_entrevista IS NOT NULL
+            ON CONFLICT (id_proceso, item_id)
+            DO UPDATE SET valor = EXCLUDED.valor
+            """, idProceso);
     }
 
     // Método genérico para ejecutar cualquier procedure

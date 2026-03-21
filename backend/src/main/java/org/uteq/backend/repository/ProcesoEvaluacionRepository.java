@@ -19,6 +19,17 @@ public interface ProcesoEvaluacionRepository extends JpaRepository<ProcesoEvalua
 
     List<ProcesoEvaluacion> findBySolicitudDocente_IdSolicitudOrderByFechaInicioDesc(Long idSolicitud);
 
+    // Solo postulantes habilitados para entrevista: puntaje >= 50 o habilitado manualmente
+    @Query("SELECT p FROM ProcesoEvaluacion p WHERE p.solicitudDocente.idSolicitud = :idSolicitud " +
+            "AND (p.puntajeMatriz >= 50 OR p.habilitadoEntrevista = true) " +
+            "ORDER BY p.fechaInicio DESC")
+    List<ProcesoEvaluacion> findHabilitadosParaEntrevistaBySolicitud(Long idSolicitud);
+
+    @Query("SELECT p FROM ProcesoEvaluacion p WHERE " +
+            "(p.puntajeMatriz >= 50 OR p.habilitadoEntrevista = true) " +
+            "ORDER BY p.fechaInicio DESC")
+    List<ProcesoEvaluacion> findHabilitadosParaEntrevista();
+
     boolean existsByPostulante_IdPostulanteAndSolicitudDocente_IdSolicitud(Long idPostulante, Long idSolicitud);
 
     @Query("SELECT COUNT(p) FROM ProcesoEvaluacion p WHERE p.estadoGeneral NOT IN ('completado', 'rechazado')")

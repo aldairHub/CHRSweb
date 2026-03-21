@@ -31,10 +31,6 @@ public class FaseEvaluacion {
     @Column(name = "orden", nullable = false)
     private Integer orden;
 
-    // Evaluadores permitidos almacenados como texto separado por comas
-    @Column(name = "evaluadores_permitidos", columnDefinition = "TEXT")
-    private String evaluadoresPermitidos;
-
     @Column(name = "estado", nullable = false)
     private Boolean estado = true;
 
