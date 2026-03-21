@@ -168,8 +168,11 @@ public class DocumentoController {
 
     @GetMapping("/resultados/{idUsuario}")
     public ResponseEntity<Map<String, Object>> resultadosPostulante(
-            @PathVariable Long idUsuario) {
-        Map<String, Object> resultado = documentoService.obtenerResultadosPostulante(idUsuario);
+            @PathVariable Long idUsuario,
+            @RequestParam(required = false) Long idPostulacion) {
+        Map<String, Object> resultado = idPostulacion != null
+                ? documentoService.obtenerResultadosPostulanteConFiltro(idUsuario, idPostulacion)
+                : documentoService.obtenerResultadosPostulante(idUsuario);
         if (resultado.isEmpty()) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(resultado);
     }

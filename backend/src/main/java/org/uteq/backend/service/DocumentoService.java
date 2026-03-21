@@ -241,7 +241,11 @@ public class DocumentoService {
     }
 
     public Map<String, Object> obtenerResultadosPostulante(Long idUsuario) {
-        return documentoRepo.obtenerResultadosPostulante(idUsuario);
+        return documentoRepo.obtenerResultadosPostulanteConFiltro(idUsuario, null);
+    }
+
+    public Map<String, Object> obtenerResultadosPostulanteConFiltro(Long idUsuario, Long idPostulacion) {
+        return documentoRepo.obtenerResultadosPostulanteConFiltro(idUsuario, idPostulacion);
     }
 
     // ── MÉTODO 1: Listar todas las postulaciones de un usuario ─────────────────
@@ -355,31 +359,54 @@ public class DocumentoService {
 
     // ── MÉTODO 3: Progreso del proceso de evaluación (para tiempo real) ────────
     public Map<String, Object> obtenerProgresoPostulante(Long idUsuario, Long idPostulacion) {
-        // Busca el ProcesoEvaluacion vinculado a la postulación del usuario
-        String sql = """
-        SELECT pe.*
-        FROM proceso_evaluacion pe
-        JOIN postulante p ON p.id_postulante = pe.id_postulante
-        WHERE p.id_usuario = ?
-        AND (? IS NULL OR pe.id_solicitud = (
-            SELECT id_solicitud FROM postulacion WHERE id_postulacion = ?
-        ))
-        ORDER BY pe.fecha_inicio DESC
-        LIMIT 1
-        """;
 
-        List<Map<String, Object>> rows = jdbc.queryForList(sql,
-                new Object[]{idUsuario, idPostulacion, idPostulacion});
+        // ── Buscar el proceso: si idPostulacion es null se toma el más reciente ──
+        // Se evita pasar null en Object[] para no generar error de tipo en PostgreSQL.
+        final List<Map<String, Object>> rows;
+        if (idPostulacion != null) {
+            String sql = """
+            SELECT pe.*
+            FROM proceso_evaluacion pe
+            JOIN postulante p ON p.id_postulante = pe.id_postulante
+            WHERE p.id_usuario = ?
+              AND pe.id_solicitud = (
+                  SELECT id_solicitud FROM postulacion WHERE id_postulacion = ?
+              )
+            ORDER BY pe.fecha_inicio DESC
+            LIMIT 1
+            """;
+            rows = jdbc.queryForList(sql, new Object[]{idUsuario, idPostulacion});
+        } else {
+            String sql = """
+            SELECT pe.*
+            FROM proceso_evaluacion pe
+            JOIN postulante p ON p.id_postulante = pe.id_postulante
+            WHERE p.id_usuario = ?
+            ORDER BY pe.fecha_inicio DESC
+            LIMIT 1
+            """;
+            rows = jdbc.queryForList(sql, new Object[]{idUsuario});
+        }
 
         if (rows.isEmpty()) return null;
 
         Map<String, Object> procesoRow = rows.get(0);
         Long idProceso = ((Number) procesoRow.get("id_proceso")).longValue();
 
-        // Busca las fases de ese proceso
+        // ── Fases del proceso: incluye tipo para que el frontend pueda filtrar ──
         String sqlFases = """
-        SELECT fp.id_fase_proceso, f.nombre, f.orden, f.peso,
-               fp.estado, fp.calificacion,
+        SELECT fp.id_fase_proceso,
+               f.nombre,
+               f.tipo,
+               f.orden,
+               f.peso,
+               fp.estado,
+               -- Solo devolver calificacion si la fase está completada u omitida.
+               -- Si está pendiente/bloqueada/en_curso la calificacion residual se ignora.
+               CASE WHEN fp.estado IN ('completada', 'omitida')
+                    THEN fp.calificacion
+                    ELSE NULL
+               END AS calificacion,
                to_char(fp.fecha_completada, 'DD/MM/YYYY') AS fecha_completada
         FROM fase_proceso fp
         JOIN fase_evaluacion f ON f.id_fase = fp.id_fase
@@ -388,17 +415,59 @@ public class DocumentoService {
         """;
         List<Map<String, Object>> fases = jdbc.queryForList(sqlFases, new Object[]{idProceso});
 
+        // ── Calcular puntajes en tiempo real desde las fases, no desde las columnas ──
+        // Las columnas puntaje_matriz/entrevista/final pueden tener datos residuales
+        // si el proceso fue reiniciado sin limpiar esas columnas.
+        double puntajeMatrizReal     = 0;
+        double puntajeEntrevistaReal = 0;
+        for (Map<String, Object> fase : fases) {
+            String estado = (String) fase.get("estado");
+            if (!"completada".equals(estado) && !"omitida".equals(estado)) continue;
+            Object cal = fase.get("calificacion");
+            if (cal == null) continue;
+            double valor = ((Number) cal).doubleValue();
+            String tipo = (String) fase.get("tipo");
+            if ("entrevista".equals(tipo)) {
+                puntajeEntrevistaReal += valor;
+            } else {
+                puntajeMatrizReal += valor;
+            }
+        }
+        double puntajeFinalReal = puntajeMatrizReal + puntajeEntrevistaReal;
+
+        // Solo usar puntaje_matriz de la columna si ninguna fase tiene calificacion real
+        // (caso: la matriz de méritos se guarda por separado, no como fases)
+        Object colPuntajeMatriz = procesoRow.get("puntaje_matriz");
+        double colMatrizVal = colPuntajeMatriz != null ? ((Number) colPuntajeMatriz).doubleValue() : 0;
+        if (puntajeMatrizReal == 0 && colMatrizVal > 0) {
+            // La matriz de méritos se cargó externamente — verificar que el proceso no esté reiniciado
+            // comprobando si alguna fase está completada. Si no hay ninguna completada, no mostrar.
+            boolean hayFaseCompletada = fases.stream()
+                    .anyMatch(f -> "completada".equals(f.get("estado")));
+            if (hayFaseCompletada) {
+                puntajeMatrizReal = colMatrizVal;
+                puntajeFinalReal  = puntajeMatrizReal + puntajeEntrevistaReal;
+            }
+        }
+
+        // Progreso: recalcular desde fases para evitar datos residuales
+        long totalFases     = fases.size();
+        long fasesCompletadas = fases.stream()
+                .filter(f -> "completada".equals(f.get("estado")) || "omitida".equals(f.get("estado")))
+                .count();
+        int progresoReal = totalFases > 0 ? (int) Math.round((double) fasesCompletadas / totalFases * 100) : 0;
+
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("idProceso",      idProceso);
-        result.put("estadoGeneral",  procesoRow.get("estado_general"));
-        result.put("faseActual",     procesoRow.get("fase_actual"));
-        result.put("progreso",       procesoRow.get("progreso"));
-        result.put("puntajeMatriz",  procesoRow.get("puntaje_matriz"));
-        result.put("puntajeEntrevista", procesoRow.get("puntaje_entrevista"));
-        result.put("puntajeFinal",   procesoRow.get("puntaje_final"));
-        result.put("decision",       procesoRow.get("decision"));
-        result.put("justificacion",  procesoRow.get("justificacion_decision"));
-        result.put("fases",          fases);
+        result.put("idProceso",         idProceso);
+        result.put("estadoGeneral",     procesoRow.get("estado_general"));
+        result.put("faseActual",        procesoRow.get("fase_actual"));
+        result.put("progreso",          progresoReal);
+        result.put("puntajeMatriz",     puntajeMatrizReal > 0 ? puntajeMatrizReal : null);
+        result.put("puntajeEntrevista", puntajeEntrevistaReal > 0 ? puntajeEntrevistaReal : null);
+        result.put("puntajeFinal",      puntajeFinalReal > 0 ? puntajeFinalReal : null);
+        result.put("decision",          procesoRow.get("decision"));
+        result.put("justificacion",     procesoRow.get("justificacion_decision"));
+        result.put("fases",             fases);
         return result;
     }
 

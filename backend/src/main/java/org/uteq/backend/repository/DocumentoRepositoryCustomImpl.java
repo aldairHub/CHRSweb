@@ -215,35 +215,68 @@ public class DocumentoRepositoryCustomImpl {
     }
 
     public Map<String, Object> obtenerResultadosPostulante(Long idUsuario) {
+        return obtenerResultadosPostulanteConFiltro(idUsuario, null);
+    }
+
+    public Map<String, Object> obtenerResultadosPostulanteConFiltro(Long idUsuario, Long idPostulacion) {
         Map<String, Object> resultado = new HashMap<>();
 
-        // Info del proceso
-        String sqlProceso =
-                "SELECT pe.id_proceso, pe.estado_general, pe.decision, " +
-                        "       pe.justificacion_decision, pe.puntaje_matriz, " +
-                        "       p.nombres_postulante, p.apellidos_postulante, p.identificacion " +
-                        "FROM proceso_evaluacion pe " +
-                        "JOIN postulante p ON p.id_postulante = pe.id_postulante " +
-                        "WHERE p.id_usuario = ? " +
-                        "ORDER BY pe.id_proceso DESC LIMIT 1";
-
-        List<Map<String, Object>> procesos = jdbcTemplate.queryForList(sqlProceso, idUsuario);
-        if (procesos.isEmpty()) return resultado;
+        // ── 1. Proceso del postulante ─────────────────────────────────────────
+        // Si se pasa idPostulacion se filtra por esa solicitud específica,
+        // evitando traer el proceso de otra postulación del mismo usuario.
+        final List<Map<String, Object>> procesos;
+        if (idPostulacion != null) {
+            String sqlProceso =
+                    "SELECT pe.id_proceso, pe.estado_general, pe.decision, " +
+                            "       pe.justificacion_decision, " +
+                            "       pe.puntaje_matriz, pe.puntaje_entrevista, pe.puntaje_final, " +
+                            "       p.nombres_postulante, p.apellidos_postulante, p.identificacion " +
+                            "FROM proceso_evaluacion pe " +
+                            "JOIN postulante p ON p.id_postulante = pe.id_postulante " +
+                            "WHERE p.id_usuario = ? " +
+                            "  AND pe.id_solicitud = (SELECT id_solicitud FROM postulacion WHERE id_postulacion = ?) " +
+                            "ORDER BY pe.id_proceso DESC LIMIT 1";
+            procesos = jdbcTemplate.queryForList(sqlProceso, idUsuario, idPostulacion);
+        } else {
+            // Sin filtro: toma el proceso activo más reciente (no completado ni cancelado)
+            // para no traer un proceso de otra solicitud que esté más avanzado.
+            String sqlProceso =
+                    "SELECT pe.id_proceso, pe.estado_general, pe.decision, " +
+                            "       pe.justificacion_decision, " +
+                            "       pe.puntaje_matriz, pe.puntaje_entrevista, pe.puntaje_final, " +
+                            "       p.nombres_postulante, p.apellidos_postulante, p.identificacion " +
+                            "FROM proceso_evaluacion pe " +
+                            "JOIN postulante p ON p.id_postulante = pe.id_postulante " +
+                            "WHERE p.id_usuario = ? " +
+                            "ORDER BY " +
+                            "  CASE WHEN pe.estado_general NOT IN ('completado','cancelado') THEN 0 ELSE 1 END ASC, " +
+                            "  pe.id_proceso DESC LIMIT 1";
+            procesos = jdbcTemplate.queryForList(sqlProceso, idUsuario);
+        }
 
         Map<String, Object> proceso = procesos.get(0);
-        resultado.putAll(proceso);
+        // Solo copiar campos no-puntaje directamente; los puntajes se recalculan abajo
+        resultado.put("id_proceso",             proceso.get("id_proceso"));
+        resultado.put("estado_general",         proceso.get("estado_general"));
+        resultado.put("decision",               proceso.get("decision"));
+        resultado.put("justificacion_decision", proceso.get("justificacion_decision"));
+        resultado.put("nombres_postulante",     proceso.get("nombres_postulante"));
+        resultado.put("apellidos_postulante",   proceso.get("apellidos_postulante"));
+        resultado.put("identificacion",         proceso.get("identificacion"));
 
-        // Puntajes
         Long idProceso = ((Number) proceso.get("id_proceso")).longValue();
-        String sqlPuntajes = "SELECT item_id, valor FROM matriz_meritos_puntaje WHERE id_proceso = ?";
-        List<Map<String, Object>> puntajes = jdbcTemplate.queryForList(sqlPuntajes, idProceso);
 
-        Map<String, Double> puntajesMap = new HashMap<>();
-        for (Map<String, Object> p : puntajes) {
-            String itemId = (String) p.get("item_id");
-            // "valor" es VARCHAR en la BD → llega como String, no como Number
+        // ── 2. Puntajes por item de la matriz ─────────────────────────────────
+        // Solo incluir puntajes si la matriz está realmente calificada:
+        // se verifica comprobando si alguna fase está completada.
+        String sqlPuntajes = "SELECT item_id, valor FROM matriz_meritos_puntaje WHERE id_proceso = ?";
+        List<Map<String, Object>> puntajesRaw = jdbcTemplate.queryForList(sqlPuntajes, idProceso);
+
+        Map<String, Double> puntajesMap = new java.util.LinkedHashMap<>();
+        for (Map<String, Object> p : puntajesRaw) {
+            String itemId   = (String) p.get("item_id");
             Object rawValor = p.get("valor");
-            if (rawValor == null) continue;
+            if (rawValor == null || itemId == null) continue;
             double valor;
             if (rawValor instanceof Number) {
                 valor = ((Number) rawValor).doubleValue();
@@ -253,8 +286,82 @@ public class DocumentoRepositoryCustomImpl {
             }
             puntajesMap.put(itemId, valor);
         }
-
         resultado.put("puntajes", puntajesMap);
+
+        // ── 3. Estructura de secciones e items de la matriz ───────────────────
+        String sqlSecciones =
+                "SELECT ms.id_seccion, ms.codigo AS seccion_codigo, ms.titulo AS seccion_titulo, " +
+                        "       ms.puntaje_maximo AS seccion_maximo, ms.tipo AS seccion_tipo, ms.orden AS seccion_orden, " +
+                        "       mi.id_item, mi.codigo AS item_codigo, mi.label AS item_label, " +
+                        "       mi.puntaje_maximo AS item_maximo, mi.orden AS item_orden " +
+                        "FROM matriz_seccion ms " +
+                        "JOIN matriz_item mi ON mi.id_seccion = ms.id_seccion " +
+                        "WHERE ms.activo = TRUE AND mi.activo = TRUE " +
+                        "ORDER BY ms.orden ASC, mi.orden ASC";
+        List<Map<String, Object>> seccionesRaw = jdbcTemplate.queryForList(sqlSecciones);
+
+        java.util.Map<Long, Map<String, Object>> seccionesMap = new java.util.LinkedHashMap<>();
+        for (Map<String, Object> row : seccionesRaw) {
+            Long idSeccion = ((Number) row.get("id_seccion")).longValue();
+            if (!seccionesMap.containsKey(idSeccion)) {
+                Map<String, Object> sec = new java.util.LinkedHashMap<>();
+                sec.put("codigo",   row.get("seccion_codigo"));
+                sec.put("titulo",   row.get("seccion_titulo"));
+                sec.put("maximo",   row.get("seccion_maximo"));
+                sec.put("tipo",     row.get("seccion_tipo"));
+                sec.put("orden",    row.get("seccion_orden"));
+                sec.put("items",    new java.util.ArrayList<Map<String, Object>>());
+                seccionesMap.put(idSeccion, sec);
+            }
+            Map<String, Object> item = new java.util.LinkedHashMap<>();
+            item.put("codigo", row.get("item_codigo"));
+            item.put("label",  row.get("item_label"));
+            item.put("maximo", row.get("item_maximo"));
+            ((java.util.List<Map<String, Object>>) seccionesMap.get(idSeccion).get("items")).add(item);
+        }
+        resultado.put("secciones", new java.util.ArrayList<>(seccionesMap.values()));
+
+        // ── 4. Fases del proceso — calificacion solo si la fase está completada ──
+        // CRITICAL FIX: si la fase no está 'completada' u 'omitida', su calificacion
+        // puede ser un residuo de un proceso anterior reiniciado. Se fuerza a NULL.
+        String sqlFases =
+                "SELECT fe.nombre AS fase_nombre, fe.tipo AS fase_tipo, " +
+                        "       fe.peso AS fase_peso, fe.orden AS fase_orden, " +
+                        "       fp.estado, " +
+                        "       CASE WHEN fp.estado IN ('completada', 'omitida') " +
+                        "            THEN fp.calificacion ELSE NULL END AS calificacion, " +
+                        "       to_char(fp.fecha_completada, 'DD/MM/YYYY') AS fecha_completada " +
+                        "FROM fase_proceso fp " +
+                        "JOIN fase_evaluacion fe ON fe.id_fase = fp.id_fase " +
+                        "WHERE fp.id_proceso = ? " +
+                        "ORDER BY fe.orden ASC";
+        List<Map<String, Object>> fases = jdbcTemplate.queryForList(sqlFases, idProceso);
+        resultado.put("fasesDetalle", fases);
+
+        // ── 5. Recalcular puntaje_final desde las fases completadas ──────────
+        // No confiar en las columnas puntaje_matriz/entrevista/final de proceso_evaluacion
+        // porque pueden tener datos residuales de un reinicio parcial.
+        double sumFases = 0;
+        for (Map<String, Object> f : fases) {
+            Object cal = f.get("calificacion");
+            if (cal != null) sumFases += ((Number) cal).doubleValue();
+        }
+        // puntaje_matriz desde columna solo si hay fases completadas
+        // (así sabemos que el proceso está activo, no reiniciado con datos viejos)
+        boolean hayFaseCompletada = fases.stream()
+                .anyMatch(f -> "completada".equals(f.get("estado")));
+
+        Object colMatriz = proceso.get("puntaje_matriz");
+        double puntajeMatrizCol = colMatriz != null ? ((Number) colMatriz).doubleValue() : 0;
+
+        // Si la suma de fases es 0 y la columna tiene valor, solo mostrar si hay fases completadas
+        double puntajeFinalReal = hayFaseCompletada ? sumFases : 0;
+        double puntajeMatrizReal = (hayFaseCompletada && puntajeMatrizCol > 0) ? puntajeMatrizCol : 0;
+        if (puntajeMatrizReal > 0) puntajeFinalReal += puntajeMatrizReal;
+
+        resultado.put("puntaje_final",      puntajeFinalReal > 0 ? puntajeFinalReal : null);
+        resultado.put("puntaje_matriz",     puntajeMatrizReal > 0 ? puntajeMatrizReal : null);
+
         return resultado;
     }
 

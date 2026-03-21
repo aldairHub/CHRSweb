@@ -909,3 +909,21 @@ $blue: #1d4ed8;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+// Estilos adicionales para datos dinámicos
+.no-data-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+  font-size: 0.875rem;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  i { color: #9ca3af; }
+}
+
+.di-fecha {
+  color: #9ca3af;
+  font-size: 0.8rem;
+}

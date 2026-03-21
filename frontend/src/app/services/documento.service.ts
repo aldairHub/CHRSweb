@@ -51,9 +51,10 @@ export interface OperacionResponse {
 // NUEVO: progreso en tiempo real del proceso de evaluación
 export interface FaseProgresoUI {
   nombre:          string;
+  tipo:            string;   // 'entrevista' | 'meritos' | etc. — campo de fase_evaluacion.tipo
   orden:           number;
   peso:            number;
-  estado:          'pendiente' | 'en_curso' | 'completada' | 'omitida';
+  estado:          'pendiente' | 'en_curso' | 'completada' | 'omitida' | 'bloqueada';
   calificacion:    number | null;
   fechaCompletada: string | null;
 }
@@ -154,8 +155,18 @@ export class DocumentoService {
     return this.http.get<DocPrepostulacion[]>(`${this.API}/prepostulacion/${idPostulacion}`);
   }
 
-  obtenerResultadosPostulante(idUsuario: number): Observable<any> {
-    return this.http.get(`${this.API}/resultados/${idUsuario}`);
+  obtenerResultadosPostulante(idUsuario: number, idPostulacion?: number | null): Observable<any> {
+    const params: any = {};
+    if (idPostulacion) params['idPostulacion'] = idPostulacion.toString();
+    return this.http.get(`${this.API}/resultados/${idUsuario}`, { params });
+  }
+
+  /**
+   * Resultados reales de un proceso: fases configuradas + calificaciones por criterio.
+   * Endpoint: GET /api/evaluacion/procesos/{idProceso}/resultados
+   */
+  obtenerResultadosProceso(idProceso: number): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/evaluacion/procesos/${idProceso}/resultados`);
   }
 
   // ─── NUEVOS métodos ────────────────────────────────────────
