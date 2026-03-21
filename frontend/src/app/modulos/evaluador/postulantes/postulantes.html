@@ -240,7 +240,12 @@
                       <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 12.5z"/>
                     </svg>
                   </button>
-                  <button class="btn-icon btn-icon--edit" title="Enviar Notificación" (click)="abrirModalExito(p.correoPostulante)">
+                  <button class="btn-icon btn-icon--edit"
+                          [title]="p.tieneDocumentos ? 'Enviar Notificación' : 'Sin documentos — no se puede notificar'"
+                          [disabled]="!p.tieneDocumentos"
+                          [style.opacity]="p.tieneDocumentos ? '1' : '0.35'"
+                          [style.cursor]="p.tieneDocumentos ? 'pointer' : 'not-allowed'"
+                          (click)="p.tieneDocumentos && abrirModalExito(p.correoPostulante)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                       <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/>
                     </svg>

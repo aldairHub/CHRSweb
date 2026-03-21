@@ -348,9 +348,9 @@ export class ConvocatoriaComponent implements OnInit {
       this.toast.warning('Campos requeridos', 'Las fechas de inicio y fin son obligatorias.');
       return;
     }
-    if (this.form.fechaLimiteDocumentos && this.form.fechaFin &&
-      this.form.fechaLimiteDocumentos > this.form.fechaFin) {
-      this.toast.warning('Fecha inválida', 'La fecha límite de documentos no puede ser posterior a la fecha de fin.');
+    if (this.form.fechaLimiteDocumentos && this.form.fechaInicio &&
+      this.form.fechaLimiteDocumentos < this.form.fechaInicio) {
+      this.toast.warning('Fecha inválida', 'La fecha límite de documentos no puede ser anterior a la fecha de inicio.');
       return;
     }
 

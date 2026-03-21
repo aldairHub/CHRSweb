@@ -20,7 +20,11 @@ public class HistorialBackup {
     @Column(name = "estado", nullable = false, length = 20)
     private String estado;
 
-    // COMPLETO | INCREMENTAL
+    // FULL | INCREMENTAL | DIFERENCIAL (tipo real del backup generado)
+    @Column(name = "tipo_backup_ext", length = 20)
+    private String tipoBackupExt = "FULL";
+
+    // Tipo de la config (FULL | INCREMENTAL | DIFERENCIAL)
     @Column(name = "tipo_backup", length = 20)
     private String tipoBackup;
 
@@ -45,6 +49,24 @@ public class HistorialBackup {
 
     @Column(name = "fecha_fin")
     private LocalDateTime fechaFin;
+
+    // ── Google Drive ──────────────────────────────────────────────
+    @Column(name = "drive_file_id")
+    private String driveFileId;
+
+    @Column(name = "drive_url")
+    private String driveUrl;
+
+    @Column(name = "drive_subido", nullable = false)
+    private Boolean driveSubido = false;
+
+    // ── Email ─────────────────────────────────────────────────────
+    @Column(name = "email_enviado", nullable = false)
+    private Boolean emailEnviado = false;
+
+    // ── LSN (para tracking de incrementales/diferenciales) ────────
+    @Column(name = "lsn_fin")
+    private String lsnFin;
 
     @PrePersist
     protected void onCreate() {

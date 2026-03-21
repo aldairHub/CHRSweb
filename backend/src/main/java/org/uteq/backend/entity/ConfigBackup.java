@@ -23,7 +23,7 @@ public class ConfigBackup {
     private String rutaOrigen;
 
     @Column(name = "tipo_backup", nullable = false, length = 20)
-    private String tipoBackup = "COMPLETO";
+    private String tipoBackup = "FULL";
 
     @Column(name = "retencion_activa", nullable = false)
     private Boolean retencionActiva = false;
@@ -32,7 +32,7 @@ public class ConfigBackup {
     private Integer diasRetencion = 7;
 
     @Column(name = "num_ejecuciones", nullable = false)
-    private Integer numEjecuciones = 2;
+    private Integer numEjecuciones = 1;
 
     @Column(name = "hora_backup_1", nullable = false)
     private LocalTime horaBackup1 = LocalTime.of(8, 0);
@@ -44,28 +44,37 @@ public class ConfigBackup {
     private LocalTime horaBackup3;
 
     @Column(name = "activo", nullable = false)
-    private Boolean activo = true;
+    private Boolean activo = false;
 
-    // ── Destinos múltiples (reemplaza tipoDestino) ────────────────
-    // Se mantiene tipoDestino por compatibilidad con la columna existente (ignorado)
+    // ── Destinos múltiples ────────────────────────────────────────
     @Column(name = "tipo_destino", nullable = false, length = 20)
-    private String tipoDestino = "LOCAL";
+    private String tipoDestino = "NINGUNO";
 
-    // Destino LOCAL / pendrive — ruta secundaria
+    // Destino LOCAL
+    @Column(name = "destino_local", nullable = false)
+    private Boolean destinoLocal = false;
+
     @Column(name = "ruta_destino")
     private String rutaDestino;
 
     // Destino EMAIL
-    @Column(name = "email_destino")
-    private String emailDestino;
-
-    // Flags de destinos múltiples — si la columna no existe en BD se agrega con ALTER TABLE
-    @Column(name = "destino_local", nullable = false)
-    private Boolean destinoLocal = false;
-
     @Column(name = "destino_email", nullable = false)
     private Boolean destinoEmail = false;
 
+    @Column(name = "email_destino")
+    private String emailDestino;
+
+    // Destino GOOGLE DRIVE
+    @Column(name = "destino_drive", nullable = false)
+    private Boolean destinoDrive = false;
+
+    @Column(name = "drive_folder_name")
+    private String driveFolderName;
+
+    @Column(name = "drive_folder_id")
+    private String driveFolderId;
+
+    // ── Notificaciones ────────────────────────────────────────────
     @Column(name = "notificar_error", nullable = false)
     private Boolean notificarError = true;
 

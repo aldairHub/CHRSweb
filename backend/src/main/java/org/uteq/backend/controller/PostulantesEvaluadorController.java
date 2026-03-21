@@ -71,7 +71,9 @@ public class PostulantesEvaluadorController {
                     "SELECT p.id_postulacion, pos.id_postulante, " +
                             "pos.identificacion, pos.nombres_postulante, " +
                             "pos.apellidos_postulante, pos.correo_postulante, " +
-                            "p.estado_postulacion, m.nombre_materia " +
+                            "p.estado_postulacion, m.nombre_materia, " +
+                            "EXISTS(SELECT 1 FROM documento d " +
+                            "       WHERE d.id_postulacion = p.id_postulacion) AS tiene_documentos " +
                             "FROM postulacion p " +
                             "INNER JOIN postulante pos ON pos.id_postulante = p.id_postulante " +
                             "INNER JOIN solicitud_docente sd ON sd.id_solicitud = p.id_solicitud " +
@@ -97,7 +99,7 @@ public class PostulantesEvaluadorController {
             dto.setEstadoPostulacion((String) row.get("estado_postulacion"));
             dto.setNombreMateria((String) row.get("nombre_materia"));
             Object tieneDoc = row.get("tiene_documentos");
-            dto.setTieneDocumentos(tieneDoc != null && (Boolean) tieneDoc);
+            dto.setTieneDocumentos(parsearBoolean(tieneDoc));
             return dto;
         }).collect(Collectors.toList());
 
@@ -109,5 +111,14 @@ public class PostulantesEvaluadorController {
         if (val instanceof Long)    return (Long) val;
         if (val instanceof Integer) return ((Integer) val).longValue();
         return Long.parseLong(val.toString());
+    }
+
+    /** JDBC puede devolver Boolean, String "true"/"t", o Integer 1 según el driver */
+    private boolean parsearBoolean(Object val) {
+        if (val == null)             return false;
+        if (val instanceof Boolean)  return (Boolean) val;
+        if (val instanceof Integer)  return (Integer) val != 0;
+        String s = val.toString().toLowerCase().trim();
+        return s.equals("true") || s.equals("t") || s.equals("1") || s.equals("yes");
     }
 }

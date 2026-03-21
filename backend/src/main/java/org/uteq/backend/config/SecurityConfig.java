@@ -87,6 +87,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/usuarios/recuperar-clave").permitAll()
                         .requestMatchers("/api/usuarios/primer-login/cambiar-clave").permitAll()
                         .requestMatchers("/api/usuarios/cambiar-clave").permitAll()
+                        .requestMatchers("/api/backup/drive/callback").permitAll()
                         .anyRequest().authenticated()
                 );
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

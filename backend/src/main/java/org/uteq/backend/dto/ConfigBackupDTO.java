@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class ConfigBackupDTO {
+
     private Long    idConfig;
     private String  rutaPgdump;
     private String  rutaOrigen;
@@ -15,13 +16,21 @@ public class ConfigBackupDTO {
     private String  horaBackup2;
     private String  horaBackup3;
     private Boolean activo;
+
     // Destinos múltiples
     private Boolean destinoLocal;
     private Boolean destinoEmail;
+    private Boolean destinoDrive;
+
     private String  rutaDestino;
     private String  emailDestino;
-    // Legacy — se mantiene por compatibilidad
+    private String  driveFolderName;
+    private String  driveFolderId;
+
+    // Legacy — compatibilidad con columna existente
     private String  tipoDestino;
+
+    // Notificaciones
     private Boolean notificarError;
     private Boolean notificarExito;
 }

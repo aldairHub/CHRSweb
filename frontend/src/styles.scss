@@ -1834,7 +1834,7 @@ html.dark {
   position: relative;
   overflow: hidden;
   transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1),
-              box-shadow 0.22s ease;
+  box-shadow 0.22s ease;
 
   &::after {
     content: '';
@@ -2495,4 +2495,46 @@ html.dark {
   .historial-icon {
     background: #0d1f12 !important;
   }
+}
+
+// ============================================================
+// BACKUP MODULE — Dark AMOLED background fix
+// Fuerza negro puro en todos los contenedores del módulo
+// ============================================================
+html.dark app-backup,
+html.dark app-backup .main-container,
+html.dark app-backup .content-wrapper,
+html.dark app-backup .backup-page {
+  background: #000000 !important;
+}
+
+// Status bar "INACTIVO" en dark — eliminar el fondo rosado
+html.dark app-backup .status-bar.status-inactive {
+  background: rgba(220, 38, 38, 0.05) !important;
+  border-color: rgba(220, 38, 38, 0.14) !important;
+  color: #f87171 !important;
+}
+html.dark app-backup .status-bar.status-active {
+  background: rgba(0, 166, 62, 0.07) !important;
+  border-color: rgba(0, 166, 62, 0.18) !important;
+  color: #4ade80 !important;
+}
+
+// Manual panel + save bar — dark fix
+html.dark app-backup .manual-panel,
+html.dark app-backup .save-bar {
+  background: #000000 !important;
+  border-color: rgba(0, 210, 80, 0.08) !important;
+}
+html.dark app-backup .manual-title {
+  color: #e0e0e0 !important;
+}
+
+// Manual panel white fix
+html.dark app-backup .manual-panel {
+  background: #080808 !important;
+  border-color: rgba(0, 210, 80, 0.08) !important;
+}
+html.dark app-backup .manual-title {
+  color: #e0e0e0 !important;
 }

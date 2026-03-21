@@ -1,395 +1,585 @@
 <div class="backup-page">
 
-  <!-- ── HEADER ─────────────────────────────────────────────── -->
+  <!-- HEADER -->
   <div class="backup-header">
-    <div>
-      <h1 class="backup-title">Gestión de Respaldos</h1>
-      <p class="backup-subtitle">Configura, programa, monitorea y restaura la base de datos</p>
+    <div class="header-row">
+      <div>
+        <h1 class="backup-title">Gestión de Respaldos</h1>
+        <p class="backup-subtitle">Backups Full, Incremental y Diferencial · Google Drive · Email</p>
+      </div>
+      <button class="btn-quick-full" [disabled]="!!ejecutandoTipo" (click)="ejecutarTipo('FULL')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        {{ estaEjecutando('FULL') ? 'Ejecutando...' : 'Backup Rápido' }}
+      </button>
+    </div>
+    <div class="status-bar" [class.status-active]="config.activo" [class.status-inactive]="!config.activo">
+      <span class="status-dot"></span>
+      <span>{{ statusLabel }}</span>
     </div>
   </div>
 
-  <!-- ── STATUS BAR ─────────────────────────────────────────── -->
-  <div class="status-bar" [class.status-active]="config.activo" [class.status-inactive]="!config.activo">
-    <span class="status-dot"></span>
-    <span>{{ statusLabel }}</span>
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
+      </div>
+      <div class="kpi-num">{{ estadisticas.total }}</div>
+      <div class="kpi-lbl">Total backups</div>
+    </div>
+    <div class="kpi-card kpi-ok">
+      <div class="kpi-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div class="kpi-num">{{ estadisticas.exitosos }}</div>
+      <div class="kpi-lbl">Exitosos</div>
+    </div>
+    <div class="kpi-card kpi-err">
+      <div class="kpi-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div class="kpi-num">{{ estadisticas.fallidos }}</div>
+      <div class="kpi-lbl">Fallidos</div>
+    </div>
+    <div class="kpi-card kpi-drive" (click)="activeTab='drive'" role="button" tabindex="0">
+      <div class="kpi-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+      </div>
+      <div class="kpi-num" [class.kpi-num-ok]="driveConfig.autorizado">
+        <svg *ngIf="driveConfig.autorizado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        <svg *ngIf="!driveConfig.autorizado && driveConfig.credencialesGuardadas" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <span *ngIf="!driveConfig.autorizado && !driveConfig.credencialesGuardadas" style="font-size:20px;font-weight:300;color:#9ca3af">—</span>
+      </div>
+      <div class="kpi-lbl">Google Drive</div>
+    </div>
   </div>
 
-  <!-- ── TABS ───────────────────────────────────────────────── -->
+  <!-- TABS -->
   <div class="tabs">
     <button class="tab-btn" [class.active]="activeTab==='config'" (click)="activeTab='config'">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
       Configuración
     </button>
     <button class="tab-btn" [class.active]="activeTab==='historial'" (click)="activeTab='historial'; cargarHistorial()">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
       Historial
       <span class="tab-badge" *ngIf="historial.length > 0">{{ historial.length }}</span>
     </button>
+    <button class="tab-btn" [class.active]="activeTab==='drive'" (click)="activeTab='drive'">
+      <svg viewBox="0 0 87.3 78" width="15" height="14"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H0c0 1.55.4 3.1 1.2 4.5l5.4 9.35z" fill="#0066da"/><path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.2 49.5C.4 50.9 0 52.45 0 54h27.5L43.65 25z" fill="#00ac47"/><path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59.85L73.55 76.8z" fill="#ea4335"/><path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.95 0H34.35c-1.55 0-3.1.45-4.45 1.2L43.65 25z" fill="#00832d"/><path d="M59.85 54H87.3c0-1.55-.4-3.1-1.2-4.5L60.7 5c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25 59.85 54z" fill="#2684fc"/><path d="M43.65 25L29.9 48.8 16.75 73.5c1.35.8 2.9 1.2 4.45 1.2H66.1c1.55 0 3.1-.45 4.45-1.2L57.4 49.5 43.65 25z" fill="#ffba00"/></svg>
+      Google Drive
+      <span class="tab-badge" [class.tab-badge-ok]="driveConfig.autorizado" [class.tab-badge-warn]="driveConfig.credencialesGuardadas && !driveConfig.autorizado" [class.tab-badge-none]="!driveConfig.credencialesGuardadas">
+        {{ driveConfig.autorizado ? 'Listo' : driveConfig.credencialesGuardadas ? 'Pendiente' : 'Sin config' }}
+      </span>
+    </button>
     <button class="tab-btn tab-btn--restore" [class.active]="activeTab==='restaurar'" (click)="activeTab='restaurar'">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
       Restaurar BD
     </button>
   </div>
 
-  <!-- ════════════ TAB: CONFIG ════════════ -->
+  <!-- ══════════════════ TAB CONFIG ══════════════════ -->
   <ng-container *ngIf="activeTab==='config'">
-    <div class="sections-grid">
-
-      <!-- pg_dump -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-icon card-icon--blue">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-          </div>
-          <div class="card-header-text">
-            <h3>Ejecutable pg_dump</h3>
-            <p>Ruta completa al binario de PostgreSQL</p>
-          </div>
-        </div>
-        <div class="card-body">
-          <label class="field-label">Ruta del ejecutable</label>
-          <input type="text" [(ngModel)]="config.rutaPgdump" class="field-input"
-                 placeholder="C:\Program Files\PostgreSQL\18\bin\pg_dump.exe"/>
-          <span class="field-hint">En Linux suele ser /usr/bin/pg_dump</span>
-        </div>
-      </div>
-
-      <!-- Carpeta origen -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-icon card-icon--amber">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
-          </div>
-          <div class="card-header-text">
-            <h3>Carpeta de backups</h3>
-            <p>Directorio donde se guardan los archivos .zip</p>
-          </div>
-        </div>
-        <div class="card-body">
-          <label class="field-label">Ruta de destino local</label>
-          <input type="text" [(ngModel)]="config.rutaOrigen" class="field-input" placeholder="C:\Backups"/>
-        </div>
-      </div>
+    <div *ngIf="cargando" class="loading-box"><span class="spinner-sm"></span><span>Cargando...</span></div>
+    <div *ngIf="!cargando" class="sections-grid">
 
       <!-- Tipo de backup -->
       <div class="card">
         <div class="card-header">
-          <div class="card-icon card-icon--green">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
-          </div>
-          <div class="card-header-text">
-            <h3>Tipo de backup</h3>
-            <p>Alcance de los datos exportados</p>
-          </div>
+          <div class="card-icon card-icon--green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg></div>
+          <div class="card-header-text"><h3>Tipo de Backup</h3><p>Estrategia de respaldo automático</p></div>
         </div>
         <div class="card-body">
-          <div class="tipo-grid">
-            <button class="tipo-btn" [class.selected]="config.tipoBackup==='COMPLETO'" (click)="config.tipoBackup='COMPLETO'">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
-              <strong>Completo</strong>
-              <span>Exporta toda la BD</span>
+          <p class="tipo-label-hint">Tipo de respaldo para la programación automática:</p>
+          <div class="tipo-pills">
+            <button class="tipo-pill" [class.tipo-pill--active]="config.tipoBackup==='FULL'" (click)="config.tipoBackup='FULL'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
+              Full
             </button>
-            <button class="tipo-btn" [class.selected]="config.tipoBackup==='INCREMENTAL'" (click)="config.tipoBackup='INCREMENTAL'">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-              <strong>Incremental</strong>
-              <span>Solo cambios recientes</span>
+            <button class="tipo-pill" [class.tipo-pill--active]="config.tipoBackup==='INCREMENTAL'" (click)="config.tipoBackup='INCREMENTAL'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline stroke-linecap="round" points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline stroke-linecap="round" points="17 6 23 6 23 12"/></svg>
+              Incremental
             </button>
+            <button class="tipo-pill" [class.tipo-pill--active]="config.tipoBackup==='DIFERENCIAL'" (click)="config.tipoBackup='DIFERENCIAL'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 8v4l3 3"/></svg>
+              Diferencial
+            </button>
+          </div>
+          <div class="tipo-pill-desc">
+            <span *ngIf="config.tipoBackup==='FULL'">Copia completa de la base de datos en cada ejecución.</span>
+            <span *ngIf="config.tipoBackup==='INCREMENTAL'">Solo cambios desde el último backup. Si no hay previo, ejecuta un Full primero.</span>
+            <span *ngIf="config.tipoBackup==='DIFERENCIAL'">Cambios desde el último Full. Si no hay Full exitoso, ejecuta uno primero.</span>
           </div>
         </div>
       </div>
 
-      <!-- Destino -->
+      <!-- Rutas -->
       <div class="card">
         <div class="card-header">
-          <div class="card-icon card-icon--purple">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-          </div>
-          <div class="card-header-text">
-            <h3>Destino adicional <span class="badge-opt">opcional</span></h3>
-            <p>Copia o envía el ZIP además de guardarlo localmente</p>
-          </div>
+          <div class="card-icon card-icon--blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg></div>
+          <div class="card-header-text"><h3>Herramienta y Rutas</h3><p>pg_dump y carpeta de almacenamiento</p></div>
         </div>
         <div class="card-body">
-          <!-- Destino LOCAL / Pendrive -->
-          <div class="tipo-grid">
-            <button class="tipo-btn" [class.selected]="config.destinoLocal" (click)="toggleDestinoLocal()">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
-              <strong>Local / Pendrive</strong>
-              <span>Otra ruta o unidad</span>
-            </button>
-            <button class="tipo-btn" [class.selected]="config.destinoEmail" (click)="toggleDestinoEmail()">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-              <strong>Correo</strong>
-              <span>ZIP adjunto al email</span>
-            </button>
-          </div>
-          <!-- Ninguno seleccionado -->
-          <div *ngIf="!config.destinoLocal && !config.destinoEmail" class="info-note">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            El ZIP quedará solo en la carpeta de backups local.
-          </div>
-          <!-- Ruta local secundaria -->
-          <div *ngIf="config.destinoLocal" class="dest-fields">
-            <label class="field-label">Ruta de destino secundaria</label>
-            <input type="text" [(ngModel)]="config.rutaDestino" class="field-input" placeholder="D:\Pendrive\Backups"/>
-            <span class="field-hint">Pendrive, red, USB, etc. Se creará automáticamente si no existe.</span>
-          </div>
-          <!-- Emails -->
-          <div *ngIf="config.destinoEmail" class="dest-fields">
-            <label class="field-label">Correos de destino</label>
-            <div class="chips-box" [class.chips-error]="emailInputError">
-              <span *ngFor="let chip of emailChips; let i=index; trackBy:trackByIndex" class="chip">
-                {{ chip }}
-                <button type="button" (click)="quitarEmailChip(i)">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="10" height="10"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-              </span>
-              <input type="email" [(ngModel)]="emailInput" (keydown)="onEmailKeydown($event)" (input)="emailInputError=''"
-                     [placeholder]="emailChips.length===0 ? 'admin@uteq.edu.ec' : 'Otro correo...'" class="chip-input"/>
-              <button type="button" class="chip-add" (click)="agregarEmailChip()" [disabled]="!emailInput.trim()">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-              </button>
-            </div>
-            <span *ngIf="emailInputError" class="field-error">{{ emailInputError }}</span>
-            <span *ngIf="!emailInputError" class="field-hint">Enter para agregar. Backspace para quitar el último.</span>
-          </div>
+          <label class="field-label">Ruta del ejecutable pg_dump</label>
+          <input type="text" [(ngModel)]="config.rutaPgdump" class="field-input" placeholder="pg_dump  ó  C:\PostgreSQL\18\bin\pg_dump.exe"/>
+          <label class="field-label" style="margin-top:14px">Carpeta principal de backups</label>
+          <input type="text" [(ngModel)]="config.rutaOrigen" class="field-input" placeholder="C:\Backups  ó  /var/backups"/>
+          <p class="field-hint">Se crea automáticamente si no existe.</p>
         </div>
       </div>
 
-      <!-- Horario -->
+      <!-- Programación -->
       <div class="card">
         <div class="card-header">
-          <div class="card-icon card-icon--teal">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          </div>
-          <div class="card-header-text">
-            <h3>Horario automático</h3>
-            <p>Frecuencia y horas de ejecución diaria</p>
-          </div>
+          <div class="card-icon card-icon--amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline stroke-linecap="round" points="12 6 12 12 16 14"/></svg></div>
+          <div class="card-header-text"><h3>Programación Automática</h3><p>Horarios de ejecución diaria</p></div>
         </div>
         <div class="card-body">
           <div class="toggle-row">
             <span class="toggle-label">Respaldo automático activo</span>
-            <label class="toggle"><input type="checkbox" [(ngModel)]="config.activo"/><span class="slider"></span></label>
+            <label class="toggle"><input type="checkbox" [(ngModel)]="config.activo"><span class="slider"></span></label>
           </div>
-          <ng-container *ngIf="config.activo">
-            <div class="freq-pills">
-              <button class="pill" [class.active]="config.numEjecuciones===1" (click)="config.numEjecuciones=1">1× día</button>
-              <button class="pill" [class.active]="config.numEjecuciones===2" (click)="config.numEjecuciones=2">2× día</button>
-              <button class="pill" [class.active]="config.numEjecuciones===3" (click)="config.numEjecuciones=3">3× día</button>
+          <div class="sched-grid" style="margin-top:16px">
+            <div class="form-grp">
+              <label class="field-label">Ejecuciones diarias</label>
+              <select [(ngModel)]="config.numEjecuciones" class="field-select">
+                <option [value]="1">1</option><option [value]="2">2</option><option [value]="3">3</option>
+              </select>
             </div>
-            <div class="horas-row">
-              <div class="hora-item"><label class="field-label">1er backup</label><input type="time" [(ngModel)]="config.horaBackup1" class="field-input"/></div>
-              <div class="hora-item" *ngIf="config.numEjecuciones>=2"><label class="field-label">2do backup</label><input type="time" [(ngModel)]="config.horaBackup2" class="field-input"/></div>
-              <div class="hora-item" *ngIf="config.numEjecuciones>=3"><label class="field-label">3er backup</label><input type="time" [(ngModel)]="config.horaBackup3" class="field-input"/></div>
-            </div>
-          </ng-container>
-        </div>
-      </div>
-
-      <!-- Retención + Notificaciones -->
-      <div class="card-stack">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-icon card-icon--red">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-            </div>
-            <div class="card-header-text"><h3>Retención automática</h3><p>Elimina backups antiguos</p></div>
+            <div class="form-grp"><label class="field-label">Hora 1</label><input type="time" [(ngModel)]="config.horaBackup1" class="field-input"/></div>
+            <div class="form-grp" *ngIf="config.numEjecuciones>=2"><label class="field-label">Hora 2</label><input type="time" [(ngModel)]="config.horaBackup2" class="field-input"/></div>
+            <div class="form-grp" *ngIf="config.numEjecuciones>=3"><label class="field-label">Hora 3</label><input type="time" [(ngModel)]="config.horaBackup3" class="field-input"/></div>
           </div>
-          <div class="card-body">
-            <div class="toggle-row">
-              <span class="toggle-label">Activar retención</span>
-              <label class="toggle"><input type="checkbox" [(ngModel)]="config.retencionActiva"/><span class="slider"></span></label>
-            </div>
-            <div *ngIf="config.retencionActiva" class="days-row">
-              <label class="field-label">Días a conservar</label>
-              <input type="number" [(ngModel)]="config.diasRetencion" min="1" max="365" class="field-input field-input--sm"/>
-            </div>
+          <div class="toggle-row" style="margin-top:16px">
+            <span class="toggle-label">Retención automática</span>
+            <label class="toggle"><input type="checkbox" [(ngModel)]="config.retencionActiva"><span class="slider"></span></label>
           </div>
-        </div>
-        <div class="card">
-          <div class="card-header">
-            <div class="card-icon card-icon--indigo">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-            </div>
-            <div class="card-header-text"><h3>Notificaciones</h3><p>Alertas del sistema</p></div>
-          </div>
-          <div class="card-body">
-            <div class="toggle-row">
-              <span class="toggle-label">Notificar errores</span>
-              <label class="toggle"><input type="checkbox" [(ngModel)]="config.notificarError"/><span class="slider"></span></label>
-            </div>
-            <div class="toggle-row">
-              <span class="toggle-label">Notificar éxito</span>
-              <label class="toggle"><input type="checkbox" [(ngModel)]="config.notificarExito"/><span class="slider"></span></label>
-            </div>
+          <div *ngIf="config.retencionActiva" class="form-grp" style="margin-top:12px">
+            <label class="field-label">Días de retención</label>
+            <input type="number" [(ngModel)]="config.diasRetencion" class="field-input" min="1" max="365" style="max-width:120px"/>
           </div>
         </div>
       </div>
 
+      <!-- Destinos -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon card-icon--purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg></div>
+          <div class="card-header-text"><h3>Destinos de Backup</h3><p>Dónde se copian los archivos</p></div>
+        </div>
+        <div class="card-body destinos-body">
+
+          <!-- Local -->
+          <div class="destino-item">
+            <div class="destino-row">
+              <div class="destino-icon-wrap destino-local"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+              <div class="destino-info"><div class="destino-name">Carpeta local / Pendrive</div><div class="destino-desc">Copia a una ruta secundaria</div></div>
+              <label class="toggle"><input type="checkbox" [(ngModel)]="config.destinoLocal"><span class="slider"></span></label>
+            </div>
+            <div *ngIf="config.destinoLocal" class="destino-extra">
+              <input type="text" [(ngModel)]="config.rutaDestino" class="field-input" placeholder="D:\Respaldos  ó  /media/usb"/>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="destino-item">
+            <div class="destino-row">
+              <div class="destino-icon-wrap destino-email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+              <div class="destino-info"><div class="destino-name">Correo electrónico</div><div class="destino-desc">Envía el backup como adjunto</div></div>
+              <label class="toggle"><input type="checkbox" [(ngModel)]="config.destinoEmail"><span class="slider"></span></label>
+            </div>
+            <div *ngIf="config.destinoEmail" class="destino-extra">
+              <div class="email-chips-box">
+                <span *ngFor="let e of emailChips; trackBy:trackByIndex" class="email-chip">
+                  {{ e }}<button type="button" (click)="quitarEmailChip(emailChips.indexOf(e))">×</button>
+                </span>
+                <input type="email" [(ngModel)]="emailInput" (keydown)="onEmailKeydown($event)" placeholder="correo@ejemplo.com" class="chip-input"/>
+              </div>
+              <span *ngIf="emailInputError" class="field-error">{{ emailInputError }}</span>
+            </div>
+          </div>
+
+          <!-- Drive -->
+          <div class="destino-item">
+            <div class="destino-row">
+              <div class="destino-icon-wrap destino-drive">
+                <svg viewBox="0 0 87.3 78" width="20" height="18"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H0c0 1.55.4 3.1 1.2 4.5l5.4 9.35z" fill="#0066da"/><path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.2 49.5C.4 50.9 0 52.45 0 54h27.5L43.65 25z" fill="#00ac47"/><path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59.85L73.55 76.8z" fill="#ea4335"/><path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.95 0H34.35c-1.55 0-3.1.45-4.45 1.2L43.65 25z" fill="#00832d"/><path d="M59.85 54H87.3c0-1.55-.4-3.1-1.2-4.5L60.7 5c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25 59.85 54z" fill="#2684fc"/><path d="M43.65 25L29.9 48.8 16.75 73.5c1.35.8 2.9 1.2 4.45 1.2H66.1c1.55 0 3.1-.45 4.45-1.2L57.4 49.5 43.65 25z" fill="#ffba00"/></svg>
+              </div>
+              <div class="destino-info">
+                <div class="destino-name">
+                  Google Drive
+                  <span class="pill pill-ok" *ngIf="driveConfig.autorizado">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="10" height="10"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    Listo
+                  </span>
+                  <span class="pill pill-warn" *ngIf="driveConfig.credencialesGuardadas && !driveConfig.autorizado">Pendiente autorización</span>
+                  <span class="pill pill-none" *ngIf="!driveConfig.credencialesGuardadas">Sin configurar</span>
+                </div>
+                <div class="destino-desc">Subida automática a la nube</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" [(ngModel)]="config.destinoDrive" [disabled]="!driveConfig.autorizado">
+                <span class="slider" [class.slider-disabled]="!driveConfig.autorizado"></span>
+              </label>
+            </div>
+            <div *ngIf="config.destinoDrive && driveConfig.autorizado" class="destino-extra">
+              <label class="field-label">Carpeta en Drive</label>
+              <input type="text" [(ngModel)]="config.driveFolderName" class="field-input" placeholder="SSDC-Backups"/>
+            </div>
+            <div *ngIf="!driveConfig.autorizado" class="drive-hint-inline">
+              <span>Configura Google Drive en la pestaña </span>
+              <button class="btn-link" (click)="activeTab='drive'">Google Drive →</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Notificaciones -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon card-icon--indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg></div>
+          <div class="card-header-text"><h3>Notificaciones</h3><p>Alertas en el panel de administración</p></div>
+        </div>
+        <div class="card-body">
+          <div class="toggle-row"><span class="toggle-label">Notificar en caso de error</span><label class="toggle"><input type="checkbox" [(ngModel)]="config.notificarError"><span class="slider"></span></label></div>
+          <div class="toggle-row" style="margin-top:12px"><span class="toggle-label">Notificar cuando sea exitoso</span><label class="toggle"><input type="checkbox" [(ngModel)]="config.notificarExito"><span class="slider"></span></label></div>
+        </div>
+      </div>
     </div>
 
-    <!-- Botones acción en config -->
-    <div class="action-bar">
-      <button class="btn-manual" (click)="ejecutarManual()" [disabled]="ejecutando">
-        <span class="spinner" *ngIf="ejecutando"></span>
-        <svg *ngIf="!ejecutando" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-        </svg>
-        {{ ejecutando ? 'Ejecutando...' : 'Backup ahora' }}
-      </button>
-      <button class="btn-save" (click)="guardarConfig()" [disabled]="guardando">
-        <span class="spinner" *ngIf="guardando"></span>
-        <svg *ngIf="!guardando" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-        </svg>
+    <!-- Acción manual -->
+    <div class="manual-panel" *ngIf="!cargando">
+      <div class="manual-row">
+        <div class="manual-info">
+          <span class="manual-title">Ejecutar backup ahora</span>
+          <span class="manual-sub">
+            Tipo: <strong>{{ tipoLabel(config.tipoBackup) }}</strong>
+            <span *ngIf="config.destinoLocal || config.destinoEmail || config.destinoDrive">
+              · Destinos:
+              <strong *ngIf="config.destinoLocal">Local</strong>
+              <strong *ngIf="config.destinoEmail"> Email</strong>
+              <strong *ngIf="config.destinoDrive"> Drive</strong>
+            </span>
+          </span>
+        </div>
+        <button class="btn-ejecutar" [disabled]="!!ejecutandoTipo" (click)="ejecutarTipo(config.tipoBackup)">
+          <span class="spinner-sm" *ngIf="!!ejecutandoTipo"></span>
+          <svg *ngIf="!ejecutandoTipo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+          </svg>
+          {{ ejecutandoTipo ? 'Ejecutando...' : 'Ejecutar backup' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="save-bar" *ngIf="!cargando">
+      <button class="btn-save" [disabled]="guardando" (click)="guardarConfig()">
+        <svg *ngIf="!guardando" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        <span class="spinner-sm" *ngIf="guardando"></span>
         {{ guardando ? 'Guardando...' : 'Guardar configuración' }}
       </button>
     </div>
   </ng-container>
 
-  <!-- ════════════ TAB: HISTORIAL ════════════ -->
+  <!-- ══════════════════ TAB HISTORIAL ══════════════════ -->
   <ng-container *ngIf="activeTab==='historial'">
-    <div class="card card--full">
-      <div class="card-header">
-        <div class="card-icon card-icon--green">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-        </div>
-        <div class="card-header-text"><h3>Historial de ejecuciones</h3><p>Últimos 50 backups realizados</p></div>
+    <div *ngIf="historial.length===0" class="empty-state">
+      <div class="empty-ico">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
       </div>
-      <div *ngIf="historial.length===0" class="empty-state">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-        <p>No hay backups registrados aún</p>
-      </div>
-      <div *ngIf="historial.length>0" class="table-wrap">
-        <table class="data-table">
-          <thead><tr><th>Estado</th><th>Tipo</th><th>Origen</th><th>Fecha</th><th>Tamaño</th><th>Duración</th></tr></thead>
-          <tbody>
-          <tr *ngFor="let h of historial" class="table-row">
-            <td>
-                <span class="status-badge" [class.status-ok]="h.estado==='EXITOSO'" [class.status-fail]="h.estado==='FALLIDO'" [title]="h.mensajeError||''">
-                  <svg *ngIf="h.estado==='EXITOSO'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="11" height="11"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                  <svg *ngIf="h.estado==='FALLIDO'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="11" height="11"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-                  {{ h.estado }}
-                  <span *ngIf="h.mensajeError" class="tooltip-wrap">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="10" height="10"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span class="tooltip">{{ h.mensajeError }}</span>
-                  </span>
+      <div class="empty-txt">No hay backups registrados aún</div>
+    </div>
+    <div *ngIf="historial.length>0" class="hist-wrap">
+      <table class="hist-table">
+        <thead><tr><th>Tipo</th><th>Origen</th><th>Fecha</th><th>Tamaño</th><th>Duración</th><th>Destinos</th><th>Estado</th></tr></thead>
+        <tbody>
+        <tr *ngFor="let h of historial" [class.row-fail]="h.estado==='FALLIDO'">
+          <td><span class="badge" [ngClass]="tipoCss(tipoExt(h))">{{ tipoLabel(tipoExt(h)) }}</span></td>
+          <td><span class="origen-badge" [ngClass]="origenCss(h.origen)">{{ h.origen }}</span></td>
+          <td class="nowrap">{{ h.fechaInicio | date:'dd/MM/yy HH:mm' }}</td>
+          <td class="nowrap">{{ h.tamanoFormateado }}</td>
+          <td class="nowrap">{{ h.duracionFormateada }}</td>
+          <td>
+            <div class="dest-icons">
+                <span *ngIf="h.emailEnviado" class="dest-icon-wrap" title="Email enviado">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                 </span>
-            </td>
-            <td><span class="type-chip">{{ h.tipoBackup }}</span></td>
-            <td><span class="origin-chip" [class.origin-manual]="h.origen==='MANUAL'">{{ h.origen }}</span></td>
-            <td class="td-date">{{ h.fechaInicio | date:'dd/MM/yyyy HH:mm' }}</td>
-            <td class="td-size">{{ h.tamanoFormateado }}</td>
-            <td class="td-dur">{{ h.duracionFormateada }}</td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
+              <a *ngIf="h.driveSubido && h.driveUrl" [href]="h.driveUrl" target="_blank" class="dest-icon-wrap" title="Ver en Drive">
+                <svg viewBox="0 0 87.3 78" width="16" height="14"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H0c0 1.55.4 3.1 1.2 4.5l5.4 9.35z" fill="#0066da"/><path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.2 49.5C.4 50.9 0 52.45 0 54h27.5L43.65 25z" fill="#00ac47"/><path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59.85L73.55 76.8z" fill="#ea4335"/><path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.95 0H34.35c-1.55 0-3.1.45-4.45 1.2L43.65 25z" fill="#00832d"/><path d="M59.85 54H87.3c0-1.55-.4-3.1-1.2-4.5L60.7 5c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25 59.85 54z" fill="#2684fc"/><path d="M43.65 25L29.9 48.8 16.75 73.5c1.35.8 2.9 1.2 4.45 1.2H66.1c1.55 0 3.1-.45 4.45-1.2L57.4 49.5 43.65 25z" fill="#ffba00"/></svg>
+              </a>
+              <span *ngIf="!h.emailEnviado && !h.driveSubido" class="dest-none">—</span>
+            </div>
+          </td>
+          <td>
+            <span class="estado-badge" [class.estado-ok]="h.estado==='EXITOSO'" [class.estado-fail]="h.estado==='FALLIDO'">{{ h.estado }}</span>
+            <span *ngIf="h.mensajeError" class="err-tip" [title]="h.mensajeError">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+              </span>
+          </td>
+        </tr>
+        </tbody>
+      </table>
     </div>
   </ng-container>
 
-  <!-- ════════════ TAB: RESTAURAR ════════════ -->
-  <ng-container *ngIf="activeTab==='restaurar'">
-    <div class="restore-warning">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-      </svg>
-      <div>
-        <strong>Operación irreversible</strong>
-        <span>Sobreescribirá todos los datos actuales. Solo se aceptan backups generados por esta aplicación.</span>
-      </div>
-    </div>
+  <!-- ══════════════════ TAB GOOGLE DRIVE ══════════════════ -->
+  <ng-container *ngIf="activeTab==='drive'">
+    <div class="drive-panel">
 
-    <div class="restore-layout restore-layout--simple">
-
-      <!-- Zona carga -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-icon card-icon--amber">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      <!-- Progress -->
+      <div class="wizard-progress">
+        <div class="wizard-step" [class.step-done]="driveConfig.credencialesGuardadas || driveConfig.autorizado" [class.step-active]="driveStep==='creds'">
+          <div class="step-circle">
+            <svg *ngIf="driveConfig.credencialesGuardadas || driveConfig.autorizado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            <span *ngIf="!driveConfig.credencialesGuardadas && !driveConfig.autorizado">1</span>
           </div>
-          <div class="card-header-text"><h3>Seleccionar backup</h3><p>Archivo .zip o .dump generado por este sistema</p></div>
+          <div class="step-label">Credenciales</div>
         </div>
-        <div class="card-body">
+        <div class="wizard-line" [class.line-done]="driveConfig.credencialesGuardadas || driveConfig.autorizado"></div>
+        <div class="wizard-step" [class.step-done]="driveConfig.autorizado" [class.step-active]="driveStep==='auth'">
+          <div class="step-circle">
+            <svg *ngIf="driveConfig.autorizado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            <span *ngIf="!driveConfig.autorizado">2</span>
+          </div>
+          <div class="step-label">Autorización</div>
+        </div>
+        <div class="wizard-line" [class.line-done]="driveConfig.autorizado"></div>
+        <div class="wizard-step" [class.step-done]="driveConfig.autorizado" [class.step-active]="driveStep==='done'">
+          <div class="step-circle">
+            <svg *ngIf="driveConfig.autorizado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            <span *ngIf="!driveConfig.autorizado">3</span>
+          </div>
+          <div class="step-label">Listo</div>
+        </div>
+      </div>
 
-          <div class="drop-zone"
-               [class.drop-zone--has-file]="restaurarFile"
-               [class.drop-zone--valid]="restaurarEstado==='valido'"
-               [class.drop-zone--invalid]="restaurarEstado==='invalido'"
-               (dragover)="onDragOver($event)" (drop)="onDrop($event)"
-               (click)="fileInput.click()">
-            <input #fileInput type="file" accept=".zip,.dump" (change)="onArchivoSeleccionado($event)" style="display:none"/>
-            <ng-container *ngIf="!restaurarFile">
-              <div class="drop-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-              </div>
-              <p class="drop-title">Arrastra el archivo aquí</p>
-              <p class="drop-sub">o haz clic para seleccionarlo — .zip o .dump</p>
-            </ng-container>
-            <ng-container *ngIf="restaurarFile">
-              <div class="file-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                <span>{{ restaurarNombre }}</span>
-              </div>
-              <button class="btn-clear" (click)="$event.stopPropagation(); limpiarArchivo()">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+      <!-- ── PASO 1: CREDENCIALES ─────────────────────────────── -->
+      <div *ngIf="driveStep==='creds'" class="wizard-content">
+        <div class="wizard-header">
+          <div class="wizard-icon-svg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+          </div>
+          <h3>Paso 1 — Credenciales OAuth2</h3>
+          <p>Ingresa las credenciales de tu proyecto en Google Cloud Console. Son gratuitas.</p>
+        </div>
+
+        <div class="guide-box">
+          <div class="guide-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            Cómo obtener las credenciales (gratis)
+          </div>
+          <div class="guide-steps">
+            <div class="guide-step"><span class="g-num">1</span><div>Ve a <a href="https://console.cloud.google.com" target="_blank" class="ext-link">console.cloud.google.com</a> → Crea un proyecto nuevo (o usa uno existente)</div></div>
+            <div class="guide-step"><span class="g-num">2</span><div>Ve a <strong>APIs &amp; Services → Library</strong> → Busca <strong>"Google Drive API"</strong> → Habilítala</div></div>
+            <div class="guide-step"><span class="g-num">3</span><div>Ve a <strong>APIs &amp; Services → OAuth consent screen</strong> → Tipo: <strong>External</strong> → Completa nombre y email → Guarda</div></div>
+            <div class="guide-step"><span class="g-num">4</span><div>Ve a <strong>Credentials → Create Credentials → OAuth 2.0 Client ID</strong><br>Application type: <strong>Web application</strong><br>Authorized redirect URIs: agrega la URL exacta del campo "Redirect URI" de abajo</div></div>
+            <div class="guide-step"><span class="g-num">5</span><div>Copia el <strong>Client ID</strong> y <strong>Client Secret</strong> que aparecen y pégalos abajo</div></div>
+          </div>
+        </div>
+
+        <div class="creds-form">
+          <div class="form-grp">
+            <label class="field-label">Client ID <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="driveForm.clientId" class="field-input" placeholder="123456789-abc...apps.googleusercontent.com"/>
+            <p class="field-hint">Termina en .apps.googleusercontent.com</p>
+          </div>
+          <div class="form-grp">
+            <label class="field-label">
+              Client Secret <span class="required">*</span>
+              <span *ngIf="driveConfig.credencialesGuardadas" class="saved-hint">(ya guardado — deja vacío para conservar)</span>
+            </label>
+            <div class="secret-input-wrap">
+              <input [type]="mostrarSecret ? 'text' : 'password'" [(ngModel)]="driveForm.clientSecret" class="field-input"
+                     placeholder="{{ driveConfig.credencialesGuardadas ? '••••••••••••' : 'GOCSPX-...' }}"/>
+              <button type="button" class="btn-toggle-secret" (click)="mostrarSecret=!mostrarSecret">
+                <svg *ngIf="!mostrarSecret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <svg *ngIf="mostrarSecret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
               </button>
-            </ng-container>
+            </div>
           </div>
-
-          <div *ngIf="restaurarEstado==='validando'" class="validate-status validate-status--loading">
-            <span class="spinner spinner--sm"></span> Validando estructura del backup...
+          <div class="form-grp">
+            <label class="field-label">Redirect URI <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="driveForm.redirectUri" class="field-input" placeholder="https://tuservidor.com/api/backup/drive/callback"/>
+            <p class="field-hint">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" style="margin-right:3px"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+              Debe coincidir EXACTAMENTE con la que registraste en Google Cloud Console. Para local: <code>http://localhost:8080/api/backup/drive/callback</code>
+            </p>
           </div>
-          <div *ngIf="restaurarEstado==='valido'" class="validate-status validate-status--ok">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            {{ restaurarMensaje }}
+          <div class="form-grp">
+            <label class="field-label">Nombre de carpeta en Drive</label>
+            <input type="text" [(ngModel)]="driveForm.folderName" class="field-input" placeholder="SSDC-Backups"/>
+            <p class="field-hint">Se crea automáticamente en tu Drive si no existe.</p>
           </div>
-          <div *ngIf="restaurarEstado==='invalido'" class="validate-status validate-status--fail">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            {{ restaurarMensaje }}
-          </div>
-          <div *ngIf="restaurarEstado==='restaurando'" class="validate-status validate-status--loading">
-            <span class="spinner spinner--sm"></span> Restaurando base de datos, por favor espera...
-          </div>
-          <div *ngIf="restaurarEstado==='ok'" class="validate-status validate-status--ok">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            {{ restaurarMensaje }}
-          </div>
-          <div *ngIf="restaurarEstado==='error'" class="validate-status validate-status--fail">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            {{ restaurarMensaje }}
-          </div>
-
-          <div *ngIf="restaurarEstado==='valido' && !restaurarConfirmando" class="restore-action">
-            <button class="btn-restore" (click)="confirmarRestauracion()">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-              Restaurar base de datos
+          <div class="creds-actions">
+            <button class="btn-save" [disabled]="driveGuardando" (click)="guardarCredencialesDrive()">
+              <span class="spinner-sm" *ngIf="driveGuardando"></span>
+              <svg *ngIf="!driveGuardando" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              {{ driveGuardando ? 'Guardando...' : 'Guardar y continuar →' }}
             </button>
           </div>
+        </div>
+      </div>
 
-          <div *ngIf="restaurarConfirmando" class="confirm-box">
-            <p>¿Estás seguro? Esta acción sobreescribirá la base de datos actual con <em>{{ restaurarNombre }}</em>. No se puede deshacer.</p>
-            <div class="confirm-btns">
-              <button class="btn-cancel-confirm" (click)="cancelarRestauracion()">Cancelar</button>
-              <button class="btn-confirm-restore" (click)="ejecutarRestauracion()">Sí, restaurar ahora</button>
+      <!-- ── PASO 2: AUTORIZACIÓN ────────────────────────────── -->
+      <div *ngIf="driveStep==='auth'" class="wizard-content">
+        <div class="wizard-header">
+          <div class="wizard-icon-svg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <h3>Paso 2 — Autorizar acceso a Google Drive</h3>
+          <p>Haz clic en el botón para que el sistema solicite permiso a tu cuenta de Google.</p>
+        </div>
+
+        <div class="auth-info-box">
+          <div class="auth-info-row">
+            <span class="auth-info-lbl">Client ID guardado:</span>
+            <span class="auth-info-val">{{ driveConfig.clientIdPreview ?? '—' }}</span>
+          </div>
+          <div class="auth-info-row">
+            <span class="auth-info-lbl">Redirect URI:</span>
+            <span class="auth-info-val auth-info-mono">{{ driveConfig.redirectUri ?? '—' }}</span>
+          </div>
+        </div>
+
+        <div class="auth-steps-hint">
+          <div class="auth-step-hint"><span>1.</span> Haz clic en <strong>"Autorizar con Google"</strong></div>
+          <div class="auth-step-hint"><span>2.</span> Se abrirá una ventana de Google — inicia sesión con la cuenta que usará Drive</div>
+          <div class="auth-step-hint"><span>3.</span> Acepta los permisos solicitados</div>
+          <div class="auth-step-hint"><span>4.</span> La ventana se cerrará y verás el paso 3</div>
+        </div>
+
+        <div class="auth-actions">
+          <button class="btn-google-auth" [disabled]="driveAutorizando" (click)="abrirAutorizacionGoogle()">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <path fill="#fff" d="M12 11.25v2.25h3.75c-.16 1-.93 2.94-3.75 2.94-2.26 0-4.1-1.81-4.1-4.03 0-2.23 1.84-4.03 4.1-4.03 1.29 0 2.15.53 2.64 1.01l1.82-1.75C15.17 6.44 13.73 6 12 6c-3.73 0-6.75 2.89-6.75 6.45s3.02 6.45 6.75 6.45c3.9 0 6.48-2.72 6.48-6.53 0-.43-.05-.77-.1-1.12H12z"/>
+            </svg>
+            {{ driveAutorizando ? 'Esperando autorización...' : 'Autorizar con Google' }}
+          </button>
+          <button class="btn-check-drive" (click)="verificarAutorizacion()">Verificar conexión</button>
+          <button class="btn-link-secondary" (click)="volverAPasoCredenciales()">← Cambiar credenciales</button>
+        </div>
+
+        <div *ngIf="driveAutorizando" class="auth-waiting">
+          <span class="spinner-sm" style="border-color:#e5e7eb; border-top-color:#2563eb"></span>
+          <span>Esperando que completes la autorización en la ventana de Google...</span>
+        </div>
+      </div>
+
+      <!-- ── PASO 3: LISTO ────────────────────────────────────── -->
+      <div *ngIf="driveStep==='done'" class="wizard-content">
+        <div class="drive-connected-panel">
+          <div class="connected-check-big">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <h3>Google Drive conectado y listo</h3>
+          <p>Los backups se subirán automáticamente cuando actives "Google Drive" como destino en la configuración.</p>
+
+          <div class="connected-details">
+            <div class="detail-row" *ngIf="driveConfig.clientIdPreview">
+              <span class="detail-lbl">Client ID:</span>
+              <span class="detail-val detail-mono">{{ driveConfig.clientIdPreview }}</span>
+            </div>
+            <div class="detail-row" *ngIf="driveConfig.folderName">
+              <span class="detail-lbl">Carpeta en Drive:</span>
+              <span class="detail-val">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="margin-right:4px"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h3.172a2 2 0 011.414.586l1.828 1.828A2 2 0 0012.828 8H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
+                {{ driveConfig.folderName }}
+              </span>
+            </div>
+            <div class="detail-row" *ngIf="driveConfig.folderId">
+              <span class="detail-lbl">ID carpeta:</span>
+              <span class="detail-val detail-mono">{{ driveConfig.folderId }}</span>
+            </div>
+            <div class="detail-row" *ngIf="driveConfig.expiresAt">
+              <span class="detail-lbl">Token expira:</span>
+              <span class="detail-val">{{ driveConfig.expiresAt }}</span>
+            </div>
+            <div class="detail-row" *ngIf="driveConfig.updatedAt">
+              <span class="detail-lbl">Última actualización:</span>
+              <span class="detail-val">{{ driveConfig.updatedAt }}</span>
             </div>
           </div>
 
+          <div class="done-actions">
+            <button class="btn-save" (click)="activeTab='config'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              Ir a Configuración
+            </button>
+            <button class="btn-check-drive" (click)="verificarAutorizacion()">Refrescar estado</button>
+            <button class="btn-revoke" (click)="revocarAutorizacion()">Revocar autorización</button>
+            <button class="btn-danger-sm" (click)="eliminarConfigDrive()">Eliminar configuración</button>
+          </div>
+
+          <div class="drive-tip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15" style="flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            El access token se renueva automáticamente usando el refresh token guardado en BD. No necesitas repetir este proceso.
+          </div>
         </div>
       </div>
 
+    </div>
+  </ng-container>
 
+  <!-- ══════════════════ TAB RESTAURAR ══════════════════ -->
+  <ng-container *ngIf="activeTab==='restaurar'">
+    <div class="restaurar-panel">
+      <div class="restaurar-warn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        <strong>Atención:</strong> Restaurar reemplaza <em>completamente</em> la base de datos. Esta operación es <strong>irreversible</strong>.
+      </div>
+      <div class="drop-zone" (drop)="onDrop($event)" (dragover)="onDragOver($event)"
+           [class.dz-ok]="restaurarEstado==='valido'" [class.dz-err]="restaurarEstado==='invalido'||restaurarEstado==='error'">
+        <input type="file" id="fileInput" accept=".zip,.dump,.backup" (change)="onArchivoSeleccionado($event)" style="display:none"/>
+        <div *ngIf="!restaurarNombre" class="dz-empty">
+          <div class="dz-ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h3.172a2 2 0 011.414.586l1.828 1.828A2 2 0 0012.828 8H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
+          </div>
+          <p>Arrastra el backup aquí o <label for="fileInput" class="dz-link">selecciona un archivo</label></p>
+          <p class="dz-formats">.zip · .dump · .backup</p>
+        </div>
+        <div *ngIf="restaurarNombre" class="dz-filled">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+          <span class="dz-filename">{{ restaurarNombre }}</span>
+          <button type="button" class="dz-remove" (click)="limpiarArchivo()">× Quitar</button>
+        </div>
+      </div>
+
+      <div *ngIf="restaurarEstado==='validando'" class="rest-msg rest-info">
+        <span class="spinner-sm" style="border-color:#bfdbfe;border-top-color:#2563eb"></span>
+        Validando archivo...
+      </div>
+      <div *ngIf="restaurarEstado==='valido'" class="rest-msg rest-ok">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        {{ restaurarMensaje }}
+      </div>
+      <div *ngIf="restaurarEstado==='invalido'" class="rest-msg rest-err">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        {{ restaurarMensaje }}
+      </div>
+      <div *ngIf="restaurarEstado==='restaurando'" class="rest-msg rest-info">
+        <span class="spinner-sm" style="border-color:#bfdbfe;border-top-color:#2563eb"></span>
+        Restaurando... No cierres esta página.
+      </div>
+      <div *ngIf="restaurarEstado==='ok'" class="rest-msg rest-ok">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        {{ restaurarMensaje }}
+      </div>
+      <div *ngIf="restaurarEstado==='error'" class="rest-msg rest-err">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        {{ restaurarMensaje }}
+      </div>
+
+      <div *ngIf="restaurarEstado==='valido' && !restaurarConfirmando" class="rest-actions">
+        <button class="btn-restaurar" (click)="confirmarRestauracion()">Restaurar base de datos</button>
+      </div>
+      <div *ngIf="restaurarConfirmando" class="confirm-box">
+        <p>¿Confirmas restaurar <strong>{{ restaurarNombre }}</strong>? Todos los datos actuales se perderán.</p>
+        <div class="confirm-actions">
+          <button class="btn-restaurar" (click)="ejecutarRestauracion()">Sí, restaurar ahora</button>
+          <button class="btn-cancel-rest" (click)="cancelarRestauracion()">Cancelar</button>
+        </div>
+      </div>
     </div>
   </ng-container>
 
