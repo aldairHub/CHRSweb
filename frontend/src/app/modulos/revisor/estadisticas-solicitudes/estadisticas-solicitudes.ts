@@ -150,12 +150,28 @@ export class EstadisticasSolicitudesComponent implements OnInit {
   }
   private fallbackIA(): string {
     const s = this.stats!;
-    return `Se registran ${s.total} solicitudes de docente con una demanda de ${s.docentesRequeridos} docentes. ` +
-      `La tasa de aprobación es del ${s.tasaAprobacion}% y la cobertura de docentes del ${s.cobertura}% ` +
-      `(${s.docentesAprobados} cubiertos de ${s.docentesRequeridos} requeridos). ` +
-      (s.porFacultad.length ? `La facultad con mayor demanda es "${s.porFacultad[0].nombre}" con ${s.porFacultad[0].count} solicitudes. ` : '') +
-      (s.masAntiguas.length > 0 ? `⚠ ${s.masAntiguas.length} solicitud(es) pendiente(s) con mayor antigüedad requieren atención. ` : '') +
-      (s.pendientes > s.aprobadas ? 'El volumen de pendientes supera a los aprobadas; se recomienda agilizar el proceso. ' : '');
+    let t = `El sistema registra ${s.total} solicitud${s.total !== 1 ? 'es' : ''} de docente que representan una demanda total de `;
+    t += `${s.docentesRequeridos} docente${s.docentesRequeridos !== 1 ? 's' : ''}. `;
+    t += `De estas, ${s.aprobadas} han sido aprobadas (${s.docentesAprobados} docentes cubiertos), `;
+    t += `${s.pendientes} están pendientes de revisión y ${s.rechazadas} fueron rechazadas. `;
+    t += `La tasa de aprobación sobre revisadas es del ${s.tasaAprobacion}% y la cobertura de docentes alcanza el ${s.cobertura}%. `;
+    if (s.docentesPendientes > 0) t += `Aún quedan ${s.docentesPendientes} plaza${s.docentesPendientes > 1 ? 's' : ''} de docente sin cubrir. `;
+    if (s.porFacultad.length > 0) {
+      t += `La facultad con mayor demanda es "${s.porFacultad[0].nombre}" con ${s.porFacultad[0].count} solicitudes`;
+      if (s.porFacultad.length > 1) t += `; le sigue "${s.porFacultad[1].nombre}" con ${s.porFacultad[1].count}`;
+      t += '. ';
+    }
+    if (s.expProfPromedio > 0 || s.expDocPromedio > 0)
+      t += `Los perfiles requeridos exigen en promedio ${s.expProfPromedio} año${s.expProfPromedio !== 1 ? 's' : ''} de experiencia profesional y ${s.expDocPromedio} de docente. `;
+    if (s.masAntiguas.length > 0) {
+      t += `⚠ Hay ${s.masAntiguas.length} solicitud${s.masAntiguas.length > 1 ? 'es' : ''} pendiente${s.masAntiguas.length > 1 ? 's' : ''} con alta antigüedad; `;
+      t += `su resolución debería priorizarse para evitar vacíos en la carga horaria. `;
+    }
+    if (s.pendientes > s.aprobadas)
+      t += `El volumen pendiente supera al aprobado; se recomienda agilizar la revisión de las solicitudes más antiguas. `;
+    if (s.cobertura >= 80)
+      t += `La cobertura del ${s.cobertura}% indica que la mayoría de las necesidades académicas están siendo atendidas satisfactoriamente.`;
+    return t.trim();
   }
 
   abrirExport(): void { this.showExport = true; }

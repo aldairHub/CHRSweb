@@ -131,12 +131,29 @@ export class EstadisticasConvocatoriasComponent implements OnInit {
   }
   private fallbackIA(): string {
     const s = this.stats!;
-    return `El sistema registra ${s.total} convocatorias (${s.abiertas} abiertas, ${s.cerradas} cerradas, ${s.canceladas} canceladas). ` +
-      `La eficiencia de cobertura es del ${s.eficienciaCobertura}% y la tasa de éxito en cerradas del ${s.tasaExito}%. ` +
-      `Se cubrieron ${s.totalSolicitudesCubiertas} solicitudes con un promedio de ${s.promedioSolicitudesPorConv} por convocatoria. ` +
-      (s.vencidasSinCerrar > 0 ? `⚠ ${s.vencidasSinCerrar} convocatoria(s) vencida(s) sin cerrar formalmente. ` : '') +
-      (s.convSinSolicitudes > 0 ? `${s.convSinSolicitudes} convocatoria(s) sin solicitudes asignadas. ` : '') +
-      (s.proximasACerrar.length > 0 ? `⚠ ${s.proximasACerrar.length} convocatoria(s) cierra(n) en los próximos 14 días.` : '');
+    const pctAb = s.total ? Math.round(s.abiertas / s.total * 100) : 0;
+    let t = `El sistema registra un total de ${s.total} convocatoria${s.total !== 1 ? 's' : ''}: `;
+    t += `${s.abiertas} abiertas (${pctAb}%), ${s.cerradas} cerradas y ${s.canceladas} canceladas. `;
+    t += `La eficiencia de cobertura —es decir, la proporción de convocatorias que tienen al menos una solicitud asignada— es del ${s.eficienciaCobertura}%, `;
+    t += `mientras que la tasa de éxito sobre las convocatorias cerradas alcanza el ${s.tasaExito}%. `;
+    t += `En total se han cubierto ${s.totalSolicitudesCubiertas} solicitud${s.totalSolicitudesCubiertas !== 1 ? 'es' : ''} de docente, `;
+    t += `con un promedio de ${s.promedioSolicitudesPorConv} solicitudes por convocatoria. `;
+    if (s.promedioDuracion > 0) t += `La duración promedio de una convocatoria es de ${s.promedioDuracion} días. `;
+    if (s.vencidasSinCerrar > 0) {
+      t += `⚠ Se detectan ${s.vencidasSinCerrar} convocatoria${s.vencidasSinCerrar > 1 ? 's' : ''} con fecha de cierre vencida que aún figuran como abiertas; `;
+      t += `se recomienda cerrarlas formalmente para mantener la integridad del sistema. `;
+    }
+    if (s.convSinSolicitudes > 0) {
+      t += `${s.convSinSolicitudes} convocatoria${s.convSinSolicitudes > 1 ? 's' : ''} no tiene${s.convSinSolicitudes > 1 ? 'n' : ''} ninguna solicitud asignada; `;
+      t += `conviene revisar si responden a vacantes reales o pueden cerrarse. `;
+    }
+    if (s.proximasACerrar.length > 0) {
+      t += `⚠ ${s.proximasACerrar.length} convocatoria${s.proximasACerrar.length > 1 ? 's' : ''} cierra${s.proximasACerrar.length > 1 ? 'n' : ''} en los próximos 14 días; `;
+      t += `es recomendable verificar que los documentos y solicitudes estén completos antes del vencimiento. `;
+    }
+    if (s.eficienciaCobertura < 60 && s.total > 3) t += 'La baja eficiencia de cobertura sugiere reforzar la vinculación entre convocatorias y solicitudes de docente. ';
+    if (s.tasaExito >= 80) t += `La alta tasa de éxito del ${s.tasaExito}% refleja un proceso de cierre de convocatorias saludable.`;
+    return t.trim();
   }
 
   abrirExport(): void { this.showExport = true; }

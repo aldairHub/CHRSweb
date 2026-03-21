@@ -140,11 +140,26 @@ export class EstadisticasPostulantesComponent implements OnInit {
   }
   private fallbackIA(): string {
     const s = this.stats!;
-    return `Se registran ${s.total} prepostulaciones. La tasa de aprobación sobre revisadas es del ${s.tasaAprobacion}% ` +
-      `(${s.aprobados} aprobadas, ${s.rechazados} rechazadas). ${s.pendientes} están pendientes de revisión ` +
-      `con un tiempo promedio de espera de ${s.horasPromedioPendientes} horas. ` +
-      (s.tasaAprobacion < 50 && s.revisados > 5 ? 'La tasa de aprobación inferior al 50% sugiere revisar los criterios de admisión. ' : '') +
-      (s.pendientes > s.revisados ? '⚠ El volumen de pendientes supera a los revisados; se recomienda atención prioritaria.' : '');
+    let t = `Se registran ${s.total} prepostulación${s.total !== 1 ? 'es' : ''} en total. `;
+    t += `De estas, ${s.revisados} han sido revisadas: ${s.aprobados} aprobadas y ${s.rechazados} rechazadas, `;
+    t += `lo que representa una tasa de aprobación del ${s.tasaAprobacion}% sobre las revisadas. `;
+    if (s.pendientes > 0) {
+      t += `Actualmente ${s.pendientes} prepostulación${s.pendientes > 1 ? 'es están' : ' está'} pendiente${s.pendientes > 1 ? 's' : ''} de revisión `;
+      t += `con un tiempo de espera promedio de ${s.horasPromedioPendientes} horas desde su envío. `;
+    }
+    if (s.tiempoPromedioRevision > 0) t += `El tiempo promedio desde el envío hasta la revisión es de aproximadamente ${s.tiempoPromedioRevision} días. `;
+    const pctRev = s.total > 0 ? Math.round(s.revisados / s.total * 100) : 0;
+    t += `El ${pctRev}% del total ha sido revisado. `;
+    if (s.tasaAprobacion < 50 && s.revisados > 5) {
+      t += `⚠ La tasa de aprobación es inferior al 50%; esto puede indicar que los postulantes no cumplen los requisitos mínimos o que los criterios de evaluación son muy exigentes. `;
+      t += `Se recomienda revisar los requisitos de la convocatoria y reforzar la orientación previa a los postulantes. `;
+    }
+    if (s.pendientes > s.revisados) {
+      t += `⚠ El volumen de prepostulaciones pendientes supera al de revisadas; `;
+      t += `se recomienda priorizar la revisión para no retrasar el proceso de selección. `;
+    }
+    if (s.tasaAprobacion >= 70 && s.revisados > 5) t += `La tasa de aprobación del ${s.tasaAprobacion}% refleja un proceso de selección eficiente y bien orientado.`;
+    return t.trim();
   }
 
   abrirExport(): void { this.showExport = true; }
