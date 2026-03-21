@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy,ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { BackupProgressService } from './backup-progress.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -63,6 +64,10 @@ export class BackupComponent implements OnInit, OnDestroy {
   cargando         = true;
   ejecutandoTipo: string | null = null;
 
+  // ── Progreso (delegado al servicio singleton) ───────────────────
+  private progresoTimer: any = null;
+  private historialCount = 0;  // para detectar backups automáticos
+
   // ── Config backup ──────────────────────────────────────────────
   config: ConfigBackup = {
     rutaPgdump: 'pg_dump', rutaOrigen: 'C:\\Backups', tipoBackup: 'FULL',
@@ -106,7 +111,12 @@ export class BackupComponent implements OnInit, OnDestroy {
   restaurarMensaje    = '';
   restaurarConfirmando = false;
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef,private toast: ToastService) {
+  constructor(
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef,
+    private toast: ToastService,
+    public  ps: BackupProgressService
+  ) {
     // Bind handler once so we can remove it properly on destroy
     this.authMessageHandler = (event: MessageEvent) => {
       if (event.data === 'drive_auth_ok') {
@@ -120,9 +130,8 @@ export class BackupComponent implements OnInit, OnDestroy {
     this.cargarConfig();
     this.cargarHistorial();
     this.cargarDriveConfig();
-    this.cdr.detectChanges();
-    // Polling cada 15s para actualizar historial automáticamente
-    this.pollingInterval = setInterval(() => this.cargarHistorial(), 15_000);
+    // Polling cada 6s — detecta backups automáticos del scheduler
+    this.pollingInterval = setInterval(() => this.sondearHistorial(), 6_000);
     window.addEventListener('message', this.authMessageHandler);
   }
 
@@ -137,14 +146,16 @@ export class BackupComponent implements OnInit, OnDestroy {
   // ═══════════════════════════════════════════════════════════════
   cargarConfig(): void {
     this.cargando = true;
+    this.cdr.detectChanges();
     this.http.get<ConfigBackup>('/api/backup/config').subscribe({
       next: cfg => {
         this.config = { ...this.config, ...cfg };
         if (this.config.destinoDrive == null) this.config.destinoDrive = false;
         this.syncEmailsFromConfig();
-        this.cargando = false;this.cdr.detectChanges();
+        this.cargando = false;
+        this.cdr.detectChanges();
       },
-      error: () => { this.cargando = false; }
+      error: () => { this.cargando = false; this.cdr.detectChanges(); }
     });
   }
 
@@ -157,9 +168,10 @@ export class BackupComponent implements OnInit, OnDestroy {
         this.syncEmailsFromConfig();
         this.guardando = false;
         this.cargarHistorial();
-        this.toast.success('Configuración guardada');this.cdr.detectChanges();
+        this.toast.success('Configuración guardada');
+        this.cdr.detectChanges();
       },
-      error: () => { this.guardando = false; this.toast.error('Error al guardar'); }
+      error: () => { this.guardando = false; this.toast.error('Error al guardar'); this.cdr.detectChanges(); }
     });
   }
 
@@ -167,35 +179,113 @@ export class BackupComponent implements OnInit, OnDestroy {
   // EJECUTAR
   // ═══════════════════════════════════════════════════════════════
   ejecutarTipo(tipo: string): void {
-    if (this.ejecutandoTipo) return;
-    this.ejecutandoTipo = tipo;
+    if (this.ps.ejecutando) return;
+    this.ps.origen   = 'manual';
+    this.ps.estado   = 'ejecutando';
+    this.ps.progreso = 0;
+    this.ps.fase     = 'Iniciando backup...';
+    this.cdr.detectChanges();
+
+    // Progreso simulado
+    const fases = [
+      { hasta: 12, msg: 'Conectando a la base de datos...' },
+      { hasta: 28, msg: 'Ejecutando pg_dump...' },
+      { hasta: 58, msg: `Generando backup ${this.tipoLabel(tipo).toLowerCase()}...` },
+      { hasta: 74, msg: 'Comprimiendo archivo ZIP...' },
+      { hasta: 88, msg: 'Copiando a destinos configurados...' },
+      { hasta: 95, msg: 'Registrando en historial...' },
+    ];
+    this.progresoTimer = setInterval(() => {
+      if (this.ps.progreso >= 95) { clearInterval(this.progresoTimer); return; }
+      this.ps.progreso = Math.min(95, this.ps.progreso + (Math.random() * 1.4 + 0.4));
+      const fase = fases.find(f => this.ps.progreso <= f.hasta);
+      if (fase) this.ps.fase = fase.msg;
+      this.cdr.detectChanges();
+    }, 700);
+    this.cdr.detectChanges();
+
     this.http.post<any>(`/api/backup/ejecutar/${tipo}`, {}).subscribe({
       next: res => {
-        this.ejecutandoTipo = null;
-        res.estado === 'EXITOSO'
-          ? this.toast.success(`Backup ${tipo} completado — ${res.tamanoFormateado}`)
-          : this.toast.error(`Backup ${tipo} falló: ${res.mensajeError}`);
-        this.cargarHistorial();
-        this.activeTab = 'historial';
+        if (res.estado === 'EXITOSO') {
+          this.ps.progreso = 100;
+          this.ps.estado   = 'ok';
+          this.ps.fase     = `Completado · ${res.tamanoFormateado} · ${res.duracionFormateada}`;
+          this.cdr.detectChanges();
+          this.toast.success(`Backup completado — ${res.tamanoFormateado}`);
+          this.cargarHistorial();
+          setTimeout(() => { this.ps.reset(); this.cdr.detectChanges(); }, 5000);
+        } else {
+          this.ps.progreso = 100;
+          this.ps.estado   = 'error';
+          this.ps.fase     = `Error: ${res.mensajeError ?? 'Backup fallido'}`;
+          this.cdr.detectChanges();
+          this.toast.error(`Backup falló: ${res.mensajeError}`);
+          setTimeout(() => { this.ps.reset(); this.cdr.detectChanges(); }, 6000);
+        }
       },
       error: err => {
-        this.ejecutandoTipo = null;
+        this.ps.progreso = 100;
+        this.ps.estado   = 'error';
+        this.ps.fase     = 'Error de conexión con el servidor';
+        this.cdr.detectChanges();
         this.toast.error(err?.error?.error ?? `Error al ejecutar ${tipo}`);
+        setTimeout(() => { this.ps.reset(); this.cdr.detectChanges(); }, 6000);
       }
     });
   }
 
   ejecutarManual(): void { this.ejecutarTipo('FULL'); }
-  estaEjecutando(tipo: string): boolean { return this.ejecutandoTipo === tipo; }
 
   // ═══════════════════════════════════════════════════════════════
   // HISTORIAL
   // ═══════════════════════════════════════════════════════════════
   cargarHistorial(): void {
     this.http.get<HistorialBackup[]>('/api/backup/historial').subscribe({
-      next: h => { this.historial = h; },
+      next: h => {
+        this.historial      = h;
+        this.historialCount = h.length;
+        this.cdr.detectChanges();
+      },
       error: () => {}
-    });this.cdr.detectChanges();
+    });
+  }
+
+  /** Polling inteligente — detecta backups automáticos del scheduler */
+  private sondearHistorial(): void {
+    // No interferir si hay un backup manual en curso
+    if (this.ps.estado === 'ejecutando') return;
+
+    this.http.get<HistorialBackup[]>('/api/backup/historial').subscribe({
+      next: h => {
+        const countAnterior = this.historialCount;
+        this.historial      = h;
+        this.historialCount = h.length;
+
+        // ¿Apareció un nuevo backup que no fue manual?
+        if (h.length > countAnterior && countAnterior > 0) {
+          const nuevo = h[0]; // el más reciente
+          if (nuevo.origen === 'AUTOMATICO') {
+            if (nuevo.estado === 'EXITOSO') {
+              this.ps.progreso = 100;
+              this.ps.estado   = 'ok';
+              this.ps.fase     = `Backup automático · ${nuevo.tamanoFormateado} · ${nuevo.duracionFormateada}`;
+              this.cdr.detectChanges();
+              setTimeout(() => { this.ps.reset(); this.cdr.detectChanges(); }, 5000);
+              this.toast.success(`Backup automático completado — ${nuevo.tamanoFormateado}`);
+            } else if (nuevo.estado === 'FALLIDO') {
+              this.ps.progreso = 100;
+              this.ps.estado   = 'error';
+              this.ps.fase     = `Backup automático falló: ${nuevo.mensajeError ?? 'error'}`;
+              this.cdr.detectChanges();
+              setTimeout(() => { this.ps.reset(); this.cdr.detectChanges(); }, 7000);
+              this.toast.error('Backup automático falló — revisa el historial');
+            }
+          }
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
   }
 
   get estadisticas() {
@@ -214,6 +304,7 @@ export class BackupComponent implements OnInit, OnDestroy {
         this.sincronizarDriveStep(cfg);
         if (cfg.redirectUri) this.driveForm.redirectUri = cfg.redirectUri;
         if (cfg.folderName)  this.driveForm.folderName  = cfg.folderName;
+        this.cdr.detectChanges();
       },
       error: () => {}
     });this.cdr.detectChanges();
