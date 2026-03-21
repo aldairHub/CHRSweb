@@ -23,9 +23,9 @@ public interface ReunionRepository extends JpaRepository<Reunion, Long> {
 
     @Query("""
     SELECT r FROM Reunion r
-    JOIN r.faseProceso fp
-    JOIN fp.proceso pe
-    JOIN pe.postulante p
+    JOIN FETCH r.faseProceso fp
+    JOIN FETCH fp.proceso pe
+    JOIN FETCH pe.postulante p
     WHERE p.usuario.idUsuario = :idUsuario
     AND r.estado <> 'cancelada'
     ORDER BY r.fecha ASC, r.hora ASC

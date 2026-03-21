@@ -1,19 +1,17 @@
-<!-- Spinner -->
+<!-- ───────── SPINNER ───────── -->
 <div *ngIf="cargando" class="estado-fullpage">
   <div class="spinner"></div>
-  <p>Cargando entrevista...</p>
+  <p>Cargando tu entrevista...</p>
 </div>
 
-<!-- Sin entrevista — con selector arriba si aplica -->
-<div *ngIf="!cargando && error" class="estado-fullpage">
+<!-- ───────── SIN ENTREVISTA ───────── -->
+<div *ngIf="!cargando && !entrevista" class="estado-fullpage">
+  <div class="sin-proceso-card">
 
-  <!-- Selector siempre visible también en estado vacío -->
-  <div class="sin-proceso-card" style="margin-bottom: 0; padding-bottom: 28px;">
-
-    <!-- Selector de convocatoria -->
+    <!-- Selector de convocatoria (arriba, si aplica) -->
     <div class="convocatoria-selector" *ngIf="mostrarSelector" style="margin: 0 auto 28px; text-align: left;">
       <label class="selector-label">
-        <i class="pi pi-building"></i> Convocatoria activa
+        <i class="pi pi-building"></i> Convocatoria
       </label>
       <div class="selector-wrap">
         <i class="pi pi-briefcase selector-icon"></i>
@@ -27,26 +25,81 @@
           </option>
         </select>
         <i class="pi pi-chevron-down selector-chevron" *ngIf="!selectorBloqueado"></i>
-        <i class="pi pi-lock selector-chevron" *ngIf="selectorBloqueado"></i>
+        <i class="pi pi-lock selector-chevron"         *ngIf="selectorBloqueado"></i>
       </div>
       <span class="selector-locked-hint" *ngIf="selectorBloqueado">
         <i class="pi pi-info-circle"></i> Solo tienes una convocatoria activa
       </span>
     </div>
 
-    <div class="sin-entrevista-icon">
-      <i class="pi pi-calendar"></i>
+    <!-- Ilustración SVG -->
+    <div class="sin-entrevista-ilustracion">
+      <svg width="88" height="88" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="44" cy="44" r="44" fill="#DCFCE7"/>
+        <rect x="18" y="24" width="52" height="44" rx="6" fill="white" stroke="#86EFAC" stroke-width="2"/>
+        <rect x="18" y="24" width="52" height="14" rx="6" fill="#16A34A"/>
+        <rect x="18" y="32" width="52" height="6" fill="#16A34A"/>
+        <rect x="28" y="19" width="4" height="10" rx="2" fill="#0D5E2F"/>
+        <rect x="56" y="19" width="4" height="10" rx="2" fill="#0D5E2F"/>
+        <rect x="24" y="44" width="8" height="6" rx="2" fill="#DCFCE7"/>
+        <rect x="36" y="44" width="8" height="6" rx="2" fill="#DCFCE7"/>
+        <rect x="48" y="44" width="8" height="6" rx="2" fill="#DCFCE7"/>
+        <rect x="60" y="44" width="8" height="6" rx="2" fill="#DCFCE7"/>
+        <rect x="24" y="54" width="8" height="6" rx="2" fill="#F0FDF4"/>
+        <rect x="36" y="54" width="8" height="6" rx="2" fill="#F0FDF4"/>
+        <rect x="48" y="54" width="8" height="6" rx="2" fill="#F0FDF4"/>
+        <circle cx="62" cy="62" r="12" fill="#1D4ED8" stroke="white" stroke-width="2"/>
+        <line x1="62" y1="57" x2="62" y2="62" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <line x1="62" y1="62" x2="66" y2="64" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      </svg>
     </div>
+
     <h3>Sin entrevistas programadas</h3>
-    <p>{{ error }}</p>
-    <div class="sin-entrevista-info">
-      <i class="pi pi-info-circle"></i>
-      Cuando el equipo evaluador programe tu entrevista, aparecerá aquí con todos los detalles.
+    <p>
+      Aún no tienes una entrevista asignada para esta convocatoria.<br>
+      El equipo evaluador se pondrá en contacto contigo cuando esté lista.
+    </p>
+
+    <!-- Pasos del proceso -->
+    <div class="proceso-pasos">
+      <div class="paso paso--completado">
+        <div class="paso-icono"><i class="pi pi-check"></i></div>
+        <div class="paso-texto">
+          <span class="paso-nombre">Postulación</span>
+          <span class="paso-sub">Documentos enviados</span>
+        </div>
+      </div>
+      <div class="paso-conector paso-conector--ok"></div>
+      <div class="paso paso--activo">
+        <div class="paso-icono paso-icono--espera"><i class="pi pi-clock"></i></div>
+        <div class="paso-texto">
+          <span class="paso-nombre">Revisión</span>
+          <span class="paso-sub">En proceso</span>
+        </div>
+      </div>
+      <div class="paso-conector"></div>
+      <div class="paso paso--pendiente">
+        <div class="paso-icono paso-icono--gris"><i class="pi pi-video"></i></div>
+        <div class="paso-texto">
+          <span class="paso-nombre">Entrevista</span>
+          <span class="paso-sub">Pendiente de asignación</span>
+        </div>
+      </div>
     </div>
+
+    <div class="sin-entrevista-info">
+      <i class="pi pi-bell"></i>
+      Recibirás una notificación por correo en cuanto se programe tu entrevista.
+    </div>
+
+    <button class="btn btn--outline-back" style="margin-top: 20px;" (click)="volver()">
+      <i class="pi pi-arrow-left"></i> Volver al inicio
+    </button>
+
   </div>
 </div>
 
-<!-- Contenido principal -->
+<!-- ───────── CONTENIDO PRINCIPAL ───────── -->
 <div class="main-container" *ngIf="!cargando && entrevista">
   <div class="content-wrapper">
 
@@ -56,7 +109,6 @@
         <p class="page-header__description">{{ entrevista.nombreFase }}</p>
       </div>
 
-      <!-- SELECTOR DE CONVOCATORIA -->
       <div class="convocatoria-selector" *ngIf="mostrarSelector">
         <label class="selector-label">
           <i class="pi pi-building"></i> Convocatoria activa
@@ -73,7 +125,7 @@
             </option>
           </select>
           <i class="pi pi-chevron-down selector-chevron" *ngIf="!selectorBloqueado"></i>
-          <i class="pi pi-lock selector-chevron" *ngIf="selectorBloqueado"></i>
+          <i class="pi pi-lock selector-chevron"         *ngIf="selectorBloqueado"></i>
         </div>
         <span class="selector-locked-hint" *ngIf="selectorBloqueado">
           <i class="pi pi-info-circle"></i> Solo tienes una convocatoria activa
@@ -81,7 +133,6 @@
       </div>
     </header>
 
-    <!-- ESTADO BANNER -->
     <div class="estado-banner" [class]="'estado-banner--' + colorEstado">
       <i class="pi"
          [class.pi-calendar]="entrevista.estado === 'programada'"
@@ -97,10 +148,8 @@
       </div>
     </div>
 
-    <!-- INFO GRID -->
     <div class="info-grid">
 
-      <!-- Card izquierda: detalles -->
       <div class="form-card info-card">
         <h3 class="card-title"><i class="pi pi-info-circle"></i> Detalles de la Entrevista</h3>
 
@@ -130,7 +179,6 @@
           <span class="info-valor">{{ entrevista.observaciones }}</span>
         </div>
 
-        <!-- Evaluadores -->
         <div class="evaluadores-section" *ngIf="entrevista.evaluadores.length">
           <h4 class="eval-titulo">Comisión Evaluadora</h4>
           <div class="evaluador-item" *ngFor="let e of entrevista.evaluadores">
@@ -139,7 +187,6 @@
           </div>
         </div>
 
-        <!-- Botón unirse (solo virtual) -->
         <div class="unirse-section" *ngIf="esVirtual">
           <button class="btn btn--videoconf"
                   (click)="abrirModalVideoconf()"
@@ -153,7 +200,6 @@
         </div>
       </div>
 
-      <!-- Card derecha: instrucciones -->
       <div class="form-card instrucciones-card">
         <h3 class="card-title"><i class="pi pi-list"></i> Instrucciones Importantes</h3>
         <ul class="instrucciones-list">
@@ -170,7 +216,7 @@
           <div class="criterio-badge">Actitud y Habilidades — 10 pts</div>
           <div class="criterio-badge">Clase Demostrativa — 10 pts</div>
         </div>
-        <div class="observaciones-box" *ngIf="entrevista.observaciones">
+        <div class="observaciones-box" *ngIf="entrevista.observaciones && !esVirtual">
           <h4><i class="pi pi-comment"></i> Observaciones</h4>
           <p>{{ entrevista.observaciones }}</p>
         </div>

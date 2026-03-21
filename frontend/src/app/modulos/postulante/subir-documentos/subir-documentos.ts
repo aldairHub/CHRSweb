@@ -88,6 +88,7 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
 
     this.documentoSvc.obtenerInfoPorConvocatoria(idUsuario, idPostulacion).subscribe({
       next: info => {
+        if (!info) { this.mostrarToast('error', 'Error', 'No se pudo cargar la convocatoria seleccionada.'); this.cargandoPagina = false; this.cdr.detectChanges(); return; }
         this.postulante    = info;
         this.idPostulacion = info.idPostulacion;
         this.cargarDocumentos(info.idPostulacion);
@@ -105,6 +106,7 @@ export class SubirDocumentosComponent implements OnInit, OnDestroy {
     if (this.idPostulacionSeleccion) {
       this.documentoSvc.obtenerInfoPorConvocatoria(idUsuario, this.idPostulacionSeleccion).subscribe({
         next: info => {
+          if (!info) { this.fallbackCargarInfo(idUsuario); return; }
           this.postulante    = info;
           this.idPostulacion = info.idPostulacion;
           this.cargarDocumentos(info.idPostulacion);

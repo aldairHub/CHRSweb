@@ -41,33 +41,55 @@ export class EntrevistaPostulanteComponent implements OnInit {
 
     this.documentoSvc.listarMisPostulaciones(idUsuario).subscribe({
       next: lista => {
-        this.misPostulaciones      = lista;
-        this.idPostulacionSeleccion = lista.length > 0 ? lista[0].idPostulacion : null;
+        this.misPostulaciones       = lista ?? [];
+        this.idPostulacionSeleccion = this.misPostulaciones.length > 0
+          ? this.misPostulaciones[0].idPostulacion
+          : null;
         this.cargarEntrevista(idUsuario);
       },
-      error: () => this.cargarEntrevista(idUsuario)
-    });
-  }
-
-  private cargarEntrevista(idUsuario: number): void {
-    this.cargando = true;
-    this.entrevistaSvc.obtenerMiEntrevista(idUsuario, this.idPostulacionSeleccion ?? undefined).subscribe({
-      next: data => {
-        this.entrevista = data;
-        this.error = data ? null : 'No tienes ninguna entrevista programada por el momento.';
-        setTimeout(() => this.cargando = false, 0);
-      },
+      // Si falla la carga de postulaciones, igual intentamos cargar la entrevista
       error: () => {
-        this.error = 'No tienes ninguna entrevista programada por el momento.';
-        setTimeout(() => this.cargando = false, 0);
+        this.misPostulaciones       = [];
+        this.idPostulacionSeleccion = null;
+        this.cargarEntrevista(idUsuario);
       }
     });
   }
 
+  private cargarEntrevista(idUsuario: number): void {
+    this.cargando  = true;
+    this.entrevista = null;
+    this.error     = null;
+
+    this.entrevistaSvc
+      .obtenerMiEntrevista(idUsuario, this.idPostulacionSeleccion ?? undefined)
+      .subscribe({
+        next: (data: EntrevistaInfo | null) => {
+          // El backend puede devolver 204 (sin body) → Angular pasa null como data
+          if (data) {
+            this.entrevista = data;
+            this.error      = null;
+          } else {
+            this.entrevista = null;
+            this.error      = 'No tienes ninguna entrevista programada por el momento.';
+          }
+          this.cargando = false;
+        },
+        error: () => {
+          this.entrevista = null;
+          this.error      = 'No tienes ninguna entrevista programada por el momento.';
+          this.cargando   = false;
+        }
+      });
+  }
+
   onConvocatoriaChange(idPostulacion: number): void {
     if (this.selectorBloqueado) return;
-    this.idPostulacionSeleccion = idPostulacion;
+    const id = Number(idPostulacion);
+    if (!id) return;
+    this.idPostulacionSeleccion = id;
     const idUsuario = Number(localStorage.getItem('idUsuario'));
+    if (!idUsuario) return;
     this.cargarEntrevista(idUsuario);
   }
 

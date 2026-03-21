@@ -241,7 +241,16 @@ public class DocumentoRepositoryCustomImpl {
         Map<String, Double> puntajesMap = new HashMap<>();
         for (Map<String, Object> p : puntajes) {
             String itemId = (String) p.get("item_id");
-            Double valor = ((Number) p.get("valor")).doubleValue();
+            // "valor" es VARCHAR en la BD → llega como String, no como Number
+            Object rawValor = p.get("valor");
+            if (rawValor == null) continue;
+            double valor;
+            if (rawValor instanceof Number) {
+                valor = ((Number) rawValor).doubleValue();
+            } else {
+                try { valor = Double.parseDouble(rawValor.toString().trim()); }
+                catch (NumberFormatException e) { valor = 0.0; }
+            }
             puntajesMap.put(itemId, valor);
         }
 

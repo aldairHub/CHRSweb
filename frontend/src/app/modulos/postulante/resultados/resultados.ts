@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
@@ -57,7 +57,7 @@ export class ResultadosComponent implements OnInit, OnDestroy {
   private pollingSubscription: Subscription | null = null;
   private readonly POLLING_MS = 15_000;
 
-  constructor(private router: Router, private documentoSvc: DocumentoService) {}
+  constructor(private router: Router, private documentoSvc: DocumentoService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     const idUsuario = Number(localStorage.getItem('idUsuario'));
@@ -78,11 +78,11 @@ export class ResultadosComponent implements OnInit, OnDestroy {
   private iniciarCarga(idUsuario: number): void {
     this.documentoSvc.obtenerResultadosPostulante(idUsuario).subscribe({
       next: data => {
-        if (!data || !data.puntajes) { this.sinDatos = true; this.cargando = false; return; }
-        this.mapearDatos(data);
+        this.mapearDatos(data && data.puntajes ? data : { puntajes: {} });
         this.cargando = false;
+        this.cdr.detectChanges();
       },
-      error: () => { this.sinDatos = true; this.cargando = false; }
+      error: () => { this.mapearDatos({ puntajes: {} }); this.cargando = false; this.cdr.detectChanges(); }
     });
     this.iniciarPolling(idUsuario);
   }
@@ -107,8 +107,8 @@ export class ResultadosComponent implements OnInit, OnDestroy {
     });
   }
 
-  private procesarProgreso(data: ProgresoPostulante): void {
-    if (data.sinProceso) {
+  private procesarProgreso(data: ProgresoPostulante | null): void {
+    if (!data || data.sinProceso) {
       this.errorProgreso = 'El proceso de evaluación aún no ha iniciado para esta convocatoria.';
       this.cargandoProgreso = false;
       return;
@@ -116,6 +116,7 @@ export class ResultadosComponent implements OnInit, OnDestroy {
     this.progreso      = data;
     this.fasesProgreso = data.fases ?? [];
     this.errorProgreso = null;
+    this.cdr.detectChanges();
     this.ultimaActualizacion = new Date().toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   }
 
@@ -131,11 +132,11 @@ export class ResultadosComponent implements OnInit, OnDestroy {
     // Recargar puntajes detallados (méritos, entrevista, etc.)
     this.documentoSvc.obtenerResultadosPostulante(idUsuario).subscribe({
       next: data => {
-        if (!data || !data.puntajes) { this.sinDatos = true; this.cargando = false; return; }
-        this.mapearDatos(data);
+        this.mapearDatos(data && data.puntajes ? data : { puntajes: {} });
         this.cargando = false;
+        this.cdr.detectChanges();
       },
-      error: () => { this.sinDatos = true; this.cargando = false; }
+      error: () => { this.mapearDatos({ puntajes: {} }); this.cargando = false; this.cdr.detectChanges(); }
     });
     this.iniciarPolling(idUsuario);
   }

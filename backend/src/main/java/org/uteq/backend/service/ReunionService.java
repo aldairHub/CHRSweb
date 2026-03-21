@@ -208,15 +208,27 @@ public class ReunionService {
         if (reuniones.isEmpty()) return null;
 
         if (idPostulacion != null) {
+            /*
+             * Filtro robusto: enlaza postulacion → proceso_evaluacion directamente
+             * via id_solicitud + id_postulante, sin navegar entidades lazy.
+             * Esto evita LazyInitializationException y es más eficiente.
+             */
+            final Long idPostulacionFinal = idPostulacion;
             reuniones = reuniones.stream()
                     .filter(r -> {
-                        Long idSolicitud = r.getFaseProceso().getProceso()
-                                .getSolicitudDocente().getIdSolicitud();
-                        // Busca la postulacion que coincida con esa solicitud
-                        return jdbc.queryForList(
-                                "SELECT 1 FROM postulacion WHERE id_postulacion = ? AND id_solicitud = ?",
-                                idPostulacion, idSolicitud
-                        ).size() > 0;
+                        Long idProceso = r.getFaseProceso().getProceso().getIdProceso();
+                        return !jdbc.queryForList(
+                                """
+                                SELECT 1
+                                FROM postulacion pc
+                                JOIN proceso_evaluacion pe
+                                     ON pe.id_solicitud  = pc.id_solicitud
+                                    AND pe.id_postulante = pc.id_postulante
+                                WHERE pc.id_postulacion = ?
+                                  AND pe.id_proceso     = ?
+                                """,
+                                idPostulacionFinal, idProceso
+                        ).isEmpty();
                     })
                     .collect(java.util.stream.Collectors.toList());
         }

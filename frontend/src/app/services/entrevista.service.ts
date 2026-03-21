@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface EntrevistaInfo {
@@ -23,12 +24,15 @@ export class EntrevistaService {
   constructor(private http: HttpClient) {}
 
   /**
-   * MODIFICADO: acepta idPostulacion opcional para filtrar
-   * cuando el postulante está en varias convocatorias.
+   * Retorna la entrevista del postulante o null si no tiene ninguna.
+   * Nunca lanza error — convierte cualquier fallo HTTP en null
+   * para que el componente muestre el estado vacío sin redirigir.
    */
-  obtenerMiEntrevista(idUsuario: number, idPostulacion?: number): Observable<EntrevistaInfo> {
+  obtenerMiEntrevista(idUsuario: number, idPostulacion?: number): Observable<EntrevistaInfo | null> {
     const params: any = { idUsuario: idUsuario.toString() };
     if (idPostulacion) params['idPostulacion'] = idPostulacion.toString();
-    return this.http.get<EntrevistaInfo>(`${this.API}/mi-entrevista`, { params });
+    return this.http
+      .get<EntrevistaInfo | null>(`${this.API}/mi-entrevista`, { params })
+      .pipe(catchError(() => of(null)));
   }
 }

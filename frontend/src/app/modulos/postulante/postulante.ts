@@ -8,10 +8,10 @@ import { environment } from '../../../environments/environment';
 interface DashCard { titulo: string; descripcion: string; ruta: string; svgPaths: Array<{ d: string }>; }
 
 const SVG_MAP: Record<string, Array<{ d: string }>> = {
-  'convocatorias':    [{ d: 'M6.667 6.667h18.666a2.667 2.667 0 012.667 2.666v5.334H4V9.333a2.667 2.667 0 012.667-2.666z' }, { d: 'M4 14.667h24V28H4z' }, { d: 'M10.667 2.667v5.333' }, { d: 'M21.333 2.667v5.333' }, { d: 'M9.333 21.333h5.334' }, { d: 'M9.333 25.333h8' }],
-  'subir-documentos': [{ d: 'M26.667 20v5.333A2.667 2.667 0 0124 28H8a2.667 2.667 0 01-2.667-2.667V20' }, { d: 'M21.333 10.667L16 5.333l-5.333 5.334' }, { d: 'M16 5.333v16' }],
-  'resultados':       [{ d: 'M4 26.667h24' }, { d: 'M6.667 26.667V20A1.333 1.333 0 018 18.667h2.667A1.333 1.333 0 0112 20v6.667' }, { d: 'M12 26.667V13.333A1.333 1.333 0 0113.333 12H16a1.333 1.333 0 011.333 1.333v13.334' }, { d: 'M17.333 26.667V8A1.333 1.333 0 0118.667 6.667h2.666A1.333 1.333 0 0122.667 8v18.667' }],
-  'entrevista':       [{ d: 'M16 4a5.333 5.333 0 100 10.667A5.333 5.333 0 0016 4z' }, { d: 'M26.667 28c0-5.891-4.776-10.667-10.667-10.667S5.333 22.109 5.333 28' }, { d: 'M21.333 12l2.667 2.667L29.333 8' }],
+  'subir-documentos': [{ d: 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12' }],
+  'entrevista':       [{ d: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' }],
+  'resultados':       [{ d: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' }],
+  'convocatorias':    [{ d: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z' }],
 };
 const SVG_FALLBACK: Array<{ d: string }> = [{ d: 'M16 2.6667C8.6364 2.6667 2.6667 8.6364 2.6667 16C2.6667 23.3636 8.6364 29.3333 16 29.3333C23.3636 29.3333 29.3333 23.3636 29.3333 16C29.3333 8.6364 23.3636 2.6667 16 2.6667Z' }, { d: 'M16 10.6667V16' }, { d: 'M16 21.3333H16.0133' }];
 const QUICK_KEY = 'dashboard_postulante_quick';
@@ -33,33 +33,40 @@ export class PostulanteComponent implements OnInit {
     try { this.quickAccesos = JSON.parse(localStorage.getItem(QUICK_KEY) || '[]'); } catch { this.quickAccesos = []; }
   }
 
+  private rutaDesdeNombre(nombre: string): string {
+    const n = (nombre || '').toLowerCase().trim();
+    if (n.includes('entrevista'))                          return 'entrevista';
+    if (n.includes('document') || n.includes('subir'))    return 'subir-documentos';
+    if (n.includes('resultado'))                           return 'resultados';
+    if (n.includes('convocatoria'))                        return 'convocatorias';
+    if (n.includes('postulacion') || n.includes('nueva')) return 'nueva-postulacion';
+    return n.replace(/\s+/g, '-');
+  }
+
   private construirCards(): void {
     const m = this.authService.getModulo();
     if (!m?.opciones?.length) {
       this.cards = [
-        { titulo: 'Convocatorias', descripcion: 'Ver plazas abiertas y postular', ruta: 'convocatorias', svgPaths: SVG_MAP['convocatorias'] },
+        { titulo: 'Convocatorias',    descripcion: 'Ver plazas abiertas y postular', ruta: 'convocatorias',    svgPaths: SVG_MAP['convocatorias'] },
         { titulo: 'Subir documentos', descripcion: 'Sube tus documentos requeridos', ruta: 'subir-documentos', svgPaths: SVG_MAP['subir-documentos'] },
-        { titulo: 'Entrevista', descripcion: 'Ver tus entrevistas', ruta: 'entrevista', svgPaths: SVG_MAP['entrevista'] },
-        { titulo: 'Resultados', descripcion: 'Ver resultados del proceso', ruta: 'resultados', svgPaths: SVG_MAP['resultados'] },
+        { titulo: 'Entrevista',       descripcion: 'Ver tus entrevistas',             ruta: 'entrevista',       svgPaths: SVG_MAP['entrevista'] },
+        { titulo: 'Resultados',       descripcion: 'Ver resultados del proceso',      ruta: 'resultados',       svgPaths: SVG_MAP['resultados'] },
       ];
       return;
     }
-    // Asegura que convocatorias siempre esté presente aunque no venga en opciones del backend
-    const tieneConvocatorias = m.opciones.some((op: any) => op.ruta?.includes('convocatoria'));
+    const cardsBackend: DashCard[] = m.opciones.map((op: any) => {
+      const ruta = this.rutaDesdeNombre(op.nombre);
+      return { titulo: op.nombre, descripcion: op.descripcion || '', ruta, svgPaths: SVG_MAP[ruta] ?? SVG_FALLBACK };
+    });
+    const tieneConvocatorias = cardsBackend.some(c => c.ruta === 'convocatorias');
     if (!tieneConvocatorias) {
       this.cards = [
         { titulo: 'Convocatorias', descripcion: 'Ver plazas abiertas y postular', ruta: 'convocatorias', svgPaths: SVG_MAP['convocatorias'] },
-        ...m.opciones.map((op: any) => {
-          const k = (op.ruta || '').replace(/^\//, '').split('/').pop() ?? '';
-          return { titulo: op.nombre, descripcion: op.descripcion || '', ruta: k, svgPaths: SVG_MAP[k] ?? SVG_FALLBACK };
-        })
+        ...cardsBackend
       ];
-      return;
+    } else {
+      this.cards = cardsBackend;
     }
-    this.cards = m.opciones.map((op: any) => {
-      const k = (op.ruta || '').replace(/^\//, '').split('/').pop() ?? '';
-      return { titulo: op.nombre, descripcion: op.descripcion || '', ruta: k, svgPaths: SVG_MAP[k] ?? SVG_FALLBACK };
-    });
   }
 
   private cargarStats(): void {
@@ -97,6 +104,7 @@ export class PostulanteComponent implements OnInit {
   toggleQuickItem(r: string) { this.quickAccesos = this.isQuickSelected(r) ? this.quickAccesos.filter(x => x !== r) : this.quickAccesos.length < 4 ? [...this.quickAccesos, r] : this.quickAccesos; localStorage.setItem(QUICK_KEY, JSON.stringify(this.quickAccesos)); }
   getQuickCards(): DashCard[] { return this.quickAccesos.map(r => this.cards.find(c => c.ruta === r)).filter((c): c is DashCard => !!c); }
   toggleConfigQuick() { this.editandoQuick = !this.editandoQuick; }
+
   navegarA(ruta: string) {
     if (ruta === 'convocatorias') {
       this.router.navigate(['/convocatorias']);

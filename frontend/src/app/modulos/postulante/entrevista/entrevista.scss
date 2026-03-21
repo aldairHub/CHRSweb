@@ -807,3 +807,85 @@ $orange: #d97706;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Ilustración sin entrevista ────────────────────────────
+.sin-entrevista-ilustracion {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+
+  svg { filter: drop-shadow(0 4px 12px rgba(22,163,74,0.15)); }
+}
+
+// ── Pasos del proceso (estado vacío) ─────────────────────
+.proceso-pasos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin: 24px 0;
+  flex-wrap: wrap;
+
+  @media (max-width: 480px) { flex-direction: column; gap: 4px; }
+}
+
+.paso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 90px;
+}
+
+.paso-icono {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem;
+  background: $green;
+  color: $white;
+
+  &--espera {
+    background: #fef3c7;
+    color: $orange;
+    border: 2px solid #fde68a;
+  }
+
+  &--gris {
+    background: #f3f4f6;
+    color: #9ca3af;
+    border: 2px dashed #d1d5db;
+  }
+}
+
+.paso-texto {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center;
+}
+
+.paso-nombre {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: $text-dark;
+}
+
+.paso-sub {
+  font-size: 0.7rem;
+  color: $text-gray;
+}
+
+.paso-conector {
+  flex: 1;
+  height: 2px;
+  background: #e5e7eb;
+  margin: 0 6px;
+  min-width: 24px;
+  margin-bottom: 20px;
+
+  &--ok { background: $green; }
+
+  @media (max-width: 480px) {
+    width: 2px; height: 20px; min-width: unset;
+    flex: unset; margin: 0 0 0 17px;
+  }
+}
