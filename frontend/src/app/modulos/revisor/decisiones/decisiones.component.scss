@@ -233,3 +233,263 @@ $white:    #ffffff;
   .filtro-tab { color: #6b7280 !important; &.active { background: $dark !important; color: white !important; } }
   .page-header h2 { color: #f0f0f0 !important; }
 }
+/* ════════════════════════════════════════════════════════════════════
+   AGREGAR al final de decisiones.component.scss
+   ════════════════════════════════════════════════════════════════════ */
+
+/* Detalle expandido */
+.decision-detalle {
+  border-top: 1px solid #B9F8CF;
+  padding: 16px 20px;
+  background: #fafffe;
+}
+
+.detalle-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #536b50;
+  font-size: 13px;
+  padding: 8px 0;
+}
+
+.detalle-seccion {
+  margin-bottom: 20px;
+
+  &:last-child { margin-bottom: 0; }
+}
+
+.detalle-seccion__titulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #016630;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #B9F8CF;
+}
+
+.acta-texto {
+  font-size: 13px;
+  color: #333;
+  line-height: 1.6;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px 14px;
+  white-space: pre-wrap;
+}
+
+/* Candidatos */
+.candidato-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+
+  &.ganador {
+    border-color: #00A63E;
+    background: #f0faf4;
+  }
+}
+
+.candidato-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+
+  &:hover { background: rgba(0,166,62,0.04); }
+}
+
+.candidato-nombre-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ganador-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #00A63E;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  width: fit-content;
+}
+
+.candidato-nombre {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a2e1a;
+}
+
+.candidato-puntajes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.puntaje-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 56px;
+}
+
+.puntaje-label {
+  font-size: 10px;
+  color: #536b50;
+  font-weight: 500;
+}
+
+.puntaje-val {
+  font-size: 14px;
+  font-weight: 700;
+  color: #016630;
+
+  &--total {
+    font-size: 16px;
+    color: #00A63E;
+  }
+}
+
+.puntaje-sep {
+  font-size: 14px;
+  color: #ccc;
+  font-weight: 300;
+}
+
+.puntaje-item--total {
+  min-width: 64px;
+}
+
+.chevron-sm {
+  flex-shrink: 0;
+  transition: transform 0.2s;
+  color: #536b50;
+
+  &.rotado { transform: rotate(180deg); }
+}
+
+/* Detalle candidato */
+.candidato-detalle {
+  border-top: 1px solid #e5e7eb;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #fff;
+}
+
+.sub-seccion__titulo {
+  font-size: 11px;
+  font-weight: 700;
+  color: #016630;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 8px;
+}
+
+/* Barras de sección */
+.seccion-barra {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.seccion-barra__nombre {
+  width: 180px;
+  flex-shrink: 0;
+  color: #333;
+  font-size: 12px;
+}
+
+.seccion-barra__progreso {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.barra-fondo {
+  flex: 1;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.barra-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00A63E, #016630);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.barra-val {
+  font-size: 11px;
+  font-weight: 600;
+  color: #016630;
+  min-width: 70px;
+  text-align: right;
+}
+
+/* Fases */
+.fase-item {
+  background: #f9f9f9;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+}
+
+.fase-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.fase-nombre {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a2e1a;
+}
+
+.fase-puntaje {
+  font-size: 12px;
+  font-weight: 700;
+  color: #888;
+
+  &.fase-ok { color: #00A63E; }
+}
+
+.fase-obs {
+  font-size: 11px;
+  color: #536b50;
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+.obs-texto {
+  font-size: 12px;
+  color: #444;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  padding: 10px 12px;
+  line-height: 1.5;
+}

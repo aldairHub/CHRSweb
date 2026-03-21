@@ -841,3 +841,136 @@ thead tr th {
   strong { color: #016630; display: block; margin-bottom: 0.2rem; }
   p { color: #166534; margin: 0; font-size: 0.875rem; }
 }
+/* ════════════════════════════════════════════════════════════════════
+   AGREGAR al final de matriz-meritos.component.scss
+   ════════════════════════════════════════════════════════════════════ */
+
+.comite-acciones-post {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid #B9F8CF;
+  padding-top: 16px;
+}
+
+.accion-paso {
+  background: #f9fffe;
+  border: 1px solid #B9F8CF;
+  border-radius: 10px;
+  padding: 14px 16px;
+  transition: opacity 0.2s;
+
+  &.completado {
+    background: #f0faf4;
+    border-color: #00A63E;
+  }
+
+  &.deshabilitado {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  &--opcional {
+    border-style: dashed;
+    background: #fafafa;
+  }
+}
+
+.accion-paso__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.accion-numero {
+  min-width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #00A63E;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+
+  &--opc {
+    background: #888;
+    font-size: 9px;
+    border-radius: 6px;
+    width: 28px;
+  }
+
+  &.inactivo {
+    background: #ccc;
+  }
+}
+
+.accion-titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: #016630;
+}
+
+.accion-desc {
+  font-size: 11px;
+  color: #536b50;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.accion-estado {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #00A63E;
+  white-space: nowrap;
+}
+
+.accion-hint {
+  display: block;
+  font-size: 11px;
+  color: #f59e0b;
+  margin-top: 6px;
+}
+
+.btn-accion {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  &--notif {
+    background: #016630;
+    color: #fff;
+    &:hover:not(:disabled) { background: #00A63E; }
+  }
+
+  &--pdf {
+    background: #fff;
+    color: #016630;
+    border: 1px solid #B9F8CF;
+    &:hover:not(:disabled) { background: #EEF9EC; }
+  }
+
+  &--informe {
+    background: #00A63E;
+    color: #fff;
+    &:hover:not(:disabled) { background: #016630; }
+  }
+}

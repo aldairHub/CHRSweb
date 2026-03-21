@@ -1,4 +1,4 @@
-<!-- decisiones.component.html — Módulo Revisor -->
+<!-- decisiones.component.html — Módulo Revisor (ACTUALIZADO) -->
 
 <div class="main-container">
   <div class="content-wrapper">
@@ -53,17 +53,14 @@
                 d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
         </svg>
         <h3>Sin decisiones {{ estadoFiltro === 'pendiente' ? 'pendientes' : 'revisadas' }}</h3>
-        <p *ngIf="estadoFiltro === 'pendiente'">
-          No hay decisiones del comité pendientes de revisión.
-        </p>
-        <p *ngIf="estadoFiltro === 'revisado'">
-          No hay decisiones marcadas como revisadas aún.
-        </p>
+        <p *ngIf="estadoFiltro === 'pendiente'">No hay decisiones del comité pendientes de revisión.</p>
+        <p *ngIf="estadoFiltro === 'revisado'">No hay decisiones marcadas como revisadas aún.</p>
       </div>
 
       <div class="decision-card" *ngFor="let d of decisiones">
-        <div class="decision-header" (click)="toggleExpandir(d)">
 
+        <!-- Header de la tarjeta -->
+        <div class="decision-header" (click)="toggleExpandir(d)">
           <div class="decision-estado-dot" [class.pendiente]="d.estado === 'pendiente'"></div>
 
           <div class="decision-info">
@@ -104,13 +101,136 @@
           </div>
         </div>
 
-        <!-- Acta expandida -->
-        <div class="decision-acta" *ngIf="d.expandida">
-          <div class="acta-label">Acta del Comité de Selección</div>
-          <div class="acta-texto">{{ d.acta_comite }}</div>
-        </div>
-      </div>
+        <!-- Detalle expandido -->
+        <div class="decision-detalle" *ngIf="d.expandida">
 
+          <!-- Loading detalle -->
+          <div class="detalle-loading" *ngIf="d.cargandoDetalle">
+            <svg class="spinner-icon spinner-sm" fill="none" stroke="currentColor"
+                 viewBox="0 0 24 24" width="20" height="20">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            <span>Cargando detalle...</span>
+          </div>
+
+          <ng-container *ngIf="!d.cargandoDetalle && d.detalle">
+
+            <!-- Acta del comité -->
+            <div class="detalle-seccion">
+              <div class="detalle-seccion__titulo">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Acta del Comité de Selección
+              </div>
+              <div class="acta-texto">{{ d.acta_comite }}</div>
+            </div>
+
+            <!-- Candidatos -->
+            <div class="detalle-seccion">
+              <div class="detalle-seccion__titulo">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Evaluación por candidato
+              </div>
+
+              <div class="candidato-item"
+                   *ngFor="let cand of d.detalle.candidatos"
+                   [class.ganador]="cand.decision_comite === 'ganador'">
+
+                <!-- Resumen candidato -->
+                <div class="candidato-header" (click)="toggleCandidato(cand)">
+                  <div class="candidato-nombre-wrap">
+                    <span class="ganador-tag" *ngIf="cand.decision_comite === 'ganador'">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="11" height="11">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                      </svg>
+                      Seleccionado
+                    </span>
+                    <span class="candidato-nombre">{{ cand.nombre }}</span>
+                  </div>
+
+                  <!-- Puntajes resumen -->
+                  <div class="candidato-puntajes">
+                    <div class="puntaje-item">
+                      <span class="puntaje-label">Méritos</span>
+                      <span class="puntaje-val">{{ cand.puntaje_meritos | number:'1.1-2' }}</span>
+                    </div>
+                    <div class="puntaje-sep">+</div>
+                    <div class="puntaje-item">
+                      <span class="puntaje-label">Entrevista</span>
+                      <span class="puntaje-val">{{ cand.puntaje_entrevista | number:'1.1-2' }}</span>
+                    </div>
+                    <div class="puntaje-sep">=</div>
+                    <div class="puntaje-item puntaje-item--total">
+                      <span class="puntaje-label">Total</span>
+                      <span class="puntaje-val puntaje-val--total">{{ cand.puntaje_total | number:'1.1-2' }}</span>
+                    </div>
+                  </div>
+
+                  <svg class="chevron chevron-sm" [class.rotado]="cand.expandido"
+                       fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </div>
+
+                <!-- Detalle expandido candidato -->
+                <div class="candidato-detalle" *ngIf="cand.expandido">
+
+                  <!-- Detalle méritos por sección -->
+                  <div class="sub-seccion" *ngIf="cand.detalle_secciones?.length">
+                    <div class="sub-seccion__titulo">Detalle de Méritos por Sección</div>
+                    <div class="seccion-barra"
+                         *ngFor="let sec of cand.detalle_secciones">
+                      <div class="seccion-barra__nombre">{{ sec.seccion }}</div>
+                      <div class="seccion-barra__progreso">
+                        <div class="barra-fondo">
+                          <div class="barra-fill"
+                               [style.width.%]="getBarWidth(sec.subtotal, sec.puntaje_maximo)">
+                          </div>
+                        </div>
+                        <span class="barra-val">
+                          {{ sec.subtotal | number:'1.1-2' }} / {{ sec.puntaje_maximo }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Fases de entrevista -->
+                  <div class="sub-seccion" *ngIf="cand.fases_entrevista?.length">
+                    <div class="sub-seccion__titulo">Fases de Entrevista</div>
+                    <div class="fase-item" *ngFor="let fase of cand.fases_entrevista">
+                      <div class="fase-header">
+                        <span class="fase-nombre">{{ fase.nombre_fase }}</span>
+                        <span class="fase-puntaje"
+                              [class.fase-ok]="fase.puntaje_obtenido > 0">
+                          {{ fase.puntaje_obtenido | number:'1.1-2' }} pts
+                        </span>
+                      </div>
+                      <div class="fase-obs" *ngIf="fase.observaciones">
+                        {{ fase.observaciones }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Justificación (si fue habilitado por override) -->
+                  <div class="sub-seccion" *ngIf="cand.justificacion_decision">
+                    <div class="sub-seccion__titulo">Observaciones de la Decisión</div>
+                    <div class="obs-texto">{{ cand.justificacion_decision }}</div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+          </ng-container>
+        </div>
+
+      </div>
     </ng-container>
   </div>
 </div>

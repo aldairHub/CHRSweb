@@ -116,6 +116,12 @@ export class MatrizMeritosComponent implements OnInit {
   justificacionCambioGanador = '';                 // obligatorio si se cambia el ganador
   confirmandoComite = false;
   esSolicitanteComite = false;                     // solo el solicitante confirma
+  notificando = false;
+  notificado  = false;
+  descargandoActa    = false;
+  descargandoInforme = false;
+
+  private readonly API_REPORTE = 'http://localhost:8080/api/comite-final';
 
   convocatoriaInfo: ConvocatoriaInfo | null = null;
   candidatos: Candidato[] = [];
@@ -462,4 +468,78 @@ export class MatrizMeritosComponent implements OnInit {
       ...(this.seccionEntrevista ? [this.seccionEntrevista] : [])
     ];
   }
+  notificarDecision(): void {
+    if (this.notificando || this.notificado) return;
+    this.notificando = true;
+
+    this.http.post(`${this.API_REPORTE}/solicitud/${this.idConvocatoria}/notificar`, {})
+      .subscribe({
+        next: () => {
+          this.notificando = false;
+          this.notificado  = true;
+          this.toast.success('Notificaciones enviadas',
+            'Se notificó al revisor y a los postulantes. Los correos se enviarán en breve.');
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.toast.error('Error', err?.error?.mensaje || 'No se pudieron enviar las notificaciones.');
+          this.notificando = false;
+        }
+      });
+  }
+
+  descargarActa(): void {
+    if (this.descargandoActa) return;
+    this.descargandoActa = true;
+
+    this.http.get(`${this.API_REPORTE}/solicitud/${this.idConvocatoria}/acta-pdf`,
+      { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a   = document.createElement('a');
+        a.href     = url;
+        a.download = `acta-meritos-${this.idConvocatoria}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        this.descargandoActa = false;
+      },
+      error: () => {
+        this.toast.error('Error', 'No se pudo generar el Acta PDF.');
+        this.descargandoActa = false;
+      }
+    });
+  }
+
+  descargarInformeFinal(): void {
+    if (this.descargandoInforme) return;
+    this.descargandoInforme = true;
+    this.cdr.detectChanges();
+
+    this.http.get(`${this.API_REPORTE}/solicitud/${this.idConvocatoria}/informe-pdf`,
+      { responseType: 'blob', observe: 'response' }).subscribe({
+      next: (response) => {
+        try {
+          const blob = new Blob([response.body!], { type: 'application/pdf' });
+          const url  = window.URL.createObjectURL(blob);
+          const a    = document.createElement('a');
+          a.href     = url;
+          a.download = `informe-seleccion-${this.idConvocatoria}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          this.toast.success('Informe generado', 'El informe fue descargado y enviado a la autoridad académica.');
+        } finally {
+          this.descargandoInforme = false;
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => {
+        this.toast.error('Error', 'No se pudo generar el Informe Final PDF.');
+        this.descargandoInforme = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
 }

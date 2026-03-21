@@ -493,6 +493,80 @@
             </svg>
             Decisión enviada al Vicerrectorado
           </div>
+
+          <!-- ── ACCIONES POST-CONFIRMACIÓN ── -->
+          <div class="comite-acciones-post">
+
+            <!-- Paso 1: Notificar (obligatorio) -->
+            <div class="accion-paso" [class.completado]="notificado">
+              <div class="accion-paso__header">
+                <span class="accion-numero">2</span>
+                <div>
+                  <div class="accion-titulo">Notificar a revisor y postulantes</div>
+                  <div class="accion-desc">Envía notificación en app y correo electrónico a todos los involucrados.</div>
+                </div>
+                <span class="accion-estado" *ngIf="notificado">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  Enviado
+                </span>
+              </div>
+              <button class="btn btn-accion btn-accion--notif"
+                      (click)="notificarDecision()"
+                      [disabled]="notificando || notificado">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                </svg>
+                {{ notificando ? 'Enviando...' : notificado ? 'Notificaciones enviadas' : 'Enviar notificaciones' }}
+              </button>
+            </div>
+
+            <!-- Paso 2: Descargar Acta (opcional) -->
+            <div class="accion-paso accion-paso--opcional">
+              <div class="accion-paso__header">
+                <span class="accion-numero accion-numero--opc">OPC</span>
+                <div>
+                  <div class="accion-titulo">Acta de Calificación de Méritos</div>
+                  <div class="accion-desc">Documento formal del proceso de calificación. Descarga opcional.</div>
+                </div>
+              </div>
+              <button class="btn btn-accion btn-accion--pdf"
+                      (click)="descargarActa()"
+                      [disabled]="descargandoActa">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                {{ descargandoActa ? 'Generando...' : 'Descargar Acta PDF' }}
+              </button>
+            </div>
+
+            <!-- Paso 3: Informe Final (obligatorio para cerrar) -->
+            <div class="accion-paso" [class.deshabilitado]="!notificado">
+              <div class="accion-paso__header">
+                <span class="accion-numero" [class.inactivo]="!notificado">3</span>
+                <div>
+                  <div class="accion-titulo">Informe Final de Selección</div>
+                  <div class="accion-desc">Informe completo para el Consejo Académico. Debe enviarse para cerrar el proceso.</div>
+                </div>
+              </div>
+              <button class="btn btn-accion btn-accion--informe"
+                      (click)="descargarInformeFinal()"
+                      [disabled]="descargandoInforme || !notificado">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                {{ descargandoInforme ? 'Generando...' : 'Descargar Informe Final PDF' }}
+              </button>
+              <span class="accion-hint" *ngIf="!notificado">
+                Primero debes enviar las notificaciones
+              </span>
+            </div>
+
+          </div>
         </div>
 
       </div>

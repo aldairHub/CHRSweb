@@ -227,4 +227,149 @@ public class EmailService {
             </html>
             """, nombreCompleto, motivo);
     }
+    // ════════════════════════════════════════════════════════════════════════
+// MÉTODO NUEVO — agregar a EmailService.java
+// ════════════════════════════════════════════════════════════════════════
+
+    // ════════════════════════════════════════════════════════════════════════
+// MÉTODOS NUEVOS — agregar a EmailService.java
+// ════════════════════════════════════════════════════════════════════════
+
+    @Async
+    public void enviarResultadoSeleccion(String destinatario, String nombreCompleto,
+                                         String materia, String carrera,
+                                         boolean seleccionado, String puntaje) {
+        try {
+            JavaMailSender sender = dynamicMailService.getMailSender();
+            MimeMessage message = sender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(getEmailFrom());
+            helper.setTo(destinatario);
+            helper.setSubject((seleccionado ? "¡Seleccionado! " : "Resultado: ") +
+                    "Proceso de Selección Docente — " + getAppName());
+            helper.setText(construirEmailResultado(nombreCompleto, materia, carrera,
+                    seleccionado, puntaje), true);
+            sender.send(message);
+            log.info("Correo resultado enviado a {}", destinatario);
+        } catch (Exception e) {
+            log.error("Error enviando correo resultado a {}: {}", destinatario, e.getMessage());
+        }
+    }
+
+    @Async
+    public void enviarInformeFinalConPdf(String destinatario, String nombreAutoridad,
+                                         String materia, String carrera,
+                                         String nombreGanador, byte[] pdfBytes) {
+        try {
+            JavaMailSender sender = dynamicMailService.getMailSender();
+            MimeMessage message = sender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(getEmailFrom());
+            helper.setTo(destinatario);
+            helper.setSubject("Informe Final de Selección Docente — " + materia + " — " + getAppName());
+            helper.setText(construirEmailInformeFinal(nombreAutoridad, materia, carrera, nombreGanador), true);
+            helper.addAttachment(
+                    "Informe-Seleccion-" + materia.replaceAll("\\s+", "-") + ".pdf",
+                    new org.springframework.core.io.ByteArrayResource(pdfBytes),
+                    "application/pdf"
+            );
+            sender.send(message);
+            log.info("Informe final enviado a {}", destinatario);
+        } catch (Exception e) {
+            log.error("Error enviando informe final a {}: {}", destinatario, e.getMessage());
+        }
+    }
+
+    private String construirEmailInformeFinal(String nombre, String materia,
+                                              String carrera, String ganador) {
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head><meta charset="UTF-8"></head>
+            <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f0f2f5;">
+              <div style="max-width: 520px; margin: 40px auto; border-radius: 16px;
+                          overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.12);">
+                <div style="background: #016630; padding: 28px 32px 24px; text-align: center;">
+                  <div style="font-size: 36px; margin-bottom: 8px;">📄</div>
+                  <h2 style="color: #fff; font-size: 18px; margin: 0; font-weight: 700;">
+                    Informe Final de Selección Docente
+                  </h2>
+                </div>
+                <div style="background: #ffffff; padding: 32px;">
+                  <p style="color: #333; font-size: 14px;">Estimado/a <strong>%s</strong>,</p>
+                  <p style="color: #333; font-size: 14px; line-height: 1.6;">
+                    Se adjunta el Informe Final de Selección para la materia
+                    <strong>%s</strong> de la carrera <strong>%s</strong>.
+                  </p>
+                  <div style="background:#f2faf4;border-radius:8px;padding:14px 20px;margin:16px 0;">
+                    <span style="font-size:12px;color:#5a9e6f;">Candidato seleccionado</span><br>
+                    <span style="font-size:16px;font-weight:700;color:#016630;">%s</span>
+                  </div>
+                  <p style="color:#555;font-size:13px;">
+                    El documento adjunto contiene el detalle completo del proceso para
+                    ser presentado al Consejo Directivo.
+                  </p>
+                </div>
+                <div style="background:#f9f9f9;padding:16px 32px;text-align:center;">
+                  <p style="color:#aaa;font-size:12px;margin:0;">
+                    Correo automático — no responder.<br>Universidad Técnica Estatal de Quevedo
+                  </p>
+                </div>
+              </div>
+            </body>
+            </html>
+            """.formatted(nombre, materia, carrera, ganador);
+    }
+
+    private String construirEmailResultado(String nombre, String materia, String carrera,
+                                           boolean seleccionado, String puntaje) {
+        String colorHeader = seleccionado ? "#00A63E" : "#536b50";
+        String icono       = seleccionado ? "🎉" : "📋";
+        String tituloMsg   = seleccionado
+                ? "¡Felicitaciones! Has sido seleccionado"
+                : "Resultado del proceso de selección";
+        String cuerpo = seleccionado
+                ? "Nos complace informarte que has sido <strong>seleccionado/a</strong> como docente para la materia <strong>"
+                + materia + "</strong> de la carrera de <strong>" + carrera + "</strong>."
+                : "El proceso de selección para la materia <strong>" + materia
+                + "</strong> de la carrera de <strong>" + carrera + "</strong> ha finalizado. "
+                + "Agradecemos tu participación en este proceso.";
+
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head><meta charset="UTF-8"></head>
+            <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f0f2f5;">
+              <div style="max-width: 520px; margin: 40px auto; border-radius: 16px;
+                          overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.12);">
+                <div style="background: %s; padding: 28px 32px 24px; text-align: center;">
+                  <div style="font-size: 36px; margin-bottom: 8px;">%s</div>
+                  <h2 style="color: #fff; font-size: 18px; margin: 0; font-weight: 700;">%s</h2>
+                </div>
+                <div style="background: #ffffff; padding: 32px;">
+                  <p style="color: #333; font-size: 14px;">Estimado/a <strong>%s</strong>,</p>
+                  <p style="color: #333; font-size: 14px; line-height: 1.6;">%s</p>
+                  %s
+                  <p style="color: #555; font-size: 13px; margin-top: 20px;">
+                    Si tienes alguna consulta, comunícate con la institución.
+                  </p>
+                </div>
+                <div style="background: #f9f9f9; padding: 16px 32px; text-align: center;">
+                  <p style="color: #aaa; font-size: 12px; margin: 0;">
+                    Correo automático — no responder.<br>Universidad Técnica Estatal de Quevedo
+                  </p>
+                </div>
+              </div>
+            </body>
+            </html>
+            """.formatted(
+                colorHeader, icono, tituloMsg, nombre, cuerpo,
+                !puntaje.equals("—")
+                        ? "<div style=\"background:#f2faf4;border-radius:8px;padding:12px 20px;margin:16px 0;text-align:center;\">"
+                        + "<span style=\"font-size:13px;color:#5a9e6f;\">Puntaje obtenido</span><br>"
+                        + "<span style=\"font-size:24px;font-weight:700;color:#00A63E;\">" + puntaje + " pts</span></div>"
+                        : ""
+        );
+    }
+
 }
