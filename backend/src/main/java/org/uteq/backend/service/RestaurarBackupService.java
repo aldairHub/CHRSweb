@@ -124,7 +124,10 @@ public class RestaurarBackupService {
 
             String pgRestoreExe = obtenerPgRestore();
 
-            // 4. Ejecutar pg_restore
+            // 4. DROP + CREATE de la BD para restaurar en limpio
+            recrearBaseDeDatos(host, puerto, dbname);
+
+            // 5. Ejecutar pg_restore
             ProcessBuilder pb = new ProcessBuilder(
                     pgRestoreExe,
                     "--clean",          // DROP antes de CREATE
@@ -134,11 +137,11 @@ public class RestaurarBackupService {
                     "--schema=public",
                     "-h", host,
                     "-p", puerto,
-                    "-U", datasourceUsername,
+                    "-U", postgresUsername,  // usar postgres, no readonly_user
                     "-d", dbname,
                     tmpDump.toAbsolutePath().toString()
             );
-            pb.environment().put("PGPASSWORD", datasourcePassword);
+            pb.environment().put("PGPASSWORD", postgresPassword);
             pb.redirectErrorStream(true);
 
             Process proceso  = pb.start();
@@ -223,6 +226,34 @@ public class RestaurarBackupService {
 
         } finally {
             Files.deleteIfExists(tmpDump);
+        }
+    }
+
+    // =========================================================================
+    // DROP + CREATE de la BD — conecta a 'postgres' para poder borrar ssdc_loc
+    // =========================================================================
+
+    private void recrearBaseDeDatos(String host, String puerto, String dbname) throws Exception {
+        String jdbcPostgres = "jdbc:postgresql://" + host + ":" + puerto + "/postgres?prepareThreshold=0";
+        log.info("Recreando BD '{}' para restore limpio...", dbname);
+
+        try (Connection conn = DriverManager.getConnection(jdbcPostgres, postgresUsername, postgresPassword);
+             Statement st = conn.createStatement()) {
+
+            // Terminar todas las conexiones activas a la BD (excepto la actual)
+            st.execute(
+                    "SELECT pg_terminate_backend(pid) " +
+                            "FROM pg_stat_activity " +
+                            "WHERE datname = '" + dbname + "' AND pid <> pg_backend_pid()"
+            );
+
+            // DROP y CREATE
+            st.execute("DROP DATABASE IF EXISTS \"" + dbname + "\"");
+            st.execute("CREATE DATABASE \"" + dbname + "\"");
+
+            log.info("BD '{}' recreada correctamente para restore limpio.", dbname);
+        } catch (Exception e) {
+            throw new RuntimeException("No se pudo recrear la BD '" + dbname + "': " + e.getMessage(), e);
         }
     }
 

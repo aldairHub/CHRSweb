@@ -1,66 +1,77 @@
 package org.uteq.backend.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.uteq.backend.service.AesCipherService;
-import org.uteq.backend.service.util.CredencialesGenerator;
 
 @Component
+@Order(2)
 public class AdminInitializer implements ApplicationRunner {
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired private AesCipherService aesCipherService; // el tuyo
-    @Autowired private JdbcTemplate jdbc;
+    private static final Logger log = LoggerFactory.getLogger(AdminInitializer.class);
+    private final JdbcTemplate jdbc;
+    private final AesCipherService aesCipherService;
+
+    public AdminInitializer(JdbcTemplate jdbc, AesCipherService aesCipherService) {
+        this.jdbc             = jdbc;
+        this.aesCipherService = aesCipherService;
+    }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        Integer count = jdbc.queryForObject(
-                "SELECT COUNT(*) FROM usuario WHERE usuario_app = ?",
-                Integer.class, "admin"
-        );
-        if (count != null && count > 0) {
-            System.out.println(">>> admin ya existe, skip");
+        // Si admin ya existe → skip total
+        try {
+            Integer count = jdbc.queryForObject(
+                    "SELECT COUNT(*) FROM usuario WHERE usuario_app = 'admin'",
+                    Integer.class
+            );
+            if (count != null && count > 0) {
+                log.info(">>> [AdminInitializer] admin ya existe, skip.");
+                return;
+            }
+        } catch (Exception e) {
+            log.warn(">>> [AdminInitializer] No se pudo verificar usuario admin: {}", e.getMessage());
             return;
         }
-        String claveAppPlain = "admin";//CredencialesGenerator.generarClaveApp();
-        String claveAppHash  = passwordEncoder.encode(claveAppPlain);
 
-        String claveBdReal   = generarClaveTemporal(16);
-        String claveBdCifrada = aesCipherService.cifrar(claveBdReal);   // aes
+        log.info(">>> [AdminInitializer] Creando usuario admin...");
+        try {
+            // Clave de la app (BCrypt)
+            String claveAppHash = new BCryptPasswordEncoder().encode("admin");
 
-        jdbc.query(
-                "SELECT * FROM sp_registrar_usuario_simple(?,?,?,?,?,?,?::varchar[])",
-                (rs, rowNum) -> null,
-                "admin",
-                claveAppHash,
-                "admin@uteq.edu.ec",
-                "admin",
-                claveBdCifrada,
-                claveBdReal,
-                "{ADMIN}"
-        );
+            // Clave real del usuario PostgreSQL
+            String claveBdReal = "Admin2024$Ssdc!";
 
-        jdbc.update(
-                "UPDATE usuario SET primer_login = false WHERE usuario_app = 'admin'"
-        );
+            // Clave cifrada con AES para guardar en columna clave_bd
+            // AuthService llama aesCipherService.descifrar(usuario.getClaveBd())
+            // por eso DEBE guardarse cifrada, no en texto plano
+            String claveBdCifrada = aesCipherService.cifrar(claveBdReal);
 
-        System.out.println(">>> admin creado correctamente");
-        System.out.println("contraseña app: " + claveAppPlain);
+            // SP retorna TABLE → usar query, no update
+            jdbc.query(
+                    "SELECT * FROM sp_registrar_usuario_simple(?,?,?,?,?,?,?::varchar[])",
+                    rs -> {},
+                    "admin",
+                    claveAppHash,
+                    "admin@uteq.edu.ec",
+                    "admin",
+                    claveBdCifrada,   // columna clave_bd → cifrada AES
+                    claveBdReal,      // para CREATE USER postgres → texto plano
+                    new String[]{"ADMIN"}
+            );
 
-        System.out.println("contraseña bd: " + claveBdReal);
-    }
-    private String generarClaveTemporal(int length) {
-        final String ABC = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%";
-        java.security.SecureRandom r = new java.security.SecureRandom();
-        StringBuilder sb = new StringBuilder(length);
-        for (int i = 0; i < length; i++) {
-            sb.append(ABC.charAt(r.nextInt(ABC.length())));
+            // Desactivar primer_login para admin
+            jdbc.update("UPDATE usuario SET primer_login = false WHERE usuario_app = 'admin'");
+
+            log.info(">>> [AdminInitializer] Usuario admin creado correctamente.");
+        } catch (Exception e) {
+            log.error(">>> [AdminInitializer] Error creando admin: {}", e.getMessage());
         }
-        return sb.toString();
     }
 }

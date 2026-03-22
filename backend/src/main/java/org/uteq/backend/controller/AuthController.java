@@ -1,10 +1,8 @@
 package org.uteq.backend.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.uteq.backend.config.ModuloDataInitializer;
 import org.uteq.backend.dto.ModuloOpcionesDTO;
 import org.uteq.backend.entity.Usuario;
 import org.uteq.backend.repository.PostgresProcedureRepository;
@@ -15,7 +13,7 @@ import org.uteq.backend.dto.LoginResponse;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.Base64;
+
 import java.util.List;
 
 @RestController
@@ -31,7 +29,8 @@ public class AuthController {
     private final AesCipherService aesCipherService;
 
     private static final Logger log =
-            LoggerFactory.getLogger(ModuloDataInitializer.class);
+            LoggerFactory.getLogger(AuthController.class);
+
 
     public AuthController(AuthService authService,
                           DbSwitchService dbSwitchService,
