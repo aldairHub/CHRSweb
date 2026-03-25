@@ -24,6 +24,34 @@ interface Stats {
   distribucion: { label: string; val: number; pct: number; color: string }[];
 }
 
+// ── Interfaces para ranking IA ──────────────────────────────────────────────
+interface SolicitudItem {
+  idSolicitud: number;
+  nivelAcademico: string;
+  estadoSolicitud: string;
+  materia?: string;
+}
+
+interface RankingResultado {
+  idPrepostulacion: number;
+  nombre: string;
+  correo: string;
+  identificacion: string;
+  estadoRevision: string;
+  posicion: number;
+  puntuacion: number;
+  nivelCumplimiento: 'ALTO' | 'MEDIO' | 'BAJO';
+  resumen: string;
+  fortalezas: string[];
+  observaciones: string;
+}
+
+interface RankingResponse {
+  ranking: RankingResultado[];
+  resumenGeneral: string;
+  mensaje?: string;
+}
+
 @Component({
   selector: 'app-estadisticas-postulantes',
   standalone: true,
@@ -34,6 +62,8 @@ interface Stats {
 export class EstadisticasPostulantesComponent implements OnInit {
 
   private readonly API = environment.apiUrl;
+
+  // ── Estado existente (sin cambios) ─────────────────────────────────────────
   cargando = false; cargandoIA = false; analisisIA = ''; analisisSecciones: { titulo: string; contenido: string; esAlerta: boolean; esRec: boolean }[] = [];
   datos: PostulanteItem[] = []; stats: Stats | null = null; ultimaAct = '';
   metricaTend: 'total' | 'aprobados' | 'rechazados' = 'total';
@@ -49,11 +79,28 @@ export class EstadisticasPostulantesComponent implements OnInit {
     excelCongelarEncabezado: true, excelFiltrosAutomaticos: true, excelHojasPorSeccion: true,
   };
 
+  // ── Nuevo: modal IA con selector de modo ───────────────────────────────────
+  showModalIA       = false;
+  modoIA: 'elegir' | 'general' | 'ranking' = 'elegir';
+
+  // Modo ranking
+  solicitudes: SolicitudItem[]    = [];
+  cargandoSolicitudes             = false;
+  idSolicitudRanking: number | null = null;
+  rankingAnalizarDocs             = true;
+  rankingAnalizarNivel            = true;
+  cargandoRanking                 = false;
+  rankingResultados: RankingResultado[] = [];
+  rankingResumenGeneral           = '';
+  rankingError                    = '';
+  rankingListo                    = false;
+
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef,
               private router: Router, private toast: ToastService) {}
 
   ngOnInit(): void { this.cargar(); }
 
+  // ── Carga de datos (sin cambios) ───────────────────────────────────────────
   cargar(): void {
     this.cargando = true;
     this.http.get<PostulanteItem[]>(`${this.API}/admin/prepostulaciones`).subscribe({
@@ -77,20 +124,14 @@ export class EstadisticasPostulantesComponent implements OnInit {
     const revisados  = aprobados + rechazados;
     const tasaAprobacion = revisados > 0 ? Math.round(aprobados  / revisados * 100) : 0;
     const tasaRechazo    = revisados > 0 ? Math.round(rechazados / revisados * 100) : 0;
-
-    // Tiempo promedio aproximado (días desde envío para los revisados)
     const ahora = Date.now();
     const tiempos = d.filter(p => p.fechaEnvio && p.estadoRevision !== 'PENDIENTE')
       .map(p => (ahora - new Date(p.fechaEnvio).getTime()) / 86400000);
     const tiempoPromedioRevision = tiempos.length ? +(tiempos.reduce((s, t) => s + t, 0) / tiempos.length).toFixed(1) : 0;
-
-    // Horas prom pendientes (desde envío hasta ahora)
     const pendList = d.filter(p => p.estadoRevision === 'PENDIENTE' && p.fechaEnvio);
     const horasPromedioPendientes = pendList.length
       ? Math.round(pendList.reduce((s, p) => s + (ahora - new Date(p.fechaEnvio).getTime()) / 3600000, 0) / pendList.length)
       : 0;
-
-    // Por día
     const byDia: Record<string, { total: number; aprobados: number; rechazados: number }> = {};
     d.forEach(p => {
       if (!p.fechaEnvio) return;
@@ -102,8 +143,6 @@ export class EstadisticasPostulantesComponent implements OnInit {
     });
     const porDia = Object.entries(byDia).sort(([a], [b]) => a.localeCompare(b)).slice(-14)
       .map(([dia, v]) => ({ dia, ...v }));
-
-    // Por convocatoria
     const byConv: Record<string, { id: number|null; count: number; aprobados: number; rechazados: number }> = {};
     d.forEach(p => {
       const key = String(p.idConvocatoria ?? 'sin');
@@ -113,13 +152,11 @@ export class EstadisticasPostulantesComponent implements OnInit {
       if (p.estadoRevision === 'RECHAZADO') byConv[key].rechazados++;
     });
     const porConvocatoria = Object.values(byConv).sort((a, b) => b.count - a.count).slice(0, 8);
-
     const distribucion = [
       { label: 'Aprobados',  val: aprobados,  pct: d.length ? Math.round(aprobados  / d.length * 100) : 0, color: '#16a34a' },
       { label: 'Rechazados', val: rechazados, pct: d.length ? Math.round(rechazados / d.length * 100) : 0, color: '#dc2626' },
       { label: 'Pendientes', val: pendientes, pct: d.length ? Math.round(pendientes / d.length * 100) : 0, color: '#d97706' },
     ];
-
     this.stats = {
       total: d.length, aprobados, rechazados, pendientes, revisados,
       sinRevisar: pendientes, tasaAprobacion, tasaRechazo,
@@ -130,6 +167,7 @@ export class EstadisticasPostulantesComponent implements OnInit {
     };
   }
 
+  // ── Análisis general (sin cambios internos) ────────────────────────────────
   generarIA(): void {
     if (this.cargandoIA || !this.stats) return;
     this.cargandoIA = true; this.analisisIA = ''; this.analisisSecciones = [];
@@ -145,7 +183,6 @@ export class EstadisticasPostulantesComponent implements OnInit {
 
   parsearSecciones(texto: string): { titulo: string; contenido: string; esAlerta: boolean; esRec: boolean }[] {
     if (!texto || !texto.trim()) return [];
-    // Detecta encabezados como "TÍTULO:" o "**TÍTULO:**" al inicio de línea
     const patron = /^\s*\*{0,2}(SITUACI[OÓ]N ACTUAL|AN[AÁ]LISIS(?: DE RENDIMIENTO)?|ALERTAS?(?: Y RIESGOS?)?|RECOMENDACIONES?)\*{0,2}\s*:/gim;
     const titulos: string[] = [];
     const posiciones: number[] = [];
@@ -159,12 +196,7 @@ export class EstadisticasPostulantesComponent implements OnInit {
       const inicio  = posiciones[i];
       const fin     = i + 1 < posiciones.length ? (texto.lastIndexOf('\n', posiciones[i + 1] - titulos[i + 1].length - 5) || posiciones[i + 1]) : texto.length;
       const contenido = texto.slice(inicio, fin).trim();
-      return {
-        titulo,
-        contenido,
-        esAlerta: titulo.toUpperCase().includes('ALERTA'),
-        esRec:    titulo.toUpperCase().includes('RECOMEND'),
-      };
+      return { titulo, contenido, esAlerta: titulo.toUpperCase().includes('ALERTA'), esRec: titulo.toUpperCase().includes('RECOMEND') };
     });
   }
 
@@ -189,6 +221,122 @@ export class EstadisticasPostulantesComponent implements OnInit {
     return r.trim();
   }
 
+  // ── NUEVO: modal IA ────────────────────────────────────────────────────────
+
+  abrirModalIA(): void {
+    this.modoIA = 'elegir';
+    this.rankingListo = false;
+    this.rankingResultados = [];
+    this.rankingResumenGeneral = '';
+    this.rankingError = '';
+    this.idSolicitudRanking = null;
+    this.showModalIA = true;
+
+    // Cargar solicitudes si no están aún
+    if (!this.solicitudes.length) {
+      this.cargarSolicitudes();
+    }
+  }
+
+  cerrarModalIA(): void {
+    if (this.cargandoIA || this.cargandoRanking) return;
+    this.showModalIA = false;
+  }
+
+  elegirModo(modo: 'general' | 'ranking'): void {
+    this.modoIA = modo;
+    if (modo === 'general') {
+      this.analisisIA = '';
+      this.analisisSecciones = [];
+      this.generarIA();
+    }
+  }
+
+  volverAElegir(): void {
+    this.modoIA = 'elegir';
+    this.rankingListo = false;
+    this.rankingResultados = [];
+    this.rankingResumenGeneral = '';
+    this.rankingError = '';
+  }
+
+  private cargarSolicitudes(): void {
+    this.cargandoSolicitudes = true;
+    this.http.get<any[]>(`${this.API}/solicitudes-docente`).subscribe({
+      next: data => {
+        this.solicitudes = (data || []).map(s => ({
+          idSolicitud:    s.idSolicitud,
+          nivelAcademico: s.nivelAcademico,
+          estadoSolicitud: s.estadoSolicitud,
+          materia:        s.materia?.nombreMateria ?? s.nombreMateria ?? ''
+        }));
+        this.cargandoSolicitudes = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cargandoSolicitudes = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  generarRanking(): void {
+    if (!this.idSolicitudRanking) {
+      this.rankingError = 'Selecciona una solicitud para continuar.';
+      return;
+    }
+    if (!this.rankingAnalizarDocs && !this.rankingAnalizarNivel) {
+      this.rankingError = 'Selecciona al menos un criterio de análisis.';
+      return;
+    }
+
+    this.rankingError = '';
+    this.cargandoRanking = true;
+    this.rankingListo = false;
+    this.rankingResultados = [];
+
+    this.http.post<RankingResponse>(`${this.API}/admin/prepostulaciones/ia/ranking`, {
+      idSolicitud:           this.idSolicitudRanking,
+      analizarDocumentos:    this.rankingAnalizarDocs,
+      analizarNivelAcademico: this.rankingAnalizarNivel
+    }).subscribe({
+      next: res => {
+        this.cargandoRanking = false;
+        this.rankingResultados    = res.ranking || [];
+        this.rankingResumenGeneral = res.resumenGeneral || '';
+        this.rankingListo = true;
+
+        if (!this.rankingResultados.length) {
+          this.rankingError = res.mensaje || 'No se encontraron pre-postulantes para esta solicitud.';
+        }
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        this.cargandoRanking = false;
+        this.rankingError = err?.error?.error || 'Error al contactar Mistral AI. Intenta de nuevo.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // ── Helpers ranking ────────────────────────────────────────────────────────
+  nivelClass(n: string): string {
+    return ({ ALTO: 'rnk-alto', MEDIO: 'rnk-medio', BAJO: 'rnk-bajo' } as any)[n] ?? '';
+  }
+  puntuacionColor(p: number): string {
+    return p >= 75 ? '#16a34a' : p >= 50 ? '#d97706' : '#dc2626';
+  }
+  posicionEmoji(p: number): string {
+    return p === 1 ? '🥇' : p === 2 ? '🥈' : p === 3 ? '🥉' : `#${p}`;
+  }
+  solicitudLabel(s: SolicitudItem): string {
+    return `#${s.idSolicitud} · ${s.nivelAcademico}${s.materia ? ' — ' + s.materia : ''}`;
+  }
+  get puedeGenerarRanking(): boolean {
+    return !!this.idSolicitudRanking && (this.rankingAnalizarDocs || this.rankingAnalizarNivel);
+  }
+
+  // ── Exportar (sin cambios) ─────────────────────────────────────────────────
   abrirExport(): void { this.showExport = true; }
   cerrarExport(): void { if (!this.exportando) this.showExport = false; }
   exportar(): void {
@@ -209,6 +357,7 @@ export class EstadisticasPostulantesComponent implements OnInit {
     });
   }
 
+  // ── Helpers gráficos (sin cambios) ────────────────────────────────────────
   get maxTend(): number { return Math.max(...(this.stats?.porDia.map(d => (d as any)[this.metricaTend]) ?? [1]), 1); }
   tendVal(d: any): number { return (d as any)[this.metricaTend]; }
   colorTend(): string { return ({ total:'#2563eb', aprobados:'#16a34a', rechazados:'#dc2626' } as any)[this.metricaTend]; }

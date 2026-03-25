@@ -5,7 +5,7 @@
     <div class="dash-header">
       <div class="dash-header-left">
         <div>
-          <h2 class="dash-title">Datos · Postulantes</h2>
+          <h2 class="dash-title">Datos · Pre-postulantes</h2>
           <p class="dash-sub">Tasa de aprobación · tendencias diarias · distribución · tiempos de revisión</p>
         </div>
       </div>
@@ -217,33 +217,259 @@
         </div>
       </div>
 
-      <!-- IA -->
+      <!-- IA: botón único que abre el modal con selector de modo -->
       <div class="ia-card chart-card chart-card-full">
         <div class="chart-header">
-          <div class="ia-title-row"><div class="ia-badge">IA</div><h3>Análisis ejecutivo</h3></div>
-          <button class="btn-ia-gen" (click)="generarIA()" [disabled]="cargandoIA">
-            <svg *ngIf="!cargandoIA" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            <svg *ngIf="cargandoIA" class="spin-sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-            {{ analisisIA ? 'Regenerar' : 'Generar' }}
+          <div class="ia-title-row">
+            <div class="ia-badge">IA</div>
+            <h3>Análisis con Mistral AI</h3>
+          </div>
+          <button class="btn-ia-gen" (click)="abrirModalIA()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="13" height="13">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+            Abrir análisis IA
           </button>
         </div>
-        <div *ngIf="cargandoIA" class="ia-loading"><div class="spin-ring"></div><span>Analizando con Mistral AI…</span></div>
-        <div *ngIf="!cargandoIA && !analisisIA" class="ia-empty">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="28" height="28"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-          <p>Presiona <strong>Generar</strong> para obtener un análisis detallado con Mistral AI.</p>
+        <div class="ia-empty">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="28" height="28">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+          <p>Haz clic en <strong>Abrir análisis IA</strong> para elegir entre un análisis general o el ranking de pre-postulantes más prometedores.</p>
         </div>
-        <div *ngIf="!cargandoIA && analisisSecciones.length > 0" class="ia-secciones-panel">
-          <div *ngFor="let sec of analisisSecciones" class="ia-seccion-item"
-               [class.ia-sec--alerta]="sec.esAlerta"
-               [class.ia-sec--rec]="sec.esRec">
-            <div class="ia-sec-titulo">{{ sec.titulo }}</div>
-            <div class="ia-sec-contenido">{{ sec.contenido }}</div>
-          </div>
-        </div>
-        <div *ngIf="!cargandoIA && analisisIA && analisisSecciones.length === 0" class="ia-text">{{ analisisIA }}</div>
       </div>
 
     </ng-container>
+  </div>
+</div>
+
+
+<!-- MODAL IA: selector de modo + análisis general + ranking ──────────────── -->
+<div class="modal-overlay" *ngIf="showModalIA" (click)="cerrarModalIA()">
+  <div class="modal-ia-panel" (click)="$event.stopPropagation()">
+
+    <!-- Cabecera -->
+    <div class="mia-header">
+      <div class="mia-header-left">
+        <div class="ia-badge">IA</div>
+        <div>
+          <h3 class="mia-title">Análisis con Mistral AI</h3>
+          <p class="mia-subtitle" *ngIf="modoIA === 'elegir'">¿Qué tipo de análisis deseas generar?</p>
+          <p class="mia-subtitle" *ngIf="modoIA === 'general'">Análisis ejecutivo general</p>
+          <p class="mia-subtitle" *ngIf="modoIA === 'ranking'">Ranking de pre-postulantes prometedores</p>
+        </div>
+      </div>
+      <button class="mia-close" (click)="cerrarModalIA()" [disabled]="cargandoIA || cargandoRanking">✕</button>
+    </div>
+
+    <!-- ── PANTALLA 1: elegir modo ───────────────────────────────────────── -->
+    <div class="mia-body" *ngIf="modoIA === 'elegir'">
+      <div class="mia-opciones">
+
+        <button class="mia-opcion" (click)="elegirModo('general')">
+          <div class="mia-opcion-icon mia-icon-general">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="26" height="26">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+          <div class="mia-opcion-text">
+            <span class="mia-opcion-titulo">Análisis general</span>
+            <span class="mia-opcion-desc">Resumen ejecutivo del estado actual de todas las prepostulaciones: tasas, alertas y recomendaciones.</span>
+          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16" class="mia-arrow">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+
+        <button class="mia-opcion" (click)="elegirModo('ranking')">
+          <div class="mia-opcion-icon mia-icon-ranking">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="26" height="26">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </div>
+          <div class="mia-opcion-text">
+            <span class="mia-opcion-titulo">Ranking de pre-postulantes</span>
+            <span class="mia-opcion-desc">Lista ordenada de los candidatos más prometedores para una solicitud, según documentos y nivel académico.</span>
+          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16" class="mia-arrow">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- ── PANTALLA 2: análisis general ─────────────────────────────────── -->
+    <div class="mia-body mia-body--general" *ngIf="modoIA === 'general'">
+      <div *ngIf="cargandoIA" class="ia-loading">
+        <div class="spin-ring"></div><span>Analizando con Mistral AI…</span>
+      </div>
+      <div *ngIf="!cargandoIA && analisisSecciones.length > 0" class="ia-secciones-panel">
+        <div *ngFor="let sec of analisisSecciones" class="ia-seccion-item"
+             [class.ia-sec--alerta]="sec.esAlerta"
+             [class.ia-sec--rec]="sec.esRec">
+          <div class="ia-sec-titulo">{{ sec.titulo }}</div>
+          <div class="ia-sec-contenido">{{ sec.contenido }}</div>
+        </div>
+      </div>
+      <div *ngIf="!cargandoIA && analisisIA && analisisSecciones.length === 0" class="ia-text">{{ analisisIA }}</div>
+    </div>
+
+    <!-- ── PANTALLA 3: ranking (configuración) ───────────────────────────── -->
+    <div class="mia-body" *ngIf="modoIA === 'ranking' && !rankingListo && !cargandoRanking">
+
+      <!-- Selección de solicitud -->
+      <div class="rnk-form-group">
+        <label class="rnk-label">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Solicitud docente a analizar
+        </label>
+        <div *ngIf="cargandoSolicitudes" class="rnk-hint">Cargando solicitudes…</div>
+        <select class="rnk-select" [(ngModel)]="idSolicitudRanking" *ngIf="!cargandoSolicitudes">
+          <option [ngValue]="null" disabled>— Selecciona una solicitud —</option>
+          <option *ngFor="let s of solicitudes" [ngValue]="s.idSolicitud">{{ solicitudLabel(s) }}</option>
+        </select>
+        <p class="rnk-hint">Se analizarán todos los pre-postulantes vinculados a esta solicitud.</p>
+      </div>
+
+      <!-- Criterios -->
+      <div class="rnk-criterios">
+        <p class="rnk-criterios-titulo">¿Qué debe considerar la IA?</p>
+
+        <label class="rnk-criterio" [class.rnk-criterio--on]="rankingAnalizarDocs">
+          <input type="checkbox" [(ngModel)]="rankingAnalizarDocs" style="display:none">
+          <div class="rnk-criterio-icon rnk-ci-docs">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <div>
+            <span class="rnk-criterio-label">Completitud de documentos</span>
+            <span class="rnk-criterio-desc">Documentos subidos vs. requeridos por la solicitud</span>
+          </div>
+          <div class="rnk-check" [class.rnk-check--on]="rankingAnalizarDocs">✓</div>
+        </label>
+
+        <label class="rnk-criterio" [class.rnk-criterio--on]="rankingAnalizarNivel">
+          <input type="checkbox" [(ngModel)]="rankingAnalizarNivel" style="display:none">
+          <div class="rnk-criterio-icon rnk-ci-nivel">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+            </svg>
+          </div>
+          <div>
+            <span class="rnk-criterio-label">Nivel académico</span>
+            <span class="rnk-criterio-desc">Nivel declarado vs. el mínimo requerido por la solicitud</span>
+          </div>
+          <div class="rnk-check" [class.rnk-check--on]="rankingAnalizarNivel">✓</div>
+        </label>
+      </div>
+
+      <div class="rnk-error" *ngIf="rankingError">{{ rankingError }}</div>
+    </div>
+
+    <!-- ── PANTALLA 4: cargando ranking ──────────────────────────────────── -->
+    <div class="mia-body mia-body--loading" *ngIf="cargandoRanking">
+      <div class="rnk-loading">
+        <div class="spin-ring"></div>
+        <p>Mistral AI está evaluando los perfiles…</p>
+        <span>Esto puede tardar unos segundos.</span>
+      </div>
+    </div>
+
+    <!-- ── PANTALLA 5: resultados del ranking ────────────────────────────── -->
+    <div class="mia-body mia-body--resultados" *ngIf="modoIA === 'ranking' && rankingListo && !cargandoRanking">
+
+      <!-- Resumen general -->
+      <div class="rnk-resumen-general" *ngIf="rankingResumenGeneral">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p>{{ rankingResumenGeneral }}</p>
+      </div>
+
+      <!-- Sin resultados -->
+      <div class="ia-empty" *ngIf="!rankingResultados.length">
+        <p>{{ rankingError || 'No se encontraron pre-postulantes para esta solicitud.' }}</p>
+      </div>
+
+      <!-- Lista de candidatos -->
+      <div class="rnk-lista" *ngIf="rankingResultados.length">
+        <div class="rnk-candidato" *ngFor="let c of rankingResultados" [class.rnk-candidato--top]="c.posicion === 1">
+
+          <!-- Fila encabezado -->
+          <div class="rnk-cand-header">
+            <span class="rnk-pos">{{ posicionEmoji(c.posicion) }}</span>
+            <div class="rnk-cand-info">
+              <span class="rnk-cand-nombre">{{ c.nombre }}</span>
+              <span class="rnk-cand-meta">{{ c.identificacion }} · {{ c.correo }}</span>
+            </div>
+            <div class="rnk-cand-scores">
+              <span class="rnk-puntuacion" [style.color]="puntuacionColor(c.puntuacion)">{{ c.puntuacion }}<small>/100</small></span>
+              <span class="rnk-nivel-badge" [ngClass]="nivelClass(c.nivelCumplimiento)">{{ c.nivelCumplimiento }}</span>
+            </div>
+          </div>
+
+          <!-- Barra de progreso -->
+          <div class="rnk-bar">
+            <div class="rnk-bar-fill" [style.width.%]="c.puntuacion" [style.background]="puntuacionColor(c.puntuacion)"></div>
+          </div>
+
+          <!-- Detalle -->
+          <div class="rnk-cand-body">
+            <p class="rnk-resumen">{{ c.resumen }}</p>
+            <div class="rnk-fortalezas" *ngIf="c.fortalezas?.length">
+              <span class="rnk-fort" *ngFor="let f of c.fortalezas">✓ {{ f }}</span>
+            </div>
+            <div class="rnk-obs" *ngIf="c.observaciones">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="12" height="12">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              {{ c.observaciones }}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Pie del modal -->
+    <div class="mia-footer">
+      <!-- Elegir modo -->
+      <ng-container *ngIf="modoIA === 'elegir'">
+        <button class="btn-cancel" (click)="cerrarModalIA()">Cancelar</button>
+      </ng-container>
+
+      <!-- Análisis general -->
+      <ng-container *ngIf="modoIA === 'general'">
+        <button class="btn-cancel" (click)="volverAElegir()" [disabled]="cargandoIA">← Volver</button>
+        <button class="btn-ia-gen" (click)="generarIA()" [disabled]="cargandoIA">
+          <svg *ngIf="!cargandoIA" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <svg *ngIf="cargandoIA" class="spin-sm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          {{ analisisIA ? 'Regenerar' : 'Generar' }}
+        </button>
+      </ng-container>
+
+      <!-- Ranking: configuración -->
+      <ng-container *ngIf="modoIA === 'ranking' && !rankingListo && !cargandoRanking">
+        <button class="btn-cancel" (click)="volverAElegir()">← Volver</button>
+        <button class="btn-ia-gen" (click)="generarRanking()" [disabled]="!puedeGenerarRanking">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="13" height="13">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          Generar Ranking
+        </button>
+      </ng-container>
+
+      <!-- Ranking: resultados -->
+      <ng-container *ngIf="modoIA === 'ranking' && rankingListo && !cargandoRanking">
+        <button class="btn-cancel" (click)="volverAElegir()">← Nuevo análisis</button>
+        <button class="btn-ia-gen" (click)="cerrarModalIA()">Cerrar</button>
+      </ng-container>
+    </div>
+
   </div>
 </div>
 

@@ -187,5 +187,6 @@
     <orderEntry type="library" name="Maven: com.google.apis:google-api-services-drive:v3-rev20231128-2.0.0" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-tomcat:4.0.2" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-web-server:4.0.2" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.20.2" level="project" />
   </component>
 </module>
