@@ -221,10 +221,6 @@ public class MistralRankingService {
                     "messages",   List.of(Map.of("role", "user", "content", prompt))
             ));
 
-            HttpClient client = HttpClient.newBuilder()
-                    .connectTimeout(Duration.ofSeconds(20))
-                    .build();
-
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(MISTRAL_URL))
                     .header("Authorization", "Bearer " + mistralApiKey)
@@ -233,7 +229,12 @@ public class MistralRankingService {
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                     .build();
 
-            HttpResponse<String> response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response;
+            try (HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(20))
+                    .build()) {
+                response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            }
 
             log.info("[MISTRAL] Respuesta HTTP: {}", response.statusCode());
 
