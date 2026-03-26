@@ -54,6 +54,9 @@ public class InstitucionServiceImpl implements InstitucionService {
         if (dto.getImagenFondoUrl() != null) {
             inst.setImagenFondoUrl(dto.getImagenFondoUrl());
         }
+        if (dto.getEscudoUrl() != null) {
+            inst.setEscudoUrl(dto.getEscudoUrl());
+        }
         inst.setEmailSmtp(dto.getEmailSmtp());
         inst.setEmailHost(dto.getEmailHost() != null ? dto.getEmailHost() : "smtp.gmail.com");
         inst.setEmailPort(dto.getEmailPort() != null ? dto.getEmailPort() : 587);
@@ -75,6 +78,7 @@ public class InstitucionServiceImpl implements InstitucionService {
         dto.setTelefono(i.getTelefono());
         dto.setLogoUrl(i.getLogoUrl());
         dto.setImagenFondoUrl(i.getImagenFondoUrl());
+        dto.setEscudoUrl(i.getEscudoUrl());
         dto.setAppName(i.getAppName());
         dto.setNombreCorto(i.getNombreCorto());
         dto.setEmailSmtp(i.getEmailSmtp());
@@ -104,6 +108,28 @@ public class InstitucionServiceImpl implements InstitucionService {
             return logoUrl;
         } catch (Exception e) {
             throw new RuntimeException("Error al subir logo: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public String uploadEscudo(Long idInstitucion, MultipartFile file) {
+        Institucion inst = institucionRepository.findById(idInstitucion)
+                .orElseThrow(() -> new RuntimeException("Institución no encontrada"));
+
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new RuntimeException("Solo se permiten archivos de imagen");
+        }
+
+        String tag = "escudo_" + idInstitucion + "_" + System.currentTimeMillis();
+
+        try {
+            String escudoUrl = storageService.subirArchivo(file, "logos", tag);
+            inst.setEscudoUrl(escudoUrl);
+            institucionRepository.save(inst);
+            return escudoUrl;
+        } catch (Exception e) {
+            throw new RuntimeException("Error al subir escudo: " + e.getMessage());
         }
     }
 

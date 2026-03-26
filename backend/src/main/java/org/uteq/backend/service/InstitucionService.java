@@ -21,4 +21,7 @@ public interface InstitucionService {
     InstitucionResponseDTO obtenerActiva();
 
     String uploadLogo(Long idInstitucion, MultipartFile file);
+
+    String uploadEscudo(Long idInstitucion, MultipartFile file);
+
 }

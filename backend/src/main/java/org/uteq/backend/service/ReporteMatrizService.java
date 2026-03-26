@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -31,7 +33,6 @@ public class ReporteMatrizService {
     private static final DateTimeFormatter FMT_HORA =
             DateTimeFormatter.ofPattern("HH'h'mm");
 
-    // ── Fuentes ────────────────────────────────────────────────────────────
     private Font fTitulo()    { return new Font(Font.HELVETICA, 13, Font.BOLD,   COLOR_VERDE); }
     private Font fSubtitulo() { return new Font(Font.HELVETICA, 11, Font.BOLD,   Color.BLACK); }
     private Font fNormal()    { return new Font(Font.HELVETICA, 9,  Font.NORMAL, Color.BLACK); }
@@ -44,7 +45,7 @@ public class ReporteMatrizService {
     // ACTA DE CALIFICACIÓN DE MÉRITOS
     // ══════════════════════════════════════════════════════════════════════
     public byte[] generarActa(Long idSolicitud) {
-        Map<String, Object> datos = obtenerDatosSolicitud(idSolicitud);
+        Map<String, Object> datos    = obtenerDatosSolicitud(idSolicitud);
         List<Map<String, Object>> candidatos = obtenerCandidatosConPuntajes(idSolicitud);
         List<Map<String, Object>> secciones  = obtenerSecciones();
 
@@ -73,10 +74,10 @@ public class ReporteMatrizService {
     // INFORME FINAL DE SELECCIÓN
     // ══════════════════════════════════════════════════════════════════════
     public byte[] generarInformeFinal(Long idSolicitud) {
-        Map<String, Object> datos     = obtenerDatosSolicitud(idSolicitud);
+        Map<String, Object> datos    = obtenerDatosSolicitud(idSolicitud);
         List<Map<String, Object>> candidatos = obtenerCandidatosConPuntajes(idSolicitud);
         List<Map<String, Object>> secciones  = obtenerSecciones();
-        Map<String, Object> decision  = obtenerDecision(idSolicitud);
+        Map<String, Object> decision = obtenerDecision(idSolicitud);
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             Document doc = new Document(PageSize.A4.rotate(), 36, 36, 50, 36);
@@ -101,50 +102,129 @@ public class ReporteMatrizService {
         }
     }
 
-    // ── Encabezado institucional ────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════════
+    // PREVIEW — genera con la solicitud más reciente (solo para desarrollo)
+    // ══════════════════════════════════════════════════════════════════════
+    public byte[] generarPreviewActa() {
+        return generarActa(obtenerPrimerIdSolicitud());
+    }
+
+    public byte[] generarPreviewInforme() {
+        return generarInformeFinal(obtenerPrimerIdSolicitud());
+    }
+
+    private Long obtenerPrimerIdSolicitud() {
+        try {
+            return jdbc.queryForObject("""
+                SELECT pe.id_solicitud
+                FROM proceso_evaluacion pe
+                ORDER BY pe.id_proceso DESC
+                LIMIT 1
+                """, Long.class);
+        } catch (Exception e) {
+            throw new RuntimeException("No hay procesos disponibles para previsualizar.");
+        }
+    }
+
+    // ── Encabezado con logos ─────────────────────────────────────────────
     private void agregarEncabezadoInstitucional(Document doc, Map<String, Object> datos,
                                                 String tipoDoc) throws DocumentException {
-        // Institución
-        Paragraph inst = new Paragraph(
+        String logoUrl   = str(datos.get("logo_url"),   null);
+        String escudoUrl = str(datos.get("escudo_url"), null);
+
+        byte[] escudoBytes = descargarImagen(escudoUrl);
+        byte[] logoBytes   = descargarImagen(logoUrl);
+
+        // Tabla 3 columnas: escudo | texto institucional | logo
+        PdfPTable tablaHeader = new PdfPTable(new float[]{1.5f, 5f, 1.5f});
+        tablaHeader.setWidthPercentage(100);
+        tablaHeader.setSpacingAfter(6);
+
+        // Columna izquierda — escudo del país
+        PdfPCell cEscudo = new PdfPCell();
+        cEscudo.setBorder(Rectangle.NO_BORDER);
+        cEscudo.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cEscudo.setHorizontalAlignment(Element.ALIGN_LEFT);
+        if (escudoBytes != null) {
+            try {
+                Image escudo = Image.getInstance(escudoBytes);
+                escudo.scaleToFit(65, 65);
+                escudo.setAlignment(Element.ALIGN_LEFT);
+                cEscudo.addElement(escudo);
+            } catch (Exception ignored) {}
+        }
+        tablaHeader.addCell(cEscudo);
+
+        // Columna central — nombre institución y facultad
+        PdfPCell cTexto = new PdfPCell();
+        cTexto.setBorder(Rectangle.NO_BORDER);
+        cTexto.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cTexto.setHorizontalAlignment(Element.ALIGN_CENTER);
+
+        Paragraph pInst = new Paragraph(
                 str(datos.get("nombre_institucion"), "UNIVERSIDAD TÉCNICA ESTATAL DE QUEVEDO"),
                 new Font(Font.HELVETICA, 12, Font.BOLD, COLOR_VERDE));
-        inst.setAlignment(Element.ALIGN_CENTER);
-        doc.add(inst);
+        pInst.setAlignment(Element.ALIGN_CENTER);
+        cTexto.addElement(pInst);
 
-        Paragraph facultad = new Paragraph(
+        Paragraph pFac = new Paragraph(
                 str(datos.get("nombre_facultad"), "FACULTAD"),
                 new Font(Font.HELVETICA, 10, Font.BOLD, Color.BLACK));
-        facultad.setAlignment(Element.ALIGN_CENTER);
-        doc.add(facultad);
+        pFac.setAlignment(Element.ALIGN_CENTER);
+        cTexto.addElement(pFac);
 
-        doc.add(Chunk.NEWLINE);
+        tablaHeader.addCell(cTexto);
 
-        // Número y tipo de documento
+        // Columna derecha — logo institucional
+        PdfPCell cLogo = new PdfPCell();
+        cLogo.setBorder(Rectangle.NO_BORDER);
+        cLogo.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cLogo.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        if (logoBytes != null) {
+            try {
+                Image logo = Image.getInstance(logoBytes);
+                logo.scaleToFit(65, 65);
+                logo.setAlignment(Element.ALIGN_RIGHT);
+                cLogo.addElement(logo);
+            } catch (Exception ignored) {}
+        }
+        tablaHeader.addCell(cLogo);
+
+        doc.add(tablaHeader);
+
+        // Tipo y número de documento
         String numDoc = str(datos.get("codigo_solicitud"), "001-" + java.time.Year.now().getValue());
         Paragraph titulo = new Paragraph(tipoDoc + " " + numDoc, fTitulo());
         titulo.setAlignment(Element.ALIGN_CENTER);
         doc.add(titulo);
 
-        // Línea separadora
         LineSeparator linea = new LineSeparator(1, 100, COLOR_VERDE, Element.ALIGN_CENTER, -2);
         doc.add(new Chunk(linea));
+    }
+
+    // ── Descarga imagen desde URL ────────────────────────────────────────
+    private byte[] descargarImagen(String url) {
+        if (url == null || url.isBlank()) return null;
+        try (InputStream in = new URL(url).openStream()) {
+            return in.readAllBytes();
+        } catch (Exception e) {
+            return null; // Si falla la descarga, simplemente no se muestra
+        }
     }
 
     // ── Párrafo introductorio (Acta) ────────────────────────────────────
     private void agregarParrafoIntroductorio(Document doc, Map<String, Object> datos,
                                              List<Map<String, Object>> candidatos) throws DocumentException {
         LocalDateTime ahora = LocalDateTime.now();
-        String ciudad  = str(datos.get("ciudad_institucion"), "Quevedo");
-        String fecha   = ahora.format(FMT_FECHA);
         String hora    = ahora.format(FMT_HORA);
         String decano  = str(datos.get("nombre_autoridad"), "Decano/a de la Facultad");
-        String cargo   = str(datos.get("cargo_autoridad"), "Decano/a");
-        String carrera = str(datos.get("nombre_carrera"), "la Carrera");
-        String materia = str(datos.get("nombre_materia"), "la asignatura");
-        String area    = str(datos.get("nombre_area"), "el área de conocimiento");
+        String cargo   = str(datos.get("cargo_autoridad"),  "Decano/a");
+        String carrera = str(datos.get("nombre_carrera"),   "la Carrera");
+        String materia = str(datos.get("nombre_materia"),   "la asignatura");
+        String area    = str(datos.get("nombre_area"),      "el área de conocimiento");
 
         StringBuilder intro = new StringBuilder();
-        intro.append("En la ciudad de ").append(ciudad).append(", a los ").append(ahora.getDayOfMonth())
+        intro.append("En la ciudad de Quevedo, a los ").append(ahora.getDayOfMonth())
                 .append(" días del mes de ").append(ahora.getMonth().getDisplayName(
                         java.time.format.TextStyle.FULL, new java.util.Locale("es","EC")))
                 .append(" de ").append(ahora.getYear()).append(", siendo las ").append(hora)
@@ -161,7 +241,6 @@ public class ReporteMatrizService {
         p.setSpacingAfter(8);
         doc.add(p);
 
-        // Lista de candidatos
         Paragraph pCand = new Paragraph("Los profesionales evaluados son:", fNormalB());
         pCand.setSpacingAfter(4);
         doc.add(pCand);
@@ -181,8 +260,7 @@ public class ReporteMatrizService {
     // ── Sección narrativa (Informe Final) ───────────────────────────────
     private void agregarSeccionNarrativa(Document doc, Map<String, Object> datos,
                                          List<Map<String, Object>> candidatos) throws DocumentException {
-        Paragraph secTitulo = new Paragraph(
-                "Selección mediante el uso de la base de datos", fSubtitulo());
+        Paragraph secTitulo = new Paragraph("Selección mediante el uso de la base de datos", fSubtitulo());
         secTitulo.setSpacingBefore(6);
         secTitulo.setSpacingAfter(6);
         doc.add(secTitulo);
@@ -221,9 +299,7 @@ public class ReporteMatrizService {
     private void agregarTablaMatriz(Document doc, List<Map<String, Object>> candidatos,
                                     List<Map<String, Object>> secciones,
                                     boolean incluirTotalesCompletos) throws DocumentException {
-
         int numCandidatos = candidatos.size();
-        // Columnas: PARÁMETROS + N candidatos
         float[] anchos = new float[1 + numCandidatos];
         anchos[0] = 4f;
         for (int i = 1; i <= numCandidatos; i++) anchos[i] = 2f;
@@ -232,57 +308,44 @@ public class ReporteMatrizService {
         tabla.setWidthPercentage(100);
         tabla.setSpacingBefore(6);
 
-        // Fila de encabezado — PARÁMETROS
         PdfPCell hParam = celda("PARÁMETROS", fHeader(), COLOR_VERDE, Element.ALIGN_LEFT);
         hParam.setRowspan(2);
         tabla.addCell(hParam);
 
-        // Encabezado candidatos
-        for (int i = 0; i < numCandidatos; i++) {
-            PdfPCell hCand = celda("CANDIDATO " + (i+1), fHeader(), COLOR_VERDE, Element.ALIGN_CENTER);
-            tabla.addCell(hCand);
-        }
-        // Fila 2 encabezado — nombres
+        for (int i = 0; i < numCandidatos; i++)
+            tabla.addCell(celda("CANDIDATO " + (i+1), fHeader(), COLOR_VERDE, Element.ALIGN_CENTER));
+
         for (Map<String, Object> c : candidatos) {
             String nombre = str(c.get("apellidos"), "") + "\n" + str(c.get("nombres"), "");
-            PdfPCell nCand = celda(nombre, fPeqB(), COLOR_VERDE_CLARO, Element.ALIGN_CENTER);
-            tabla.addCell(nCand);
+            tabla.addCell(celda(nombre, fPeqB(), COLOR_VERDE_CLARO, Element.ALIGN_CENTER));
         }
 
-        // Filas por sección
         for (Map<String, Object> sec : secciones) {
-            String tipo = str(sec.get("tipo"), "");
-            if (!incluirTotalesCompletos && "entrevista".equals(tipo)) continue;
+            if (!incluirTotalesCompletos && "entrevista".equals(str(sec.get("tipo"), ""))) continue;
 
-            // Fila de sección (header)
-            String tituloSec = str(sec.get("titulo"), "") + " — MÁXIMO " +
-                    sec.get("puntaje_maximo") + " PUNTOS";
+            String tituloSec = str(sec.get("titulo"), "") + " — MÁXIMO " + sec.get("puntaje_maximo") + " PUNTOS";
             PdfPCell cSec = celda(tituloSec, fNormalB(), COLOR_GRIS, Element.ALIGN_LEFT);
             cSec.setColspan(1 + numCandidatos);
             tabla.addCell(cSec);
 
-            // Items de la sección
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> items = (List<Map<String, Object>>) sec.get("items");
             if (items != null) {
                 for (Map<String, Object> item : items) {
                     String labelItem = str(item.get("label"), "");
-                    if (item.get("puntos_por") != null) {
-                        labelItem += " (" + item.get("puntos_por") + ")";
-                    }
+                    if (item.get("puntos_por") != null) labelItem += " (" + item.get("puntos_por") + ")";
                     tabla.addCell(celda("  - " + labelItem, fPeq(), Color.WHITE, Element.ALIGN_LEFT));
                     for (Map<String, Object> cand : candidatos) {
                         @SuppressWarnings("unchecked")
                         Map<String, Object> puntajes = (Map<String, Object>) cand.get("puntajes");
-                        String codigo = str(item.get("codigo"), "");
-                        Object val = puntajes != null ? puntajes.get(codigo) : null;
+                        Object val = puntajes != null ? puntajes.get(str(item.get("codigo"), "")) : null;
                         String valStr = val != null && !"0".equals(val.toString()) ? val.toString() : "";
                         tabla.addCell(celda(valStr, fPeq(), Color.WHITE, Element.ALIGN_CENTER));
                     }
                 }
             }
 
-            // Subtotal sección — calcular sumando los ítems del candidato
+            // Subtotal sección
             tabla.addCell(celda("TOTAL " + str(sec.get("titulo"), "").toUpperCase(),
                     fNormalB(), COLOR_GRIS, Element.ALIGN_LEFT));
             for (Map<String, Object> cand : candidatos) {
@@ -291,53 +354,42 @@ public class ReporteMatrizService {
                 double subtotal = 0;
                 if (items != null && puntajes != null) {
                     for (Map<String, Object> item : items) {
-                        String cod = str(item.get("codigo"), "");
-                        Object val = puntajes.get(cod);
-                        if (val != null) {
-                            try { subtotal += Double.parseDouble(val.toString()); } catch (Exception ignored) {}
-                        }
+                        Object val = puntajes.get(str(item.get("codigo"), ""));
+                        if (val != null) try { subtotal += Double.parseDouble(val.toString()); } catch (Exception ignored) {}
                     }
                 }
                 double maximo = 0;
                 try { maximo = Double.parseDouble(sec.get("puntaje_maximo").toString()); } catch (Exception ignored) {}
-                double subtotalFinal = maximo > 0 ? Math.min(subtotal, maximo) : subtotal;
-                String subtotalStr = subtotalFinal == 0 ? "0" :
-                        subtotalFinal == Math.floor(subtotalFinal)
-                                ? String.valueOf((int) subtotalFinal)
-                                : String.format("%.2f", subtotalFinal);
-                tabla.addCell(celda(subtotalStr, fNormalB(), COLOR_GRIS, Element.ALIGN_CENTER));
+                double sf = maximo > 0 ? Math.min(subtotal, maximo) : subtotal;
+                String sfStr = sf == 0 ? "0" : sf == Math.floor(sf)
+                        ? String.valueOf((int) sf) : String.format("%.2f", sf);
+                tabla.addCell(celda(sfStr, fNormalB(), COLOR_GRIS, Element.ALIGN_CENTER));
             }
         }
 
-        // Acción afirmativa
         tabla.addCell(celda("ACCIÓN AFIRMATIVA (2 puntos c/u, máx. 4)", fNormalB(), COLOR_GRIS, Element.ALIGN_LEFT));
         for (Map<String, Object> cand : candidatos) {
             Object af = cand.get("total_accion_afirmativa");
             tabla.addCell(celda(af != null ? af.toString() : "0", fNormalB(), COLOR_GRIS, Element.ALIGN_CENTER));
         }
 
-        // Totales finales
         if (incluirTotalesCompletos) {
-            agregarFilaTotalFinal(tabla, "TOTAL MÉRITOS (50 pts)", candidatos, "total_merecimientos", numCandidatos);
-            agregarFilaTotalFinal(tabla, "TOTAL EXPERIENCIA (25 pts)", candidatos, "total_experiencia", numCandidatos);
-            agregarFilaTotalFinal(tabla, "TOTAL ENTREVISTA (25 pts)", candidatos, "total_entrevista", numCandidatos);
+            agregarFilaTotalFinal(tabla, "TOTAL MÉRITOS (50 pts)",     candidatos, "total_merecimientos");
+            agregarFilaTotalFinal(tabla, "TOTAL EXPERIENCIA (25 pts)", candidatos, "total_experiencia");
+            agregarFilaTotalFinal(tabla, "TOTAL ENTREVISTA (25 pts)",  candidatos, "total_entrevista");
         }
 
-        // TOTAL GENERAL
-        PdfPCell cTotalLabel = celda("PUNTAJE TOTAL", fHeader(), COLOR_VERDE, Element.ALIGN_LEFT);
-        tabla.addCell(cTotalLabel);
+        tabla.addCell(celda("PUNTAJE TOTAL", fHeader(), COLOR_VERDE, Element.ALIGN_LEFT));
         for (Map<String, Object> cand : candidatos) {
             Object total = cand.get("puntaje_total");
-            tabla.addCell(celda(total != null ? total.toString() : "—",
-                    fHeader(), COLOR_VERDE, Element.ALIGN_CENTER));
+            tabla.addCell(celda(total != null ? total.toString() : "—", fHeader(), COLOR_VERDE, Element.ALIGN_CENTER));
         }
 
         doc.add(tabla);
     }
 
     private void agregarFilaTotalFinal(PdfPTable tabla, String label,
-                                       List<Map<String, Object>> candidatos,
-                                       String campo, int numCandidatos) {
+                                       List<Map<String, Object>> candidatos, String campo) {
         tabla.addCell(celda(label, fNormalB(), new Color(210, 235, 210), Element.ALIGN_LEFT));
         for (Map<String, Object> cand : candidatos) {
             Object val = cand.get(campo);
@@ -346,7 +398,7 @@ public class ReporteMatrizService {
         }
     }
 
-    // ── Decisión final (solo Informe) ───────────────────────────────────
+    // ── Decisión final ──────────────────────────────────────────────────
     private void agregarDecisionFinal(Document doc, Map<String, Object> decision,
                                       List<Map<String, Object>> candidatos) throws DocumentException {
         Paragraph sTitulo = new Paragraph("Decisión Final del Comité", fSubtitulo());
@@ -366,9 +418,7 @@ public class ReporteMatrizService {
         Paragraph pGanador = new Paragraph();
         pGanador.add(new Chunk("Candidato seleccionado: ", fNormalB()));
         pGanador.add(new Chunk(ganador.toUpperCase(), fNormal()));
-        if (puntaje != null) {
-            pGanador.add(new Chunk("  —  Puntaje final: " + puntaje + " pts", fNormal()));
-        }
+        if (puntaje != null) pGanador.add(new Chunk("  —  Puntaje final: " + puntaje + " pts", fNormal()));
         pGanador.setSpacingAfter(6);
         doc.add(pGanador);
 
@@ -380,7 +430,6 @@ public class ReporteMatrizService {
             doc.add(pActa);
         }
 
-        // Nota normativa
         doc.add(Chunk.NEWLINE);
         Paragraph nota = new Paragraph(
                 "Según lo señalado en el Art. 7 de la Normativa para la Selección y Contratación de " +
@@ -390,7 +439,7 @@ public class ReporteMatrizService {
         doc.add(nota);
     }
 
-    // ── Firmas ─────────────────────────────────────────────────────────
+    // ── Firmas ──────────────────────────────────────────────────────────
     private void agregarFirmas(Document doc, Map<String, Object> datos) throws DocumentException {
         doc.add(Chunk.NEWLINE);
         doc.add(Chunk.NEWLINE);
@@ -400,28 +449,25 @@ public class ReporteMatrizService {
         tablaFirmas.setHorizontalAlignment(Element.ALIGN_CENTER);
 
         String autoridad = str(datos.get("nombre_autoridad"), "Decano/a");
-        String cargo     = str(datos.get("cargo_autoridad"), "Decano/a de la Facultad");
+        String cargo     = str(datos.get("cargo_autoridad"),  "Decano/a de la Facultad");
 
-        // Firma izquierda
         PdfPCell f1 = new PdfPCell();
         f1.setBorder(Rectangle.NO_BORDER);
         f1.addElement(new Paragraph("\n\n_______________________________", fNormal()));
         f1.addElement(new Paragraph(autoridad, fNormalB()));
         f1.addElement(new Paragraph(cargo, fPeq()));
-        tabla(tablaFirmas, f1);
+        tablaFirmas.addCell(f1);
 
-        // Espacio central
         PdfPCell fEsp = new PdfPCell();
         fEsp.setBorder(Rectangle.NO_BORDER);
-        tabla(tablaFirmas, fEsp);
+        tablaFirmas.addCell(fEsp);
 
-        // Firma derecha
         PdfPCell f2 = new PdfPCell();
         f2.setBorder(Rectangle.NO_BORDER);
         f2.addElement(new Paragraph("\n\n_______________________________", fNormal()));
         f2.addElement(new Paragraph("Coordinador/a de Carrera", fNormalB()));
         f2.addElement(new Paragraph(str(datos.get("nombre_carrera"), ""), fPeq()));
-        tabla(tablaFirmas, f2);
+        tablaFirmas.addCell(f2);
 
         doc.add(tablaFirmas);
         doc.add(Chunk.NEWLINE);
@@ -430,7 +476,7 @@ public class ReporteMatrizService {
         doc.add(nota);
     }
 
-    // ── Helpers ────────────────────────────────────────────────────────
+    // ── Helpers ─────────────────────────────────────────────────────────
     private PdfPCell celda(String texto, Font font, Color bg, int align) {
         PdfPCell c = new PdfPCell(new Phrase(texto, font));
         c.setBackgroundColor(bg);
@@ -440,8 +486,6 @@ public class ReporteMatrizService {
         c.setBorderWidth(0.5f);
         return c;
     }
-
-    private void tabla(PdfPTable t, PdfPCell c) { t.addCell(c); }
 
     private String str(Object val, String fallback) {
         if (val == null) return fallback;
@@ -454,13 +498,14 @@ public class ReporteMatrizService {
         return jdbc.queryForMap("""
             SELECT
                 COALESCE(i.nombre, 'Universidad Técnica Estatal de Quevedo') AS nombre_institucion,
-                COALESCE(i.nombre_corto, '')                                  AS ciudad_institucion,
+                COALESCE(i.logo_url,   '')                                    AS logo_url,
+                COALESCE(i.escudo_url, '')                                    AS escudo_url,
                 f.nombre_facultad,
                 c.nombre_carrera,
                 m.nombre_materia,
                 ac.nombre_area,
                 sd.id_solicitud::TEXT                                         AS codigo_solicitud,
-                aa.nombres || ' ' || aa.apellidos                            AS nombre_autoridad,
+                aa.nombres || ' ' || aa.apellidos                             AS nombre_autoridad,
                 'Autoridad Académica'                                         AS cargo_autoridad
             FROM solicitud_docente sd
             JOIN materia m              ON sd.id_materia   = m.id_materia
@@ -479,37 +524,32 @@ public class ReporteMatrizService {
             SELECT
                 pe.id_proceso,
                 p.id_postulante,
-                p.nombres_postulante  AS nombres,
+                p.nombres_postulante   AS nombres,
                 p.apellidos_postulante AS apellidos,
-                ''                    AS titulos,
-                COALESCE(pe.puntaje_matriz, 0)              AS puntaje_matriz,
-                COALESCE(pe.puntaje_entrevista, 0)          AS puntaje_entrevista,
+                ''                     AS titulos,
+                COALESCE(pe.puntaje_matriz, 0)                        AS puntaje_matriz,
+                COALESCE(pe.puntaje_entrevista, 0)                    AS puntaje_entrevista,
                 COALESCE(pe.puntaje_matriz, 0) +
-                  COALESCE(pe.puntaje_entrevista, 0)        AS puntaje_total,
+                  COALESCE(pe.puntaje_entrevista, 0)                  AS puntaje_total,
                 pe.decision_comite,
                 pe.acta_comite
             FROM proceso_evaluacion pe
-            JOIN postulante p        ON pe.id_postulante     = p.id_postulante
+            JOIN postulante p ON pe.id_postulante = p.id_postulante
             WHERE pe.id_solicitud = ?
             ORDER BY puntaje_total DESC
             """, idSolicitud);
 
-        // Enriquecer con puntajes por ítem y subtotales
         for (Map<String, Object> cand : candidatos) {
             Long idProceso = ((Number) cand.get("id_proceso")).longValue();
             List<Map<String, Object>> items = jdbc.queryForList(
-                    "SELECT item_id, valor FROM matriz_meritos_puntaje WHERE id_proceso = ?",
-                    idProceso);
+                    "SELECT item_id, valor FROM matriz_meritos_puntaje WHERE id_proceso = ?", idProceso);
             java.util.Map<String, Object> puntajes = new java.util.HashMap<>();
-            for (Map<String, Object> it : items) {
-                puntajes.put(str(it.get("item_id"), ""), it.get("valor"));
-            }
+            for (Map<String, Object> it : items) puntajes.put(str(it.get("item_id"), ""), it.get("valor"));
             cand.put("puntajes", puntajes);
-            // Totales calculados desde proceso_evaluacion
-            cand.put("total_merecimientos",       cand.get("puntaje_matriz"));
-            cand.put("total_experiencia",          0);
-            cand.put("total_entrevista",           cand.get("puntaje_entrevista"));
-            cand.put("total_accion_afirmativa",    0);
+            cand.put("total_merecimientos",    cand.get("puntaje_matriz"));
+            cand.put("total_experiencia",       0);
+            cand.put("total_entrevista",        cand.get("puntaje_entrevista"));
+            cand.put("total_accion_afirmativa", 0);
         }
         return candidatos;
     }

@@ -28,6 +28,9 @@ public class Institucion {
     @Column(name = "logo_url", columnDefinition = "TEXT")
     private String logoUrl;
 
+    @Column(name = "escudo_url", columnDefinition = "TEXT")
+    private String escudoUrl;
+
     @Column(name = "email_smtp")
     private String emailSmtp;
 

@@ -34,7 +34,11 @@ export class ConfigInstitucionComponent implements OnInit {
     emailSsl: false,
     imagenFondoUrl: '',
     nombreCorto: '',
+
   };
+  escudoFile: File | null = null;
+  escudoPreview: string | null = null;
+  descargandoPreview = false;
 
   logoFile: File | null = null;
   logoPreview: string | null = null;
@@ -99,7 +103,23 @@ export class ConfigInstitucionComponent implements OnInit {
     };
     reader.readAsDataURL(file);
   }
+  onEscudoSeleccionado(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
 
+    if (file.size > 2 * 1024 * 1024) {
+      this.mostrarMensaje('danger', 'El escudo no puede superar 2 MB.');
+      return;
+    }
+
+    this.escudoFile = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.escudoPreview = e.target?.result as string;
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
+  }
   guardar(): void {
     if (!this.config) return;
 
@@ -143,7 +163,20 @@ export class ConfigInstitucionComponent implements OnInit {
                   this.mostrarMensaje('warning', 'Datos guardados, pero hubo un error al subir el logo.');
                 }
               });
-          } else {
+          }
+          if (this.escudoFile && idLogo) {
+            this.svc.uploadEscudo(idLogo, this.escudoFile).subscribe({
+              next: (res) => {
+                this.config!.escudoUrl = res.escudoUrl;
+                this.escudoFile = null;
+                this.mostrarMensaje('success', 'Escudo guardado correctamente.');
+              },
+              error: () => {
+                this.mostrarMensaje('warning', 'Datos guardados, pero hubo un error al subir el escudo.');
+              }
+            });
+          }
+          else {
             this.logoService.cargar();
             this.mostrarMensaje('success', 'Configuración guardada correctamente.');
           }
@@ -160,8 +193,16 @@ export class ConfigInstitucionComponent implements OnInit {
     this.prellenarForm(this.config);
     this.logoFile = null;
     this.logoPreview = null;
+    this.escudoFile = null;
+    this.escudoPreview = null;
+  }
+  previewActa(): void {
+    window.open('http://localhost:8080/api/instituciones/preview/acta-pdf', '_blank');
   }
 
+  previewInforme(): void {
+    window.open('http://localhost:8080/api/instituciones/preview/informe-pdf', '_blank');
+  }
   // ── Mensaje ────────────────────────────────────────────────
   // Delegamos al ToastService centralizado. Mantenemos la firma para no tocar ninguna de las llamadas existentes en este componente.
   private mostrarMensaje(tipo: string, texto: string): void {

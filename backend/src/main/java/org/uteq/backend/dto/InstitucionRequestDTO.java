@@ -18,5 +18,6 @@ public class InstitucionRequestDTO {
 
     private String imagenFondoUrl;
 
+    private String escudoUrl;
 
 }

@@ -420,3 +420,28 @@
 
   .password-badge { background: rgba(0,210,80,0.1); color: #00D149; }
 }
+
+.section-card--dev {
+  border: 1.5px dashed #B9F8CF;
+  background: #f9fffe;
+}
+
+.btn-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #fff;
+  color: #016630;
+  border: 1.5px solid #B9F8CF;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: #EEF9EC;
+    border-color: #00A63E;
+  }
+}

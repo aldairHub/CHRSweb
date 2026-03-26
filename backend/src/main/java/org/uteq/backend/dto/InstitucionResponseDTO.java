@@ -19,6 +19,7 @@ public class InstitucionResponseDTO {
     private Boolean tienePasswordConfigurado;
 
     private String imagenFondoUrl;
+    private String escudoUrl;
 
 }
 

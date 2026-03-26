@@ -9,6 +9,7 @@ export interface InstitucionConfig {
   correo: string;
   telefono: string;
   logoUrl: string | null;
+  escudoUrl: string | null;
   appName: string;
   emailSmtp: string;
   emailHost: string;
@@ -37,5 +38,12 @@ export class InstitucionAdminService {
     const formData = new FormData();
     formData.append('file', file);
     return this.http.post<{ logoUrl: string }>(`${this.api}/${id}/logo`, formData);
+  }
+  uploadEscudo(idInstitucion: number, file: File): Observable<{ escudoUrl: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ escudoUrl: string }>(
+      `${this.api}/${idInstitucion}/escudo`, formData
+    );
   }
 }

@@ -11,16 +11,18 @@ import org.springframework.web.multipart.MultipartFile;
 import org.uteq.backend.service.InstitucionService;
 import org.uteq.backend.dto.InstitucionRequestDTO;
 import org.uteq.backend.dto.InstitucionResponseDTO;
-
+import org.uteq.backend.service.ReporteMatrizService;
 @RestController
 @RequestMapping("/api/instituciones")
 @CrossOrigin
 public class InstitucionController {
 
     private final InstitucionService institucionService;
+    private final ReporteMatrizService reporteService;
 
-    public InstitucionController(InstitucionService institucionService) {
+    public InstitucionController(InstitucionService institucionService, ReporteMatrizService reporteService) {
         this.institucionService = institucionService;
+        this.reporteService = reporteService;
     }
 
     @PostMapping
@@ -61,5 +63,30 @@ public class InstitucionController {
         String url = institucionService.uploadLogo(id, file);
         return ResponseEntity.ok(Map.of("logoUrl", url));
     }
+    @PostMapping(value = "/{id}/escudo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, String>> uploadEscudo(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) {
+        String url = institucionService.uploadEscudo(id, file);
+        return ResponseEntity.ok(Map.of("escudoUrl", url));
+    }
 
+    // ── Endpoints de preview PDF (solo para desarrollo) ──
+    @GetMapping("/preview/acta-pdf")
+    public ResponseEntity<byte[]> previewActa() {
+        byte[] pdf = reporteService.generarPreviewActa();
+        return ResponseEntity.ok()
+                .header("Content-Type", "application/pdf")
+                .header("Content-Disposition", "inline; filename=\"preview-acta.pdf\"")
+                .body(pdf);
+    }
+
+    @GetMapping("/preview/informe-pdf")
+    public ResponseEntity<byte[]> previewInforme() {
+        byte[] pdf = reporteService.generarPreviewInforme();
+        return ResponseEntity.ok()
+                .header("Content-Type", "application/pdf")
+                .header("Content-Disposition", "inline; filename=\"preview-informe.pdf\"")
+                .body(pdf);
+    }
 }
