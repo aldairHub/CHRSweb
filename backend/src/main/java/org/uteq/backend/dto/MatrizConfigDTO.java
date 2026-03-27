@@ -35,6 +35,8 @@ public class MatrizConfigDTO {
         private String puntosPor;
         private Integer orden;
         private Boolean bloqueado;
+        private String tipoInput;      // "checkbox" | "cantidad" | "bloqueado"
+        private Double valorUnitario;  // para tipo "cantidad": puntaje por unidad
     }
 
     @Data

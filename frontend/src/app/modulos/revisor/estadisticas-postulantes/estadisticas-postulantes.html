@@ -420,7 +420,7 @@
           <!-- Detalle -->
           <div class="rnk-cand-body">
             <p class="rnk-resumen">{{ c.resumen }}</p>
-            <div class="rnk-fortalezas" *ngIf="c.fortalezas?.length">
+            <div class="rnk-fortalezas" *ngIf="c.fortalezas.length">
               <span class="rnk-fort" *ngFor="let f of c.fortalezas">✓ {{ f }}</span>
             </div>
             <div class="rnk-obs" *ngIf="c.observaciones">

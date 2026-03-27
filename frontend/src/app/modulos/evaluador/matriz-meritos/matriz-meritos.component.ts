@@ -14,6 +14,8 @@ export interface ItemRubrica {
   max: number;
   puntosPor?: string;
   bloqueado?: boolean;
+  tipoInput: 'checkbox' | 'cantidad' | 'bloqueado'; // tipo de control UI
+  valorUnitario: number;  // para cantidad: pts por unidad
 }
 
 export interface SeccionRubrica {
@@ -47,11 +49,10 @@ export interface Candidato {
   totalEntrevista: number;
   totalAccionAfirmativa: number;
   puntajeTotal: number;
-  habilitadoEntrevista: boolean;
-  // NUEVOS:
   bloqueado: boolean;
   motivoBloqueo: string | null;
   tieneDocumentos: boolean;
+  yaGuardado: boolean;
 }
 
 export interface CandidatoComite {
@@ -96,11 +97,6 @@ export class MatrizMeritosComponent implements OnInit {
   mostrarModalGuardado = false;
   mostrarAccionAfirmativa = false;
   error = '';
-
-  mostrarModalOverride = false;
-  candidatoOverride: Candidato | null = null;
-  justificacionOverride = '';
-  guardandoOverride = false;
 
   // Modal evaluadores
   modalEvaluadoresVisible = false;
@@ -183,11 +179,13 @@ export class MatrizMeritosComponent implements OnInit {
       tipo:        s.tipo,
       bloqueado:   s.bloqueado,
       items:       (s.items || []).map((i: any) => ({
-        id:        i.codigo,
-        label:     i.label,
-        max:       i.puntajeMaximo,
-        puntosPor: i.puntosPor,
-        bloqueado: i.bloqueado
+        id:           i.codigo,
+        label:        i.label,
+        max:          i.puntajeMaximo,
+        puntosPor:    i.puntosPor,
+        bloqueado:    i.bloqueado,
+        tipoInput:    i.tipoInput    || 'cantidad',
+        valorUnitario: i.valorUnitario ?? i.puntajeMaximo
       }))
     }));
 
@@ -202,7 +200,6 @@ export class MatrizMeritosComponent implements OnInit {
     }));
   }
 
-  // REEMPLAZAR el método procesarCandidatos:
   private procesarCandidatos(matriz: any): void {
     this.convocatoriaInfo = matriz.convocatoria;
     this.candidatos = (matriz.candidatos || []).map((c: any) => ({
@@ -219,15 +216,14 @@ export class MatrizMeritosComponent implements OnInit {
       totalEntrevista:       0,
       totalAccionAfirmativa: 0,
       puntajeTotal:          0,
-      habilitadoEntrevista:  c.habilitadoEntrevista || false,
-      // NUEVOS:
       bloqueado:             c.bloqueado || false,
       motivoBloqueo:         c.motivoBloqueo || null,
-      tieneDocumentos:       c.tieneDocumentos !== false
+      tieneDocumentos:       c.tieneDocumentos !== false,
+      yaGuardado:            c.yaGuardado || false
     }));
 
     this.inicializarPuntajes();
-    if (this.candidatos.some(c => c.puntajeTotal > 0)) {
+    if (this.candidatos.some(c => c.yaGuardado || c.puntajeTotal > 0)) {
       this.guardado = true;
     }
   }
@@ -242,7 +238,14 @@ export class MatrizMeritosComponent implements OnInit {
     this.candidatos.forEach(c => {
       todasLasSecciones.forEach(sec => {
         sec.items.forEach(item => {
-          if (c.puntajes[item.id] === undefined) c.puntajes[item.id] = 0;
+          if (item.tipoInput === 'checkbox') {
+            // checkbox items stored in accionesAfirmativas
+            if (c.accionesAfirmativas[item.id] === undefined) {
+              c.accionesAfirmativas[item.id] = false;
+            }
+          } else {
+            if (c.puntajes[item.id] === undefined) c.puntajes[item.id] = 0;
+          }
         });
       });
       this.accionesAfirmativas.forEach(af => {
@@ -252,17 +255,35 @@ export class MatrizMeritosComponent implements OnInit {
     });
   }
 
+  /**
+   * Calcula el puntaje de un ítem según su tipo:
+   * - checkbox:  true → max, false → 0
+   * - cantidad:  min(cantidad × valorUnitario, max)
+   * - bloqueado: el valor ya viene calculado desde el backend
+   */
+  calcularPuntajeItem(c: Candidato, item: ItemRubrica): number {
+    if (item.tipoInput === 'checkbox') {
+      return c.accionesAfirmativas[item.id] ? item.max : 0;
+    }
+    if (item.tipoInput === 'bloqueado') {
+      return Math.min(Number(c.puntajes[item.id] || 0), item.max);
+    }
+    // cantidad: usuario ingresó cuántas unidades tiene
+    const cantidad = Number(c.puntajes[item.id] || 0);
+    return Math.min(cantidad * item.valorUnitario, item.max);
+  }
+
   recalcular(c: Candidato): void {
     let totalMeritos = 0;
     this.seccionesMeritos.forEach(sec => {
-      const suma = sec.items.reduce((s, item) => s + Number(c.puntajes[item.id] || 0), 0);
+      const suma = sec.items.reduce((s, item) => s + this.calcularPuntajeItem(c, item), 0);
       totalMeritos += Math.min(suma, sec.maximo);
     });
     c.totalMerecimientos = Math.min(totalMeritos, 50);
 
     let totalExp = 0;
     this.seccionesExperiencia.forEach(sec => {
-      const suma = sec.items.reduce((s, item) => s + Math.min(Number(c.puntajes[item.id] || 0), item.max), 0);
+      const suma = sec.items.reduce((s, item) => s + this.calcularPuntajeItem(c, item), 0);
       totalExp += Math.min(suma, sec.maximo);
     });
     c.totalExperiencia = Math.min(totalExp, 25);
@@ -279,7 +300,7 @@ export class MatrizMeritosComponent implements OnInit {
   }
 
   subtotalSeccion(c: Candidato, sec: SeccionRubrica): number {
-    const suma = sec.items.reduce((s, item) => s + Number(c.puntajes[item.id] || 0), 0);
+    const suma = sec.items.reduce((s, item) => s + this.calcularPuntajeItem(c, item), 0);
     return Math.min(suma, sec.maximo);
   }
 
@@ -402,40 +423,6 @@ export class MatrizMeritosComponent implements OnInit {
     });
   }
 
-  // ── Override ─────────────────────────────────────────────────
-  abrirModalOverride(c: Candidato): void {
-    this.candidatoOverride     = c;
-    this.justificacionOverride = '';
-    this.mostrarModalOverride  = true;
-  }
-
-  cerrarModalOverride(): void {
-    if (this.guardandoOverride) return;
-    this.mostrarModalOverride  = false;
-    this.candidatoOverride     = null;
-    this.justificacionOverride = '';
-  }
-
-  confirmarOverride(): void {
-    if (!this.justificacionOverride.trim() || !this.candidatoOverride) return;
-    this.guardandoOverride = true;
-
-    this.http.post(`${this.API}/habilitar-entrevista`, {
-      idProceso:     this.candidatoOverride.idProceso,
-      justificacion: this.justificacionOverride.trim()
-    }).subscribe({
-      next: () => {
-        this.candidatoOverride!.habilitadoEntrevista = true;
-        this.guardandoOverride = false;
-        this.cerrarModalOverride();
-      },
-      error: (err) => {
-        this.toast.error('Error al habilitar', err?.error?.mensaje || 'No se pudo habilitar al candidato.');
-        this.guardandoOverride = false;
-      }
-    });
-  }
-
   // ── Modal evaluadores ─────────────────────────────────────────
   abrirModalEvaluadores(c: Candidato): void {
     this.candidatoEvaluadores    = c;
@@ -459,6 +446,11 @@ export class MatrizMeritosComponent implements OnInit {
 
   get matrizBloqueada(): boolean {
     return this.convocatoriaInfo?.bloqueada ?? false;
+  }
+
+  get puedeGuardar(): boolean {
+    if (this.matrizBloqueada) return false;
+    return this.candidatos.some(c => !c.bloqueado);
   }
 
   get todasLasSecciones(): SeccionRubrica[] {

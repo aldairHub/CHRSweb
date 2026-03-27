@@ -64,15 +64,21 @@ public class MatrizConfigService {
                         .bloqueado(s.getBloqueado())
                         .items(itemRepo.findBySeccion_IdSeccionAndActivoTrueOrderByOrdenAsc(s.getIdSeccion())
                                 .stream()
-                                .map(i -> MatrizConfigDTO.ItemDTO.builder()
-                                        .idItem(i.getIdItem())
-                                        .codigo(i.getCodigo())
-                                        .label(i.getLabel())
-                                        .puntajeMaximo(i.getPuntajeMaximo())
-                                        .puntosPor(i.getPuntosPor())
-                                        .orden(i.getOrden())
-                                        .bloqueado(i.getBloqueado())
-                                        .build())
+                                .map(i -> {
+                                    String tipoInput = resolverTipoInput(i.getCodigo(), i.getBloqueado());
+                                    Double valorUnitario = resolverValorUnitario(i.getCodigo(), i.getPuntajeMaximo());
+                                    return MatrizConfigDTO.ItemDTO.builder()
+                                            .idItem(i.getIdItem())
+                                            .codigo(i.getCodigo())
+                                            .label(i.getLabel())
+                                            .puntajeMaximo(i.getPuntajeMaximo())
+                                            .puntosPor(i.getPuntosPor())
+                                            .orden(i.getOrden())
+                                            .bloqueado(i.getBloqueado())
+                                            .tipoInput(tipoInput)
+                                            .valorUnitario(valorUnitario)
+                                            .build();
+                                })
                                 .collect(Collectors.toList()))
                         .build())
                 .collect(Collectors.toList());
@@ -139,5 +145,41 @@ public class MatrizConfigService {
             throw new RuntimeException("Este ítem no puede eliminarse");
         }
         procedureRepo.ejecutarProcedure("CALL sp_eliminar_item_matriz(?)", idItem);
+    }
+
+    // ── Helpers para tipo de input ────────────────────────────
+
+    /**
+     * Determina el tipo de input para la UI:
+     * - "bloqueado"  → campo de solo lectura (entrevista)
+     * - "checkbox"   → ítems de cumplimiento sí/no (título, reconocimientos)
+     * - "cantidad"   → el usuario ingresa cantidad y el sistema calcula puntos
+     */
+    private String resolverTipoInput(String codigo, Boolean bloqueado) {
+        if (Boolean.TRUE.equals(bloqueado)) return "bloqueado";
+        // Ítems de checkbox: cumplimiento simple (sí = puntaje máximo, no = 0)
+        java.util.Set<String> checkboxItems = java.util.Set.of("a1","e1","e2","e3","e4");
+        if (checkboxItems.contains(codigo)) return "checkbox";
+        // Todo lo demás: el usuario ingresa cantidad
+        return "cantidad";
+    }
+
+    /**
+     * Valor unitario por unidad ingresada (años, proyectos, cursos, libros, artículos).
+     * El frontend calcula: min(cantidad × valorUnitario, puntajeMaximo)
+     */
+    private Double resolverValorUnitario(String codigo, Double puntajeMaximo) {
+        return switch (codigo) {
+            case "b1", "b2", "b3", "b4" -> 1.0;          // 1 pt por año/proyecto
+            case "c1"                    -> 2.0;          // 2 pts por libro
+            case "c2"                    -> 2.0;          // 2 pts por artículo regional
+            case "c3"                    -> 4.0;          // 4 pts por artículo con factor impacto
+            case "d1"                    -> 0.25;         // 0.25 pts por curso asistencia
+            case "d2"                    -> 0.5;          // 0.5 pts por curso aprobado
+            case "d3"                    -> 1.0;          // 1 pt por curso impartido
+            case "exp_docencia"          -> 1.0;          // 1 pt por año docencia
+            case "exp_area"              -> 1.0;          // 1 pt por año área formación
+            default                      -> puntajeMaximo; // checkbox: valor = máximo
+        };
     }
 }

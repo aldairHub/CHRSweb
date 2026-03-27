@@ -974,3 +974,40 @@ thead tr th {
     &:hover:not(:disabled) { background: #016630; }
   }
 }
+
+// ── Nuevos controles: cantidad + checkbox de ítems ──────────
+.cantidad-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.score-input--cantidad {
+  width: 70px !important;
+  text-align: center;
+  font-weight: 600;
+}
+
+.puntaje-calculado {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9ca3af;
+  white-space: nowrap;
+
+  &.pts-ok  { color: #16a34a; }
+  &.pts-max { color: #ca8a04; }
+}
+
+.item-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+
+.cell-input {
+  .checkbox-wrapper.item-check {
+    margin-bottom: 0.2rem;
+  }
+}

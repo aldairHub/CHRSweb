@@ -83,17 +83,9 @@
             <span class="aptitud-badge apto" *ngIf="c.puntajeTotal >= PUNTAJE_MINIMO">
               Apto para entrevistas
             </span>
-            <span class="aptitud-badge habilitado" *ngIf="c.puntajeTotal < PUNTAJE_MINIMO && c.habilitadoEntrevista">
-              Habilitado manualmente
-            </span>
-            <span class="aptitud-badge no-apto" *ngIf="c.puntajeTotal < PUNTAJE_MINIMO && !c.habilitadoEntrevista">
+            <span class="aptitud-badge no-apto" *ngIf="c.puntajeTotal < PUNTAJE_MINIMO">
               No apto (mín. {{ PUNTAJE_MINIMO }} pts)
             </span>
-            <button class="btn-habilitar"
-                    *ngIf="c.puntajeTotal < PUNTAJE_MINIMO && !c.habilitadoEntrevista"
-                    (click)="abrirModalOverride(c)">
-              Habilitar para entrevistas
-            </button>
           </ng-container>
         </div>
       </div>
@@ -170,16 +162,45 @@
               <tr *ngFor="let item of seccion.items" class="item-row">
                 <td class="item-label">
                   <span>— {{ item.label }}</span>
-                  <small *ngIf="item.puntosPor" class="pts-por">{{ item.puntosPor }}</small>
+                  <small *ngIf="item.tipoInput === 'cantidad'" class="pts-por">
+                    {{ item.valorUnitario }} pt{{ item.valorUnitario !== 1 ? 's' : '' }} por unidad — máx. {{ item.max }} pts
+                  </small>
+                  <small *ngIf="item.tipoInput === 'checkbox'" class="pts-por">
+                    {{ item.max }} pts si cumple
+                  </small>
                 </td>
                 <td *ngFor="let c of candidatos" class="cell-input">
-                  <input type="number" min="0" [max]="item.max" step="0.25"
-                         [(ngModel)]="c.puntajes[item.id]"
-                         (ngModelChange)="recalcular(c)"
-                         class="score-input"
-                         [disabled]="matrizBloqueada || !!item.bloqueado || c.bloqueado"
-                         [class.max-reached]="c.puntajes[item.id] >= item.max"
-                         [class.input-bloqueado]="c.bloqueado">
+
+                  <!-- CHECKBOX: cumplimiento sí/no -->
+                  <ng-container *ngIf="item.tipoInput === 'checkbox'">
+                    <label class="checkbox-wrapper item-check">
+                      <input type="checkbox"
+                             [(ngModel)]="c.accionesAfirmativas[item.id]"
+                             (ngModelChange)="recalcular(c)"
+                             [disabled]="matrizBloqueada || c.bloqueado">
+                      <span class="checkmark"></span>
+                    </label>
+                    <span class="puntaje-calculado" [class.pts-ok]="c.accionesAfirmativas[item.id]">
+                      {{ c.accionesAfirmativas[item.id] ? item.max : 0 }} pts
+                    </span>
+                  </ng-container>
+
+                  <!-- CANTIDAD: usuario ingresa número, sistema calcula -->
+                  <ng-container *ngIf="item.tipoInput === 'cantidad'">
+                    <div class="cantidad-wrap">
+                      <input type="number" min="0" step="1"
+                             [(ngModel)]="c.puntajes[item.id]"
+                             (ngModelChange)="recalcular(c)"
+                             class="score-input score-input--cantidad"
+                             placeholder="0"
+                             [disabled]="matrizBloqueada || c.bloqueado"
+                             [class.input-bloqueado]="c.bloqueado">
+                      <span class="puntaje-calculado" [class.pts-ok]="calcularPuntajeItem(c, item) > 0" [class.pts-max]="calcularPuntajeItem(c, item) >= item.max">
+                        = {{ calcularPuntajeItem(c, item) | number:'1.0-2' }} pts
+                      </span>
+                    </div>
+                  </ng-container>
+
                 </td>
               </tr>
             </ng-container>
@@ -202,16 +223,23 @@
               <tr *ngFor="let item of seccion.items" class="item-row">
                 <td class="item-label">
                   <span>— {{ item.label }}</span>
-                  <small class="pts-por">máximo {{ item.max }} puntos</small>
+                  <small class="pts-por">
+                    {{ item.valorUnitario }} pt{{ item.valorUnitario !== 1 ? 's' : '' }} por año — máx. {{ item.max }} pts
+                  </small>
                 </td>
                 <td *ngFor="let c of candidatos" class="cell-input">
-                  <input type="number" min="0" [max]="item.max" step="0.5"
-                         [(ngModel)]="c.puntajes[item.id]"
-                         (ngModelChange)="recalcular(c)"
-                         class="score-input"
-                         [disabled]="matrizBloqueada || !!item.bloqueado || c.bloqueado"
-                         [class.max-reached]="c.puntajes[item.id] >= item.max"
-                         [class.input-bloqueado]="c.bloqueado">
+                  <div class="cantidad-wrap">
+                    <input type="number" min="0" step="1"
+                           [(ngModel)]="c.puntajes[item.id]"
+                           (ngModelChange)="recalcular(c)"
+                           class="score-input score-input--cantidad"
+                           placeholder="0"
+                           [disabled]="matrizBloqueada || c.bloqueado"
+                           [class.input-bloqueado]="c.bloqueado">
+                    <span class="puntaje-calculado" [class.pts-ok]="calcularPuntajeItem(c, item) > 0" [class.pts-max]="calcularPuntajeItem(c, item) >= item.max">
+                      = {{ calcularPuntajeItem(c, item) | number:'1.0-2' }} pts
+                    </span>
+                  </div>
                 </td>
               </tr>
             </ng-container>
@@ -555,7 +583,7 @@
               <button class="btn btn-accion btn-accion--informe"
                       (click)="descargarInformeFinal()"
                       [disabled]="descargandoInforme">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
@@ -597,41 +625,6 @@
       Los resultados han sido registrados. Puede generar el informe final desde el módulo de Reportes.
     </div>
     <button class="btn btn--primary btn--block" (click)="cerrarModalGuardado()">ENTENDIDO</button>
-  </div>
-</div>
-
-<!-- Modal override -->
-<div class="modal-overlay" *ngIf="mostrarModalOverride" (click)="cerrarModalOverride()">
-  <div class="modal-card modal-card--override" (click)="$event.stopPropagation()">
-    <h2 class="modal-title">Habilitar para Entrevistas</h2>
-
-    <div class="override-candidato" *ngIf="candidatoOverride">
-      <strong>{{ candidatoOverride.apellidos }} {{ candidatoOverride.nombres }}</strong>
-      <span>Puntaje: {{ candidatoOverride.puntajeTotal | number:'1.1-2' }} / 100 pts
-        (mínimo requerido: {{ PUNTAJE_MINIMO }})</span>
-    </div>
-
-    <div class="override-warning">
-      Esta acción permite al candidato pasar a la fase de entrevistas
-      aunque no alcanzó el puntaje mínimo requerido. Debe ingresar una justificación.|
-    </div>
-
-    <label>Justificación obligatoria <span style="color:#ef4444">*</span></label>
-    <textarea [(ngModel)]="justificacionOverride"
-              placeholder="Ingrese la razón por la que habilita a este candidato..."
-              maxlength="500"></textarea>
-    <div class="char-count">{{ justificacionOverride.length }} / 500</div>
-
-    <div class="modal-actions">
-      <button class="btn btn--outline-back" (click)="cerrarModalOverride()" [disabled]="guardandoOverride">
-        Cancelar
-      </button>
-      <button class="btn btn--primary"
-              (click)="confirmarOverride()"
-              [disabled]="!justificacionOverride.trim() || guardandoOverride">
-        {{ guardandoOverride ? 'Guardando...' : 'Confirmar Habilitación' }}
-      </button>
-    </div>
   </div>
 </div>
 
