@@ -146,66 +146,88 @@
     </div>
     <!-- ══ SECCIÓN 3: Escudo ══ -->
     <div class="section-card">
-      <p class="section-title">Escudo institucional / nacional</p>
-      <div class="logo-area">
-        <div class="logo-preview" [class.has-image]="escudoPreview || config.escudoUrl">
-          <img *ngIf="escudoPreview || config.escudoUrl"
-               [src]="escudoPreview || config.escudoUrl"
-               alt="Escudo institucional" />
-          <div class="placeholder-icon" *ngIf="!escudoPreview && !config.escudoUrl">
-            <span>Sin escudo</span>
-          </div>
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
         </div>
-        <div class="logo-controls">
-          <p>Sube el escudo que aparecerá en el lado izquierdo del encabezado de los reportes PDF.</p>
-          <div class="file-input-wrapper">
-            <input type="file" accept="image/png,image/jpeg,image/jpg"
-                   (change)="onEscudoSeleccionado($event)" />
-            <div class="file-btn">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        <div>
+          <p class="section-title">Escudo institucional / nacional</p>
+          <p class="section-subtitle">PNG o JPG, máximo 2 MB. Encabezado izquierdo de los PDFs.</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="logo-area">
+          <div class="logo-preview" [class.has-image]="escudoPreview || config.escudoUrl">
+            <img *ngIf="escudoPreview || config.escudoUrl"
+                 [src]="escudoPreview || config.escudoUrl"
+                 alt="Escudo institucional" />
+            <div class="placeholder-icon" *ngIf="!escudoPreview && !config.escudoUrl">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
               </svg>
-              {{ escudoFile ? escudoFile.name : 'Seleccionar imagen' }}
+              <span>Sin escudo</span>
             </div>
           </div>
-          <span class="form-hint">PNG o JPG, máx. 2 MB. Se mostrará en el encabezado izquierdo de los PDFs.</span>
+          <div class="logo-controls">
+            <p>Sube el escudo que aparecerá en el lado izquierdo del encabezado de los reportes PDF.</p>
+            <div class="file-input-wrapper">
+              <input type="file" accept="image/png,image/jpeg,image/jpg"
+                     (change)="onEscudoSeleccionado($event)" />
+              <div class="file-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
+                Seleccionar imagen
+              </div>
+              <p class="file-name" [class.selected]="escudoFile">
+                {{ escudoFile ? escudoFile.name : 'Ningún archivo seleccionado' }}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- ══ SECCIÓN 4: Preview PDFs (solo desarrollo) ══ -->
     <div class="section-card section-card--dev">
-      <p class="section-title">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-        </svg>
-        Previsualizar reportes PDF
-      </p>
-      <p class="form-hint" style="margin-bottom: 12px;">
-        Genera los PDFs con el proceso más reciente para verificar cómo quedan los logos.
-      </p>
-      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <button class="btn-preview" (click)="previewActa()">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-          </svg>
-          Ver Acta de Méritos
-        </button>
-        <button class="btn-preview" (click)="previewInforme()">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
           </svg>
-          Ver Informe Final
-        </button>
+        </div>
+        <div>
+          <p class="section-title">Previsualizar reportes PDF</p>
+          <p class="section-subtitle">Genera los PDFs con el proceso más reciente para verificar los logos</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn-preview" (click)="previewActa()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Ver Acta de Méritos
+          </button>
+          <button class="btn-preview" (click)="previewInforme()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Ver Informe Final
+          </button>
+        </div>
       </div>
     </div>
-
 
     <!-- ══ SECCIÓN 3: Correo ══ -->
     <div class="section-card">
